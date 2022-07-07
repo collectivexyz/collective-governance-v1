@@ -1,5 +1,5 @@
 AUTHOR = 'collective.xyz'
-SITENAME = 'Ethereum Community'
+SITENAME = 'Ethereum Community Smart Contract'
 SITEURL = ''
 
 PATH = 'content'
