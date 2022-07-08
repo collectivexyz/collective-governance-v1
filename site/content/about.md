@@ -1,4 +1,6 @@
-# eth-community-v1
+title: eth-community-v1
+Category: About
+Date: 07-08-2022
 
 ## Open Elector Design for Community Measures 
 
@@ -21,20 +23,3 @@
 	11. Supervisor may veto the measure prior to the end of voting to ensure the outcome of the measure aligns with the collective interest
 	12. A veto measure has no result and effectively is void
 
-
-### Language
-
-Measure - A goal or aim initiated by the community
-ElectorDelegate - A contract responsible for determining the community will with regard to a measure
-Voter - A community member participating in the outcome of the measure
-Supervisor - A steward for the measure to enable the community to come to a valid conclusion
-Owner - the initial contract creator
-
-
-### Quick Start
-
-1. docker build . -t eth-community-v1:1
-
-### VS Code
-
-`Reopen in Container`

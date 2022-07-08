@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <meta name="generator" content="Pelican" />
+        <title>Ethereum Community</title>
+        <link rel="stylesheet" href="/theme/css/main.css" />
+</head>
+
+<body id="index" class="home">
+        <header id="banner" class="body">
+                <h1><a href="/">Ethereum Community</a></h1>
+                <nav><ul>
+                    <li><a href="/pages/license.html">License</a></li>
+                    <li><a href="/category/about.html">About</a></li>
+                </ul></nav>
+        </header><!-- /#banner -->
+
+            <aside id="featured" class="body">
+                <article>
+                    <h1 class="entry-title"><a href="/eth-community-v1.html">eth-community-v1</a></h1>
+<footer class="post-info">
+        <abbr class="published" title="2022-07-08T00:00:00-05:00">
+                Published: Fri 08 July 2022
+        </abbr>
+
+        <address class="vcard author">
+                By                         <a class="url fn" href="/author/collectivexyz.html">collective.xyz</a>
+        </address>
+<p>In <a href="/category/about.html">About</a>.</p>
+
+</footer><!-- /.post-info --><h2>Open Elector Design for Community Measures</h2>
+<div class="highlight"><pre><span></span><code><span class="nv">Open</span> <span class="nv">communities</span> <span class="nv">exist</span> <span class="nv">to</span> <span class="nv">serve</span> <span class="nv">the</span> <span class="nv">common</span> <span class="nv">good</span> <span class="nv">and</span> <span class="nv">therefore</span> <span class="nv">should</span> <span class="nv">be</span> <span class="nv">given</span> <span class="nv">an</span> <span class="nv">opportunity</span> <span class="nv">to</span> <span class="nv">make</span> <span class="nv">collective</span> <span class="nv">decisions</span> <span class="nv">about</span> <span class="nv">how</span> <span class="nv">resources</span> <span class="nv">are</span> <span class="nv">used</span> <span class="nv">or</span> <span class="nv">allocated</span>.   <span class="nv">Such</span> <span class="nv">decisions</span>, <span class="nv">referred</span> <span class="nv">to</span> <span class="nv">as</span> <span class="nv">measures</span>, <span class="nv">augment</span> <span class="nv">participation</span> <span class="nv">and</span> <span class="nv">enable</span> <span class="nv">communities</span> <span class="nv">to</span> <span class="nv">become</span> <span class="nv">benefactors</span> <span class="nv">on</span> <span class="nv">a</span> <span class="nv">broader</span> <span class="nv">scale</span>.
+
+<span class="nv">This</span> <span class="nv">smart</span> <span class="nv">contract</span> <span class="nv">enables</span> <span class="nv">a</span> <span class="nv">measure</span> <span class="nv">to</span> <span class="nv">be</span> <span class="nv">proposed</span>, <span class="nv">voted</span> <span class="nv">upon</span> <span class="nv">and</span> <span class="nv">successfully</span> <span class="nv">fulfilled</span>.   <span class="nv">It</span> <span class="nv">also</span> <span class="nv">provides</span> <span class="nv">safety</span> <span class="nv">measures</span> <span class="nv">to</span> <span class="nv">prevent</span> <span class="nv">tampering</span>, <span class="nv">invalid</span> <span class="nv">election</span> <span class="nv">design</span> <span class="nv">or</span> <span class="nv">unexpected</span> <span class="nv">system</span> <span class="nv">problems</span> <span class="nv">from</span> <span class="nv">nullifying</span> <span class="nv">the</span> <span class="nv">possible</span> <span class="nv">benefit</span> <span class="nv">of</span> <span class="nv">a</span> <span class="nv">given</span> <span class="nv">measure</span>.
+
+<span class="nv">The</span> <span class="nv">following</span> <span class="nv">responsibilities</span> <span class="nv">are</span> <span class="nv">implemented</span> <span class="nv">as</span> <span class="nv">part</span> <span class="nv">of</span> <span class="nv">this</span> <span class="nv">contract</span> <span class="nv">specification</span>.
+
+<span class="mi">1</span>. <span class="nv">Contract</span> <span class="nv">owner</span> <span class="nv">is</span> <span class="nv">required</span> <span class="nv">to</span> <span class="nv">add</span> <span class="nv">an</span> <span class="nv">election</span> <span class="nv">supervisor</span>, <span class="nv">but</span> <span class="nv">has</span> <span class="nv">no</span> <span class="nv">other</span> <span class="nv">capabilities</span>
+<span class="mi">2</span>. <span class="nv">Arbitrary</span> <span class="nv">number</span> <span class="nv">of</span> <span class="nv">election</span> <span class="nv">supervisors</span> <span class="nv">are</span> <span class="nv">supported</span>
+<span class="mi">3</span>. <span class="nv">Supervisor</span> <span class="nv">may</span> <span class="nv">add</span> <span class="nv">voter</span> <span class="nv">by</span> <span class="nv">address</span> <span class="nv">or</span> <span class="nv">add</span> <span class="nv">voter</span> <span class="nv">class</span> <span class="ss">(</span><span class="nv">by</span> <span class="nv">token</span> <span class="nv">address</span><span class="ss">)</span>, <span class="nv">but</span> <span class="nv">may</span> <span class="nv">not</span> <span class="nv">vote</span> <span class="nv">or</span> <span class="nv">undo</span> <span class="nv">votes</span>
+<span class="mi">4</span>. <span class="nv">Supervisor</span> <span class="nv">may</span> <span class="nv">remove</span> <span class="nv">voter</span> <span class="nv">or</span> <span class="nv">voter</span> <span class="nv">class</span> <span class="k">for</span> <span class="nv">measure</span> <span class="nv">prior</span> <span class="nv">to</span> <span class="nv">start</span> <span class="nv">of</span> <span class="nv">voting</span>
+<span class="mi">5</span>. <span class="nv">Supervisor</span> <span class="nv">may</span> <span class="nv">begin</span> <span class="nv">and</span> <span class="k">end</span> <span class="nv">the</span> <span class="nv">voting</span> <span class="nv">process</span>
+<span class="mi">6</span>. <span class="nv">Supervisor</span> <span class="nv">may</span> <span class="nv">set</span> <span class="nv">the</span> <span class="nv">fixed</span> <span class="nv">threshold</span> <span class="ss">(</span><span class="nv">number</span><span class="ss">)</span> <span class="nv">at</span> <span class="nv">which</span> <span class="nv">the</span> <span class="nv">measure</span> <span class="nv">is</span> <span class="nv">considered</span> <span class="nv">successful</span>
+<span class="mi">7</span>. <span class="nv">No</span> <span class="nv">changes</span> <span class="nv">are</span> <span class="nv">permitted</span> <span class="nv">once</span> <span class="nv">voting</span> <span class="nv">is</span> <span class="nv">open</span>, <span class="nv">the</span> <span class="nv">voter</span> <span class="nv">context</span> <span class="nv">is</span> <span class="nv">final</span> <span class="nv">and</span> <span class="nv">voter</span> <span class="nv">can</span> <span class="nv">be</span> <span class="nv">assured</span> <span class="nv">against</span> <span class="nv">manipulation</span> <span class="nv">of</span> <span class="nv">the</span> <span class="nv">rules</span> <span class="nv">during</span> <span class="nv">the</span> <span class="nv">voting</span> <span class="nv">process</span>
+<span class="mi">8</span>. <span class="nv">Voter</span> <span class="nv">may</span> <span class="nv">cast</span> <span class="nv">an</span> <span class="nv">affirmative</span> <span class="nv">vote</span> <span class="nv">once</span> <span class="nv">voting</span> <span class="nv">has</span> <span class="nv">been</span> <span class="nv">opened</span>.   <span class="nv">A</span> <span class="nv">negative</span> <span class="nv">or</span> <span class="nv">abstention</span> <span class="nv">vote</span> <span class="nv">is</span> <span class="nv">never</span> <span class="nv">required</span> <span class="nv">and</span> <span class="nv">therefore</span> <span class="nv">incurs</span> <span class="nv">no</span> <span class="nv">gas</span> <span class="nv">fees</span>.
+<span class="mi">9</span>. <span class="nv">A</span> <span class="nv">voter</span> <span class="nv">may</span> <span class="nv">undo</span> <span class="nv">their</span> <span class="nv">vote</span> <span class="nv">at</span> <span class="nv">any</span> <span class="nv">time</span> <span class="k">while</span> <span class="nv">voting</span> <span class="nv">is</span> <span class="nv">open</span>
+<span class="mi">10</span>. <span class="nv">No</span> <span class="nv">votes</span> <span class="nv">or</span> <span class="nv">vote</span> <span class="nv">changes</span> <span class="ss">(</span><span class="nv">undo</span><span class="ss">)</span> <span class="nv">are</span> <span class="nv">allowed</span> <span class="nv">after</span> <span class="nv">voting</span> <span class="nv">has</span> <span class="nv">ended</span>
+<span class="mi">11</span>. <span class="nv">Supervisor</span> <span class="nv">may</span> <span class="nv">veto</span> <span class="nv">the</span> <span class="nv">measure</span> <span class="nv">prior</span> <span class="nv">to</span> <span class="nv">the</span> <span class="k">end</span> <span class="nv">of</span> <span class="nv">voting</span> <span class="nv">to</span> <span class="nv">ensure</span> <span class="nv">the</span> <span class="nv">outcome</span> <span class="nv">of</span> <span class="nv">the</span> <span class="nv">measure</span> <span class="nv">aligns</span> <span class="nv">with</span> <span class="nv">the</span> <span class="nv">collective</span> <span class="nv">interest</span>
+<span class="mi">12</span>. <span class="nv">A</span> <span class="nv">veto</span> <span class="nv">measure</span> <span class="nv">has</span> <span class="nv">no</span> <span class="nb">result</span> <span class="nv">and</span> <span class="nv">effectively</span> <span class="nv">is</span> <span class="nv">void</span>
+</code></pre></div>                </article>
+            </aside><!-- /#featured -->
+        <section id="extras" class="body">
+                <div class="blogroll">
+                        <h2>links</h2>
+                        <ul>
+                            <li><a href="https://github.com/momentranks/eth-community-v1">GitHub</a></li>
+                        </ul>
+                </div><!-- /.blogroll -->
+                <div class="social">
+                        <h2>social</h2>
+                        <ul>
+
+                            <li><a href="#">You can add links in your config file</a></li>
+                            <li><a href="#">Another social link</a></li>
+                        </ul>
+                </div><!-- /.social -->
+        </section><!-- /#extras -->
+
+        <footer id="contentinfo" class="body">
+                <address id="about" class="vcard body">
+                Proudly powered by <a href="https://getpelican.com/">Pelican</a>, which takes great advantage of <a href="https://www.python.org/">Python</a>.
+                </address><!-- /#about -->
+
+                <p>The theme is by <a href="https://www.smashingmagazine.com/2009/08/designing-a-html-5-layout-from-scratch/">Smashing Magazine</a>, thanks!</p>
+        </footer><!-- /#contentinfo -->
+
+</body>
+</html>
