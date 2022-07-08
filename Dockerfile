@@ -55,7 +55,7 @@ ARG ETH_VERSION=1.10.16
 COPY --from=builder /go-ethereum/go-ethereum-${ETH_VERSION}/build/bin /usr/local/bin
 COPY --chown=mr:mr --from=builder /home/mr/.cargo /home/mr/.cargo
 
-ARG PROJECT=eth-governance-v1
+ARG PROJECT=eth-community-v1
 WORKDIR /workspaces/${PROJECT}
 RUN chown -R mr.mr .
 COPY --chown=mr:mr . .
