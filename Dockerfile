@@ -22,16 +22,20 @@ RUN useradd --create-home -s /bin/bash mr
 RUN usermod -a -G sudo mr
 RUN echo '%mr ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
 
+ADD https://sh.rustup.rs /rustup/rustup-init.sh
+RUN chmod 755 /rustup/rustup-init.sh 
+
 ## Rust
 WORKDIR /rustup
-ADD https://sh.rustup.rs /rustup/rustup.sh
-RUN chmod 755 /rustup/rustup.sh
 ENV USER=mr
 USER mr
-RUN /rustup/rustup.sh -y
+RUN /rustup/rustup-init.sh -y --default-toolchain stable --profile minimal
 
 ## Foundry
-RUN ~mr/.cargo/bin/cargo install --git https://github.com/foundry-rs/foundry --locked foundry-cli
+WORKDIR /foundry
+
+# latest https://github.com/foundry-rs/foundry
+RUN ~mr/.cargo/bin/cargo install --git https://github.com/foundry-rs/foundry#7bc3e60e --locked foundry-cli
 
 FROM debian:stable-slim
 
@@ -39,11 +43,14 @@ RUN export DEBIAN_FRONTEND=noninteractive && \
   apt update && \
   apt install -y -q --no-install-recommends \
   git gnupg2 curl build-essential golang-go \  
-  sudo ripgrep \
+  sudo ripgrep npm \
   ca-certificates apt-transport-https && \
   apt clean && \
   rm -rf /var/lib/apt/lists/*
 
+
+# RUN npm install npm -g
+RUN npm install yarn -g
 
 RUN useradd --create-home -s /bin/bash mr
 RUN usermod -a -G sudo mr
@@ -62,6 +69,7 @@ COPY --chown=mr:mr . .
 ENV USER=mr
 USER mr
 ENV PATH=${PATH}:~/.cargo/bin
+RUN yarn install
 RUN ~mr/.cargo/bin/forge build --sizes
 RUN ~mr/.cargo/bin/forge test -vvv
 

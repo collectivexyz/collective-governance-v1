@@ -1,0 +1,29 @@
+{
+  "name": "collective-governance-v1",
+  "version": "0.8.0",
+  "description": "## Open Elector Design for Community Measures",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs",
+    "lib": "lib",
+    "test": "test"
+  },
+  "scripts": {
+    "build": "~mr/.cargo/bin/forge build --sizes",
+    "test": "~mr/.cargo/bin/forge test -vvv"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/momentranks/collective-governance-v1.git"
+  },
+  "dependencies": {
+    "@openzeppelin/contracts": "4.7.0"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "BSD-Clause-3",
+  "bugs": {
+    "url": "https://github.com/momentranks/collective-governance-v1/issues"
+  },
+  "homepage": "https://momentranks.github.io/collective-gvernance-v1"
+}

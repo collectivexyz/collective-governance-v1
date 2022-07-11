@@ -1,6 +1,9 @@
 // SPDX-License-Identifier: BSD-3-Clause
 pragma solidity ^0.8.15;
 
+import './VoterClass.sol';
+import './VoterClassNullObject.sol';
+
 /// @title ElectorDelegate
 
 // GovernorBravoDelegate.sol source code Copyright 2020 Compound Labs, Inc. licensed under the BSD-3-Clause license.
@@ -36,6 +39,8 @@ contract ElectorDelegate {
   bool public isVotingPrelim;
   bool public isSupervisorVeto;
 
+  VoterClass private _voterClass;
+
   constructor() {
     owner = msg.sender;
     totalVoterPool = 0;
@@ -46,6 +51,7 @@ contract ElectorDelegate {
     isVotingOpen = false;
     isVotingPrelim = true;
     isSupervisorVeto = false;
+    _voterClass = new VoterClassNullObject();
   }
 
   modifier requireContractOwner() {
@@ -59,7 +65,7 @@ contract ElectorDelegate {
   }
 
   modifier requireVoter() {
-    require(voterPool[msg.sender] == true);
+    require(voterPool[msg.sender] == true || _voterClass.isVoter(msg.sender));
     _;
   }
 
@@ -120,6 +126,16 @@ contract ElectorDelegate {
       voterPool[_voter] = false;
       totalVoterPool--;
     }
+  }
+
+  /// @notice register a voting class for this measure
+  function registerVoterClass(VoterClass _class) public requireElectorSupervisor requireVotingPrelim {
+    _voterClass = _class;
+  }
+
+  /// @notice burn voter class
+  function burnVoterClass() public requireElectorSupervisor requireVotingPrelim {
+    _voterClass = new VoterClassNullObject();
   }
 
   /// @notice establish the pass threshold for this measure
