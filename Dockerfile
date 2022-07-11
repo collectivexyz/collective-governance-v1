@@ -55,14 +55,14 @@ ARG ETH_VERSION=1.10.16
 COPY --from=builder /go-ethereum/go-ethereum-${ETH_VERSION}/build/bin /usr/local/bin
 COPY --chown=mr:mr --from=builder /home/mr/.cargo /home/mr/.cargo
 
-ARG PROJECT=eth-community-v1
+ARG PROJECT=collective-governance-v1
 WORKDIR /workspaces/${PROJECT}
 RUN chown -R mr.mr .
 COPY --chown=mr:mr . .
 ENV USER=mr
 USER mr
 ENV PATH=${PATH}:~/.cargo/bin
-#RUN ~mr/.cargo/bin/forge build --sizes
-#RUN ~mr/.cargo/bin/forge test -vvv
+RUN ~mr/.cargo/bin/forge build --sizes
+RUN ~mr/.cargo/bin/forge test -vvv
 
 CMD ~/mr/.cargo/bin/forge test -vvv

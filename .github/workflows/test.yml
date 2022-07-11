@@ -17,7 +17,7 @@ jobs:
     strategy:
       fail-fast: true
 
-    name: eth-community-v1
+    name: collective-governance-v1
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
