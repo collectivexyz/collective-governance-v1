@@ -182,6 +182,8 @@ contract ElectorDelegateTest is Test {
     vm.prank(supervisor);
     delegate.registerVoter(voter1);
     vm.prank(supervisor);
+    delegate.setPassThreshold(2);
+    vm.prank(supervisor);
     delegate.openVoting();
     vm.prank(voter1);
     delegate.voteFor();
@@ -193,6 +195,8 @@ contract ElectorDelegateTest is Test {
     delegate.registerSupervisor(supervisor);
     vm.prank(supervisor);
     delegate.registerVoterClass(_voterClass);
+    vm.prank(supervisor);
+    delegate.setPassThreshold(2);
     vm.prank(supervisor);
     delegate.openVoting();
     vm.prank(voter1);
@@ -207,6 +211,8 @@ contract ElectorDelegateTest is Test {
     delegate.registerVoterClass(_voterClass);
     vm.prank(supervisor);
     delegate.burnVoterClass();
+    vm.prank(supervisor);
+    delegate.setPassThreshold(2);
     vm.prank(supervisor);
     delegate.openVoting();
     vm.prank(voter1);
@@ -226,6 +232,8 @@ contract ElectorDelegateTest is Test {
     vm.prank(supervisor);
     delegate.registerVoter(voter1);
     vm.prank(supervisor);
+    delegate.setPassThreshold(2);
+    vm.prank(supervisor);
     delegate.openVoting();
     vm.prank(voter1);
     delegate.voteFor();
@@ -237,6 +245,8 @@ contract ElectorDelegateTest is Test {
     delegate.registerSupervisor(supervisor);
     vm.prank(supervisor);
     delegate.registerVoter(voter1);
+    vm.prank(supervisor);
+    delegate.setPassThreshold(2);
     vm.prank(supervisor);
     delegate.openVoting();
     vm.prank(voter1);
@@ -251,6 +261,8 @@ contract ElectorDelegateTest is Test {
     delegate.registerSupervisor(supervisor);
     vm.prank(supervisor);
     delegate.registerVoter(voter1);
+    vm.prank(supervisor);
+    delegate.setPassThreshold(2);    
     vm.prank(supervisor);
     delegate.openVoting();
     vm.expectRevert();
@@ -273,6 +285,8 @@ contract ElectorDelegateTest is Test {
     delegate.registerSupervisor(supervisor);
     vm.prank(supervisor);
     delegate.registerVoter(voter1);
+    vm.prank(supervisor);
+    delegate.setPassThreshold(2);
     vm.prank(supervisor);
     delegate.openVoting();
     vm.prank(voter1);

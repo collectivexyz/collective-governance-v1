@@ -145,6 +145,7 @@ contract ElectorDelegate {
 
   /// @notice allow voting
   function openVoting() public requireElectorSupervisor requireVotingPrelim {
+    require(requiredPassThreshold < MAXIMUM_PASS_THRESHOLD);
     isVotingOpen = true;
     isVotingPrelim = false;
   }
