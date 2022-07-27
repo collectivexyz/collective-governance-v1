@@ -15,4 +15,8 @@ contract VoterClassERC721 is VoterClass {
   function isVoter(address _wallet) external view returns (bool) {
     return IERC721(_contractAddress).balanceOf(_wallet) > 0;
   }
+
+  function votesAvailable(address _wallet) external view returns (uint256) {
+    return IERC721(_contractAddress).balanceOf(_wallet);
+  }
 }

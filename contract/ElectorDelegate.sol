@@ -145,7 +145,7 @@ contract ElectorDelegate {
 
   /// @notice allow voting
   function openVoting() public requireElectorSupervisor requireVotingPrelim {
-    require(requiredPassThreshold < MAXIMUM_PASS_THRESHOLD);
+    require(requiredPassThreshold < MAXIMUM_PASS_THRESHOLD, 'PassThreshold must be set prior to opening vote');
     isVotingOpen = true;
     isVotingPrelim = false;
   }
@@ -159,7 +159,7 @@ contract ElectorDelegate {
   function voteFor() public requireVoter requireVotingOpen {
     if (voteCast[msg.sender] == false) {
       voteCast[msg.sender] = true;
-      totalVotesCast++;
+      totalVotesCast = add256(totalVotesCast, _voterClass.votesAvailable(msg.sender));
     } else {
       revert('Vote cast previously on this measure');
     }
@@ -185,5 +185,11 @@ contract ElectorDelegate {
   /// @notice get the result of the measure pass or failed
   function getResult() public view requireVotingClosed returns (bool) {
     return totalVotesCast >= requiredPassThreshold;
+  }
+
+  function add256(uint256 a, uint256 b) internal pure returns (uint256) {
+    uint256 c = a + b;
+    require(c >= a, 'add256 overflow');
+    return c;
   }
 }

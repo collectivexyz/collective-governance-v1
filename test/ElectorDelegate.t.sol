@@ -204,6 +204,20 @@ contract ElectorDelegateTest is Test {
     assertEq(delegate.totalVotesCast(), uint256(1));
   }
 
+  function testCastTwoVoteFromClass() public {
+    VoterClass _voterClass = new VoterClassTwoVote();
+    delegate.registerSupervisor(supervisor);
+    vm.prank(supervisor);
+    delegate.registerVoterClass(_voterClass);
+    vm.prank(supervisor);
+    delegate.setPassThreshold(2);
+    vm.prank(supervisor);
+    delegate.openVoting();
+    vm.prank(voter1);
+    delegate.voteFor();
+    assertEq(delegate.totalVotesCast(), uint256(2));
+  }
+
   function testFailCastOneVoteWithBurnedClass() public {
     VoterClass _voterClass = new VoterClassOpenAccess();
     delegate.registerSupervisor(supervisor);
@@ -262,7 +276,7 @@ contract ElectorDelegateTest is Test {
     vm.prank(supervisor);
     delegate.registerVoter(voter1);
     vm.prank(supervisor);
-    delegate.setPassThreshold(2);    
+    delegate.setPassThreshold(2);
     vm.prank(supervisor);
     delegate.openVoting();
     vm.expectRevert();
@@ -388,5 +402,19 @@ contract ElectorDelegateTest is Test {
 contract VoterClassOpenAccess is VoterClass {
   function isVoter(address) external view returns (bool) {
     return true;
+  }
+
+  function votesAvailable(address _wallet) external view returns (uint256) {
+    return 1;
+  }
+}
+
+contract VoterClassTwoVote is VoterClass {
+  function isVoter(address) external view returns (bool) {
+    return true;
+  }
+
+  function votesAvailable(address _wallet) external view returns (uint256) {
+    return 2;
   }
 }
