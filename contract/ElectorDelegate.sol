@@ -20,6 +20,20 @@ import './VoterClassNullObject.sol';
 // measure is considered passed when the threshold voter count is achieved out of the current voting pool
 
 contract ElectorDelegate {
+  // event section
+  event AddSupervisor(address supervisor);
+  event BurnSupervisor(address supervisor);
+  event RegisterVoter(address voter);
+  event BurnVoter(address voter);
+  event RegisterVoterClass();
+  event BurnVoterClass();
+  event SetPassThreshold(uint256 passThreshold);
+  event VotingOpen();
+  event VotingClosed();
+  event VoteCast(address voter, uint256 totalVotesCast);
+  event UndoVoteEnabled();
+  event VoteVeto();
+
   /// @notice contract name
   string public constant name = 'collective.xyz Governance Delegate';
   uint256 public constant MAXIMUM_PASS_THRESHOLD = 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF;
@@ -38,6 +52,7 @@ contract ElectorDelegate {
   bool public isVotingOpen;
   bool public isVotingPrelim;
   bool public isSupervisorVeto;
+  bool public isUndoEnabled;
 
   VoterClass private _voterClass;
 
@@ -51,6 +66,7 @@ contract ElectorDelegate {
     isVotingOpen = false;
     isVotingPrelim = true;
     isSupervisorVeto = false;
+    isUndoEnabled = false;
     _voterClass = new VoterClassNullObject();
   }
 
@@ -84,11 +100,17 @@ contract ElectorDelegate {
     _;
   }
 
+  modifier requireUndo() {
+    require(isUndoEnabled, 'Undo not enabled for this vote');
+    _;
+  }
+
   /// @notice add a vote superviser to the supervisor pool with rights to add or remove voters prior to start of voting, also right to veto the outcome after voting is closed
   function registerSupervisor(address _supervisor) public requireContractOwner requireVotingPrelim {
     if (supervisorPool[_supervisor] == false) {
       supervisorPool[_supervisor] = true;
       totalSupervisorPool++;
+      emit AddSupervisor(_supervisor);
     }
   }
 
@@ -97,7 +119,14 @@ contract ElectorDelegate {
     if (supervisorPool[_supervisor] == true) {
       supervisorPool[_supervisor] = false;
       totalSupervisorPool--;
+      emit AddSupervisor(_supervisor);
     }
+  }
+
+  /// @notice enable vote undo feature
+  function enableUndoVote() public requireElectorSupervisor requireVotingPrelim {
+    isUndoEnabled = true;
+    emit UndoVoteEnabled();
   }
 
   /// @notice register a voter on this measure
@@ -105,6 +134,7 @@ contract ElectorDelegate {
     if (voterPool[_voter] == false) {
       voterPool[_voter] = true;
       totalVoterPool++;
+      emit RegisterVoter(_voter);
     }
   }
 
@@ -114,6 +144,7 @@ contract ElectorDelegate {
     for (uint256 i = 0; i < _voter.length; i++) {
       if (voterPool[_voter[i]] == false) {
         voterPool[_voter[i]] = true;
+        emit RegisterVoter(_voter[i]);
       }
       addedCount++;
     }
@@ -125,22 +156,26 @@ contract ElectorDelegate {
     if (voterPool[_voter] == true) {
       voterPool[_voter] = false;
       totalVoterPool--;
+      emit BurnVoter(_voter);
     }
   }
 
   /// @notice register a voting class for this measure
   function registerVoterClass(VoterClass _class) public requireElectorSupervisor requireVotingPrelim {
     _voterClass = _class;
+    emit RegisterVoterClass();
   }
 
   /// @notice burn voter class
   function burnVoterClass() public requireElectorSupervisor requireVotingPrelim {
     _voterClass = new VoterClassNullObject();
+    emit BurnVoterClass();
   }
 
   /// @notice establish the pass threshold for this measure
   function setPassThreshold(uint256 _passThreshold) public requireElectorSupervisor requireVotingPrelim {
     requiredPassThreshold = _passThreshold;
+    emit SetPassThreshold(_passThreshold);
   }
 
   /// @notice allow voting
@@ -148,25 +183,29 @@ contract ElectorDelegate {
     require(requiredPassThreshold < MAXIMUM_PASS_THRESHOLD, 'PassThreshold must be set prior to opening vote');
     isVotingOpen = true;
     isVotingPrelim = false;
+    emit VotingOpen();
   }
 
   /// @notice forbid any further voting
   function endVoting() public requireElectorSupervisor requireVotingOpen {
     isVotingOpen = false;
+    emit VotingClosed();
   }
 
   // @notice cast an affirmative vote for the measure
   function voteFor() public requireVoter requireVotingOpen {
     if (voteCast[msg.sender] == false) {
       voteCast[msg.sender] = true;
-      totalVotesCast = add256(totalVotesCast, _voterClass.votesAvailable(msg.sender));
+      uint256 votesAvailable = _voterClass.votesAvailable(msg.sender);
+      totalVotesCast = add256(totalVotesCast, votesAvailable);
+      emit VoteCast(msg.sender, votesAvailable);
     } else {
       revert('Vote cast previously on this measure');
     }
   }
 
   // @notice undo any previous vote
-  function undoVote() public requireVoter requireVotingOpen {
+  function undoVote() public requireUndo requireVoter requireVotingOpen {
     if (voteCast[msg.sender] == true) {
       voteCast[msg.sender] = false;
       totalVotesCast--;
@@ -179,6 +218,9 @@ contract ElectorDelegate {
   function veto() public requireElectorSupervisor requireVotingOpen {
     if (!isSupervisorVeto) {
       isSupervisorVeto = true;
+      emit VoteVeto();
+    } else {
+      revert('Double veto');
     }
   }
 

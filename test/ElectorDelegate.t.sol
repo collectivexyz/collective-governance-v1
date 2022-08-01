@@ -258,6 +258,8 @@ contract ElectorDelegateTest is Test {
   function testVoterMayChangeTheirMind() public {
     delegate.registerSupervisor(supervisor);
     vm.prank(supervisor);
+    delegate.enableUndoVote();
+    vm.prank(supervisor);
     delegate.registerVoter(voter1);
     vm.prank(supervisor);
     delegate.setPassThreshold(2);
@@ -272,6 +274,20 @@ contract ElectorDelegateTest is Test {
   }
 
   function testVoterMayOnlyUndoPreviousVote() public {
+    delegate.registerSupervisor(supervisor);
+    vm.prank(supervisor);
+    delegate.enableUndoVote();
+    vm.prank(supervisor);
+    delegate.registerVoter(voter1);
+    vm.prank(supervisor);
+    delegate.setPassThreshold(2);
+    vm.prank(supervisor);
+    delegate.openVoting();
+    vm.expectRevert();
+    delegate.undoVote();
+  }
+
+  function testFailUndoVoteNotDefaultEnabled() public {
     delegate.registerSupervisor(supervisor);
     vm.prank(supervisor);
     delegate.registerVoter(voter1);
