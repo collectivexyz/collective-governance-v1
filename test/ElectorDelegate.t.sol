@@ -371,7 +371,7 @@ contract ElectorDelegateTest is Test {
     vm.prank(voter2);
     delegate.voteFor();
     vm.prank(supervisor);
-    delegate.vetoMeasure();
+    delegate.veto();
     assertTrue(delegate.isSupervisorVeto());
     vm.prank(supervisor);
     delegate.endVoting();
@@ -395,7 +395,7 @@ contract ElectorDelegateTest is Test {
     vm.prank(supervisor);
     delegate.endVoting();
     vm.prank(supervisor);
-    delegate.vetoMeasure();
+    delegate.veto();
   }
 }
 

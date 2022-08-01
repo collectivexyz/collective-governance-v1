@@ -1,7 +1,7 @@
 {
   "name": "collective-governance-v1",
   "version": "0.8.0",
-  "description": "## Open Elector Design for Community Measures",
+  "description": "Open Elector Design for Communities",
   "main": "index.js",
   "directories": {
     "doc": "docs",

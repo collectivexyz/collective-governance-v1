@@ -14,7 +14,7 @@ import './VoterClassNullObject.sol';
 // and to veto the result of the vote as in the case of a failure of the election design
 
 // modification to the vote and supervisor pools is only allowed prior to the opening of voting
-// 'affirmative' vote must be cast by calling voteForMeasure
+// 'affirmative' vote must be cast by calling voteFor
 // 'abstention' or 'negative' vote incurs no gas fees and every registered voter is default negative
 
 // measure is considered passed when the threshold voter count is achieved out of the current voting pool
@@ -176,7 +176,7 @@ contract ElectorDelegate {
   }
 
   /// @notice veto the current measure
-  function vetoMeasure() public requireElectorSupervisor requireVotingOpen {
+  function veto() public requireElectorSupervisor requireVotingOpen {
     if (!isSupervisorVeto) {
       isSupervisorVeto = true;
     }
