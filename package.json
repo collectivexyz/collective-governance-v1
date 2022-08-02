@@ -10,8 +10,8 @@
   },
   "scripts": {
     "build": "~mr/.cargo/bin/forge build --sizes",
-    "lint": "solium -d contract",
-    "lint:fix": "solium -d contract -d test --fix",
+    "lint": "solium -d contracts",
+    "lint:fix": "solium -d contracts --fix",
     "test": "~mr/.cargo/bin/forge test -vvv"
   },
   "repository": {

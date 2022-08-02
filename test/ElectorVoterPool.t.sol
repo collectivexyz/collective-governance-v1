@@ -2,8 +2,8 @@
 pragma solidity ^0.8.15;
 
 import "forge-std/Test.sol";
-import "../contract/ElectorVoterPool.sol";
-import "../contract/VoterClass.sol";
+import "../contracts/ElectorVoterPool.sol";
+import "../contracts/VoterClass.sol";
 
 contract ElectorVoterPoolTest is Test {
     ElectorVoterPool delegate;
@@ -420,7 +420,9 @@ contract VoterClassOpenAccess is VoterClass {
         return true;
     }
 
-    function votesAvailable(address _wallet) external pure returns (uint256) {
+    function votesAvailable(
+        address /* _wallet */
+    ) external pure returns (uint256) {
         return 1;
     }
 }
@@ -430,7 +432,9 @@ contract VoterClassTwoVote is VoterClass {
         return true;
     }
 
-    function votesAvailable(address _wallet) external pure returns (uint256) {
+    function votesAvailable(
+        address /* _wallet */
+    ) external pure returns (uint256) {
         return 2;
     }
 }

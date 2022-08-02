@@ -11,7 +11,8 @@ on:
 
 env:
   FOUNDRY_PROFILE: ci
-  ALCHEMY_DEVNET_RPC: ${{ secrets.ALCHEMY_DEVNET_RPC }}
+  DEVNET_RPC: ${{ secrets.ALCHEMY_DEVNET_RPC }}
+  DEVNET_WALLET: ${{ secrets.GOERLY_WALLET }}
 
 jobs:
   check:
@@ -43,4 +44,4 @@ jobs:
 
       - name:  Deploy Goerly Testnet
         run: |
-          forge create ElectorVoterPool --contracts contracts/ElectorVoterPool.sol --rpc-url ${ALCHEMY_DEVNET_RPC}
+          forge create --contracts contracts/ElectorVoterPool.sol --rpc-url ${DEVNET_RPC} --private-key ${DEVNET_WALLET} ElectorVoterPool
