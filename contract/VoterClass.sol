@@ -3,7 +3,7 @@ pragma solidity ^0.8.15;
 
 /// @notice Interface indicating membership in a voting class
 interface VoterClass {
-  function isVoter(address _wallet) external view returns (bool);
+    function isVoter(address _wallet) external view returns (bool);
 
-  function votesAvailable(address _wallet) external view returns (uint256);
+    function votesAvailable(address _wallet) external view returns (uint256);
 }

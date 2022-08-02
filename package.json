@@ -10,6 +10,8 @@
   },
   "scripts": {
     "build": "~mr/.cargo/bin/forge build --sizes",
+    "lint": "solium -d contract",
+    "lint:fix": "solium -d contract -d test --fix",
     "test": "~mr/.cargo/bin/forge test -vvv"
   },
   "repository": {
@@ -17,7 +19,8 @@
     "url": "git+https://github.com/momentranks/collective-governance-v1.git"
   },
   "dependencies": {
-    "@openzeppelin/contracts": "4.7.0"
+    "@openzeppelin/contracts": "4.7.0",
+    "ethlint": "1.2.5"
   },
   "keywords": [],
   "author": "",

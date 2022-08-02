@@ -11,6 +11,7 @@ on:
 
 env:
   FOUNDRY_PROFILE: ci
+  ALCHEMY_DEVNET_RPC: ${{ secrets.ALCHEMY_DEVNET_RPC }}
 
 jobs:
   check:
@@ -39,3 +40,7 @@ jobs:
         run: |
           forge test -vvv
         id: test
+
+      - name:  Deploy Goerly Testnet
+        run: |
+          forge create ElectorVoterPool --contracts contracts/ElectorVoterPool.sol --rpc-url ${ALCHEMY_DEVNET_RPC}
