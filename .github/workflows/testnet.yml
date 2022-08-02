@@ -8,6 +8,8 @@ on:
   push:
     branches:
       - '*'
+  release:
+    types: [created]
 
 env:
   FOUNDRY_PROFILE: ci
@@ -45,3 +47,4 @@ jobs:
       - name:  Deploy Goerli Testnet
         run: |
           forge create --contracts contracts/ElectorVoterPool.sol --rpc-url ${DEVNET_RPC} --private-key ${DEVNET_WALLET} ElectorVoterPool
+        if: ${{ github.event_name == 'release' && github.event.action == 'created' }}        
