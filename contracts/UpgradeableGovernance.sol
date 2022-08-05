@@ -13,9 +13,15 @@
  */
 pragma solidity ^0.8.15;
 
-/// @notice Interface indicating membership in a voting class
-interface VoterClass {
-    function isVoter(address _wallet) external view returns (bool);
+/// @title UpgradeableGovernance
+/// upgradable governance strategy
+interface UpgradeableGovernance {
+    event StrategyChange(uint32 fromVersion, uint32 toVersion);
+    event StorageChange(uint32 fromVersion, uint32 toVersion);
 
-    function votesAvailable(address _wallet) external view returns (uint256);
+    function setVotingStrategy(address _strategy) external;
+
+    function getCurrentStrategyVersion() external view returns (uint32);
+
+    function getCurrentStrategyAddress() external view returns (address);
 }

@@ -1,4 +1,5 @@
 [profile.default]
 src = 'src'
 out = 'out'
+via-ir = true
 libs = ['lib']

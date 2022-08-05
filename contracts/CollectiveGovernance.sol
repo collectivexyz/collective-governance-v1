@@ -13,9 +13,56 @@
  */
 pragma solidity ^0.8.15;
 
-/// @notice Interface indicating membership in a voting class
-interface VoterClass {
-    function isVoter(address _wallet) external view returns (bool);
+import "./Governance.sol";
+import "./UpgradeableGovernance.sol";
+import "./VotingStrategy.sol";
+import "./ElectorVoterPool.sol";
 
-    function votesAvailable(address _wallet) external view returns (uint256);
+/// @title CollectiveGovernance
+// factory contract for governance
+contract CollectiveGovernance is UpgradeableGovernance, Governance {
+    address private owner;
+
+    VotingStrategy private _votingStategy;
+
+    constructor() {
+        owner = msg.sender;
+        _votingStategy = new ElectorVoterPool();
+    }
+
+    modifier requireContractOwner() {
+        require(owner == msg.sender, "Not contract owner");
+        _;
+    }
+
+    function setVotingStrategy(address _strategy) external requireContractOwner {
+        uint32 version = _votingStategy.version();
+        _votingStategy = VotingStrategy(_strategy);
+        uint32 newVersion = _votingStategy.version();
+        emit StrategyChange(version, newVersion);
+    }
+
+    function getCurrentStrategyVersion() external view returns (uint32) {
+        return _votingStategy.version();
+    }
+
+    function getCurrentStrategyAddress() external view returns (address) {
+        return address(_votingStategy);
+    }
+
+    function propose() external pure returns (uint256) {
+        revert("Not implemented");
+    }
+
+    function voteFor(
+        uint256 /* _proposalId */
+    ) external pure {
+        revert("Not implemented");
+    }
+
+    function voteAgainst(
+        uint256 /* _proposalId */
+    ) external pure {
+        revert("Not implemented");
+    }
 }

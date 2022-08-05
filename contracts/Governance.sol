@@ -13,9 +13,19 @@
  */
 pragma solidity ^0.8.15;
 
-/// @notice Interface indicating membership in a voting class
-interface VoterClass {
-    function isVoter(address _wallet) external view returns (bool);
+/// @title Governance
+/// contract enables proposing a measure to be voted upon
+interface Governance {
+    event ProposalCreated(address proposer, uint256 proposalId);
 
-    function votesAvailable(address _wallet) external view returns (uint256);
+    /// @notice propose a measurement of a voting population @returns proposal id
+    function propose() external pure returns (uint256);
+
+    function voteFor(
+        uint256 /* _proposalId */
+    ) external;
+
+    function voteAgainst(
+        uint256 /* _proposalId */
+    ) external;
 }
