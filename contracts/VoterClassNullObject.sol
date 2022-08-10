@@ -16,13 +16,16 @@ import "./VoterClass.sol";
 
 /// @notice voting class for ERC-721 contract
 contract VoterClassNullObject is VoterClass {
-    function isVoter(address) external pure returns (bool) {
+    modifier requireValidAddress(address _wallet) {
+        require(_wallet != address(0), "Not a valid wallet");
+        _;
+    }
+
+    function isVoter(address _wallet) external pure requireValidAddress(_wallet) returns (bool) {
         return false;
     }
 
-    function votesAvailable(
-        address /* _wallet */
-    ) external pure returns (uint256) {
-        return 1;
+    function votesAvailable(address _wallet) external pure requireValidAddress(_wallet) returns (uint256) {
+        return 0;
     }
 }

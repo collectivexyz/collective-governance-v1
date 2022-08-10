@@ -20,45 +20,12 @@ import "./VoterClassNullObject.sol";
 /// upgradable implementation of voting for Collective Governance
 interface VotingStrategy {
     // event section
-    event AddSupervisor(address supervisor);
-    event BurnSupervisor(address supervisor);
-    event RegisterVoter(address voter);
-    event BurnVoter(address voter);
-    event RegisterVoterClass();
-    event BurnVoterClass();
-    event SetRequiredParticipation(uint256 requiredParticipation);
-    event SetQuorumThreshold(uint256 passThreshold);
-    event VotingOpen();
-    event VotingClosed();
-    event VoteCast(address voter, uint256 totalVotesCast);
-    event UndoVoteEnabled();
-    event VoteVeto(address supervisor);
+    event VotingOpen(uint256 proposalId);
+    event VotingClosed(uint256 proposalId);
 
     function name() external pure returns (string memory);
 
     function version() external pure returns (uint32);
-
-    function registerSupervisor(uint256 _proposalId, address _supervisor) external;
-
-    function burnSupervisor(uint256 _proposalId, address _supervisor) external;
-
-    function registerVoter(uint256 _proposalId, address _voter) external;
-
-    function registerVoters(uint256 _proposalId, address[] memory _voter) external;
-
-    function burnVoter(uint256 _proposalId, address _voter) external;
-
-    function registerVoterClass(uint256 _proposalId, VoterClass _class) external;
-
-    function burnVoterClass(uint256 _proposalId) external;
-
-    function setQuorumThreshold(uint256 _proposalId, uint256 _passThreshold) external;
-
-    function setRequiredParticipation(uint256 _proposalId, uint256 _voteTally) external;
-
-    function setVoteDelay(uint256 _proposalId, uint256 _voteDelay) external;
-
-    function setRequiredVoteDuration(uint256 _proposalId, uint256 _voteDuration) external;
 
     function openVoting(uint256 _proposalId) external;
 
@@ -73,4 +40,6 @@ interface VotingStrategy {
     function veto(uint256 _proposalId) external;
 
     function getVoteSucceeded(uint256 _proposalId) external returns (bool);
+
+    function isOpen(uint256 _proposalId) external view returns (bool);
 }

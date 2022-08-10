@@ -16,7 +16,7 @@ pragma solidity ^0.8.15;
 import "./Governance.sol";
 import "./UpgradeableGovernance.sol";
 import "./VotingStrategy.sol";
-import "./ElectorVoterPool.sol";
+import "./ElectorVoterPoolStrategy.sol";
 
 /// @title CollectiveGovernance
 // factory contract for governance
@@ -27,7 +27,7 @@ contract CollectiveGovernance is UpgradeableGovernance, Governance {
 
     constructor() {
         owner = msg.sender;
-        _votingStategy = new ElectorVoterPool();
+        _votingStategy = new ElectorVoterPoolStrategy();
     }
 
     modifier requireContractOwner() {

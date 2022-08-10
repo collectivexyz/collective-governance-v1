@@ -13,27 +13,20 @@
  */
 pragma solidity ^0.8.15;
 
-import "@openzeppelin/contracts/interfaces/IERC721.sol";
 import "./VoterClass.sol";
 
-/// @notice voting class for ERC-721 contract
-contract VoterClassERC721 is VoterClass {
-    address public _contractAddress;
-
+/// @notice voting class to include every address
+contract VoterClassOpenVoting is VoterClass {
     modifier requireValidAddress(address _wallet) {
         require(_wallet != address(0), "Not a valid wallet");
         _;
     }
 
-    constructor(address _contract) {
-        _contractAddress = _contract;
+    function isVoter(address _wallet) external pure requireValidAddress(_wallet) returns (bool) {
+        return true;
     }
 
-    function isVoter(address _wallet) external view requireValidAddress(_wallet) returns (bool) {
-        return IERC721(_contractAddress).balanceOf(_wallet) > 0;
-    }
-
-    function votesAvailable(address _wallet) external view requireValidAddress(_wallet) returns (uint256) {
-        return IERC721(_contractAddress).balanceOf(_wallet);
+    function votesAvailable(address _wallet) external pure requireValidAddress(_wallet) returns (uint256) {
+        return 1;
     }
 }

@@ -13,74 +13,69 @@
  */
 pragma solidity ^0.8.15;
 
-import "./VotingStrategy.sol";
+import "./Storage.sol";
+import "../contracts/VoterClassERC721.sol";
+import "../contracts/VoterClassOpenVoting.sol";
 
-contract GovernanceStorage {
+contract GovernanceStorage is Storage {
     uint256 public constant MAXIMUM_PASS_THRESHOLD = 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF;
-
-    struct Proposal {
-        /// @notice Unique id for looking up a proposal
-        uint256 id;
-        /// @notice Creator of the proposal
-        address proposalSender;
-        /// @notice The number of votes in support of a proposal required in order for a quorum to be reached and for a vote to succeed
-        uint256 quorumRequired;
-        /// @notice Required participation yea or nea for a successful vote
-        uint256 requiredParticipation;
-        /// @notice The block at which voting begins
-        uint256 startBlock;
-        /// @notice The block at which voting ends
-        uint256 endBlock;
-        /// @notice Current number of votes in favor of this proposal
-        uint256 forVotes;
-        /// @notice Current number of votes in opposition to this proposal
-        uint256 againstVotes;
-        /// @notice Current number of votes for abstaining for this proposal
-        uint256 abstentionCount;
-        /// @notice Flag marking whether the proposal has been vetoed
-        bool isVeto;
-        /// @notice Flag marking whether the proposal has been executed
-        bool executed;
-        /// @notice voting is open or not
-        bool isVotingOpen;
-        /// @notice voting is not yet open or closed
-        bool isVotingPrelim;
-        /// @notice this proposal allows undo votes
-        bool isUndoEnabled;
-        /// @notice version of strategy applied to proposal
-        uint32 strategyVersion;
-        /// @notice general voter class enabled for this vote
-        VoterClass voterClass;
-        /// @notice Strategy applied to this proposal
-        VotingStrategy votingStrategy;
-        /// @notice Receipts of ballots for the entire set of voters
-        mapping(address => Receipt) voteReceipt;
-        /// @notice configured supervisors
-        mapping(address => bool) supervisorPool;
-        /// @notice whitelisted voters
-        mapping(address => bool) voterPool;
-    }
-
-    /// @notice Ballot receipt record for a voter
-    struct Receipt {
-        /// @notice number of votes cast for
-        uint256 votedFor;
-        /// @notice The number of votes the voter had, which were cast
-        uint256 votesCast;
-    }
 
     /// @notice global list of proposed issues by id
     mapping(uint256 => Proposal) public proposalMap;
 
     /// @notice The total number of proposals
-    uint256 internal proposalCount;
+    uint256 internal _proposalCount;
 
     /// @notice The latest proposal for each proposer
     mapping(address => uint256) internal _latestProposalId;
 
+    modifier requireValidAddress(address _wallet) {
+        require(_wallet != address(0), "Not a valid wallet");
+        _;
+    }
+
     modifier requireValidProposal(uint256 _proposalId) {
         Proposal storage proposal = proposalMap[_proposalId];
-        require(_proposalId > 0 && _proposalId <= proposalCount, "Not a valid proposal");
+        require(
+            _proposalId > 0 && _proposalId <= _proposalCount && proposal.id == _proposalId && !proposal.isVeto,
+            "Not a valid proposal"
+        );
+        _;
+    }
+
+    modifier requireProposalSender(uint256 _proposalId) {
+        GovernanceStorage.Proposal storage proposal = GovernanceStorage.proposalMap[_proposalId];
+        require(proposal.proposalSender == msg.sender, "Not proposal creator");
+        _;
+    }
+
+    modifier requireElectorSupervisor(uint256 _proposalId) {
+        GovernanceStorage.Proposal storage proposal = GovernanceStorage.proposalMap[_proposalId];
+        require(proposal.supervisorPool[msg.sender] == true, "Operation requires elector supervisor");
+        _;
+    }
+
+    modifier requireVoter(uint256 _proposalId) {
+        GovernanceStorage.Proposal storage proposal = GovernanceStorage.proposalMap[_proposalId];
+        require(proposal.voterPool[msg.sender] == true || proposal.voterClass.isVoter(msg.sender), "Voter required");
+        _;
+    }
+
+    modifier requireVotingNotReady(uint256 _proposalId) {
+        GovernanceStorage.Proposal storage proposal = GovernanceStorage.proposalMap[_proposalId];
+        require(!proposal.isReady, "Vote not modifiable.");
+        _;
+    }
+
+    modifier requireVotingReady(uint256 _proposalId) {
+        GovernanceStorage.Proposal storage proposal = GovernanceStorage.proposalMap[_proposalId];
+        require(proposal.isReady, "Vote not ready.");
+        _;
+    }
+
+    modifier requireUndo(uint256 _proposalId) {
+        GovernanceStorage.Proposal storage proposal = GovernanceStorage.proposalMap[_proposalId];
+        require(proposal.isUndoEnabled, "Undo not enabled for this vote");
         _;
     }
 
@@ -88,10 +83,11 @@ contract GovernanceStorage {
     function initializeProposal(VotingStrategy _strategy) external returns (uint256) {
         uint256 latestProposalId = _latestProposalId[msg.sender];
         if (latestProposalId != 0) {
-            require(isDead(latestProposalId), "Too many active proposals");
+            Proposal storage latestProposal = GovernanceStorage.proposalMap[latestProposalId];
+            require(!latestProposal.isReady, "Too many proposals in process");
         }
-        proposalCount++;
-        uint256 proposalId = proposalCount;
+        _proposalCount++;
+        uint256 proposalId = _proposalCount;
         _latestProposalId[msg.sender] = proposalId;
         Proposal storage proposal = proposalMap[proposalId];
 
@@ -104,10 +100,8 @@ contract GovernanceStorage {
         proposal.forVotes = 0;
         proposal.againstVotes = 0;
         proposal.abstentionCount = 0;
-        proposal.executed = false;
         proposal.isVeto = false;
-        proposal.isVotingOpen = false;
-        proposal.isVotingPrelim = true;
+        proposal.isReady = false;
         proposal.isUndoEnabled = false;
         proposal.voterClass = new VoterClassNullObject();
         proposal.strategyVersion = _strategy.version();
@@ -116,10 +110,175 @@ contract GovernanceStorage {
         return proposalId;
     }
 
-    /// @notice true if proposal has concluded
-    function isDead(uint256 _proposalId) public view requireValidProposal(_proposalId) returns (bool) {
-        Proposal storage proposal = proposalMap[_proposalId];
-        return proposal.isVeto || !(proposal.isVotingPrelim || proposal.isVotingOpen);
+    /// @notice add a vote superviser to the supervisor pool with rights to add or remove voters prior to start of voting, also right to veto the outcome after voting is closed
+    function registerSupervisor(uint256 _proposalId, address _supervisor)
+        public
+        requireValidAddress(_supervisor)
+        requireValidProposal(_proposalId)
+        requireProposalSender(_proposalId)
+        requireVotingNotReady(_proposalId)
+    {
+        GovernanceStorage.Proposal storage proposal = GovernanceStorage.proposalMap[_proposalId];
+        if (proposal.supervisorPool[_supervisor] == false) {
+            proposal.supervisorPool[_supervisor] = true;
+            emit AddSupervisor(_proposalId, _supervisor);
+        }
+    }
+
+    /// @notice remove the supervisor from the supervisor pool suspending their rights to modify the election
+    function burnSupervisor(uint256 _proposalId, address _supervisor)
+        public
+        requireValidAddress(_supervisor)
+        requireValidProposal(_proposalId)
+        requireProposalSender(_proposalId)
+        requireVotingNotReady(_proposalId)
+    {
+        GovernanceStorage.Proposal storage proposal = GovernanceStorage.proposalMap[_proposalId];
+        if (proposal.supervisorPool[_supervisor] == true) {
+            proposal.supervisorPool[_supervisor] = false;
+            emit BurnSupervisor(_proposalId, _supervisor);
+        }
+    }
+
+    /// @notice enable vote undo feature
+    function enableUndoVote(uint256 _proposalId)
+        public
+        requireValidProposal(_proposalId)
+        requireElectorSupervisor(_proposalId)
+        requireVotingNotReady(_proposalId)
+    {
+        GovernanceStorage.Proposal storage proposal = GovernanceStorage.proposalMap[_proposalId];
+        proposal.isUndoEnabled = true;
+        emit UndoVoteEnabled(_proposalId);
+    }
+
+    /// @notice register a voter on this measure
+    function registerVoter(uint256 _proposalId, address _voter)
+        public
+        requireValidAddress(_voter)
+        requireValidProposal(_proposalId)
+        requireElectorSupervisor(_proposalId)
+        requireVotingNotReady(_proposalId)
+    {
+        GovernanceStorage.Proposal storage proposal = GovernanceStorage.proposalMap[_proposalId];
+        if (proposal.voterPool[_voter] == false) {
+            proposal.voterPool[_voter] = true;
+            emit RegisterVoter(_proposalId, _voter);
+        }
+    }
+
+    /// @notice register a list of voters on this measure
+    function registerVoters(uint256 _proposalId, address[] memory _voter)
+        public
+        requireValidProposal(_proposalId)
+        requireElectorSupervisor(_proposalId)
+        requireVotingNotReady(_proposalId)
+    {
+        GovernanceStorage.Proposal storage proposal = GovernanceStorage.proposalMap[_proposalId];
+        uint256 addedCount = 0;
+        for (uint256 i = 0; i < _voter.length; i++) {
+            if (_voter[i] != address(0) && proposal.voterPool[_voter[i]] == false) {
+                proposal.voterPool[_voter[i]] = true;
+                emit RegisterVoter(_proposalId, _voter[i]);
+            }
+            addedCount++;
+        }
+    }
+
+    /// @notice burn the specified voter, removing their rights to participate in the election
+    function burnVoter(uint256 _proposalId, address _voter)
+        public
+        requireValidAddress(_voter)
+        requireValidProposal(_proposalId)
+        requireElectorSupervisor(_proposalId)
+        requireVotingNotReady(_proposalId)
+    {
+        GovernanceStorage.Proposal storage proposal = GovernanceStorage.proposalMap[_proposalId];
+        if (proposal.voterPool[_voter] == true) {
+            proposal.voterPool[_voter] = false;
+            emit BurnVoter(_proposalId, _voter);
+        }
+    }
+
+    /// @notice register a voting class for this measure
+    function registerVoterClassERC721(uint256 _proposalId, address _token)
+        public
+        requireValidAddress(_token)
+        requireValidProposal(_proposalId)
+        requireElectorSupervisor(_proposalId)
+        requireVotingNotReady(_proposalId)
+    {
+        GovernanceStorage.Proposal storage proposal = GovernanceStorage.proposalMap[_proposalId];
+        proposal.voterClass = new VoterClassERC721(_token);
+        emit RegisterVoterClassERC721(_proposalId, _token);
+    }
+
+    /// @notice register a voting class for this measure
+    function registerVoterClassOpenVoting(uint256 _proposalId)
+        public
+        requireValidProposal(_proposalId)
+        requireElectorSupervisor(_proposalId)
+        requireVotingNotReady(_proposalId)
+    {
+        GovernanceStorage.Proposal storage proposal = GovernanceStorage.proposalMap[_proposalId];
+        proposal.voterClass = new VoterClassOpenVoting();
+        emit RegisterVoterClassOpenVoting(_proposalId);
+    }
+
+    /// @notice burn voter class
+    function burnVoterClass(uint256 _proposalId)
+        public
+        requireValidProposal(_proposalId)
+        requireElectorSupervisor(_proposalId)
+        requireVotingNotReady(_proposalId)
+    {
+        GovernanceStorage.Proposal storage proposal = GovernanceStorage.proposalMap[_proposalId];
+        proposal.voterClass = new VoterClassNullObject();
+        emit BurnVoterClass(_proposalId);
+    }
+
+    function setRequiredParticipation(uint256 _proposalId, uint256 _voteTally)
+        public
+        requireValidProposal(_proposalId)
+        requireElectorSupervisor(_proposalId)
+        requireVotingNotReady(_proposalId)
+    {
+        GovernanceStorage.Proposal storage proposal = GovernanceStorage.proposalMap[_proposalId];
+        proposal.requiredParticipation = _voteTally;
+        emit SetRequiredParticipation(_proposalId, _voteTally);
+    }
+
+    /// @notice establish the pass threshold for this measure
+    function setQuorumThreshold(uint256 _proposalId, uint256 _passThreshold)
+        public
+        requireValidProposal(_proposalId)
+        requireElectorSupervisor(_proposalId)
+        requireVotingNotReady(_proposalId)
+    {
+        GovernanceStorage.Proposal storage proposal = GovernanceStorage.proposalMap[_proposalId];
+        proposal.quorumRequired = _passThreshold;
+        emit SetQuorumThreshold(_proposalId, _passThreshold);
+    }
+
+    function setVoteDelay(
+        uint256, /* _proposalId */
+        uint256 /*_voteDelay*/
+    ) public pure {
+        revert("Timed voting not implemented");
+    }
+
+    function setRequiredVoteDuration(
+        uint256, /* _proposalId */
+        uint256 /* _voteDuration */
+    ) public pure {
+        revert("Timed voting not implemented");
+    }
+
+    function setRequiredVoteParticipation(
+        uint256, /* _proposalId */
+        uint256 /* _voteTally */
+    ) public pure {
+        revert("Minimum vote not implemented");
     }
 
     function getSender(uint256 _proposalId) external view requireValidProposal(_proposalId) returns (address) {
@@ -160,6 +319,7 @@ contract GovernanceStorage {
     function isSupervisor(uint256 _proposalId, address _supervisor)
         external
         view
+        requireValidAddress(_supervisor)
         requireValidProposal(_proposalId)
         returns (bool)
     {
@@ -167,13 +327,117 @@ contract GovernanceStorage {
         return proposal.supervisorPool[_supervisor];
     }
 
-    function isVoter(uint256 _proposalId, address _voter) external view requireValidProposal(_proposalId) returns (bool) {
+    function isVoter(uint256 _proposalId, address _voter)
+        external
+        view
+        requireValidAddress(_voter)
+        requireValidProposal(_proposalId)
+        returns (bool)
+    {
         Proposal storage proposal = proposalMap[_proposalId];
         return proposal.voterPool[_voter] || proposal.voterClass.isVoter(_voter);
     }
 
-    function isVeto(uint256 _proposalId) external view requireValidProposal(_proposalId) returns (bool) {
+    function isVeto(uint256 _proposalId) external view returns (bool) {
         Proposal storage proposal = proposalMap[_proposalId];
+        require(_proposalId > 0 && _proposalId <= _proposalCount, "Not a valid proposal");
         return proposal.isVeto;
+    }
+
+    function makeReady(uint256 _proposalId) external requireElectorSupervisor(_proposalId) requireVotingNotReady(_proposalId) {
+        Proposal storage proposal = proposalMap[_proposalId];
+        proposal.isReady = true;
+    }
+
+    /// @notice true if proposal is in setup phase
+    function isReady(uint256 _proposalId) external view requireValidProposal(_proposalId) returns (bool) {
+        Proposal storage proposal = proposalMap[_proposalId];
+        return proposal.isReady;
+    }
+
+    /// @notice veto the current measure
+    function _veto(uint256 _proposalId) public requireValidProposal(_proposalId) requireElectorSupervisor(_proposalId) {
+        GovernanceStorage.Proposal storage proposal = GovernanceStorage.proposalMap[_proposalId];
+        if (!proposal.isVeto) {
+            proposal.isVeto = true;
+            emit VoteVeto(_proposalId, msg.sender);
+        } else {
+            revert("Double veto");
+        }
+    }
+
+    /* @notice cast vote affirmative */
+    function _castVoteFor(uint256 _proposalId) public requireValidProposal(_proposalId) requireVoter(_proposalId) {
+        GovernanceStorage.Proposal storage proposal = GovernanceStorage.proposalMap[_proposalId];
+        uint256 votesAvailable = 1;
+        if (proposal.voterClass.isVoter(msg.sender)) {
+            votesAvailable = proposal.voterClass.votesAvailable(msg.sender);
+        }
+        GovernanceStorage.Receipt storage receipt = proposal.voteReceipt[msg.sender];
+        if (receipt.votesCast < votesAvailable) {
+            uint256 remainingVotes = votesAvailable - receipt.votesCast;
+            receipt.votesCast += remainingVotes;
+            receipt.votedFor += remainingVotes;
+            proposal.forVotes += remainingVotes;
+            emit VoteCast(_proposalId, msg.sender, remainingVotes);
+        } else {
+            revert("Vote cast previously on this measure");
+        }
+    }
+
+    /* @notice cast vote negative */
+    function _castVoteAgainst(uint256 _proposalId) public requireValidProposal(_proposalId) requireVoter(_proposalId) {
+        GovernanceStorage.Proposal storage proposal = GovernanceStorage.proposalMap[_proposalId];
+        uint256 votesAvailable = 1;
+        if (proposal.voterClass.isVoter(msg.sender)) {
+            votesAvailable = proposal.voterClass.votesAvailable(msg.sender);
+        }
+        GovernanceStorage.Receipt storage receipt = proposal.voteReceipt[msg.sender];
+        if (receipt.votesCast < votesAvailable) {
+            uint256 remainingVotes = votesAvailable - receipt.votesCast;
+            receipt.votesCast += remainingVotes;
+            proposal.againstVotes += remainingVotes;
+            emit VoteCast(_proposalId, msg.sender, remainingVotes);
+        } else {
+            revert("Vote cast previously on this measure");
+        }
+    }
+
+    /* @notice cast vote Undo */
+    function _castVoteUndo(uint256 _proposalId)
+        public
+        requireValidProposal(_proposalId)
+        requireVoter(_proposalId)
+        requireUndo(_proposalId)
+    {
+        GovernanceStorage.Proposal storage proposal = GovernanceStorage.proposalMap[_proposalId];
+        GovernanceStorage.Receipt storage receipt = proposal.voteReceipt[msg.sender];
+        if (receipt.votedFor > 0) {
+            uint256 undoVotes = receipt.votedFor;
+            receipt.votedFor -= undoVotes;
+            receipt.votesCast -= undoVotes;
+            proposal.forVotes -= undoVotes;
+            emit UndoVote(_proposalId, msg.sender, undoVotes);
+        } else {
+            revert("Nothing to undo");
+        }
+    }
+
+    /* @notice mark abstention */
+    function _abstainFromVote(uint256 _proposalId) public requireValidProposal(_proposalId) requireVoter(_proposalId) {
+        GovernanceStorage.Proposal storage proposal = GovernanceStorage.proposalMap[_proposalId];
+        uint256 votesAvailable = 1;
+        if (proposal.voterClass.isVoter(msg.sender)) {
+            votesAvailable = proposal.voterClass.votesAvailable(msg.sender);
+        }
+        GovernanceStorage.Receipt storage receipt = proposal.voteReceipt[msg.sender];
+        if (receipt.votesCast < votesAvailable) {
+            uint256 remainingVotes = votesAvailable - receipt.votesCast;
+            receipt.votesCast += remainingVotes;
+            proposal.abstentionCount += remainingVotes;
+            emit VoteCast(_proposalId, msg.sender, remainingVotes);
+        } else {
+            revert("Vote cast previously on this measure");
+        }
     }
 }
