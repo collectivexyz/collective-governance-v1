@@ -19,7 +19,7 @@ interface UpgradeableGovernance {
     event StrategyChange(uint32 fromVersion, uint32 toVersion);
     event StorageChange(uint32 fromVersion, uint32 toVersion);
 
-    function setVotingStrategy(address _strategy) external;
+    function setVoteStrategy(address _strategy) external;
 
     function getCurrentStrategyVersion() external view returns (uint32);
 

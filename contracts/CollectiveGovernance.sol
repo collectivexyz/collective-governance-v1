@@ -15,7 +15,7 @@ pragma solidity ^0.8.15;
 
 import "./Governance.sol";
 import "./UpgradeableGovernance.sol";
-import "./VotingStrategy.sol";
+import "./VoteStrategy.sol";
 import "./ElectorVoterPoolStrategy.sol";
 
 /// @title CollectiveGovernance
@@ -23,7 +23,7 @@ import "./ElectorVoterPoolStrategy.sol";
 contract CollectiveGovernance is UpgradeableGovernance, Governance {
     address private owner;
 
-    VotingStrategy private _votingStategy;
+    VoteStrategy private _votingStategy;
 
     constructor() {
         owner = msg.sender;
@@ -35,9 +35,9 @@ contract CollectiveGovernance is UpgradeableGovernance, Governance {
         _;
     }
 
-    function setVotingStrategy(address _strategy) external requireContractOwner {
+    function setVoteStrategy(address _strategy) external requireContractOwner {
         uint32 version = _votingStategy.version();
-        _votingStategy = VotingStrategy(_strategy);
+        _votingStategy = VoteStrategy(_strategy);
         uint32 newVersion = _votingStategy.version();
         emit StrategyChange(version, newVersion);
     }

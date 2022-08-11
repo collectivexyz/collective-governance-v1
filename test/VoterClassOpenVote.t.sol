@@ -2,16 +2,16 @@
 pragma solidity ^0.8.15;
 
 import "forge-std/Test.sol";
-import "../contracts/VoterClassOpenVoting.sol";
+import "../contracts/VoterClassOpenVote.sol";
 
-contract VoterClassOpenVotingTest is Test {
+contract VoterClassOpenVoteTest is Test {
     address immutable _owner = address(0xffeeeeff);
     address immutable _notowner = address(0x55);
     address immutable _nobody = address(0x0);
     VoterClass _class;
 
     function setUp() public {
-        _class = new VoterClassOpenVoting();
+        _class = new VoterClassOpenVote();
     }
 
     function testIsVoter() public {

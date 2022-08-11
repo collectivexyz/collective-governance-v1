@@ -2,4 +2,5 @@
 src = 'src'
 out = 'out'
 via-ir = true
+optimize = false
 libs = ['lib']

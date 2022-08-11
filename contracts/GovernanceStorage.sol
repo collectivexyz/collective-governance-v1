@@ -15,10 +15,11 @@ pragma solidity ^0.8.15;
 
 import "./Storage.sol";
 import "../contracts/VoterClassERC721.sol";
-import "../contracts/VoterClassOpenVoting.sol";
+import "../contracts/VoterClassOpenVote.sol";
 
 contract GovernanceStorage is Storage {
     uint256 public constant MAXIMUM_PASS_THRESHOLD = 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF;
+    uint256 public constant MINIMUM_VOTE_DURATION = 1;
 
     /// @notice global list of proposed issues by id
     mapping(uint256 => Proposal) public proposalMap;
@@ -63,13 +64,19 @@ contract GovernanceStorage is Storage {
 
     modifier requireVotingNotReady(uint256 _proposalId) {
         GovernanceStorage.Proposal storage proposal = GovernanceStorage.proposalMap[_proposalId];
-        require(!proposal.isReady, "Vote not modifiable.");
+        require(!proposal.isReady, "Vote not modifiable");
         _;
     }
 
     modifier requireVotingReady(uint256 _proposalId) {
         GovernanceStorage.Proposal storage proposal = GovernanceStorage.proposalMap[_proposalId];
-        require(proposal.isReady, "Vote not ready.");
+        require(proposal.isReady, "Vote not ready");
+        _;
+    }
+
+    modifier requireVotingActive(uint256 _proposalId) {
+        GovernanceStorage.Proposal storage proposal = GovernanceStorage.proposalMap[_proposalId];
+        require(proposal.startBlock >= block.number && proposal.endBlock > block.number, "Vote not active");
         _;
     }
 
@@ -80,7 +87,7 @@ contract GovernanceStorage is Storage {
     }
 
     /// @notice return the newly initialized proposal id
-    function initializeProposal(VotingStrategy _strategy) external returns (uint256) {
+    function initializeProposal(VoteStrategy _strategy) external returns (uint256) {
         uint256 latestProposalId = _latestProposalId[msg.sender];
         if (latestProposalId != 0) {
             Proposal storage latestProposal = GovernanceStorage.proposalMap[latestProposalId];
@@ -95,6 +102,8 @@ contract GovernanceStorage is Storage {
         proposal.proposalSender = msg.sender;
         proposal.quorumRequired = MAXIMUM_PASS_THRESHOLD;
         proposal.requiredParticipation = 0;
+        proposal.voteDelay = 0;
+        proposal.voteDuration = MINIMUM_VOTE_DURATION;
         proposal.startBlock = 0;
         proposal.endBlock = 0;
         proposal.forVotes = 0;
@@ -214,15 +223,15 @@ contract GovernanceStorage is Storage {
     }
 
     /// @notice register a voting class for this measure
-    function registerVoterClassOpenVoting(uint256 _proposalId)
+    function registerVoterClassopenVote(uint256 _proposalId)
         public
         requireValidProposal(_proposalId)
         requireElectorSupervisor(_proposalId)
         requireVotingNotReady(_proposalId)
     {
         GovernanceStorage.Proposal storage proposal = GovernanceStorage.proposalMap[_proposalId];
-        proposal.voterClass = new VoterClassOpenVoting();
-        emit RegisterVoterClassOpenVoting(_proposalId);
+        proposal.voterClass = new VoterClassOpenVote();
+        emit RegisterVoterClassopenVote(_proposalId);
     }
 
     /// @notice burn voter class
@@ -260,18 +269,25 @@ contract GovernanceStorage is Storage {
         emit SetQuorumThreshold(_proposalId, _passThreshold);
     }
 
-    function setVoteDelay(
-        uint256, /* _proposalId */
-        uint256 /*_voteDelay*/
-    ) public pure {
-        revert("Timed voting not implemented");
+    function setVoteDelay(uint256 _proposalId, uint256 _voteDelay)
+        public
+        requireValidProposal(_proposalId)
+        requireElectorSupervisor(_proposalId)
+        requireVotingNotReady(_proposalId)
+    {
+        GovernanceStorage.Proposal storage proposal = GovernanceStorage.proposalMap[_proposalId];
+        proposal.voteDelay = _voteDelay;
     }
 
-    function setRequiredVoteDuration(
-        uint256, /* _proposalId */
-        uint256 /* _voteDuration */
-    ) public pure {
-        revert("Timed voting not implemented");
+    function setRequiredVoteDuration(uint256 _proposalId, uint256 _voteDuration)
+        public
+        requireValidProposal(_proposalId)
+        requireElectorSupervisor(_proposalId)
+        requireVotingNotReady(_proposalId)
+    {
+        require(_voteDuration >= MINIMUM_VOTE_DURATION, "Voting duration is not valid");
+        GovernanceStorage.Proposal storage proposal = GovernanceStorage.proposalMap[_proposalId];
+        proposal.voteDuration = _voteDuration;
     }
 
     function setRequiredVoteParticipation(
@@ -347,6 +363,8 @@ contract GovernanceStorage is Storage {
     function makeReady(uint256 _proposalId) external requireElectorSupervisor(_proposalId) requireVotingNotReady(_proposalId) {
         Proposal storage proposal = proposalMap[_proposalId];
         proposal.isReady = true;
+        proposal.startBlock = block.number + proposal.voteDelay;
+        proposal.endBlock = proposal.startBlock + proposal.voteDuration;
     }
 
     /// @notice true if proposal is in setup phase
@@ -367,7 +385,12 @@ contract GovernanceStorage is Storage {
     }
 
     /* @notice cast vote affirmative */
-    function _castVoteFor(uint256 _proposalId) public requireValidProposal(_proposalId) requireVoter(_proposalId) {
+    function _castVoteFor(uint256 _proposalId)
+        public
+        requireValidProposal(_proposalId)
+        requireVoter(_proposalId)
+        requireVotingActive(_proposalId)
+    {
         GovernanceStorage.Proposal storage proposal = GovernanceStorage.proposalMap[_proposalId];
         uint256 votesAvailable = 1;
         if (proposal.voterClass.isVoter(msg.sender)) {
@@ -386,7 +409,12 @@ contract GovernanceStorage is Storage {
     }
 
     /* @notice cast vote negative */
-    function _castVoteAgainst(uint256 _proposalId) public requireValidProposal(_proposalId) requireVoter(_proposalId) {
+    function _castVoteAgainst(uint256 _proposalId)
+        public
+        requireValidProposal(_proposalId)
+        requireVoter(_proposalId)
+        requireVotingActive(_proposalId)
+    {
         GovernanceStorage.Proposal storage proposal = GovernanceStorage.proposalMap[_proposalId];
         uint256 votesAvailable = 1;
         if (proposal.voterClass.isVoter(msg.sender)) {
@@ -409,6 +437,7 @@ contract GovernanceStorage is Storage {
         requireValidProposal(_proposalId)
         requireVoter(_proposalId)
         requireUndo(_proposalId)
+        requireVotingActive(_proposalId)
     {
         GovernanceStorage.Proposal storage proposal = GovernanceStorage.proposalMap[_proposalId];
         GovernanceStorage.Receipt storage receipt = proposal.voteReceipt[msg.sender];
@@ -424,7 +453,12 @@ contract GovernanceStorage is Storage {
     }
 
     /* @notice mark abstention */
-    function _abstainFromVote(uint256 _proposalId) public requireValidProposal(_proposalId) requireVoter(_proposalId) {
+    function _abstainFromVote(uint256 _proposalId)
+        public
+        requireValidProposal(_proposalId)
+        requireVoter(_proposalId)
+        requireVotingActive(_proposalId)
+    {
         GovernanceStorage.Proposal storage proposal = GovernanceStorage.proposalMap[_proposalId];
         uint256 votesAvailable = 1;
         if (proposal.voterClass.isVoter(msg.sender)) {
@@ -439,5 +473,25 @@ contract GovernanceStorage is Storage {
         } else {
             revert("Vote cast previously on this measure");
         }
+    }
+
+    function voteDelay(uint256 _proposalId) external view returns (uint256) {
+        GovernanceStorage.Proposal storage proposal = GovernanceStorage.proposalMap[_proposalId];
+        return proposal.voteDelay;
+    }
+
+    function voteDuration(uint256 _proposalId) external view returns (uint256) {
+        GovernanceStorage.Proposal storage proposal = GovernanceStorage.proposalMap[_proposalId];
+        return proposal.voteDuration;
+    }
+
+    function startBlock(uint256 _proposalId) external view returns (uint256) {
+        GovernanceStorage.Proposal storage proposal = GovernanceStorage.proposalMap[_proposalId];
+        return proposal.startBlock;
+    }
+
+    function endBlock(uint256 _proposalId) external view returns (uint256) {
+        GovernanceStorage.Proposal storage proposal = GovernanceStorage.proposalMap[_proposalId];
+        return proposal.endBlock;
     }
 }

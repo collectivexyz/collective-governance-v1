@@ -2,7 +2,7 @@
 pragma solidity ^0.8.15;
 
 import "forge-std/Test.sol";
-import "../contracts/VotingStrategy.sol";
+import "../contracts/VoteStrategy.sol";
 import "../contracts/ElectorVoterPoolStrategy.sol";
 import "../contracts/UpgradeableGovernance.sol";
 import "../contracts/CollectiveGovernance.sol";
@@ -19,20 +19,20 @@ contract CollectiveGovernanceTest is Test {
         version = new ElectorVoterPoolStrategy().version();
     }
 
-    function testGetVotingStrategy() public {
+    function testGetVoteStrategy() public {
         uint32 strategyVersion = governance.getCurrentStrategyVersion();
         assertEq(version, strategyVersion);
     }
 
     function testFailSetStrategyAsSomeoneElse() public {
-        VotingStrategy evp = new ElectorVoterPoolStrategy();
+        VoteStrategy evp = new ElectorVoterPoolStrategy();
         vm.prank(someoneElse);
-        governance.setVotingStrategy(address(evp));
+        governance.setVoteStrategy(address(evp));
     }
 
     function testAllowUpgradeOwner() public {
-        VotingStrategy evp = new ElectorVoterPoolStrategy();
-        governance.setVotingStrategy(address(evp));
+        VoteStrategy evp = new ElectorVoterPoolStrategy();
+        governance.setVoteStrategy(address(evp));
         assertEq(version, governance.getCurrentStrategyVersion());
     }
 }

@@ -16,7 +16,7 @@ pragma solidity ^0.8.15;
 import "./VoterClass.sol";
 
 /// @notice voting class to include every address
-contract VoterClassOpenVoting is VoterClass {
+contract VoterClassOpenVote is VoterClass {
     modifier requireValidAddress(address _wallet) {
         require(_wallet != address(0), "Not a valid wallet");
         _;

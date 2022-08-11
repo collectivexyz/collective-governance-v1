@@ -14,7 +14,7 @@
 pragma solidity ^0.8.15;
 
 import "../contracts/VoterClass.sol";
-import "../contracts/VotingStrategy.sol";
+import "../contracts/VoteStrategy.sol";
 
 /// @title Storage
 /// governance storage for the Proposal struct
@@ -24,7 +24,7 @@ interface Storage {
     event BurnSupervisor(uint256 proposalId, address supervisor);
     event RegisterVoter(uint256 proposalId, address voter);
     event BurnVoter(uint256 proposalId, address voter);
-    event RegisterVoterClassOpenVoting(uint256 proposalId);
+    event RegisterVoterClassopenVote(uint256 proposalId);
     event RegisterVoterClassERC721(uint256 proposalId, address token);
     event BurnVoterClass(uint256 proposalId);
     event SetRequiredParticipation(uint256 proposalId, uint256 requiredParticipation);
@@ -44,6 +44,10 @@ interface Storage {
         uint256 quorumRequired;
         /// @notice Required participation yea or nea for a successful vote
         uint256 requiredParticipation;
+        /// @notice The number of blocks to delay the first vote from voting open
+        uint256 voteDelay;
+        /// @notice The number of blocks duration for the vote, last vote must be cast prior
+        uint256 voteDuration;
         /// @notice The block at which voting begins
         uint256 startBlock;
         /// @notice The block at which voting ends
@@ -67,7 +71,7 @@ interface Storage {
         /// @notice general voter class enabled for this vote
         VoterClass voterClass;
         /// @notice Strategy applied to this proposal
-        VotingStrategy votingStrategy;
+        VoteStrategy votingStrategy;
         /// @notice Receipts of   ballots for the entire set of voters
         mapping(address => Receipt) voteReceipt;
         /// @notice configured supervisors
@@ -96,7 +100,7 @@ interface Storage {
 
     function registerVoterClassERC721(uint256 _proposalId, address token) external;
 
-    function registerVoterClassOpenVoting(uint256 _proposalId) external;
+    function registerVoterClassopenVote(uint256 _proposalId) external;
 
     function burnVoterClass(uint256 _proposalId) external;
 
@@ -111,4 +115,22 @@ interface Storage {
     function makeReady(uint256 _proposalId) external;
 
     function isReady(uint256 _proposalId) external returns (bool);
+
+    function isVeto(uint256 _proposalId) external view returns (bool);
+
+    function voteDelay(uint256 _proposalId) external view returns (uint256);
+
+    function voteDuration(uint256 _proposalId) external view returns (uint256);
+
+    function startBlock(uint256 _proposalId) external returns (uint256);
+
+    function endBlock(uint256 _proposalId) external returns (uint256);
+
+    function forVotes(uint256 _proposalId) external returns (uint256);
+
+    function againstVotes(uint256 _proposalId) external returns (uint256);
+
+    function abstentionCount(uint256 _proposalId) external returns (uint256);
+
+    function totalParticipation(uint256 _proposalId) external returns (uint256);
 }

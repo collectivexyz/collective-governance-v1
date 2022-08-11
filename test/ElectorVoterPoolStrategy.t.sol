@@ -7,6 +7,8 @@ import "../contracts/VoterClass.sol";
 import "./MockERC721.sol";
 
 contract ElectorVoterPoolTest is Test {
+    uint256 public constant UINT256MAX = 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF;
+
     ElectorVoterPoolStrategy elector;
 
     address public immutable owner = msg.sender;
@@ -14,6 +16,7 @@ contract ElectorVoterPoolTest is Test {
     address public immutable nonSupervisor = address(0x123eee);
     address public immutable voter1 = address(0xfff1);
     address public immutable voter2 = address(0xfff2);
+    address public immutable voter3 = address(0xfff3);
     uint256 public immutable NONE = 0;
     uint256 public immutable PROPOSAL_ID = 1;
 
@@ -22,22 +25,22 @@ contract ElectorVoterPoolTest is Test {
         elector.initializeProposal(elector);
     }
 
-    function testOpenVoting() public {
+    function testOpenVote() public {
         elector.registerSupervisor(PROPOSAL_ID, supervisor);
         vm.startPrank(supervisor);
         elector.setQuorumThreshold(PROPOSAL_ID, 75);
         elector.makeReady(PROPOSAL_ID);
-        elector.openVoting(PROPOSAL_ID);
+        elector.openVote(PROPOSAL_ID);
         vm.stopPrank();
         elector.isOpen(PROPOSAL_ID);
     }
 
-    function testFailOpenVotingRequiresReady() public {
+    function testFailOpenVoteRequiresReady() public {
         elector.registerSupervisor(PROPOSAL_ID, supervisor);
         vm.prank(supervisor);
         elector.setQuorumThreshold(PROPOSAL_ID, 2);
         vm.prank(supervisor);
-        elector.openVoting(PROPOSAL_ID);
+        elector.openVote(PROPOSAL_ID);
     }
 
     function testFailAddVoterIfOpen() public {
@@ -47,7 +50,7 @@ contract ElectorVoterPoolTest is Test {
         vm.prank(supervisor);
         elector.makeReady(PROPOSAL_ID);
         vm.prank(supervisor);
-        elector.openVoting(PROPOSAL_ID);
+        elector.openVote(PROPOSAL_ID);
         vm.prank(supervisor);
         elector.registerVoter(PROPOSAL_ID, voter1);
     }
@@ -61,52 +64,52 @@ contract ElectorVoterPoolTest is Test {
         vm.prank(supervisor);
         elector.makeReady(PROPOSAL_ID);
         vm.prank(supervisor);
-        elector.openVoting(PROPOSAL_ID);
+        elector.openVote(PROPOSAL_ID);
         vm.prank(supervisor);
         elector.burnVoter(PROPOSAL_ID, voter1);
     }
 
-    function testFailOwnerOpenVoting() public {
+    function testFailOwnerOpenVote() public {
         elector.registerSupervisor(PROPOSAL_ID, supervisor);
         vm.prank(supervisor);
         elector.setQuorumThreshold(PROPOSAL_ID, 2);
         vm.prank(supervisor);
         elector.makeReady(PROPOSAL_ID);
-        elector.openVoting(PROPOSAL_ID);
+        elector.openVote(PROPOSAL_ID);
     }
 
-    function testFailOwnerEndVoting() public {
+    function testFailOwnerEndVote() public {
         elector.registerSupervisor(PROPOSAL_ID, supervisor);
         vm.prank(supervisor);
         elector.setQuorumThreshold(PROPOSAL_ID, 2);
         vm.prank(supervisor);
         elector.makeReady(PROPOSAL_ID);
         vm.prank(supervisor);
-        elector.openVoting(PROPOSAL_ID);
+        elector.openVote(PROPOSAL_ID);
         vm.prank(owner);
-        elector.endVoting(PROPOSAL_ID);
+        elector.endVote(PROPOSAL_ID);
     }
 
-    function testFailDoubleOpenVoting() public {
+    function testFailDoubleOpenVote() public {
         elector.registerSupervisor(PROPOSAL_ID, supervisor);
         vm.prank(supervisor);
         elector.setQuorumThreshold(PROPOSAL_ID, 2);
         vm.prank(supervisor);
         elector.makeReady(PROPOSAL_ID);
         vm.prank(supervisor);
-        elector.openVoting(PROPOSAL_ID);
+        elector.openVote(PROPOSAL_ID);
         vm.prank(supervisor);
-        elector.openVoting(PROPOSAL_ID);
+        elector.openVote(PROPOSAL_ID);
     }
 
-    function testFailEndVotingWhenNotOpen() public {
+    function testFailendVoteWhenNotOpen() public {
         elector.registerSupervisor(PROPOSAL_ID, supervisor);
         vm.prank(supervisor);
         elector.setQuorumThreshold(PROPOSAL_ID, 2);
         vm.prank(supervisor);
         elector.makeReady(PROPOSAL_ID);
         vm.prank(supervisor);
-        elector.endVoting(PROPOSAL_ID);
+        elector.endVote(PROPOSAL_ID);
     }
 
     function testFailOwnerCastVote() public {
@@ -116,7 +119,7 @@ contract ElectorVoterPoolTest is Test {
         vm.prank(supervisor);
         elector.makeReady(PROPOSAL_ID);
         vm.prank(supervisor);
-        elector.openVoting(PROPOSAL_ID);
+        elector.openVote(PROPOSAL_ID);
         elector.voteFor(PROPOSAL_ID);
     }
 
@@ -127,7 +130,7 @@ contract ElectorVoterPoolTest is Test {
         vm.prank(supervisor);
         elector.makeReady(PROPOSAL_ID);
         vm.prank(supervisor);
-        elector.openVoting(PROPOSAL_ID);
+        elector.openVote(PROPOSAL_ID);
         vm.prank(supervisor);
         elector.voteFor(PROPOSAL_ID);
     }
@@ -138,7 +141,7 @@ contract ElectorVoterPoolTest is Test {
         elector.registerVoter(PROPOSAL_ID, voter1);
         elector.setQuorumThreshold(PROPOSAL_ID, 2);
         elector.makeReady(PROPOSAL_ID);
-        elector.openVoting(PROPOSAL_ID);
+        elector.openVote(PROPOSAL_ID);
         vm.stopPrank();
         vm.prank(voter1);
         elector.voteFor(PROPOSAL_ID);
@@ -149,10 +152,10 @@ contract ElectorVoterPoolTest is Test {
     function testCastOneVoteFromAll() public {
         elector.registerSupervisor(PROPOSAL_ID, supervisor);
         vm.startPrank(supervisor);
-        elector.registerVoterClassOpenVoting(PROPOSAL_ID);
+        elector.registerVoterClassopenVote(PROPOSAL_ID);
         elector.setQuorumThreshold(PROPOSAL_ID, 2);
         elector.makeReady(PROPOSAL_ID);
-        elector.openVoting(PROPOSAL_ID);
+        elector.openVote(PROPOSAL_ID);
         vm.stopPrank();
         vm.prank(voter1);
         elector.voteFor(PROPOSAL_ID);
@@ -167,7 +170,7 @@ contract ElectorVoterPoolTest is Test {
         elector.registerVoterClassERC721(PROPOSAL_ID, address(token));
         elector.setQuorumThreshold(PROPOSAL_ID, 1);
         elector.makeReady(PROPOSAL_ID);
-        elector.openVoting(PROPOSAL_ID);
+        elector.openVote(PROPOSAL_ID);
         vm.stopPrank();
         vm.prank(voter2);
         elector.voteFor(PROPOSAL_ID);
@@ -180,11 +183,11 @@ contract ElectorVoterPoolTest is Test {
     function testFailCastOneVoteWithBurnedClass() public {
         elector.registerSupervisor(PROPOSAL_ID, supervisor);
         vm.startPrank(supervisor);
-        elector.registerVoterClassOpenVoting(PROPOSAL_ID);
+        elector.registerVoterClassopenVote(PROPOSAL_ID);
         elector.burnVoterClass(PROPOSAL_ID);
         elector.setQuorumThreshold(PROPOSAL_ID, 2);
         elector.makeReady(PROPOSAL_ID);
-        elector.openVoting(PROPOSAL_ID);
+        elector.openVote(PROPOSAL_ID);
         vm.stopPrank();
         vm.prank(voter1);
         elector.voteFor(PROPOSAL_ID);
@@ -203,7 +206,7 @@ contract ElectorVoterPoolTest is Test {
         vm.startPrank(supervisor);
         elector.registerVoter(PROPOSAL_ID, voter1);
         elector.setQuorumThreshold(PROPOSAL_ID, 2);
-        elector.openVoting(PROPOSAL_ID);
+        elector.openVote(PROPOSAL_ID);
         vm.stopPrank();
         vm.prank(voter1);
         elector.voteFor(PROPOSAL_ID);
@@ -218,7 +221,7 @@ contract ElectorVoterPoolTest is Test {
         elector.registerVoter(PROPOSAL_ID, voter1);
         elector.setQuorumThreshold(PROPOSAL_ID, 2);
         elector.makeReady(PROPOSAL_ID);
-        elector.openVoting(PROPOSAL_ID);
+        elector.openVote(PROPOSAL_ID);
         vm.stopPrank();
         vm.prank(voter1);
         elector.voteFor(PROPOSAL_ID);
@@ -235,7 +238,7 @@ contract ElectorVoterPoolTest is Test {
         elector.registerVoter(PROPOSAL_ID, voter1);
         elector.setQuorumThreshold(PROPOSAL_ID, 2);
         elector.makeReady(PROPOSAL_ID);
-        elector.openVoting(PROPOSAL_ID);
+        elector.openVote(PROPOSAL_ID);
         vm.stopPrank();
         vm.expectRevert("Voter required");
         elector.undoVote(PROPOSAL_ID);
@@ -246,7 +249,7 @@ contract ElectorVoterPoolTest is Test {
         vm.startPrank(supervisor);
         elector.registerVoter(PROPOSAL_ID, voter1);
         elector.setQuorumThreshold(PROPOSAL_ID, 2);
-        elector.openVoting(PROPOSAL_ID);
+        elector.openVote(PROPOSAL_ID);
         vm.stopPrank();
         vm.expectRevert();
         elector.undoVote(PROPOSAL_ID);
@@ -257,7 +260,7 @@ contract ElectorVoterPoolTest is Test {
         vm.prank(supervisor);
         elector.registerVoter(PROPOSAL_ID, voter1);
         vm.prank(supervisor);
-        elector.openVoting(PROPOSAL_ID);
+        elector.openVote(PROPOSAL_ID);
         vm.prank(voter1);
         elector.voteFor(PROPOSAL_ID);
         vm.prank(supervisor);
@@ -269,7 +272,7 @@ contract ElectorVoterPoolTest is Test {
         vm.startPrank(supervisor);
         elector.registerVoter(PROPOSAL_ID, voter1);
         elector.setQuorumThreshold(PROPOSAL_ID, 2);
-        elector.openVoting(PROPOSAL_ID);
+        elector.openVote(PROPOSAL_ID);
         vm.stopPrank();
         vm.prank(voter1);
         elector.voteFor(PROPOSAL_ID);
@@ -277,50 +280,102 @@ contract ElectorVoterPoolTest is Test {
         elector.undoVote(PROPOSAL_ID);
     }
 
-    function testMeasureHasPassed() public {
+    function testMeasurePassed() public {
         elector.registerSupervisor(PROPOSAL_ID, supervisor);
         vm.startPrank(supervisor);
         elector.registerVoter(PROPOSAL_ID, voter1);
         elector.registerVoter(PROPOSAL_ID, voter2);
         elector.setQuorumThreshold(PROPOSAL_ID, 2);
         elector.makeReady(PROPOSAL_ID);
-        elector.openVoting(PROPOSAL_ID);
+        elector.openVote(PROPOSAL_ID);
         vm.stopPrank();
         vm.prank(voter1);
         elector.voteFor(PROPOSAL_ID);
         vm.prank(voter2);
         elector.voteFor(PROPOSAL_ID);
+        vm.roll(block.number + 2);
         vm.prank(supervisor);
-        elector.endVoting(PROPOSAL_ID);
+        elector.endVote(PROPOSAL_ID);
         assertTrue(elector.getVoteSucceeded(PROPOSAL_ID));
     }
 
-    function testMeasureFailed() public {
+    function testFailMeasureFailedQuorumRequired() public {
         elector.registerSupervisor(PROPOSAL_ID, supervisor);
         vm.startPrank(supervisor);
         elector.registerVoter(PROPOSAL_ID, voter1);
         elector.registerVoter(PROPOSAL_ID, voter2);
         elector.setQuorumThreshold(PROPOSAL_ID, 76);
         elector.makeReady(PROPOSAL_ID);
-        elector.openVoting(PROPOSAL_ID);
+        elector.openVote(PROPOSAL_ID);
         vm.stopPrank();
         vm.prank(voter1);
         elector.voteFor(PROPOSAL_ID);
         vm.prank(voter2);
         elector.voteFor(PROPOSAL_ID);
+        vm.roll(block.number + 2);
         vm.prank(supervisor);
-        elector.endVoting(PROPOSAL_ID);
+        elector.endVote(PROPOSAL_ID);
+        vm.expectRevert("Not enough participants");
         assertFalse(elector.getVoteSucceeded(PROPOSAL_ID));
     }
 
-    function testFailgetVoteSucceededOnOpenMeasure() public {
+    function testMeasurePassedWithAllowableParticipation() public {
+        elector.registerSupervisor(PROPOSAL_ID, supervisor);
+        vm.startPrank(supervisor);
+        elector.registerVoter(PROPOSAL_ID, voter1);
+        elector.registerVoter(PROPOSAL_ID, voter2);
+        elector.registerVoter(PROPOSAL_ID, voter3);
+        elector.setQuorumThreshold(PROPOSAL_ID, 1);
+        elector.setRequiredParticipation(PROPOSAL_ID, 3);
+        elector.makeReady(PROPOSAL_ID);
+        elector.openVote(PROPOSAL_ID);
+        vm.stopPrank();
+        vm.prank(voter1);
+        // vote is passed
+        elector.voteFor(PROPOSAL_ID);
+        vm.prank(voter2);
+        elector.voteAgainst(PROPOSAL_ID);
+        vm.prank(voter3);
+        elector.abstainFromVote(PROPOSAL_ID);
+        vm.roll(block.number + 2);
+        vm.prank(supervisor);
+        elector.endVote(PROPOSAL_ID);
+        assertEq(elector.totalParticipation(PROPOSAL_ID), 3);
+        assertTrue(elector.getVoteSucceeded(PROPOSAL_ID));
+    }
+
+    function testMeasureFailedParticipationRequired() public {
+        elector.registerSupervisor(PROPOSAL_ID, supervisor);
+        vm.startPrank(supervisor);
+        elector.registerVoter(PROPOSAL_ID, voter1);
+        elector.registerVoter(PROPOSAL_ID, voter2);
+        elector.registerVoter(PROPOSAL_ID, voter3);
+        elector.setQuorumThreshold(PROPOSAL_ID, 1);
+        elector.setRequiredParticipation(PROPOSAL_ID, 3);
+        elector.makeReady(PROPOSAL_ID);
+        elector.openVote(PROPOSAL_ID);
+        vm.stopPrank();
+        vm.prank(voter1);
+        // vote is passed
+        elector.voteFor(PROPOSAL_ID);
+        vm.prank(voter2);
+        elector.voteAgainst(PROPOSAL_ID);
+        vm.roll(block.number + 2);
+        vm.prank(supervisor);
+        elector.endVote(PROPOSAL_ID);
+        assertEq(elector.totalParticipation(PROPOSAL_ID), 2);
+        vm.expectRevert("Not enough participants");
+        assertFalse(elector.getVoteSucceeded(PROPOSAL_ID));
+    }
+
+    function testFailGetVoteSucceededOnOpenMeasure() public {
         elector.registerSupervisor(PROPOSAL_ID, supervisor);
         vm.prank(supervisor);
         elector.registerVoter(PROPOSAL_ID, voter1);
         vm.prank(supervisor);
         elector.makeReady(PROPOSAL_ID);
         vm.prank(supervisor);
-        elector.openVoting(PROPOSAL_ID);
+        elector.openVote(PROPOSAL_ID);
         elector.getVoteSucceeded(PROPOSAL_ID);
     }
 
@@ -331,7 +386,7 @@ contract ElectorVoterPoolTest is Test {
         elector.registerVoter(PROPOSAL_ID, voter2);
         elector.setQuorumThreshold(PROPOSAL_ID, 2);
         elector.makeReady(PROPOSAL_ID);
-        elector.openVoting(PROPOSAL_ID);
+        elector.openVote(PROPOSAL_ID);
         vm.stopPrank();
         vm.prank(voter1);
         elector.voteFor(PROPOSAL_ID);
@@ -341,7 +396,7 @@ contract ElectorVoterPoolTest is Test {
         elector.veto(PROPOSAL_ID);
         assertTrue(elector.isVeto(PROPOSAL_ID));
         vm.prank(supervisor);
-        elector.endVoting(PROPOSAL_ID);
+        elector.endVote(PROPOSAL_ID);
         elector.getVoteSucceeded(PROPOSAL_ID);
     }
 
@@ -352,24 +407,16 @@ contract ElectorVoterPoolTest is Test {
         elector.registerVoter(PROPOSAL_ID, voter2);
         elector.setQuorumThreshold(PROPOSAL_ID, 2);
         elector.makeReady(PROPOSAL_ID);
-        elector.openVoting(PROPOSAL_ID);
+        elector.openVote(PROPOSAL_ID);
         vm.stopPrank();
         vm.prank(voter1);
         elector.voteFor(PROPOSAL_ID);
         vm.prank(voter2);
         elector.voteFor(PROPOSAL_ID);
         vm.prank(supervisor);
-        elector.endVoting(PROPOSAL_ID);
+        elector.endVote(PROPOSAL_ID);
         vm.prank(supervisor);
         elector.veto(PROPOSAL_ID);
-    }
-
-    function testFailVoteAgainst() public {
-        elector.voteAgainst(PROPOSAL_ID);
-    }
-
-    function testFailAbstainFromVote() public {
-        elector.abstainFromVote(PROPOSAL_ID);
     }
 
     function testCastAgainstVote() public {
@@ -378,7 +425,7 @@ contract ElectorVoterPoolTest is Test {
         elector.registerVoter(PROPOSAL_ID, voter1);
         elector.setQuorumThreshold(PROPOSAL_ID, 2);
         elector.makeReady(PROPOSAL_ID);
-        elector.openVoting(PROPOSAL_ID);
+        elector.openVote(PROPOSAL_ID);
         vm.stopPrank();
         vm.prank(voter1);
         elector.voteAgainst(PROPOSAL_ID);
@@ -394,7 +441,7 @@ contract ElectorVoterPoolTest is Test {
         elector.registerVoter(PROPOSAL_ID, voter1);
         elector.setQuorumThreshold(PROPOSAL_ID, 2);
         elector.makeReady(PROPOSAL_ID);
-        elector.openVoting(PROPOSAL_ID);
+        elector.openVote(PROPOSAL_ID);
         vm.stopPrank();
         vm.prank(voter1);
         elector.abstainFromVote(PROPOSAL_ID);
@@ -402,5 +449,89 @@ contract ElectorVoterPoolTest is Test {
         assertEq(elector.againstVotes(PROPOSAL_ID), 0);
         assertEq(elector.abstentionCount(PROPOSAL_ID), 1);
         assertEq(elector.totalParticipation(PROPOSAL_ID), 1);
+    }
+
+    function testFailVoteDelayPreventsVote(uint256 blockStep) public {
+        vm.assume(blockStep >= 1 && blockStep < 100);
+        elector.registerSupervisor(PROPOSAL_ID, supervisor);
+        vm.startPrank(supervisor);
+        elector.registerVoter(PROPOSAL_ID, voter1);
+        elector.setQuorumThreshold(PROPOSAL_ID, 1);
+        elector.setVoteDelay(PROPOSAL_ID, 100);
+        elector.makeReady(PROPOSAL_ID);
+        uint256 startBlock = block.number;
+        elector.openVote(PROPOSAL_ID);
+        vm.stopPrank();
+        vm.prank(voter1);
+        vm.roll(startBlock + blockStep);
+        vm.expectRevert("Vote not ready");
+        elector.voteFor(PROPOSAL_ID);
+    }
+
+    function testPermittedAfterObservingVoteDelay() public {
+        elector.registerSupervisor(PROPOSAL_ID, supervisor);
+        vm.startPrank(supervisor);
+        elector.registerVoter(PROPOSAL_ID, voter1);
+        elector.setQuorumThreshold(PROPOSAL_ID, 1);
+        elector.setVoteDelay(PROPOSAL_ID, 100);
+        elector.makeReady(PROPOSAL_ID);
+        uint256 startBlock = block.number;
+        elector.openVote(PROPOSAL_ID);
+        vm.stopPrank();
+        vm.prank(voter1);
+        vm.roll(startBlock + 100);
+        elector.voteFor(PROPOSAL_ID);
+        assertEq(1, elector.forVotes(PROPOSAL_ID));
+    }
+
+    function testFailVoteAfterDuration(uint256 blockStep) public {
+        vm.assume(blockStep > 10 && blockStep < UINT256MAX - block.number);
+        elector.registerSupervisor(PROPOSAL_ID, supervisor);
+        vm.startPrank(supervisor);
+        elector.registerVoter(PROPOSAL_ID, voter1);
+        elector.setQuorumThreshold(PROPOSAL_ID, 1);
+        elector.setRequiredVoteDuration(PROPOSAL_ID, 10);
+        elector.makeReady(PROPOSAL_ID);
+        uint256 startBlock = block.number;
+        elector.openVote(PROPOSAL_ID);
+        vm.stopPrank();
+        vm.prank(voter1);
+        vm.roll(startBlock + blockStep);
+        elector.voteFor(PROPOSAL_ID);
+    }
+
+    function testFailEndVoteWhileActive(uint256 blockStep) public {
+        vm.assume(blockStep > 0 && blockStep < 16);
+        elector.registerSupervisor(PROPOSAL_ID, supervisor);
+        vm.startPrank(supervisor);
+        elector.registerVoter(PROPOSAL_ID, voter1);
+        elector.setQuorumThreshold(PROPOSAL_ID, 1);
+        elector.setVoteDelay(PROPOSAL_ID, 5);
+        elector.setRequiredVoteDuration(PROPOSAL_ID, 10);
+        elector.makeReady(PROPOSAL_ID);
+        uint256 startBlock = block.number;
+        elector.openVote(PROPOSAL_ID);
+        vm.stopPrank();
+        vm.roll(startBlock + blockStep);
+        vm.expectRevert("Vote not active");
+        elector.endVote(PROPOSAL_ID);
+    }
+
+    function testEndVoteWhenFinished(uint256 blockStep) public {
+        vm.assume(blockStep >= 16 && blockStep < UINT256MAX - block.number);
+        elector.registerSupervisor(PROPOSAL_ID, supervisor);
+        vm.startPrank(supervisor);
+        elector.registerVoter(PROPOSAL_ID, voter1);
+        elector.setQuorumThreshold(PROPOSAL_ID, 1);
+        elector.setVoteDelay(PROPOSAL_ID, 5);
+        elector.setRequiredVoteDuration(PROPOSAL_ID, 10);
+        elector.makeReady(PROPOSAL_ID);
+        uint256 startBlock = block.number;
+        elector.openVote(PROPOSAL_ID);
+        vm.stopPrank();
+        vm.roll(startBlock + blockStep);
+        vm.prank(supervisor);
+        elector.endVote(PROPOSAL_ID);
+        assertFalse(elector.isOpen(PROPOSAL_ID));
     }
 }

@@ -16,20 +16,20 @@ pragma solidity ^0.8.15;
 import "./VoterClass.sol";
 import "./VoterClassNullObject.sol";
 
-/// @title VotingStrategy
+/// @title VoteStrategy
 /// upgradable implementation of voting for Collective Governance
-interface VotingStrategy {
+interface VoteStrategy {
     // event section
-    event VotingOpen(uint256 proposalId);
-    event VotingClosed(uint256 proposalId);
+    event VoteOpen(uint256 proposalId);
+    event VoteClosed(uint256 proposalId);
 
     function name() external pure returns (string memory);
 
     function version() external pure returns (uint32);
 
-    function openVoting(uint256 _proposalId) external;
+    function openVote(uint256 _proposalId) external;
 
-    function endVoting(uint256 _proposalId) external;
+    function endVote(uint256 _proposalId) external;
 
     function voteFor(uint256 _proposalId) external;
 

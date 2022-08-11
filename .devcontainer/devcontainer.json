@@ -11,7 +11,8 @@
 	"customizations": {
 		"vscode": {
 			"extensions": [
-				"JuanBlanco.solidity"
+				"JuanBlanco.solidity",
+				"esbenp.prettier-vscode"
 			]
 		}
 	}
