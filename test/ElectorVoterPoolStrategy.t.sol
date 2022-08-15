@@ -2,6 +2,8 @@
 pragma solidity ^0.8.15;
 
 import "forge-std/Test.sol";
+import "../contracts/Storage.sol";
+import "../contracts/GovernanceStorage.sol";
 import "../contracts/ElectorVoterPoolStrategy.sol";
 import "../contracts/VoterClass.sol";
 import "./MockERC721.sol";
@@ -9,9 +11,10 @@ import "./MockERC721.sol";
 contract ElectorVoterPoolTest is Test {
     uint256 public constant UINT256MAX = 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF;
 
-    ElectorVoterPoolStrategy elector;
+    Storage private _storage;
+    VoteStrategy private elector;
 
-    address public immutable owner = msg.sender;
+    address public immutable owner = address(0x1);
     address public immutable supervisor = address(0x123);
     address public immutable nonSupervisor = address(0x123eee);
     address public immutable voter1 = address(0xfff1);
@@ -21,69 +24,80 @@ contract ElectorVoterPoolTest is Test {
     uint256 public immutable PROPOSAL_ID = 1;
 
     function setUp() public {
-        elector = new ElectorVoterPoolStrategy();
-        elector.initializeProposal(elector);
+        vm.clearMockedCalls();
+        _storage = new GovernanceStorage();
+        elector = new ElectorVoterPoolStrategy(_storage);
+        vm.startPrank(owner);
+        address electorAddress = address(elector);
+        _storage._initializeProposal(electorAddress);
+        vm.stopPrank();
     }
 
     function testOpenVote() public {
-        elector.registerSupervisor(PROPOSAL_ID, supervisor);
+        vm.prank(owner);
+        _storage.registerSupervisor(PROPOSAL_ID, supervisor);
         vm.startPrank(supervisor);
-        elector.setQuorumThreshold(PROPOSAL_ID, 75);
-        elector.makeReady(PROPOSAL_ID);
+        _storage.setQuorumThreshold(PROPOSAL_ID, 75);
+        _storage.makeReady(PROPOSAL_ID);
         elector.openVote(PROPOSAL_ID);
         vm.stopPrank();
         elector.isOpen(PROPOSAL_ID);
     }
 
     function testFailOpenVoteRequiresReady() public {
-        elector.registerSupervisor(PROPOSAL_ID, supervisor);
+        vm.prank(owner);
+        _storage.registerSupervisor(PROPOSAL_ID, supervisor);
         vm.prank(supervisor);
-        elector.setQuorumThreshold(PROPOSAL_ID, 2);
+        _storage.setQuorumThreshold(PROPOSAL_ID, 2);
         vm.prank(supervisor);
         elector.openVote(PROPOSAL_ID);
     }
 
     function testFailAddVoterIfOpen() public {
-        elector.registerSupervisor(PROPOSAL_ID, supervisor);
+        vm.prank(owner);
+        _storage.registerSupervisor(PROPOSAL_ID, supervisor);
         vm.prank(supervisor);
-        elector.setQuorumThreshold(PROPOSAL_ID, 2);
+        _storage.setQuorumThreshold(PROPOSAL_ID, 2);
         vm.prank(supervisor);
-        elector.makeReady(PROPOSAL_ID);
+        _storage.makeReady(PROPOSAL_ID);
         vm.prank(supervisor);
         elector.openVote(PROPOSAL_ID);
         vm.prank(supervisor);
-        elector.registerVoter(PROPOSAL_ID, voter1);
+        _storage.registerVoter(PROPOSAL_ID, voter1);
     }
 
     function testFailBurnVoterIfOpen() public {
-        elector.registerSupervisor(PROPOSAL_ID, supervisor);
+        vm.prank(owner);
+        _storage.registerSupervisor(PROPOSAL_ID, supervisor);
         vm.prank(supervisor);
-        elector.registerVoter(PROPOSAL_ID, voter1);
+        _storage.registerVoter(PROPOSAL_ID, voter1);
         vm.prank(supervisor);
-        elector.setQuorumThreshold(PROPOSAL_ID, 2);
+        _storage.setQuorumThreshold(PROPOSAL_ID, 2);
         vm.prank(supervisor);
-        elector.makeReady(PROPOSAL_ID);
+        _storage.makeReady(PROPOSAL_ID);
         vm.prank(supervisor);
         elector.openVote(PROPOSAL_ID);
         vm.prank(supervisor);
-        elector.burnVoter(PROPOSAL_ID, voter1);
+        _storage.burnVoter(PROPOSAL_ID, voter1);
     }
 
     function testFailOwnerOpenVote() public {
-        elector.registerSupervisor(PROPOSAL_ID, supervisor);
+        vm.prank(owner);
+        _storage.registerSupervisor(PROPOSAL_ID, supervisor);
         vm.prank(supervisor);
-        elector.setQuorumThreshold(PROPOSAL_ID, 2);
+        _storage.setQuorumThreshold(PROPOSAL_ID, 2);
         vm.prank(supervisor);
-        elector.makeReady(PROPOSAL_ID);
+        _storage.makeReady(PROPOSAL_ID);
         elector.openVote(PROPOSAL_ID);
     }
 
     function testFailOwnerEndVote() public {
-        elector.registerSupervisor(PROPOSAL_ID, supervisor);
+        vm.prank(owner);
+        _storage.registerSupervisor(PROPOSAL_ID, supervisor);
         vm.prank(supervisor);
-        elector.setQuorumThreshold(PROPOSAL_ID, 2);
+        _storage.setQuorumThreshold(PROPOSAL_ID, 2);
         vm.prank(supervisor);
-        elector.makeReady(PROPOSAL_ID);
+        _storage.makeReady(PROPOSAL_ID);
         vm.prank(supervisor);
         elector.openVote(PROPOSAL_ID);
         vm.prank(owner);
@@ -91,11 +105,12 @@ contract ElectorVoterPoolTest is Test {
     }
 
     function testFailDoubleOpenVote() public {
-        elector.registerSupervisor(PROPOSAL_ID, supervisor);
+        vm.prank(owner);
+        _storage.registerSupervisor(PROPOSAL_ID, supervisor);
         vm.prank(supervisor);
-        elector.setQuorumThreshold(PROPOSAL_ID, 2);
+        _storage.setQuorumThreshold(PROPOSAL_ID, 2);
         vm.prank(supervisor);
-        elector.makeReady(PROPOSAL_ID);
+        _storage.makeReady(PROPOSAL_ID);
         vm.prank(supervisor);
         elector.openVote(PROPOSAL_ID);
         vm.prank(supervisor);
@@ -103,90 +118,89 @@ contract ElectorVoterPoolTest is Test {
     }
 
     function testFailendVoteWhenNotOpen() public {
-        elector.registerSupervisor(PROPOSAL_ID, supervisor);
+        vm.prank(owner);
+        _storage.registerSupervisor(PROPOSAL_ID, supervisor);
         vm.prank(supervisor);
-        elector.setQuorumThreshold(PROPOSAL_ID, 2);
+        _storage.setQuorumThreshold(PROPOSAL_ID, 2);
         vm.prank(supervisor);
-        elector.makeReady(PROPOSAL_ID);
+        _storage.makeReady(PROPOSAL_ID);
         vm.prank(supervisor);
         elector.endVote(PROPOSAL_ID);
     }
 
     function testFailOwnerCastVote() public {
-        elector.registerSupervisor(PROPOSAL_ID, supervisor);
+        vm.prank(owner);
+        _storage.registerSupervisor(PROPOSAL_ID, supervisor);
         vm.prank(supervisor);
-        elector.setQuorumThreshold(PROPOSAL_ID, 2);
+        _storage.setQuorumThreshold(PROPOSAL_ID, 2);
         vm.prank(supervisor);
-        elector.makeReady(PROPOSAL_ID);
+        _storage.makeReady(PROPOSAL_ID);
         vm.prank(supervisor);
         elector.openVote(PROPOSAL_ID);
         elector.voteFor(PROPOSAL_ID);
     }
 
     function testFailSupervisorCastVote() public {
-        elector.registerSupervisor(PROPOSAL_ID, supervisor);
+        vm.prank(owner);
+        _storage.registerSupervisor(PROPOSAL_ID, supervisor);
         vm.prank(supervisor);
-        elector.setQuorumThreshold(PROPOSAL_ID, 2);
+        _storage.setQuorumThreshold(PROPOSAL_ID, 2);
         vm.prank(supervisor);
-        elector.makeReady(PROPOSAL_ID);
+        _storage.makeReady(PROPOSAL_ID);
         vm.prank(supervisor);
         elector.openVote(PROPOSAL_ID);
         vm.prank(supervisor);
         elector.voteFor(PROPOSAL_ID);
     }
 
-    function testCastOneVote() public {
-        elector.registerSupervisor(PROPOSAL_ID, supervisor);
+    function testFailCastOneVoteNotOpen() public {
+        vm.prank(owner);
+        _storage.registerSupervisor(PROPOSAL_ID, supervisor);
         vm.startPrank(supervisor);
-        elector.registerVoter(PROPOSAL_ID, voter1);
-        elector.setQuorumThreshold(PROPOSAL_ID, 2);
-        elector.makeReady(PROPOSAL_ID);
-        elector.openVote(PROPOSAL_ID);
+        _storage.registerVoter(PROPOSAL_ID, voter1);
+        _storage.setQuorumThreshold(PROPOSAL_ID, 2);
+        _storage.makeReady(PROPOSAL_ID);
         vm.stopPrank();
         vm.prank(voter1);
         elector.voteFor(PROPOSAL_ID);
-        assertEq(elector.forVotes(PROPOSAL_ID), 1);
-        assertEq(elector.totalParticipation(PROPOSAL_ID), 1);
+    }
+
+    function testFailCastOneVoteUpdatedStrategy() public {
+        vm.prank(owner);
+        _storage.registerSupervisor(PROPOSAL_ID, supervisor);
+        vm.startPrank(supervisor);
+        _storage.registerVoter(PROPOSAL_ID, voter1);
+        _storage.setQuorumThreshold(PROPOSAL_ID, 2);
+        _storage.makeReady(PROPOSAL_ID);
+        elector.openVote(PROPOSAL_ID);
+        vm.stopPrank();
+        VoteStrategy strategy = new EVP2(_storage);
+        vm.prank(voter1);
+        strategy.voteFor(PROPOSAL_ID);
     }
 
     function testCastOneVoteFromAll() public {
-        elector.registerSupervisor(PROPOSAL_ID, supervisor);
+        vm.prank(owner);
+        _storage.registerSupervisor(PROPOSAL_ID, supervisor);
         vm.startPrank(supervisor);
-        elector.registerVoterClassopenVote(PROPOSAL_ID);
-        elector.setQuorumThreshold(PROPOSAL_ID, 2);
-        elector.makeReady(PROPOSAL_ID);
+        _storage.registerVoterClassopenVote(PROPOSAL_ID);
+        _storage.setQuorumThreshold(PROPOSAL_ID, 2);
+        _storage.makeReady(PROPOSAL_ID);
         elector.openVote(PROPOSAL_ID);
         vm.stopPrank();
         vm.prank(voter1);
         elector.voteFor(PROPOSAL_ID);
-        assertEq(elector.totalParticipation(PROPOSAL_ID), 1);
-    }
-
-    function testCastVoteFromERC721() public {
-        uint256 tokenId = 0x71;
-        IERC721 token = new MockERC721(voter2, tokenId);
-        elector.registerSupervisor(PROPOSAL_ID, supervisor);
-        vm.startPrank(supervisor);
-        elector.registerVoterClassERC721(PROPOSAL_ID, address(token));
-        elector.setQuorumThreshold(PROPOSAL_ID, 1);
-        elector.makeReady(PROPOSAL_ID);
-        elector.openVote(PROPOSAL_ID);
-        vm.stopPrank();
-        vm.prank(voter2);
-        elector.voteFor(PROPOSAL_ID);
-        assertEq(elector.forVotes(PROPOSAL_ID), 1);
-        assertEq(elector.againstVotes(PROPOSAL_ID), 0);
-        assertEq(elector.abstentionCount(PROPOSAL_ID), 0);
-        assertEq(elector.totalParticipation(PROPOSAL_ID), 1);
+        assertEq(_storage.totalParticipation(PROPOSAL_ID), 1);
     }
 
     function testFailCastOneVoteWithBurnedClass() public {
-        elector.registerSupervisor(PROPOSAL_ID, supervisor);
+        vm.prank(owner);
+        _storage.registerSupervisor(PROPOSAL_ID, supervisor);
         vm.startPrank(supervisor);
-        elector.registerVoterClassopenVote(PROPOSAL_ID);
-        elector.burnVoterClass(PROPOSAL_ID);
-        elector.setQuorumThreshold(PROPOSAL_ID, 2);
-        elector.makeReady(PROPOSAL_ID);
+        _storage.registerVoterClassopenVote(PROPOSAL_ID);
+        _storage.burnVoterClass(PROPOSAL_ID);
+        _storage.setQuorumThreshold(PROPOSAL_ID, 2);
+        _storage.makeReady(PROPOSAL_ID);
         elector.openVote(PROPOSAL_ID);
         vm.stopPrank();
         vm.prank(voter1);
@@ -194,18 +208,20 @@ contract ElectorVoterPoolTest is Test {
     }
 
     function testFailCastVoteNotOpened() public {
-        elector.registerSupervisor(PROPOSAL_ID, supervisor);
+        vm.prank(owner);
+        _storage.registerSupervisor(PROPOSAL_ID, supervisor);
         vm.prank(supervisor);
-        elector.registerVoter(PROPOSAL_ID, voter1);
+        _storage.registerVoter(PROPOSAL_ID, voter1);
         vm.prank(voter1);
         elector.voteFor(PROPOSAL_ID);
     }
 
     function testFailCastTwoVote() public {
-        elector.registerSupervisor(PROPOSAL_ID, supervisor);
+        vm.prank(owner);
+        _storage.registerSupervisor(PROPOSAL_ID, supervisor);
         vm.startPrank(supervisor);
-        elector.registerVoter(PROPOSAL_ID, voter1);
-        elector.setQuorumThreshold(PROPOSAL_ID, 2);
+        _storage.registerVoter(PROPOSAL_ID, voter1);
+        _storage.setQuorumThreshold(PROPOSAL_ID, 2);
         elector.openVote(PROPOSAL_ID);
         vm.stopPrank();
         vm.prank(voter1);
@@ -214,30 +230,46 @@ contract ElectorVoterPoolTest is Test {
         elector.voteFor(PROPOSAL_ID);
     }
 
-    function testVoterMayChangeTheirMind() public {
-        elector.registerSupervisor(PROPOSAL_ID, supervisor);
+    function testFailUndoStrategyUpgrade() public {
+        vm.prank(owner);
+        _storage.registerSupervisor(PROPOSAL_ID, supervisor);
         vm.startPrank(supervisor);
-        elector.enableUndoVote(PROPOSAL_ID);
-        elector.registerVoter(PROPOSAL_ID, voter1);
-        elector.setQuorumThreshold(PROPOSAL_ID, 2);
-        elector.makeReady(PROPOSAL_ID);
+        _storage.enableUndoVote(PROPOSAL_ID);
+        _storage.registerVoter(PROPOSAL_ID, voter1);
+        _storage.setQuorumThreshold(PROPOSAL_ID, 2);
+        _storage.makeReady(PROPOSAL_ID);
         elector.openVote(PROPOSAL_ID);
         vm.stopPrank();
         vm.prank(voter1);
-        elector.voteFor(PROPOSAL_ID);
-        assertEq(elector.totalParticipation(PROPOSAL_ID), 1);
+        _storage._castVoteFor(PROPOSAL_ID);
+        assertEq(_storage.totalParticipation(PROPOSAL_ID), 1);
+        vm.prank(voter1);
+        VoteStrategy strategy = new EVP2(_storage);
+        strategy.undoVote(PROPOSAL_ID);
+        assertEq(_storage.totalParticipation(PROPOSAL_ID), NONE);
+    }
+
+    function testFailUndoRequiresOpen() public {
+        vm.prank(owner);
+        _storage.registerSupervisor(PROPOSAL_ID, supervisor);
+        vm.startPrank(supervisor);
+        _storage.enableUndoVote(PROPOSAL_ID);
+        _storage.registerVoter(PROPOSAL_ID, voter1);
+        _storage.setQuorumThreshold(PROPOSAL_ID, 2);
+        _storage.makeReady(PROPOSAL_ID);
+        vm.stopPrank();
         vm.prank(voter1);
         elector.undoVote(PROPOSAL_ID);
-        assertEq(elector.totalParticipation(PROPOSAL_ID), NONE);
     }
 
     function testVoterMayOnlyUndoPreviousVote() public {
-        elector.registerSupervisor(PROPOSAL_ID, supervisor);
+        vm.prank(owner);
+        _storage.registerSupervisor(PROPOSAL_ID, supervisor);
         vm.startPrank(supervisor);
-        elector.enableUndoVote(PROPOSAL_ID);
-        elector.registerVoter(PROPOSAL_ID, voter1);
-        elector.setQuorumThreshold(PROPOSAL_ID, 2);
-        elector.makeReady(PROPOSAL_ID);
+        _storage.enableUndoVote(PROPOSAL_ID);
+        _storage.registerVoter(PROPOSAL_ID, voter1);
+        _storage.setQuorumThreshold(PROPOSAL_ID, 2);
+        _storage.makeReady(PROPOSAL_ID);
         elector.openVote(PROPOSAL_ID);
         vm.stopPrank();
         vm.expectRevert("Voter required");
@@ -245,10 +277,11 @@ contract ElectorVoterPoolTest is Test {
     }
 
     function testFailUndoVoteNotDefaultEnabled() public {
-        elector.registerSupervisor(PROPOSAL_ID, supervisor);
+        vm.prank(owner);
+        _storage.registerSupervisor(PROPOSAL_ID, supervisor);
         vm.startPrank(supervisor);
-        elector.registerVoter(PROPOSAL_ID, voter1);
-        elector.setQuorumThreshold(PROPOSAL_ID, 2);
+        _storage.registerVoter(PROPOSAL_ID, voter1);
+        _storage.setQuorumThreshold(PROPOSAL_ID, 2);
         elector.openVote(PROPOSAL_ID);
         vm.stopPrank();
         vm.expectRevert();
@@ -256,9 +289,10 @@ contract ElectorVoterPoolTest is Test {
     }
 
     function testFailSupervisorMayNotUndoVote() public {
-        elector.registerSupervisor(PROPOSAL_ID, supervisor);
+        vm.prank(owner);
+        _storage.registerSupervisor(PROPOSAL_ID, supervisor);
         vm.prank(supervisor);
-        elector.registerVoter(PROPOSAL_ID, voter1);
+        _storage.registerVoter(PROPOSAL_ID, voter1);
         vm.prank(supervisor);
         elector.openVote(PROPOSAL_ID);
         vm.prank(voter1);
@@ -268,10 +302,11 @@ contract ElectorVoterPoolTest is Test {
     }
 
     function testFailOwnerMayNotUndoVote() public {
-        elector.registerSupervisor(PROPOSAL_ID, supervisor);
+        vm.prank(owner);
+        _storage.registerSupervisor(PROPOSAL_ID, supervisor);
         vm.startPrank(supervisor);
-        elector.registerVoter(PROPOSAL_ID, voter1);
-        elector.setQuorumThreshold(PROPOSAL_ID, 2);
+        _storage.registerVoter(PROPOSAL_ID, voter1);
+        _storage.setQuorumThreshold(PROPOSAL_ID, 2);
         elector.openVote(PROPOSAL_ID);
         vm.stopPrank();
         vm.prank(voter1);
@@ -281,111 +316,133 @@ contract ElectorVoterPoolTest is Test {
     }
 
     function testMeasurePassed() public {
-        elector.registerSupervisor(PROPOSAL_ID, supervisor);
-        vm.startPrank(supervisor);
-        elector.registerVoter(PROPOSAL_ID, voter1);
-        elector.registerVoter(PROPOSAL_ID, voter2);
-        elector.setQuorumThreshold(PROPOSAL_ID, 2);
-        elector.makeReady(PROPOSAL_ID);
-        elector.openVote(PROPOSAL_ID);
-        vm.stopPrank();
-        vm.prank(voter1);
-        elector.voteFor(PROPOSAL_ID);
-        vm.prank(voter2);
-        elector.voteFor(PROPOSAL_ID);
-        vm.roll(block.number + 2);
+        vm.roll(10);
+        bytes memory code = address(_storage).code;
+
+        address storageMock = address(0x99991111);
+        VoteStrategy strategy = new ElectorVoterPoolStrategy(Storage(storageMock));
+        vm.etch(storageMock, code);
+        uint256 requiredParticipation = 0;
+        vm.mockCall(
+            storageMock,
+            abi.encodeWithSelector(Storage.requiredParticipation.selector),
+            abi.encode(requiredParticipation)
+        );
+        uint256 forVotes = 201;
+        vm.mockCall(storageMock, abi.encodeWithSelector(Storage.forVotes.selector), abi.encode(forVotes));
+        uint256 totalParticipation = forVotes;
+        vm.mockCall(storageMock, abi.encodeWithSelector(Storage.totalParticipation.selector), abi.encode(totalParticipation));
+        uint256 quorumRequired = 200;
+        vm.mockCall(storageMock, abi.encodeWithSelector(Storage.quorumRequired.selector), abi.encode(quorumRequired));
+        vm.mockCall(storageMock, abi.encodeWithSelector(Storage._maxPassThreshold.selector), abi.encode(0xffffffff));
+        vm.mockCall(storageMock, abi.encodeWithSelector(Storage.startBlock.selector), abi.encode(block.number - 2));
+        vm.mockCall(storageMock, abi.encodeWithSelector(Storage.endBlock.selector), abi.encode(block.number - 1));
+        vm.mockCall(storageMock, abi.encodeWithSelector(Storage.isReady.selector), abi.encode(true));
+        vm.mockCall(storageMock, abi.encodeWithSelector(Storage.isVeto.selector), abi.encode(false));
+        vm.mockCall(storageMock, abi.encodeWithSelector(Storage.isSupervisor.selector), abi.encode(true));
+        vm.mockCall(storageMock, abi.encodeWithSelector(Storage._validOrRevert.selector), abi.encode(PROPOSAL_ID));
+        vm.mockCall(storageMock, abi.encodeWithSelector(Storage.voteStrategy.selector), abi.encode(address(strategy)));
+
         vm.prank(supervisor);
-        elector.endVote(PROPOSAL_ID);
-        assertTrue(elector.getVoteSucceeded(PROPOSAL_ID));
+        strategy.openVote(PROPOSAL_ID);
+        vm.prank(supervisor);
+        strategy.endVote(PROPOSAL_ID);
+
+        assertTrue(strategy.getVoteSucceeded(PROPOSAL_ID));
     }
 
-    function testFailMeasureFailedQuorumRequired() public {
-        elector.registerSupervisor(PROPOSAL_ID, supervisor);
-        vm.startPrank(supervisor);
-        elector.registerVoter(PROPOSAL_ID, voter1);
-        elector.registerVoter(PROPOSAL_ID, voter2);
-        elector.setQuorumThreshold(PROPOSAL_ID, 76);
-        elector.makeReady(PROPOSAL_ID);
-        elector.openVote(PROPOSAL_ID);
-        vm.stopPrank();
-        vm.prank(voter1);
-        elector.voteFor(PROPOSAL_ID);
-        vm.prank(voter2);
-        elector.voteFor(PROPOSAL_ID);
-        vm.roll(block.number + 2);
+    function testMeasureFailNoQuorum() public {
+        vm.roll(10);
+        bytes memory code = address(_storage).code;
+
+        address storageMock = address(0x99991111);
+        VoteStrategy strategy = new ElectorVoterPoolStrategy(Storage(storageMock));
+        vm.etch(storageMock, code);
+        uint256 requiredParticipation = 0;
+        vm.mockCall(
+            storageMock,
+            abi.encodeWithSelector(Storage.requiredParticipation.selector),
+            abi.encode(requiredParticipation)
+        );
+        uint256 forVotes = 199;
+        vm.mockCall(storageMock, abi.encodeWithSelector(Storage.forVotes.selector), abi.encode(forVotes));
+        uint256 totalParticipation = forVotes;
+        vm.mockCall(storageMock, abi.encodeWithSelector(Storage.totalParticipation.selector), abi.encode(totalParticipation));
+        uint256 quorumRequired = 200;
+        vm.mockCall(storageMock, abi.encodeWithSelector(Storage.quorumRequired.selector), abi.encode(quorumRequired));
+        vm.mockCall(storageMock, abi.encodeWithSelector(Storage.startBlock.selector), abi.encode(block.number - 2));
+        vm.mockCall(storageMock, abi.encodeWithSelector(Storage.endBlock.selector), abi.encode(block.number - 1));
+        vm.mockCall(storageMock, abi.encodeWithSelector(Storage._maxPassThreshold.selector), abi.encode(0xffffffff));
+        vm.mockCall(storageMock, abi.encodeWithSelector(Storage.isReady.selector), abi.encode(true));
+        vm.mockCall(storageMock, abi.encodeWithSelector(Storage.isVeto.selector), abi.encode(false));
+        vm.mockCall(storageMock, abi.encodeWithSelector(Storage.isSupervisor.selector), abi.encode(true));
+        vm.mockCall(storageMock, abi.encodeWithSelector(Storage._validOrRevert.selector), abi.encode(PROPOSAL_ID));
+        vm.mockCall(storageMock, abi.encodeWithSelector(Storage.voteStrategy.selector), abi.encode(address(strategy)));
+
         vm.prank(supervisor);
-        elector.endVote(PROPOSAL_ID);
-        vm.expectRevert("Not enough participants");
-        assertFalse(elector.getVoteSucceeded(PROPOSAL_ID));
+        strategy.openVote(PROPOSAL_ID);
+        vm.prank(supervisor);
+        strategy.endVote(PROPOSAL_ID);
+
+        assertFalse(strategy.getVoteSucceeded(PROPOSAL_ID));
     }
 
-    function testMeasurePassedWithAllowableParticipation() public {
-        elector.registerSupervisor(PROPOSAL_ID, supervisor);
-        vm.startPrank(supervisor);
-        elector.registerVoter(PROPOSAL_ID, voter1);
-        elector.registerVoter(PROPOSAL_ID, voter2);
-        elector.registerVoter(PROPOSAL_ID, voter3);
-        elector.setQuorumThreshold(PROPOSAL_ID, 1);
-        elector.setRequiredParticipation(PROPOSAL_ID, 3);
-        elector.makeReady(PROPOSAL_ID);
-        elector.openVote(PROPOSAL_ID);
-        vm.stopPrank();
-        vm.prank(voter1);
-        // vote is passed
-        elector.voteFor(PROPOSAL_ID);
-        vm.prank(voter2);
-        elector.voteAgainst(PROPOSAL_ID);
-        vm.prank(voter3);
-        elector.abstainFromVote(PROPOSAL_ID);
-        vm.roll(block.number + 2);
-        vm.prank(supervisor);
-        elector.endVote(PROPOSAL_ID);
-        assertEq(elector.totalParticipation(PROPOSAL_ID), 3);
-        assertTrue(elector.getVoteSucceeded(PROPOSAL_ID));
-    }
+    function testFailMeasureFailRequiredParticipation() public {
+        vm.roll(10);
+        bytes memory code = address(_storage).code;
 
-    function testMeasureFailedParticipationRequired() public {
-        elector.registerSupervisor(PROPOSAL_ID, supervisor);
-        vm.startPrank(supervisor);
-        elector.registerVoter(PROPOSAL_ID, voter1);
-        elector.registerVoter(PROPOSAL_ID, voter2);
-        elector.registerVoter(PROPOSAL_ID, voter3);
-        elector.setQuorumThreshold(PROPOSAL_ID, 1);
-        elector.setRequiredParticipation(PROPOSAL_ID, 3);
-        elector.makeReady(PROPOSAL_ID);
-        elector.openVote(PROPOSAL_ID);
-        vm.stopPrank();
-        vm.prank(voter1);
-        // vote is passed
-        elector.voteFor(PROPOSAL_ID);
-        vm.prank(voter2);
-        elector.voteAgainst(PROPOSAL_ID);
-        vm.roll(block.number + 2);
+        address storageMock = address(0x99991111);
+        VoteStrategy strategy = new ElectorVoterPoolStrategy(Storage(storageMock));
+        vm.etch(storageMock, code);
+        uint256 requiredParticipation = 1000;
+        vm.mockCall(
+            storageMock,
+            abi.encodeWithSelector(Storage.requiredParticipation.selector),
+            abi.encode(requiredParticipation)
+        );
+        uint256 forVotes = 199;
+        vm.mockCall(storageMock, abi.encodeWithSelector(Storage.forVotes.selector), abi.encode(forVotes));
+        uint256 totalParticipation = forVotes;
+        vm.mockCall(storageMock, abi.encodeWithSelector(Storage.totalParticipation.selector), abi.encode(totalParticipation));
+        uint256 quorumRequired = 200;
+        vm.mockCall(storageMock, abi.encodeWithSelector(Storage.quorumRequired.selector), abi.encode(quorumRequired));
+        vm.mockCall(storageMock, abi.encodeWithSelector(Storage.quorumRequired.selector), abi.encode(quorumRequired));
+        vm.mockCall(storageMock, abi.encodeWithSelector(Storage.startBlock.selector), abi.encode(block.number - 2));
+        vm.mockCall(storageMock, abi.encodeWithSelector(Storage.endBlock.selector), abi.encode(block.number - 1));
+        vm.mockCall(storageMock, abi.encodeWithSelector(Storage._maxPassThreshold.selector), abi.encode(0xffffffff));
+        vm.mockCall(storageMock, abi.encodeWithSelector(Storage.isReady.selector), abi.encode(true));
+        vm.mockCall(storageMock, abi.encodeWithSelector(Storage.isVeto.selector), abi.encode(false));
+        vm.mockCall(storageMock, abi.encodeWithSelector(Storage.isSupervisor.selector), abi.encode(true));
+        vm.mockCall(storageMock, abi.encodeWithSelector(Storage._validOrRevert.selector), abi.encode(PROPOSAL_ID));
+        vm.mockCall(storageMock, abi.encodeWithSelector(Storage.voteStrategy.selector), abi.encode(address(strategy)));
+
         vm.prank(supervisor);
-        elector.endVote(PROPOSAL_ID);
-        assertEq(elector.totalParticipation(PROPOSAL_ID), 2);
-        vm.expectRevert("Not enough participants");
-        assertFalse(elector.getVoteSucceeded(PROPOSAL_ID));
+        strategy.openVote(PROPOSAL_ID);
+        vm.prank(supervisor);
+        strategy.endVote(PROPOSAL_ID);
+        strategy.getVoteSucceeded(PROPOSAL_ID);
     }
 
     function testFailGetVoteSucceededOnOpenMeasure() public {
-        elector.registerSupervisor(PROPOSAL_ID, supervisor);
+        vm.prank(owner);
+        _storage.registerSupervisor(PROPOSAL_ID, supervisor);
         vm.prank(supervisor);
-        elector.registerVoter(PROPOSAL_ID, voter1);
+        _storage.registerVoter(PROPOSAL_ID, voter1);
         vm.prank(supervisor);
-        elector.makeReady(PROPOSAL_ID);
+        _storage.makeReady(PROPOSAL_ID);
         vm.prank(supervisor);
         elector.openVote(PROPOSAL_ID);
         elector.getVoteSucceeded(PROPOSAL_ID);
     }
 
     function testFailMeasureIsVeto() public {
-        elector.registerSupervisor(PROPOSAL_ID, supervisor);
+        vm.prank(owner);
+        _storage.registerSupervisor(PROPOSAL_ID, supervisor);
         vm.startPrank(supervisor);
-        elector.registerVoter(PROPOSAL_ID, voter1);
-        elector.registerVoter(PROPOSAL_ID, voter2);
-        elector.setQuorumThreshold(PROPOSAL_ID, 2);
-        elector.makeReady(PROPOSAL_ID);
+        _storage.registerVoter(PROPOSAL_ID, voter1);
+        _storage.registerVoter(PROPOSAL_ID, voter2);
+        _storage.setQuorumThreshold(PROPOSAL_ID, 2);
+        _storage.makeReady(PROPOSAL_ID);
         elector.openVote(PROPOSAL_ID);
         vm.stopPrank();
         vm.prank(voter1);
@@ -394,19 +451,20 @@ contract ElectorVoterPoolTest is Test {
         elector.voteFor(PROPOSAL_ID);
         vm.prank(supervisor);
         elector.veto(PROPOSAL_ID);
-        assertTrue(elector.isVeto(PROPOSAL_ID));
+        assertTrue(_storage.isVeto(PROPOSAL_ID));
         vm.prank(supervisor);
         elector.endVote(PROPOSAL_ID);
         elector.getVoteSucceeded(PROPOSAL_ID);
     }
 
     function testFailMeasureLateVeto() public {
-        elector.registerSupervisor(PROPOSAL_ID, supervisor);
+        vm.prank(owner);
+        _storage.registerSupervisor(PROPOSAL_ID, supervisor);
         vm.startPrank(supervisor);
-        elector.registerVoter(PROPOSAL_ID, voter1);
-        elector.registerVoter(PROPOSAL_ID, voter2);
-        elector.setQuorumThreshold(PROPOSAL_ID, 2);
-        elector.makeReady(PROPOSAL_ID);
+        _storage.registerVoter(PROPOSAL_ID, voter1);
+        _storage.registerVoter(PROPOSAL_ID, voter2);
+        _storage.setQuorumThreshold(PROPOSAL_ID, 2);
+        _storage.makeReady(PROPOSAL_ID);
         elector.openVote(PROPOSAL_ID);
         vm.stopPrank();
         vm.prank(voter1);
@@ -419,46 +477,71 @@ contract ElectorVoterPoolTest is Test {
         elector.veto(PROPOSAL_ID);
     }
 
-    function testCastAgainstVote() public {
-        elector.registerSupervisor(PROPOSAL_ID, supervisor);
+    function testFailCastAgainstVoteNotOpen() public {
+        vm.prank(owner);
+        _storage.registerSupervisor(PROPOSAL_ID, supervisor);
         vm.startPrank(supervisor);
-        elector.registerVoter(PROPOSAL_ID, voter1);
-        elector.setQuorumThreshold(PROPOSAL_ID, 2);
-        elector.makeReady(PROPOSAL_ID);
-        elector.openVote(PROPOSAL_ID);
+        _storage.registerVoter(PROPOSAL_ID, voter1);
+        _storage.setQuorumThreshold(PROPOSAL_ID, 2);
+        _storage.makeReady(PROPOSAL_ID);
         vm.stopPrank();
         vm.prank(voter1);
         elector.voteAgainst(PROPOSAL_ID);
-        assertEq(elector.forVotes(PROPOSAL_ID), 0);
-        assertEq(elector.againstVotes(PROPOSAL_ID), 1);
-        assertEq(elector.abstentionCount(PROPOSAL_ID), 0);
-        assertEq(elector.totalParticipation(PROPOSAL_ID), 1);
     }
 
-    function testAbstainFromVote() public {
-        elector.registerSupervisor(PROPOSAL_ID, supervisor);
+    function testFailCastAgainstVoteUpdatedStrategy() public {
+        vm.prank(owner);
+        _storage.registerSupervisor(PROPOSAL_ID, supervisor);
         vm.startPrank(supervisor);
-        elector.registerVoter(PROPOSAL_ID, voter1);
-        elector.setQuorumThreshold(PROPOSAL_ID, 2);
-        elector.makeReady(PROPOSAL_ID);
+        _storage.registerVoter(PROPOSAL_ID, voter1);
+        _storage.setQuorumThreshold(PROPOSAL_ID, 2);
+        _storage.makeReady(PROPOSAL_ID);
         elector.openVote(PROPOSAL_ID);
+        vm.stopPrank();
+        VoteStrategy strategy = new EVP2(_storage);
+        vm.prank(voter1);
+        strategy.voteAgainst(PROPOSAL_ID);
+    }
+
+    function testFailAbstainFromVoteInvalidStrategy() public {
+        vm.prank(owner);
+        _storage.registerSupervisor(PROPOSAL_ID, supervisor);
+        vm.startPrank(supervisor);
+        _storage.registerVoter(PROPOSAL_ID, voter1);
+        _storage.setQuorumThreshold(PROPOSAL_ID, 2);
+        _storage.makeReady(PROPOSAL_ID);
+        elector.openVote(PROPOSAL_ID);
+        vm.stopPrank();
+        VoteStrategy strategy = new EVP2(_storage);
+        vm.prank(voter1);
+        strategy.abstainFromVote(PROPOSAL_ID);
+        assertEq(_storage.forVotes(PROPOSAL_ID), 0);
+        assertEq(_storage.againstVotes(PROPOSAL_ID), 0);
+        assertEq(_storage.abstentionCount(PROPOSAL_ID), 1);
+        assertEq(_storage.totalParticipation(PROPOSAL_ID), 1);
+    }
+
+    function testFailAbstainFromVoteNotOpen() public {
+        vm.prank(owner);
+        _storage.registerSupervisor(PROPOSAL_ID, supervisor);
+        vm.startPrank(supervisor);
+        _storage.registerVoter(PROPOSAL_ID, voter1);
+        _storage.setQuorumThreshold(PROPOSAL_ID, 2);
+        _storage.makeReady(PROPOSAL_ID);
         vm.stopPrank();
         vm.prank(voter1);
         elector.abstainFromVote(PROPOSAL_ID);
-        assertEq(elector.forVotes(PROPOSAL_ID), 0);
-        assertEq(elector.againstVotes(PROPOSAL_ID), 0);
-        assertEq(elector.abstentionCount(PROPOSAL_ID), 1);
-        assertEq(elector.totalParticipation(PROPOSAL_ID), 1);
     }
 
     function testFailVoteDelayPreventsVote(uint256 blockStep) public {
         vm.assume(blockStep >= 1 && blockStep < 100);
-        elector.registerSupervisor(PROPOSAL_ID, supervisor);
+        vm.prank(owner);
+        _storage.registerSupervisor(PROPOSAL_ID, supervisor);
         vm.startPrank(supervisor);
-        elector.registerVoter(PROPOSAL_ID, voter1);
-        elector.setQuorumThreshold(PROPOSAL_ID, 1);
-        elector.setVoteDelay(PROPOSAL_ID, 100);
-        elector.makeReady(PROPOSAL_ID);
+        _storage.registerVoter(PROPOSAL_ID, voter1);
+        _storage.setQuorumThreshold(PROPOSAL_ID, 1);
+        _storage.setVoteDelay(PROPOSAL_ID, 100);
+        _storage.makeReady(PROPOSAL_ID);
         uint256 startBlock = block.number;
         elector.openVote(PROPOSAL_ID);
         vm.stopPrank();
@@ -468,30 +551,15 @@ contract ElectorVoterPoolTest is Test {
         elector.voteFor(PROPOSAL_ID);
     }
 
-    function testPermittedAfterObservingVoteDelay() public {
-        elector.registerSupervisor(PROPOSAL_ID, supervisor);
-        vm.startPrank(supervisor);
-        elector.registerVoter(PROPOSAL_ID, voter1);
-        elector.setQuorumThreshold(PROPOSAL_ID, 1);
-        elector.setVoteDelay(PROPOSAL_ID, 100);
-        elector.makeReady(PROPOSAL_ID);
-        uint256 startBlock = block.number;
-        elector.openVote(PROPOSAL_ID);
-        vm.stopPrank();
-        vm.prank(voter1);
-        vm.roll(startBlock + 100);
-        elector.voteFor(PROPOSAL_ID);
-        assertEq(1, elector.forVotes(PROPOSAL_ID));
-    }
-
     function testFailVoteAfterDuration(uint256 blockStep) public {
         vm.assume(blockStep > 10 && blockStep < UINT256MAX - block.number);
-        elector.registerSupervisor(PROPOSAL_ID, supervisor);
+        vm.prank(owner);
+        _storage.registerSupervisor(PROPOSAL_ID, supervisor);
         vm.startPrank(supervisor);
-        elector.registerVoter(PROPOSAL_ID, voter1);
-        elector.setQuorumThreshold(PROPOSAL_ID, 1);
-        elector.setRequiredVoteDuration(PROPOSAL_ID, 10);
-        elector.makeReady(PROPOSAL_ID);
+        _storage.registerVoter(PROPOSAL_ID, voter1);
+        _storage.setQuorumThreshold(PROPOSAL_ID, 1);
+        _storage.setRequiredVoteDuration(PROPOSAL_ID, 10);
+        _storage.makeReady(PROPOSAL_ID);
         uint256 startBlock = block.number;
         elector.openVote(PROPOSAL_ID);
         vm.stopPrank();
@@ -502,13 +570,14 @@ contract ElectorVoterPoolTest is Test {
 
     function testFailEndVoteWhileActive(uint256 blockStep) public {
         vm.assume(blockStep > 0 && blockStep < 16);
-        elector.registerSupervisor(PROPOSAL_ID, supervisor);
+        vm.prank(owner);
+        _storage.registerSupervisor(PROPOSAL_ID, supervisor);
         vm.startPrank(supervisor);
-        elector.registerVoter(PROPOSAL_ID, voter1);
-        elector.setQuorumThreshold(PROPOSAL_ID, 1);
-        elector.setVoteDelay(PROPOSAL_ID, 5);
-        elector.setRequiredVoteDuration(PROPOSAL_ID, 10);
-        elector.makeReady(PROPOSAL_ID);
+        _storage.registerVoter(PROPOSAL_ID, voter1);
+        _storage.setQuorumThreshold(PROPOSAL_ID, 1);
+        _storage.setVoteDelay(PROPOSAL_ID, 5);
+        _storage.setRequiredVoteDuration(PROPOSAL_ID, 10);
+        _storage.makeReady(PROPOSAL_ID);
         uint256 startBlock = block.number;
         elector.openVote(PROPOSAL_ID);
         vm.stopPrank();
@@ -519,13 +588,14 @@ contract ElectorVoterPoolTest is Test {
 
     function testEndVoteWhenFinished(uint256 blockStep) public {
         vm.assume(blockStep >= 16 && blockStep < UINT256MAX - block.number);
-        elector.registerSupervisor(PROPOSAL_ID, supervisor);
+        vm.prank(owner);
+        _storage.registerSupervisor(PROPOSAL_ID, supervisor);
         vm.startPrank(supervisor);
-        elector.registerVoter(PROPOSAL_ID, voter1);
-        elector.setQuorumThreshold(PROPOSAL_ID, 1);
-        elector.setVoteDelay(PROPOSAL_ID, 5);
-        elector.setRequiredVoteDuration(PROPOSAL_ID, 10);
-        elector.makeReady(PROPOSAL_ID);
+        _storage.registerVoter(PROPOSAL_ID, voter1);
+        _storage.setQuorumThreshold(PROPOSAL_ID, 1);
+        _storage.setVoteDelay(PROPOSAL_ID, 5);
+        _storage.setRequiredVoteDuration(PROPOSAL_ID, 10);
+        _storage.makeReady(PROPOSAL_ID);
         uint256 startBlock = block.number;
         elector.openVote(PROPOSAL_ID);
         vm.stopPrank();
@@ -533,5 +603,13 @@ contract ElectorVoterPoolTest is Test {
         vm.prank(supervisor);
         elector.endVote(PROPOSAL_ID);
         assertFalse(elector.isOpen(PROPOSAL_ID));
+    }
+}
+
+contract EVP2 is ElectorVoterPoolStrategy {
+    constructor(Storage _storage) ElectorVoterPoolStrategy(_storage) {}
+
+    function version() public pure virtual override returns (uint32) {
+        return 0xffffffff;
     }
 }

@@ -5,10 +5,9 @@ import "forge-std/Test.sol";
 import "../contracts/GovernanceStorage.sol";
 import "../contracts/VoteStrategy.sol";
 import "../contracts/ElectorVoterPoolStrategy.sol";
+import "./MockERC721.sol";
 
 contract GovernanceStorageTest is Test {
-    GovernanceStorage gStorage;
-
     address public immutable owner = address(0x155);
     address public immutable supervisor = address(0x123);
     address public immutable nonSupervisor = address(0x123eee);
@@ -18,108 +17,109 @@ contract GovernanceStorageTest is Test {
     uint256 public immutable NONE = 0;
     uint256 public immutable PROPOSAL_ID = 1;
 
+    Storage private _storage;
     VoteStrategy private _strategy;
 
     function setUp() public {
-        _strategy = new ElectorVoterPoolStrategy();
-        gStorage = new GovernanceStorage();
+        _storage = new GovernanceStorage();
+        _strategy = new ElectorVoterPoolStrategy(_storage);
         vm.startPrank(owner);
-        gStorage.initializeProposal(_strategy);
+        _storage._initializeProposal(address(_strategy));
         vm.stopPrank();
     }
 
     function testVotesCastZero() public {
-        assertEq(gStorage.forVotes(PROPOSAL_ID), NONE);
-        assertEq(gStorage.againstVotes(PROPOSAL_ID), NONE);
-        assertEq(gStorage.abstentionCount(PROPOSAL_ID), NONE);
-        assertEq(gStorage.totalParticipation(PROPOSAL_ID), NONE);
+        assertEq(_storage.forVotes(PROPOSAL_ID), NONE);
+        assertEq(_storage.againstVotes(PROPOSAL_ID), NONE);
+        assertEq(_storage.abstentionCount(PROPOSAL_ID), NONE);
+        assertEq(_storage.totalParticipation(PROPOSAL_ID), NONE);
     }
 
     function testIsReady() public {
-        assertFalse(gStorage.isReady(PROPOSAL_ID));
+        assertFalse(_storage.isReady(PROPOSAL_ID));
     }
 
     function testGetSender() public {
-        address sender = gStorage.getSender(PROPOSAL_ID);
+        address sender = _storage.getSender(PROPOSAL_ID);
         assertEq(sender, owner);
     }
 
     function testFailOnlyOneOwnerCanRegisterSupervisor() public {
         vm.prank(address(0));
-        gStorage.registerSupervisor(PROPOSAL_ID, supervisor);
+        _storage.registerSupervisor(PROPOSAL_ID, supervisor);
     }
 
     function testRegisterSupervisor() public {
         vm.prank(owner);
-        gStorage.registerSupervisor(PROPOSAL_ID, supervisor);
-        assertTrue(gStorage.isSupervisor(PROPOSAL_ID, supervisor));
+        _storage.registerSupervisor(PROPOSAL_ID, supervisor);
+        assertTrue(_storage.isSupervisor(PROPOSAL_ID, supervisor));
     }
 
     function testFailRegisterSupervisorBadProposal() public {
         vm.prank(owner);
-        gStorage.registerSupervisor(0, supervisor);
+        _storage.registerSupervisor(0, supervisor);
     }
 
     function testFailRegisterSupervisorIfOpen() public {
         vm.prank(owner);
-        gStorage.registerSupervisor(PROPOSAL_ID, supervisor);
+        _storage.registerSupervisor(PROPOSAL_ID, supervisor);
         vm.prank(supervisor);
-        gStorage.makeReady(PROPOSAL_ID);
-        gStorage.registerSupervisor(PROPOSAL_ID, nonSupervisor);
+        _storage.makeReady(PROPOSAL_ID);
+        _storage.registerSupervisor(PROPOSAL_ID, nonSupervisor);
     }
 
     function testRegisterAndBurnSupervisor() public {
         vm.prank(owner);
-        gStorage.registerSupervisor(PROPOSAL_ID, supervisor);
+        _storage.registerSupervisor(PROPOSAL_ID, supervisor);
         vm.prank(owner);
-        gStorage.burnSupervisor(PROPOSAL_ID, supervisor);
-        assertFalse(gStorage.isSupervisor(PROPOSAL_ID, supervisor));
+        _storage.burnSupervisor(PROPOSAL_ID, supervisor);
+        assertFalse(_storage.isSupervisor(PROPOSAL_ID, supervisor));
     }
 
     function testFailReadyByBurnedSupervisor() public {
         vm.prank(owner);
-        gStorage.registerSupervisor(PROPOSAL_ID, supervisor);
+        _storage.registerSupervisor(PROPOSAL_ID, supervisor);
         vm.prank(owner);
-        gStorage.burnSupervisor(PROPOSAL_ID, supervisor);
+        _storage.burnSupervisor(PROPOSAL_ID, supervisor);
         vm.prank(supervisor);
-        gStorage.makeReady(PROPOSAL_ID);
+        _storage.makeReady(PROPOSAL_ID);
     }
 
     function testFailVoterByBurnedSupervisor() public {
         vm.prank(owner);
-        gStorage.registerSupervisor(PROPOSAL_ID, supervisor);
+        _storage.registerSupervisor(PROPOSAL_ID, supervisor);
         vm.prank(owner);
-        gStorage.burnSupervisor(PROPOSAL_ID, supervisor);
+        _storage.burnSupervisor(PROPOSAL_ID, supervisor);
         vm.prank(supervisor);
-        gStorage.registerVoter(PROPOSAL_ID, voter1);
+        _storage.registerVoter(PROPOSAL_ID, voter1);
     }
 
     function testFailBurnVoterByBurnedSupervisor() public {
         vm.prank(owner);
-        gStorage.registerSupervisor(PROPOSAL_ID, supervisor);
+        _storage.registerSupervisor(PROPOSAL_ID, supervisor);
         vm.prank(supervisor);
-        gStorage.registerVoter(PROPOSAL_ID, voter1);
+        _storage.registerVoter(PROPOSAL_ID, voter1);
         vm.prank(owner);
-        gStorage.burnSupervisor(PROPOSAL_ID, supervisor);
+        _storage.burnSupervisor(PROPOSAL_ID, supervisor);
         vm.prank(supervisor);
-        gStorage.burnVoter(PROPOSAL_ID, voter1);
+        _storage.burnVoter(PROPOSAL_ID, voter1);
     }
 
     function testSupervisorRegisterVoter() public {
         vm.prank(owner);
-        gStorage.registerSupervisor(PROPOSAL_ID, supervisor);
+        _storage.registerSupervisor(PROPOSAL_ID, supervisor);
         vm.prank(supervisor);
-        gStorage.registerVoter(PROPOSAL_ID, voter1);
-        assertTrue(gStorage.isVoter(PROPOSAL_ID, voter1));
+        _storage.registerVoter(PROPOSAL_ID, voter1);
+        assertTrue(_storage.isVoter(PROPOSAL_ID, voter1));
     }
 
     function testFailSupervisorRegisterVoterIfReady() public {
         vm.prank(owner);
-        gStorage.registerSupervisor(PROPOSAL_ID, supervisor);
+        _storage.registerSupervisor(PROPOSAL_ID, supervisor);
         vm.prank(supervisor);
-        gStorage.makeReady(PROPOSAL_ID);
+        _storage.makeReady(PROPOSAL_ID);
         vm.prank(supervisor);
-        gStorage.registerVoter(PROPOSAL_ID, voter1);
+        _storage.registerVoter(PROPOSAL_ID, voter1);
     }
 
     function testSupervisorRegisterMoreThanOneVoter() public {
@@ -128,197 +128,316 @@ contract GovernanceStorageTest is Test {
         voter[1] = voter2;
 
         vm.prank(owner);
-        gStorage.registerSupervisor(PROPOSAL_ID, supervisor);
+        _storage.registerSupervisor(PROPOSAL_ID, supervisor);
         vm.prank(supervisor);
 
-        gStorage.registerVoters(PROPOSAL_ID, voter);
-        assertTrue(gStorage.isVoter(PROPOSAL_ID, voter1));
-        assertTrue(gStorage.isVoter(PROPOSAL_ID, voter2));
+        _storage.registerVoters(PROPOSAL_ID, voter);
+        assertTrue(_storage.isVoter(PROPOSAL_ID, voter1));
+        assertTrue(_storage.isVoter(PROPOSAL_ID, voter2));
     }
 
     function testSupervisorRegisterThenBurnVoter() public {
         vm.prank(owner);
-        gStorage.registerSupervisor(PROPOSAL_ID, supervisor);
+        _storage.registerSupervisor(PROPOSAL_ID, supervisor);
         vm.prank(supervisor);
-        gStorage.registerVoter(PROPOSAL_ID, voter1);
+        _storage.registerVoter(PROPOSAL_ID, voter1);
         vm.prank(supervisor);
-        gStorage.burnVoter(PROPOSAL_ID, voter1);
-        assertFalse(gStorage.isVoter(PROPOSAL_ID, voter1));
+        _storage.burnVoter(PROPOSAL_ID, voter1);
+        assertFalse(_storage.isVoter(PROPOSAL_ID, voter1));
     }
 
     function testFailAddVoterIfReady() public {
         vm.prank(owner);
-        gStorage.registerSupervisor(PROPOSAL_ID, supervisor);
+        _storage.registerSupervisor(PROPOSAL_ID, supervisor);
         vm.prank(supervisor);
-        gStorage.makeReady(PROPOSAL_ID);
+        _storage.makeReady(PROPOSAL_ID);
         vm.prank(supervisor);
-        gStorage.registerVoter(PROPOSAL_ID, voter1);
+        _storage.registerVoter(PROPOSAL_ID, voter1);
     }
 
     function testFailBurnVoterIfOpen() public {
         vm.prank(owner);
-        gStorage.registerSupervisor(PROPOSAL_ID, supervisor);
+        _storage.registerSupervisor(PROPOSAL_ID, supervisor);
         vm.prank(supervisor);
-        gStorage.registerVoter(PROPOSAL_ID, voter1);
+        _storage.registerVoter(PROPOSAL_ID, voter1);
         vm.prank(supervisor);
-        gStorage.makeReady(PROPOSAL_ID);
+        _storage.makeReady(PROPOSAL_ID);
         vm.prank(supervisor);
-        gStorage.burnVoter(PROPOSAL_ID, voter1);
+        _storage.burnVoter(PROPOSAL_ID, voter1);
     }
 
     function testFailOwnerRegisterVoter() public {
         vm.prank(owner);
-        gStorage.registerVoter(PROPOSAL_ID, voter1);
+        _storage.registerVoter(PROPOSAL_ID, voter1);
     }
 
     function testFailOwnerBurnVoter() public {
         vm.prank(owner);
-        gStorage.registerSupervisor(PROPOSAL_ID, supervisor);
+        _storage.registerSupervisor(PROPOSAL_ID, supervisor);
         vm.prank(supervisor);
-        gStorage.registerVoter(PROPOSAL_ID, voter1);
+        _storage.registerVoter(PROPOSAL_ID, voter1);
         vm.prank(owner);
-        gStorage.burnVoter(PROPOSAL_ID, voter1);
+        _storage.burnVoter(PROPOSAL_ID, voter1);
     }
 
     function testSetQuorumThreshold() public {
         vm.prank(owner);
-        gStorage.registerSupervisor(PROPOSAL_ID, supervisor);
+        _storage.registerSupervisor(PROPOSAL_ID, supervisor);
         vm.prank(supervisor);
-        gStorage.setQuorumThreshold(PROPOSAL_ID, 100);
-        assertEq(gStorage.quorumRequired(PROPOSAL_ID), 100);
+        _storage.setQuorumThreshold(PROPOSAL_ID, 100);
+        assertEq(_storage.quorumRequired(PROPOSAL_ID), 100);
     }
 
     function testFailSetQuorumThresholdIfReady() public {
         vm.prank(owner);
-        gStorage.registerSupervisor(PROPOSAL_ID, supervisor);
+        _storage.registerSupervisor(PROPOSAL_ID, supervisor);
         vm.prank(supervisor);
-        gStorage.makeReady(PROPOSAL_ID);
+        _storage.makeReady(PROPOSAL_ID);
         vm.prank(supervisor);
-        gStorage.setQuorumThreshold(PROPOSAL_ID, 100);
-        assertEq(gStorage.quorumRequired(PROPOSAL_ID), 100);
+        _storage.setQuorumThreshold(PROPOSAL_ID, 100);
+        assertEq(_storage.quorumRequired(PROPOSAL_ID), 100);
     }
 
     function testRequiredParticipation() public {
         vm.prank(owner);
-        gStorage.registerSupervisor(PROPOSAL_ID, supervisor);
+        _storage.registerSupervisor(PROPOSAL_ID, supervisor);
         vm.prank(supervisor);
-        gStorage.setRequiredParticipation(PROPOSAL_ID, 101);
-        assertEq(gStorage.requiredParticipation(PROPOSAL_ID), 101);
+        _storage.setRequiredParticipation(PROPOSAL_ID, 101);
+        assertEq(_storage.requiredParticipation(PROPOSAL_ID), 101);
     }
 
     function testFailRequiredParticipationIfReady() public {
         vm.prank(owner);
-        gStorage.registerSupervisor(PROPOSAL_ID, supervisor);
+        _storage.registerSupervisor(PROPOSAL_ID, supervisor);
         vm.prank(supervisor);
-        gStorage.makeReady(PROPOSAL_ID);
+        _storage.makeReady(PROPOSAL_ID);
         vm.prank(supervisor);
-        gStorage.setRequiredParticipation(PROPOSAL_ID, 101);
+        _storage.setRequiredParticipation(PROPOSAL_ID, 101);
     }
 
     function testSetVoteDelay() public {
         vm.prank(owner);
-        gStorage.registerSupervisor(PROPOSAL_ID, supervisor);
+        _storage.registerSupervisor(PROPOSAL_ID, supervisor);
         vm.prank(supervisor);
-        gStorage.setVoteDelay(PROPOSAL_ID, 100);
-        assertEq(gStorage.voteDelay(PROPOSAL_ID), 100);
+        _storage.setVoteDelay(PROPOSAL_ID, 100);
+        assertEq(_storage.voteDelay(PROPOSAL_ID), 100);
         vm.prank(supervisor);
-        gStorage.makeReady(PROPOSAL_ID);
-        assertEq(gStorage.startBlock(PROPOSAL_ID), block.number + 100);
+        _storage.makeReady(PROPOSAL_ID);
+        assertEq(_storage.startBlock(PROPOSAL_ID), block.number + 100);
     }
 
     function testFailSetVoteDelayRequiresSupervisor() public {
         vm.prank(owner);
-        gStorage.registerSupervisor(PROPOSAL_ID, supervisor);
-        gStorage.setVoteDelay(PROPOSAL_ID, 100);
+        _storage.registerSupervisor(PROPOSAL_ID, supervisor);
+        _storage.setVoteDelay(PROPOSAL_ID, 100);
     }
 
     function testFailSetVoteDelayIfReady() public {
         vm.prank(owner);
-        gStorage.registerSupervisor(PROPOSAL_ID, supervisor);
+        _storage.registerSupervisor(PROPOSAL_ID, supervisor);
         vm.prank(supervisor);
-        gStorage.makeReady(PROPOSAL_ID);
+        _storage.makeReady(PROPOSAL_ID);
         vm.prank(supervisor);
-        gStorage.setVoteDelay(PROPOSAL_ID, 2);
+        _storage.setVoteDelay(PROPOSAL_ID, 2);
     }
 
     function testSetMinimumVoteDuration() public {
         vm.prank(owner);
-        gStorage.registerSupervisor(PROPOSAL_ID, supervisor);
+        _storage.registerSupervisor(PROPOSAL_ID, supervisor);
         vm.prank(supervisor);
-        gStorage.setRequiredVoteDuration(PROPOSAL_ID, 10);
-        assertEq(gStorage.voteDuration(PROPOSAL_ID), 10);
+        _storage.setRequiredVoteDuration(PROPOSAL_ID, 10);
+        assertEq(_storage.voteDuration(PROPOSAL_ID), 10);
         vm.prank(supervisor);
-        gStorage.makeReady(PROPOSAL_ID);
-        assertEq(gStorage.endBlock(PROPOSAL_ID), block.number + 10);
+        _storage.makeReady(PROPOSAL_ID);
+        assertEq(_storage.endBlock(PROPOSAL_ID), block.number + 10);
     }
 
     function testFailSetMinimumVoteDurationNonZero() public {
         vm.prank(owner);
-        gStorage.registerSupervisor(PROPOSAL_ID, supervisor);
+        _storage.registerSupervisor(PROPOSAL_ID, supervisor);
         vm.prank(supervisor);
-        gStorage.setRequiredVoteDuration(PROPOSAL_ID, 0);
+        _storage.setRequiredVoteDuration(PROPOSAL_ID, 0);
     }
 
     function testFailSetMinimumVoteDurationIfReady() public {
         vm.prank(owner);
-        gStorage.registerSupervisor(PROPOSAL_ID, supervisor);
+        _storage.registerSupervisor(PROPOSAL_ID, supervisor);
         vm.prank(supervisor);
-        gStorage.makeReady(PROPOSAL_ID);
+        _storage.makeReady(PROPOSAL_ID);
         vm.prank(supervisor);
-        gStorage.setRequiredVoteDuration(PROPOSAL_ID, 1);
+        _storage.setRequiredVoteDuration(PROPOSAL_ID, 1);
     }
 
     function testFailSetMinimumVoteDurationRequiredSupervisor() public {
         vm.prank(owner);
-        gStorage.registerSupervisor(PROPOSAL_ID, supervisor);
-        gStorage.setRequiredVoteDuration(PROPOSAL_ID, 0);
+        _storage.registerSupervisor(PROPOSAL_ID, supervisor);
+        _storage.setRequiredVoteDuration(PROPOSAL_ID, 0);
     }
 
     function testMakeReady() public {
         vm.prank(owner);
-        gStorage.registerSupervisor(PROPOSAL_ID, supervisor);
+        _storage.registerSupervisor(PROPOSAL_ID, supervisor);
         vm.prank(supervisor);
-        gStorage.makeReady(PROPOSAL_ID);
-        assertTrue(gStorage.isReady(PROPOSAL_ID));
+        _storage.makeReady(PROPOSAL_ID);
+        assertTrue(_storage.isReady(PROPOSAL_ID));
     }
 
     function testFailMakeReadyDoubleCall() public {
         vm.prank(owner);
-        gStorage.registerSupervisor(PROPOSAL_ID, supervisor);
+        _storage.registerSupervisor(PROPOSAL_ID, supervisor);
         vm.prank(supervisor);
-        gStorage.makeReady(PROPOSAL_ID);
+        _storage.makeReady(PROPOSAL_ID);
         vm.prank(supervisor);
-        gStorage.makeReady(PROPOSAL_ID);
+        _storage.makeReady(PROPOSAL_ID);
     }
 
     function testFailMakeReadyRequireSupervisor() public {
         vm.prank(owner);
-        gStorage.registerSupervisor(PROPOSAL_ID, supervisor);
-        gStorage.makeReady(PROPOSAL_ID);
+        _storage.registerSupervisor(PROPOSAL_ID, supervisor);
+        _storage.makeReady(PROPOSAL_ID);
     }
 
     function testVeto() public {
         vm.prank(owner);
-        gStorage.registerSupervisor(PROPOSAL_ID, supervisor);
-        assertFalse(gStorage.isVeto(PROPOSAL_ID));
+        _storage.registerSupervisor(PROPOSAL_ID, supervisor);
+        assertFalse(_storage.isVeto(PROPOSAL_ID));
         vm.prank(supervisor);
-        gStorage._veto(PROPOSAL_ID);
-        assertTrue(gStorage.isVeto(PROPOSAL_ID));
+        _storage._veto(PROPOSAL_ID);
+        assertTrue(_storage.isVeto(PROPOSAL_ID));
     }
 
     function testFailOwnerMayNotVeto() public {
         vm.prank(owner);
-        gStorage.registerSupervisor(PROPOSAL_ID, supervisor);
+        _storage.registerSupervisor(PROPOSAL_ID, supervisor);
         vm.prank(owner);
-        gStorage._veto(PROPOSAL_ID);
+        _storage._veto(PROPOSAL_ID);
     }
 
     function testFailVoterMayNotVeto() public {
         vm.prank(owner);
-        gStorage.registerSupervisor(PROPOSAL_ID, supervisor);
+        _storage.registerSupervisor(PROPOSAL_ID, supervisor);
         vm.prank(supervisor);
-        gStorage.registerVoter(PROPOSAL_ID, voter1);
+        _storage.registerVoter(PROPOSAL_ID, voter1);
         vm.prank(voter1);
-        gStorage._veto(PROPOSAL_ID);
+        _storage._veto(PROPOSAL_ID);
+    }
+
+    function testCurrentStrategy() public {
+        assertEq(address(_storage.voteStrategy(PROPOSAL_ID)), address(_strategy));
+    }
+
+    function testFailRevertInvalidProposal(uint256 _proposalId) public {
+        vm.assume(_proposalId > PROPOSAL_ID);
+        _storage._validOrRevert(_proposalId);
+    }
+
+    function testAbstainFromVote() public {
+        vm.prank(owner);
+        _storage.registerSupervisor(PROPOSAL_ID, supervisor);
+        vm.startPrank(supervisor);
+        _storage.registerVoter(PROPOSAL_ID, voter1);
+        _storage.setQuorumThreshold(PROPOSAL_ID, 2);
+        _storage.makeReady(PROPOSAL_ID);
+        vm.stopPrank();
+        vm.prank(voter1);
+        _storage._abstainFromVote(PROPOSAL_ID);
+        assertEq(_storage.forVotes(PROPOSAL_ID), 0);
+        assertEq(_storage.againstVotes(PROPOSAL_ID), 0);
+        assertEq(_storage.abstentionCount(PROPOSAL_ID), 1);
+        assertEq(_storage.totalParticipation(PROPOSAL_ID), 1);
+    }
+
+    function testCastAgainstVote() public {
+        vm.prank(owner);
+        _storage.registerSupervisor(PROPOSAL_ID, supervisor);
+        vm.startPrank(supervisor);
+        _storage.registerVoter(PROPOSAL_ID, voter1);
+        _storage.setQuorumThreshold(PROPOSAL_ID, 2);
+        _storage.makeReady(PROPOSAL_ID);
+        vm.stopPrank();
+        vm.prank(voter1);
+        _storage._castVoteAgainst(PROPOSAL_ID);
+        assertEq(_storage.forVotes(PROPOSAL_ID), 0);
+        assertEq(_storage.againstVotes(PROPOSAL_ID), 1);
+        assertEq(_storage.abstentionCount(PROPOSAL_ID), 0);
+        assertEq(_storage.totalParticipation(PROPOSAL_ID), 1);
+    }
+
+    function testCastOneVote() public {
+        vm.prank(owner);
+        _storage.registerSupervisor(PROPOSAL_ID, supervisor);
+        vm.startPrank(supervisor);
+        _storage.registerVoter(PROPOSAL_ID, voter1);
+        _storage.setQuorumThreshold(PROPOSAL_ID, 2);
+        _storage.makeReady(PROPOSAL_ID);
+        vm.stopPrank();
+        vm.prank(voter1);
+        _storage._castVoteFor(PROPOSAL_ID);
+        assertEq(_storage.forVotes(PROPOSAL_ID), 1);
+        assertEq(_storage.totalParticipation(PROPOSAL_ID), 1);
+    }
+
+    function testCastOneVoteFromAll() public {
+        vm.prank(owner);
+        _storage.registerSupervisor(PROPOSAL_ID, supervisor);
+        vm.startPrank(supervisor);
+        _storage.registerVoterClassopenVote(PROPOSAL_ID);
+        _storage.setQuorumThreshold(PROPOSAL_ID, 2);
+        _storage.makeReady(PROPOSAL_ID);
+        vm.stopPrank();
+        vm.prank(voter1);
+        _storage._castVoteFor(PROPOSAL_ID);
+        assertEq(_storage.totalParticipation(PROPOSAL_ID), 1);
+    }
+
+    function testCastVoteFromERC721() public {
+        uint256 tokenId = 0x71;
+        IERC721 token = new MockERC721(voter2, tokenId);
+        vm.prank(owner);
+        _storage.registerSupervisor(PROPOSAL_ID, supervisor);
+        vm.startPrank(supervisor);
+        _storage.registerVoterClassERC721(PROPOSAL_ID, address(token));
+        _storage.setQuorumThreshold(PROPOSAL_ID, 1);
+        _storage.makeReady(PROPOSAL_ID);
+        vm.stopPrank();
+        vm.prank(voter2);
+        _storage._castVoteFor(PROPOSAL_ID);
+        assertEq(_storage.forVotes(PROPOSAL_ID), 1);
+        assertEq(_storage.againstVotes(PROPOSAL_ID), 0);
+        assertEq(_storage.abstentionCount(PROPOSAL_ID), 0);
+        assertEq(_storage.totalParticipation(PROPOSAL_ID), 1);
+    }
+
+    function testPermittedAfterObservingVoteDelay() public {
+        vm.prank(owner);
+        _storage.registerSupervisor(PROPOSAL_ID, supervisor);
+        vm.startPrank(supervisor);
+        _storage.registerVoter(PROPOSAL_ID, voter1);
+        _storage.setQuorumThreshold(PROPOSAL_ID, 1);
+        _storage.setVoteDelay(PROPOSAL_ID, 100);
+        _storage.makeReady(PROPOSAL_ID);
+        uint256 startBlock = block.number;
+        vm.stopPrank();
+        vm.prank(voter1);
+        vm.roll(startBlock + 100);
+        _storage._castVoteFor(PROPOSAL_ID);
+        assertEq(1, _storage.forVotes(PROPOSAL_ID));
+    }
+
+    function testVoterMayChangeTheirMind() public {
+        vm.prank(owner);
+        _storage.registerSupervisor(PROPOSAL_ID, supervisor);
+        vm.startPrank(supervisor);
+        _storage.enableUndoVote(PROPOSAL_ID);
+        _storage.registerVoter(PROPOSAL_ID, voter1);
+        _storage.setQuorumThreshold(PROPOSAL_ID, 2);
+        _storage.makeReady(PROPOSAL_ID);
+        vm.stopPrank();
+        vm.prank(voter1);
+        _storage._castVoteFor(PROPOSAL_ID);
+        assertEq(_storage.totalParticipation(PROPOSAL_ID), 1);
+        vm.prank(voter1);
+        _storage._castVoteUndo(PROPOSAL_ID);
+        assertEq(_storage.totalParticipation(PROPOSAL_ID), NONE);
     }
 }

@@ -13,8 +13,9 @@
  */
 pragma solidity ^0.8.15;
 
-import "./GovernanceStorage.sol";
-import "./VoteStrategy.sol";
+import "../contracts/Storage.sol";
+import "../contracts/GovernanceStorage.sol";
+import "../contracts/VoteStrategy.sol";
 
 /// @title ElectorVoterPoolStrategy
 
@@ -31,43 +32,65 @@ import "./VoteStrategy.sol";
 
 // measure is considered passed when the threshold voter count is achieved out of the current voting pool
 
-contract ElectorVoterPoolStrategy is GovernanceStorage, VoteStrategy {
+contract ElectorVoterPoolStrategy is VoteStrategy {
     /// @notice contract name
     string public constant name = "collective.xyz governance contract";
     uint32 public constant VERSION_1 = 1;
-    uint32 public constant version = VERSION_1;
+
+    Storage private _storage;
+
+    constructor(Storage _gstorage) {
+        _storage = _gstorage;
+    }
+
+    function version() public pure virtual returns (uint32) {
+        return VERSION_1;
+    }
 
     /// @notice voting is open or not
     mapping(uint256 => bool) isVoteOpenByProposalId;
 
     modifier requireStrategyVersion(uint256 _proposalId) {
-        GovernanceStorage.Proposal storage proposal = GovernanceStorage.proposalMap[_proposalId];
-        require(address(this) == address(proposal.votingStrategy), "Strategy not valid for this proposalId");
+        address strategy = _storage.voteStrategy(_proposalId);
+        require(address(this) == strategy, "Strategy not valid for this proposalId");
         _;
     }
 
     modifier requireVoteOpen(uint256 _proposalId) {
-        GovernanceStorage.Proposal storage proposal = GovernanceStorage.proposalMap[_proposalId];
-        require(proposal.isReady && isVoteOpenByProposalId[_proposalId] && !proposal.isVeto, "Voting is closed.");
+        require(
+            _storage.isReady(_proposalId) && isVoteOpenByProposalId[_proposalId] && !_storage.isVeto(_proposalId),
+            "Voting is closed."
+        );
+        _;
+    }
+
+    modifier requireVoteReady(uint256 _proposalId) {
+        require(_storage.isReady(_proposalId) && !_storage.isVeto(_proposalId), "Voting is not ready.");
         _;
     }
 
     modifier requireVoteClosed(uint256 _proposalId) {
-        GovernanceStorage.Proposal storage proposal = GovernanceStorage.proposalMap[_proposalId];
-        require(proposal.isReady && !isVoteOpenByProposalId[_proposalId] && !proposal.isVeto, "Voting is not closed.");
+        require(
+            _storage.isReady(_proposalId) && !isVoteOpenByProposalId[_proposalId] && !_storage.isVeto(_proposalId),
+            "Voting is not closed."
+        );
+        _;
+    }
+
+    modifier requireElectorSupervisor(uint256 _proposalId) {
+        require(_storage.isSupervisor(_proposalId, msg.sender), "Elector supervisor required");
         _;
     }
 
     /// @notice allow voting
     function openVote(uint256 _proposalId)
         public
-        requireValidProposal(_proposalId)
         requireStrategyVersion(_proposalId)
         requireElectorSupervisor(_proposalId)
-        requireVotingReady(_proposalId)
+        requireVoteReady(_proposalId)
     {
-        GovernanceStorage.Proposal storage proposal = GovernanceStorage.proposalMap[_proposalId];
-        require(proposal.quorumRequired < GovernanceStorage.MAXIMUM_PASS_THRESHOLD, "Quorum must be set prior to opening vote");
+        _storage._validOrRevert(_proposalId);
+        require(_storage.quorumRequired(_proposalId) < _storage._maxPassThreshold(), "Quorum must be set prior to opening vote");
         if (!isVoteOpenByProposalId[_proposalId]) {
             isVoteOpenByProposalId[_proposalId] = true;
             emit VoteOpen(_proposalId);
@@ -76,25 +99,20 @@ contract ElectorVoterPoolStrategy is GovernanceStorage, VoteStrategy {
         }
     }
 
-    function isOpen(uint256 _proposalId)
-        public
-        view
-        requireValidProposal(_proposalId)
-        requireStrategyVersion(_proposalId)
-        returns (bool)
-    {
+    function isOpen(uint256 _proposalId) public view requireStrategyVersion(_proposalId) returns (bool) {
+        _storage._validOrRevert(_proposalId);
         return isVoteOpenByProposalId[_proposalId];
     }
 
     /// @notice forbid any further voting
     function endVote(uint256 _proposalId)
         public
-        requireValidProposal(_proposalId)
         requireStrategyVersion(_proposalId)
         requireElectorSupervisor(_proposalId)
         requireVoteOpen(_proposalId)
     {
-        uint256 _endBlock = this.endBlock(_proposalId);
+        _storage._validOrRevert(_proposalId);
+        uint256 _endBlock = _storage.endBlock(_proposalId);
         require(_endBlock < block.number, "Voting remains active");
         isVoteOpenByProposalId[_proposalId] = false;
         emit VoteClosed(_proposalId);
@@ -102,51 +120,38 @@ contract ElectorVoterPoolStrategy is GovernanceStorage, VoteStrategy {
 
     /// @notice veto the current measure
     function veto(uint256 _proposalId) public requireStrategyVersion(_proposalId) requireVoteOpen(_proposalId) {
-        _veto(_proposalId);
+        _storage._veto(_proposalId);
     }
 
     // @notice cast an affirmative vote for the measure
-    function voteFor(uint256 _proposalId)
-        public
-        requireValidProposal(_proposalId)
-        requireStrategyVersion(_proposalId)
-        requireVoter(_proposalId)
-        requireVoteOpen(_proposalId)
-    {
-        _castVoteFor(_proposalId);
+    function voteFor(uint256 _proposalId) public requireStrategyVersion(_proposalId) requireVoteOpen(_proposalId) {
+        _storage._castVoteFor(_proposalId);
     }
 
     // @notice undo any previous vote
-    function undoVote(uint256 _proposalId)
-        public
-        requireValidProposal(_proposalId)
-        requireStrategyVersion(_proposalId)
-        requireVoter(_proposalId)
-        requireVoteOpen(_proposalId)
-    {
-        _castVoteUndo(_proposalId);
+    function undoVote(uint256 _proposalId) public requireStrategyVersion(_proposalId) requireVoteOpen(_proposalId) {
+        _storage._castVoteUndo(_proposalId);
     }
 
     function voteAgainst(uint256 _proposalId) public requireStrategyVersion(_proposalId) requireVoteOpen(_proposalId) {
-        _castVoteAgainst(_proposalId);
+        _storage._castVoteAgainst(_proposalId);
     }
 
     function abstainFromVote(uint256 _proposalId) public requireStrategyVersion(_proposalId) requireVoteOpen(_proposalId) {
-        _abstainFromVote(_proposalId);
+        _storage._abstainFromVote(_proposalId);
     }
 
     /// @notice get the result of the measure pass or failed
     function getVoteSucceeded(uint256 _proposalId)
         public
         view
-        requireValidProposal(_proposalId)
         requireStrategyVersion(_proposalId)
         requireVoteClosed(_proposalId)
         returns (bool)
     {
-        GovernanceStorage.Proposal storage proposal = GovernanceStorage.proposalMap[_proposalId];
-        uint256 totalVotesCast = proposal.forVotes + proposal.againstVotes + proposal.abstentionCount;
-        require(totalVotesCast >= proposal.requiredParticipation, "Not enough participants");
-        return proposal.forVotes >= proposal.quorumRequired;
+        _storage._validOrRevert(_proposalId);
+        uint256 totalVotesCast = _storage.totalParticipation(_proposalId);
+        require(totalVotesCast >= _storage.requiredParticipation(_proposalId), "Not enough participants");
+        return _storage.forVotes(_proposalId) >= _storage.quorumRequired(_proposalId);
     }
 }

@@ -37,6 +37,8 @@ interface VoteStrategy {
 
     function abstainFromVote(uint256 _proposalId) external;
 
+    function undoVote(uint256 _proposalId) external;
+
     function veto(uint256 _proposalId) external;
 
     function getVoteSucceeded(uint256 _proposalId) external returns (bool);

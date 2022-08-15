@@ -1,12 +1,12 @@
 FROM debian:stable-slim as builder
 
 RUN export DEBIAN_FRONTEND=noninteractive && \
-    apt update && \
-    apt install -y -q --no-install-recommends \
-    git curl gnupg2 build-essential \
-    ca-certificates apt-transport-https && \
-    apt clean && \
-    rm -rf /var/lib/apt/lists/*
+  apt update && \
+  apt install -y -q --no-install-recommends \
+  git curl gnupg2 build-essential openssl libssl-dev pkg-config \
+  ca-certificates apt-transport-https && \
+  apt clean && \
+  rm -rf /var/lib/apt/lists/*
 
 RUN useradd --create-home -s /bin/bash mr
 RUN usermod -a -G sudo mr
@@ -81,6 +81,5 @@ ENV PATH=${PATH}:~/.cargo/bin
 RUN yarn install
 RUN yarn lint
 RUN ~mr/.cargo/bin/forge build --sizes
-RUN ~mr/.cargo/bin/forge test -vvv
+#RUN ~mr/.cargo/bin/forge test -vvv
 
-CMD ~/mr/.cargo/bin/forge test -vvv

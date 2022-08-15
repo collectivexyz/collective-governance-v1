@@ -34,6 +34,7 @@ interface Storage {
     event VoteCast(uint256 proposalId, address voter, uint256 totalVotesCast);
     event UndoVote(uint256 proposalId, address voter, uint256 votesUndone);
     event VoteVeto(uint256 proposalId, address supervisor);
+    event VoteReady(uint256 proposalId, uint256 startBlock, uint256 endBlock);
 
     struct Proposal {
         /// @notice Unique id for looking up a proposal
@@ -66,13 +67,11 @@ interface Storage {
         bool isReady;
         /// @notice this proposal allows undo votes
         bool isUndoEnabled;
-        /// @notice version of strategy applied to proposal
-        uint32 strategyVersion;
         /// @notice general voter class enabled for this vote
         VoterClass voterClass;
         /// @notice Strategy applied to this proposal
-        VoteStrategy votingStrategy;
-        /// @notice Receipts of   ballots for the entire set of voters
+        address voteStrategy;
+        /// @notice Receipts of ballots for the entire set of voters
         mapping(address => Receipt) voteReceipt;
         /// @notice configured supervisors
         mapping(address => bool) supervisorPool;
@@ -86,6 +85,8 @@ interface Storage {
         uint256 votedFor;
         /// @notice The number of votes the voter had, which were cast
         uint256 votesCast;
+        /// @notice mapping of tokens voted
+        mapping(uint256 => bool) tokenVoted;
     }
 
     function registerSupervisor(uint256 _proposalId, address _supervisor) external;
@@ -112,25 +113,55 @@ interface Storage {
 
     function setRequiredVoteDuration(uint256 _proposalId, uint256 _voteDuration) external;
 
+    function enableUndoVote(uint256 _proposalId) external;
+
     function makeReady(uint256 _proposalId) external;
 
-    function isReady(uint256 _proposalId) external returns (bool);
+    function isSupervisor(uint256 _proposalId, address _supervisor) external returns (bool);
+
+    function isVoter(uint256 _proposalId, address _voter) external returns (bool);
+
+    function isReady(uint256 _proposalId) external view returns (bool);
 
     function isVeto(uint256 _proposalId) external view returns (bool);
+
+    function getSender(uint256 _proposalId) external view returns (address);
+
+    function quorumRequired(uint256 _proposalId) external view returns (uint256);
 
     function voteDelay(uint256 _proposalId) external view returns (uint256);
 
     function voteDuration(uint256 _proposalId) external view returns (uint256);
 
-    function startBlock(uint256 _proposalId) external returns (uint256);
+    function startBlock(uint256 _proposalId) external view returns (uint256);
 
-    function endBlock(uint256 _proposalId) external returns (uint256);
+    function endBlock(uint256 _proposalId) external view returns (uint256);
 
-    function forVotes(uint256 _proposalId) external returns (uint256);
+    function forVotes(uint256 _proposalId) external view returns (uint256);
 
-    function againstVotes(uint256 _proposalId) external returns (uint256);
+    function againstVotes(uint256 _proposalId) external view returns (uint256);
 
-    function abstentionCount(uint256 _proposalId) external returns (uint256);
+    function abstentionCount(uint256 _proposalId) external view returns (uint256);
 
-    function totalParticipation(uint256 _proposalId) external returns (uint256);
+    function totalParticipation(uint256 _proposalId) external view returns (uint256);
+
+    function requiredParticipation(uint256 _proposalId) external view returns (uint256);
+
+    function voteStrategy(uint256 _proposalId) external view returns (address);
+
+    function _initializeProposal(address _strategy) external returns (uint256);
+
+    function _castVoteFor(uint256 _proposalId) external;
+
+    function _castVoteUndo(uint256 _proposalId) external;
+
+    function _castVoteAgainst(uint256 _proposalId) external;
+
+    function _abstainFromVote(uint256 _proposalId) external;
+
+    function _veto(uint256 _proposalId) external;
+
+    function _validOrRevert(uint256 _proposalId) external view;
+
+    function _maxPassThreshold() external pure returns (uint256);
 }

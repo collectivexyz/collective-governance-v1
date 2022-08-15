@@ -13,6 +13,7 @@
  */
 pragma solidity ^0.8.15;
 
+import "./GovernanceStorage.sol";
 import "./Governance.sol";
 import "./UpgradeableGovernance.sol";
 import "./VoteStrategy.sol";
@@ -23,11 +24,13 @@ import "./ElectorVoterPoolStrategy.sol";
 contract CollectiveGovernance is UpgradeableGovernance, Governance {
     address private owner;
 
+    Storage private _storage;
     VoteStrategy private _votingStategy;
 
     constructor() {
         owner = msg.sender;
-        _votingStategy = new ElectorVoterPoolStrategy();
+        _storage = new GovernanceStorage();
+        _votingStategy = new ElectorVoterPoolStrategy(_storage);
     }
 
     modifier requireContractOwner() {
