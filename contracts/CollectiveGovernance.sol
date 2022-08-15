@@ -25,12 +25,12 @@ contract CollectiveGovernance is UpgradeableGovernance, Governance {
     address private owner;
 
     Storage private _storage;
-    VoteStrategy private _votingStategy;
+    VoteStrategy private _voteStrategy;
 
     constructor() {
         owner = msg.sender;
         _storage = new GovernanceStorage();
-        _votingStategy = new ElectorVoterPoolStrategy(_storage);
+        _voteStrategy = new ElectorVoterPoolStrategy(_storage);
     }
 
     modifier requireContractOwner() {
@@ -39,33 +39,62 @@ contract CollectiveGovernance is UpgradeableGovernance, Governance {
     }
 
     function setVoteStrategy(address _strategy) external requireContractOwner {
-        uint32 version = _votingStategy.version();
-        _votingStategy = VoteStrategy(_strategy);
-        uint32 newVersion = _votingStategy.version();
+        uint32 version = _voteStrategy.version();
+        _voteStrategy = VoteStrategy(_strategy);
+        uint32 newVersion = _voteStrategy.version();
         emit StrategyChange(version, newVersion);
     }
 
     function getCurrentStrategyVersion() external view returns (uint32) {
-        return _votingStategy.version();
+        return _voteStrategy.version();
     }
 
     function getCurrentStrategyAddress() external view returns (address) {
-        return address(_votingStategy);
+        return address(_voteStrategy);
     }
 
-    function propose() external pure returns (uint256) {
-        revert("Not implemented");
+    function propose(
+        uint256 quorumThreshold,
+        address erc721,
+        uint256 requiredDuration
+    ) external returns (uint256) {
+        uint256 proposalId = _storage._initializeProposal(address(_voteStrategy));
+        _storage.registerSupervisor(proposalId, msg.sender);
+        _storage.setQuorumThreshold(proposalId, quorumThreshold);
+        _storage.setRequiredVoteDuration(proposalId, requiredDuration);
+        _storage.registerVoterClassERC721(proposalId, erc721);
+        _storage.makeReady(proposalId);
+        _voteStrategy.openVote(proposalId);
+        return proposalId;
     }
 
-    function voteFor(
-        uint256 /* _proposalId */
-    ) external pure {
-        revert("Not implemented");
+    function endVote(uint256 _proposalId) external {
+        address _strategyAddress = _storage.voteStrategy(_proposalId);
+        VoteStrategy _strategy = VoteStrategy(_strategyAddress);
+        _strategy.endVote(_proposalId);
     }
 
-    function voteAgainst(
-        uint256 /* _proposalId */
-    ) external pure {
-        revert("Not implemented");
+    function voteFor(uint256 _proposalId) external {
+        address _strategyAddress = _storage.voteStrategy(_proposalId);
+        VoteStrategy _strategy = VoteStrategy(_strategyAddress);
+        _strategy.voteFor(_proposalId);
+    }
+
+    function voteAgainst(uint256 _proposalId) external {
+        address _strategyAddress = _storage.voteStrategy(_proposalId);
+        VoteStrategy _strategy = VoteStrategy(_strategyAddress);
+        _strategy.voteAgainst(_proposalId);
+    }
+
+    function abstainFromVote(uint256 _proposalId) external {
+        address _strategyAddress = _storage.voteStrategy(_proposalId);
+        VoteStrategy _strategy = VoteStrategy(_strategyAddress);
+        _strategy.abstainFromVote(_proposalId);
+    }
+
+    function voteSucceeded(uint256 _proposalId) external view returns (bool) {
+        address _strategyAddress = _storage.voteStrategy(_proposalId);
+        VoteStrategy _strategy = VoteStrategy(_strategyAddress);
+        return _strategy.getVoteSucceeded(_proposalId);
     }
 }

@@ -1,10 +1,14 @@
 // SPDX-License-Identifier: BSD-3-Clause
 pragma solidity ^0.8.15;
 
+import "@openzeppelin/contracts/interfaces/IERC721.sol";
+
 import "forge-std/Test.sol";
+
 import "../contracts/GovernanceStorage.sol";
 import "../contracts/VoteStrategy.sol";
 import "../contracts/ElectorVoterPoolStrategy.sol";
+
 import "./MockERC721.sol";
 
 contract GovernanceStorageTest is Test {

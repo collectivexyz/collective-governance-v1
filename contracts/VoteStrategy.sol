@@ -41,7 +41,7 @@ interface VoteStrategy {
 
     function veto(uint256 _proposalId) external;
 
-    function getVoteSucceeded(uint256 _proposalId) external returns (bool);
+    function getVoteSucceeded(uint256 _proposalId) external view returns (bool);
 
     function isOpen(uint256 _proposalId) external view returns (bool);
 }

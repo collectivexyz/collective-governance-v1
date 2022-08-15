@@ -19,13 +19,19 @@ interface Governance {
     event ProposalCreated(address proposer, uint256 proposalId);
 
     /// @notice propose a measurement of a voting population @returns proposal id
-    function propose() external pure returns (uint256);
+    function propose(
+        uint256 quorumThreshold,
+        address erc721,
+        uint256 requiredDuration
+    ) external returns (uint256);
 
-    function voteFor(
-        uint256 /* _proposalId */
-    ) external;
+    function endVote(uint256 _proposalId) external;
 
-    function voteAgainst(
-        uint256 /* _proposalId */
-    ) external;
+    function voteFor(uint256 _proposalId) external;
+
+    function voteAgainst(uint256 _proposalId) external;
+
+    function abstainFromVote(uint256 _proposalId) external;
+
+    function voteSucceeded(uint256 _proposalId) external view returns (bool);
 }
