@@ -1,5 +1,9 @@
 #!/usr/bin/env bash
 
+set -e
+
+cd site
+
 VERSION=$(git rev-parse HEAD | cut -c 1-10)
 PROJECT=eth-community-v1/$(basename ${PWD})
 
