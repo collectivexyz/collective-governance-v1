@@ -7,7 +7,7 @@ on:
       - main
   push:
     branches:
-      - '*'
+      - "*"
   release:
     types: [created]
 
@@ -33,6 +33,12 @@ jobs:
         with:
           version: nightly
 
+      - name: Yarn install
+        run: |
+          yarn install --dev
+          yarn lint
+          yarn install --production
+
       - name: Run Forge build
         run: |
           forge --version
@@ -44,7 +50,7 @@ jobs:
           forge test -vvv
         id: test
 
-      - name:  Deploy Goerli Testnet
+      - name: Deploy Goerli Testnet
         run: |
           forge create --contracts contracts/ElectorVoterPool.sol --rpc-url ${DEVNET_RPC} --private-key ${DEVNET_WALLET} ElectorVoterPool
-        if: ${{ github.event_name == 'release' && github.event.action == 'created' }}        
+        if: ${{ github.event_name == 'release' && github.event.action == 'created' }}
