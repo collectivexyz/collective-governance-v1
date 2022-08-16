@@ -17,7 +17,7 @@ pragma solidity ^0.8.15;
 /// contract enables proposing a measure to be voted upon
 interface Governance {
     event StorageAddress(address);
-    event StrategyChange(uint32 fromVersion, uint32 toVersion, address strategy);
+    event StrategyAddress(address strategy, uint32 version);
     event ProposalCreated(address proposer, uint256 proposalId);
 
     /// @notice propose a measurement of a voting population @returns proposal id

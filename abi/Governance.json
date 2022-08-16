@@ -36,24 +36,18 @@
     "inputs": [
       {
         "indexed": false,
-        "internalType": "uint32",
-        "name": "fromVersion",
-        "type": "uint32"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint32",
-        "name": "toVersion",
-        "type": "uint32"
-      },
-      {
-        "indexed": false,
         "internalType": "address",
         "name": "strategy",
         "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint32",
+        "name": "version",
+        "type": "uint32"
       }
     ],
-    "name": "StrategyChange",
+    "name": "StrategyAddress",
     "type": "event"
   },
   {

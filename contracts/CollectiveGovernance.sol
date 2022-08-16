@@ -32,19 +32,12 @@ contract CollectiveGovernance is Governance {
         _storage = new GovernanceStorage();
         emit StorageAddress(address(_storage));
         _voteStrategy = new ElectorVoterPoolStrategy(_storage);
-        emit StrategyChange(0, _voteStrategy.version(), address(_voteStrategy));
+        emit StrategyAddress(address(_voteStrategy), _voteStrategy.version());
     }
 
     modifier requireContractOwner() {
         require(owner == msg.sender, "Not contract owner");
         _;
-    }
-
-    function setVoteStrategy(address _strategy) external requireContractOwner {
-        uint32 version = _voteStrategy.version();
-        _voteStrategy = VoteStrategy(_strategy);
-        uint32 newVersion = _voteStrategy.version();
-        emit StrategyChange(version, newVersion, address(_strategy));
     }
 
     function getCurrentStrategyVersion() external view returns (uint32) {
