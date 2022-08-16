@@ -1,6 +1,6 @@
 {
   "name": "collective-governance-v1",
-  "version": "0.8.0",
+  "version": "0.8.1",
   "description": "Open Elector Design for Communities",
   "main": "index.js",
   "directories": {
@@ -19,7 +19,7 @@
     "url": "git+https://github.com/momentranks/collective-governance-v1.git"
   },
   "dependencies": {
-    "@openzeppelin/contracts": "4.7.0",
+    "@openzeppelin/contracts": "4.7.3",
     "ethlint": "1.2.5"
   },
   "keywords": [],
