@@ -24,7 +24,7 @@ interface Storage {
     event BurnSupervisor(uint256 proposalId, address supervisor);
     event RegisterVoter(uint256 proposalId, address voter);
     event BurnVoter(uint256 proposalId, address voter);
-    event RegisterVoterClassopenVote(uint256 proposalId);
+    event RegisterVoterClassOpenVote(uint256 proposalId);
     event RegisterVoterClassERC721(uint256 proposalId, address token);
     event BurnVoterClass(uint256 proposalId);
     event SetRequiredParticipation(uint256 proposalId, uint256 requiredParticipation);
@@ -101,7 +101,7 @@ interface Storage {
 
     function registerVoterClassERC721(uint256 _proposalId, address token) external;
 
-    function registerVoterClassopenVote(uint256 _proposalId) external;
+    function registerVoterClassOpenVote(uint256 _proposalId) external;
 
     function burnVoterClass(uint256 _proposalId) external;
 

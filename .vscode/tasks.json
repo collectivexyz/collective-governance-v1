@@ -28,13 +28,26 @@
       }
     },
     {
+      "label": "abi",
+      "type": "shell",
+      "command": "bin/update_abi.sh",
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "dependsOn": "build",
+      "group": {
+        "kind": "build",
+        "isDefault": false
+      }
+    },
+    {
       "label": "test",
       "type": "shell",
       "command": "forge test -vvv --optimize",
       "options": {
         "cwd": "${workspaceFolder}"
       },
-      "dependsOn": "build",
+      "dependsOn": "abi",
       "group": {
         "kind": "test",
         "isDefault": true

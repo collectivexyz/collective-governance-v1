@@ -183,7 +183,7 @@ contract ElectorVoterPoolTest is Test {
         vm.prank(owner);
         _storage.registerSupervisor(PROPOSAL_ID, supervisor);
         vm.startPrank(supervisor);
-        _storage.registerVoterClassopenVote(PROPOSAL_ID);
+        _storage.registerVoterClassOpenVote(PROPOSAL_ID);
         _storage.setQuorumThreshold(PROPOSAL_ID, 2);
         _storage.makeReady(PROPOSAL_ID);
         elector.openVote(PROPOSAL_ID);
@@ -197,7 +197,7 @@ contract ElectorVoterPoolTest is Test {
         vm.prank(owner);
         _storage.registerSupervisor(PROPOSAL_ID, supervisor);
         vm.startPrank(supervisor);
-        _storage.registerVoterClassopenVote(PROPOSAL_ID);
+        _storage.registerVoterClassOpenVote(PROPOSAL_ID);
         _storage.burnVoterClass(PROPOSAL_ID);
         _storage.setQuorumThreshold(PROPOSAL_ID, 2);
         _storage.makeReady(PROPOSAL_ID);

@@ -9,13 +9,13 @@ import "../contracts/Storage.sol";
 import "../contracts/GovernanceStorage.sol";
 import "../contracts/VoteStrategy.sol";
 import "../contracts/ElectorVoterPoolStrategy.sol";
-import "../contracts/UpgradeableGovernance.sol";
+import "../contracts/Governance.sol";
 import "../contracts/CollectiveGovernance.sol";
 
 import "./MockERC721.sol";
 
 contract CollectiveGovernanceTest is Test {
-    UpgradeableGovernance private governance;
+    Governance private governance;
     Storage private _storage;
 
     address public immutable owner = msg.sender;
@@ -34,15 +34,8 @@ contract CollectiveGovernanceTest is Test {
         assertEq(version, strategyVersion);
     }
 
-    function testFailSetStrategyAsSomeoneElse() public {
-        VoteStrategy evp = new ElectorVoterPoolStrategy(_storage);
-        vm.prank(someoneElse);
-        governance.setVoteStrategy(address(evp));
-    }
-
-    function testAllowUpgradeOwner() public {
-        VoteStrategy evp = new ElectorVoterPoolStrategy(_storage);
-        governance.setVoteStrategy(address(evp));
-        assertEq(version, governance.getCurrentStrategyVersion());
+    function testGetStorageAddress() public {
+        address storageAddress = governance.getStorageAddress();
+        assertFalse(storageAddress == address(0));
     }
 }

@@ -227,7 +227,7 @@ contract GovernanceStorage is Storage {
     }
 
     /// @notice register a voting class for this measure
-    function registerVoterClassopenVote(uint256 _proposalId)
+    function registerVoterClassOpenVote(uint256 _proposalId)
         public
         requireValidProposal(_proposalId)
         requireElectorSupervisor(_proposalId)
@@ -235,7 +235,7 @@ contract GovernanceStorage is Storage {
     {
         Proposal storage proposal = proposalMap[_proposalId];
         proposal.voterClass = new VoterClassOpenVote();
-        emit RegisterVoterClassopenVote(_proposalId);
+        emit RegisterVoterClassOpenVote(_proposalId);
     }
 
     /// @notice burn voter class

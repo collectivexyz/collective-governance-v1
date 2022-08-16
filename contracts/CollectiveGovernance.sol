@@ -13,15 +13,15 @@
  */
 pragma solidity ^0.8.15;
 
-import "./GovernanceStorage.sol";
-import "./Governance.sol";
-import "./UpgradeableGovernance.sol";
-import "./VoteStrategy.sol";
-import "./ElectorVoterPoolStrategy.sol";
+import "../contracts/Storage.sol";
+import "../contracts/GovernanceStorage.sol";
+import "../contracts/Governance.sol";
+import "../contracts/VoteStrategy.sol";
+import "../contracts/ElectorVoterPoolStrategy.sol";
 
 /// @title CollectiveGovernance
 // factory contract for governance
-contract CollectiveGovernance is UpgradeableGovernance, Governance {
+contract CollectiveGovernance is Governance {
     address private owner;
 
     Storage private _storage;
@@ -44,7 +44,7 @@ contract CollectiveGovernance is UpgradeableGovernance, Governance {
         uint32 version = _voteStrategy.version();
         _voteStrategy = VoteStrategy(_strategy);
         uint32 newVersion = _voteStrategy.version();
-        emit StrategyChange(version, newVersion, _strategy);
+        emit StrategyChange(version, newVersion, address(_strategy));
     }
 
     function getCurrentStrategyVersion() external view returns (uint32) {
