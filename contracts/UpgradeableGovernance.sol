@@ -16,12 +16,14 @@ pragma solidity ^0.8.15;
 /// @title UpgradeableGovernance
 /// upgradable governance strategy
 interface UpgradeableGovernance {
-    event StrategyChange(uint32 fromVersion, uint32 toVersion);
-    event StorageChange(uint32 fromVersion, uint32 toVersion);
+    event StorageAddress(address);
+    event StrategyChange(uint32 fromVersion, uint32 toVersion, address currentAddress);
 
     function setVoteStrategy(address _strategy) external;
 
     function getCurrentStrategyVersion() external view returns (uint32);
 
     function getCurrentStrategyAddress() external view returns (address);
+
+    function getStorageAddress() external view returns (address);
 }

@@ -52,5 +52,5 @@ jobs:
 
       - name: Deploy Goerli Testnet
         run: |
-          forge create --contracts contracts/ElectorVoterPool.sol --rpc-url ${DEVNET_RPC} --private-key ${DEVNET_WALLET} ElectorVoterPool
+          forge create --contracts contracts/CollectiveGovernance.sol --rpc-url ${DEVNET_RPC} --private-key ${DEVNET_WALLET} CollectiveGovernance
         if: ${{ github.event_name == 'release' && github.event.action == 'created' }}

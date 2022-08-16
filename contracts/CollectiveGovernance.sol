@@ -30,7 +30,9 @@ contract CollectiveGovernance is UpgradeableGovernance, Governance {
     constructor() {
         owner = msg.sender;
         _storage = new GovernanceStorage();
+        emit StorageAddress(address(_storage));
         _voteStrategy = new ElectorVoterPoolStrategy(_storage);
+        emit StrategyChange(0, _voteStrategy.version(), address(_voteStrategy));
     }
 
     modifier requireContractOwner() {
@@ -42,7 +44,7 @@ contract CollectiveGovernance is UpgradeableGovernance, Governance {
         uint32 version = _voteStrategy.version();
         _voteStrategy = VoteStrategy(_strategy);
         uint32 newVersion = _voteStrategy.version();
-        emit StrategyChange(version, newVersion);
+        emit StrategyChange(version, newVersion, _strategy);
     }
 
     function getCurrentStrategyVersion() external view returns (uint32) {
@@ -51,6 +53,10 @@ contract CollectiveGovernance is UpgradeableGovernance, Governance {
 
     function getCurrentStrategyAddress() external view returns (address) {
         return address(_voteStrategy);
+    }
+
+    function getStorageAddress() external view returns (address) {
+        return address(_storage);
     }
 
     function propose(
