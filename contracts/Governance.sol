@@ -27,6 +27,10 @@ interface Governance {
         uint256 requiredDuration
     ) external returns (uint256);
 
+    function name() external pure returns (string memory);
+
+    function version() external pure returns (uint32);
+
     function getCurrentStrategyVersion() external view returns (uint32);
 
     function getCurrentStrategyAddress() external view returns (address);

@@ -89,6 +89,10 @@ interface Storage {
         mapping(uint256 => bool) tokenVoted;
     }
 
+    function name() external pure returns (string memory);
+
+    function version() external pure returns (uint32);
+
     function registerSupervisor(uint256 _proposalId, address _supervisor) external;
 
     function burnSupervisor(uint256 _proposalId, address _supervisor) external;

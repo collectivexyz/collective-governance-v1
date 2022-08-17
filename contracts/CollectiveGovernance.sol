@@ -22,6 +22,10 @@ import "../contracts/ElectorVoterPoolStrategy.sol";
 /// @title CollectiveGovernance
 // factory contract for governance
 contract CollectiveGovernance is Governance {
+    /// @notice contract name
+    string public constant name = "collective.xyz governance";
+    uint32 public constant VERSION_1 = 1;
+
     address private owner;
 
     Storage private _storage;
@@ -95,5 +99,9 @@ contract CollectiveGovernance is Governance {
         address _strategyAddress = _storage.voteStrategy(_proposalId);
         VoteStrategy _strategy = VoteStrategy(_strategyAddress);
         return _strategy.getVoteSucceeded(_proposalId);
+    }
+
+    function version() public pure virtual returns (uint32) {
+        return VERSION_1;
     }
 }

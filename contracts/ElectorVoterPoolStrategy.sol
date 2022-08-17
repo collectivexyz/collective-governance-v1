@@ -34,17 +34,13 @@ import "../contracts/VoteStrategy.sol";
 
 contract ElectorVoterPoolStrategy is VoteStrategy {
     /// @notice contract name
-    string public constant name = "collective.xyz governance contract";
+    string public constant name = "collective.xyz vote strategy";
     uint32 public constant VERSION_1 = 1;
 
     Storage private _storage;
 
     constructor(Storage _gstorage) {
         _storage = _gstorage;
-    }
-
-    function version() public pure virtual returns (uint32) {
-        return VERSION_1;
     }
 
     /// @notice voting is open or not
@@ -153,5 +149,9 @@ contract ElectorVoterPoolStrategy is VoteStrategy {
         uint256 totalVotesCast = _storage.totalParticipation(_proposalId);
         require(totalVotesCast >= _storage.requiredParticipation(_proposalId), "Not enough participants");
         return _storage.forVotes(_proposalId) >= _storage.quorumRequired(_proposalId);
+    }
+
+    function version() public pure virtual returns (uint32) {
+        return VERSION_1;
     }
 }

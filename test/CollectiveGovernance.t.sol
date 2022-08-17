@@ -38,4 +38,12 @@ contract CollectiveGovernanceTest is Test {
         address storageAddress = governance.getStorageAddress();
         assertFalse(storageAddress == address(0));
     }
+
+    function testName() public {
+        assertEq(governance.name(), "collective.xyz governance");
+    }
+
+    function testVersion() public {
+        assertEq(governance.version(), 1);
+    }
 }

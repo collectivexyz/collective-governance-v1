@@ -604,6 +604,14 @@ contract ElectorVoterPoolTest is Test {
         elector.endVote(PROPOSAL_ID);
         assertFalse(elector.isOpen(PROPOSAL_ID));
     }
+
+    function testName() public {
+        assertEq(elector.name(), "collective.xyz vote strategy");
+    }
+
+    function testVersion() public {
+        assertEq(elector.version(), 1);
+    }
 }
 
 contract EVP2 is ElectorVoterPoolStrategy {

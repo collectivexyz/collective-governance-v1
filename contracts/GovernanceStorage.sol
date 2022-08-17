@@ -18,6 +18,10 @@ import "../contracts/VoterClassERC721.sol";
 import "../contracts/VoterClassOpenVote.sol";
 
 contract GovernanceStorage is Storage {
+    /// @notice contract name
+    string public constant name = "collective.xyz governance storage";
+    uint32 public constant VERSION_1 = 1;
+
     uint256 public constant MAXIMUM_PASS_THRESHOLD = 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF;
     uint256 public constant MINIMUM_VOTE_DURATION = 1;
 
@@ -506,6 +510,10 @@ contract GovernanceStorage is Storage {
     function voteStrategy(uint256 _proposalId) external view requireValidProposal(_proposalId) returns (address) {
         Proposal storage proposal = proposalMap[_proposalId];
         return proposal.voteStrategy;
+    }
+
+    function version() public pure virtual returns (uint32) {
+        return VERSION_1;
     }
 
     function _validOrRevert(uint256 _proposalId)

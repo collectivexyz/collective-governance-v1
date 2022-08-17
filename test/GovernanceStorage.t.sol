@@ -444,4 +444,12 @@ contract GovernanceStorageTest is Test {
         _storage._castVoteUndo(PROPOSAL_ID);
         assertEq(_storage.totalParticipation(PROPOSAL_ID), NONE);
     }
+
+    function testName() public {
+        assertEq(_storage.name(), "collective.xyz governance storage");
+    }
+
+    function testVersion() public {
+        assertEq(_storage.version(), 1);
+    }
 }
