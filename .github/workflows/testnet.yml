@@ -1,4 +1,4 @@
-name: Goerli Testnet
+name: Görli Testnet
 
 on:
   workflow_dispatch:
@@ -51,7 +51,7 @@ jobs:
           forge test -vvv
         id: test
 
-      - name: Deploy Goerli Testnet
+      - name: Deploy Görli Testnet
         run: |
           forge create --contracts contracts/CollectiveGovernance.sol --rpc-url ${DEVNET_RPC} --private-key ${DEVNET_WALLET} --etherscan-api-key ${ETHERSCAN_API_KEY} --verify CollectiveGovernance
           forge inspect contracts/CollectiveGovernance.sol:CollectiveGovernance abi

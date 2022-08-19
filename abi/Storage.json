@@ -81,6 +81,25 @@
       {
         "indexed": false,
         "internalType": "address",
+        "name": "owner",
+        "type": "address"
+      }
+    ],
+    "name": "InitializeProposal",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "proposalId",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
         "name": "voter",
         "type": "address"
       }

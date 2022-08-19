@@ -1,6 +1,19 @@
 [profile.default]
 src = 'src'
 out = 'out'
-via-ir = true
-optimize = false
 libs = ['lib']
+optimizer = true
+via-ir = true
+block_number = 1
+
+[profile.default.optimizer_details]
+inliner = true
+jumpdest_remover = true
+order_literals = true
+deduplicate = true
+cse = true
+constant_optimizer = true
+yul = true
+
+[profile.default.optimizer_details.yulDetails]
+stackAllocation = true

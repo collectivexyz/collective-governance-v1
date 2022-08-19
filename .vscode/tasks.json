@@ -43,7 +43,7 @@
     {
       "label": "test",
       "type": "shell",
-      "command": "forge test -vvv --optimize",
+      "command": "forge test -vvv",
       "options": {
         "cwd": "${workspaceFolder}"
       },

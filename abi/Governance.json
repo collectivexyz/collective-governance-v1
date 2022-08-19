@@ -4,6 +4,19 @@
     "inputs": [
       {
         "indexed": false,
+        "internalType": "uint256",
+        "name": "proposalId",
+        "type": "uint256"
+      }
+    ],
+    "name": "ProposalClosed",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
         "internalType": "address",
         "name": "proposer",
         "type": "address"
@@ -23,8 +36,21 @@
     "inputs": [
       {
         "indexed": false,
+        "internalType": "uint256",
+        "name": "proposalId",
+        "type": "uint256"
+      }
+    ],
+    "name": "ProposalOpen",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
         "internalType": "address",
-        "name": "",
+        "name": "_storage",
         "type": "address"
       }
     ],
@@ -59,6 +85,34 @@
       }
     ],
     "name": "abstainFromVote",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "proposalId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "quorumThreshold",
+        "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "erc721",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "requiredDuration",
+        "type": "uint256"
+      }
+    ],
+    "name": "configure",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -129,23 +183,7 @@
     "type": "function"
   },
   {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "quorumThreshold",
-        "type": "uint256"
-      },
-      {
-        "internalType": "address",
-        "name": "erc721",
-        "type": "address"
-      },
-      {
-        "internalType": "uint256",
-        "name": "requiredDuration",
-        "type": "uint256"
-      }
-    ],
+    "inputs": [],
     "name": "propose",
     "outputs": [
       {
