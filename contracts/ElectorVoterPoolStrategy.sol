@@ -38,9 +38,11 @@ contract ElectorVoterPoolStrategy is VoteStrategy {
     uint32 public constant VERSION_1 = 1;
 
     Storage private _storage;
+    address private _owner;
 
     constructor(Storage _gstorage) {
         _storage = _gstorage;
+        _owner = msg.sender;
     }
 
     /// @notice voting is open or not
@@ -120,21 +122,37 @@ contract ElectorVoterPoolStrategy is VoteStrategy {
     }
 
     // @notice cast an affirmative vote for the measure
-    function voteFor(uint256 _proposalId) public requireStrategyVersion(_proposalId) requireVoteOpen(_proposalId) {
-        _storage._castVoteFor(_proposalId);
+    function voteFor(uint256 _proposalId, address wallet)
+        public
+        requireStrategyVersion(_proposalId)
+        requireVoteOpen(_proposalId)
+    {
+        _storage._castVoteFor(_proposalId, wallet);
     }
 
     // @notice undo any previous vote
-    function undoVote(uint256 _proposalId) public requireStrategyVersion(_proposalId) requireVoteOpen(_proposalId) {
-        _storage._castVoteUndo(_proposalId);
+    function undoVote(uint256 _proposalId, address wallet)
+        public
+        requireStrategyVersion(_proposalId)
+        requireVoteOpen(_proposalId)
+    {
+        _storage._castVoteUndo(_proposalId, wallet);
     }
 
-    function voteAgainst(uint256 _proposalId) public requireStrategyVersion(_proposalId) requireVoteOpen(_proposalId) {
-        _storage._castVoteAgainst(_proposalId);
+    function voteAgainst(uint256 _proposalId, address wallet)
+        public
+        requireStrategyVersion(_proposalId)
+        requireVoteOpen(_proposalId)
+    {
+        _storage._castVoteAgainst(_proposalId, wallet);
     }
 
-    function abstainFromVote(uint256 _proposalId) public requireStrategyVersion(_proposalId) requireVoteOpen(_proposalId) {
-        _storage._abstainFromVote(_proposalId);
+    function abstainFromVote(uint256 _proposalId, address wallet)
+        public
+        requireStrategyVersion(_proposalId)
+        requireVoteOpen(_proposalId)
+    {
+        _storage._abstainFromVote(_proposalId, wallet);
     }
 
     /// @notice get the result of the measure pass or failed
@@ -146,9 +164,9 @@ contract ElectorVoterPoolStrategy is VoteStrategy {
         returns (bool)
     {
         _storage._validOrRevert(_proposalId);
-        uint256 totalVotesCast = _storage.totalParticipation(_proposalId);
-        require(totalVotesCast >= _storage.requiredParticipation(_proposalId), "Not enough participants");
-        return _storage.forVotes(_proposalId) >= _storage.quorumRequired(_proposalId);
+        uint256 totalVotesCast = _storage.quorum(_proposalId);
+        require(totalVotesCast >= _storage.quorumRequired(_proposalId), "Not enough participants");
+        return _storage.forVotes(_proposalId) > _storage.againstVotes(_proposalId);
     }
 
     function version() public pure virtual returns (uint32) {

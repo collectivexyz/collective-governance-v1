@@ -31,13 +31,13 @@ interface VoteStrategy {
 
     function endVote(uint256 _proposalId) external;
 
-    function voteFor(uint256 _proposalId) external;
+    function voteFor(uint256 _proposalId, address wallet) external;
 
-    function voteAgainst(uint256 _proposalId) external;
+    function voteAgainst(uint256 _proposalId, address wallet) external;
 
-    function abstainFromVote(uint256 _proposalId) external;
+    function abstainFromVote(uint256 _proposalId, address wallet) external;
 
-    function undoVote(uint256 _proposalId) external;
+    function undoVote(uint256 _proposalId, address wallet) external;
 
     function veto(uint256 _proposalId) external;
 

@@ -12,23 +12,28 @@ import "../contracts/ElectorVoterPoolStrategy.sol";
 import "./MockERC721.sol";
 
 contract GovernanceStorageTest is Test {
+    using stdStorage for StdStorage;
+
     address public immutable owner = address(0x155);
     address public immutable supervisor = address(0x123);
     address public immutable nonSupervisor = address(0x123eee);
     address public immutable voter1 = address(0xfff1);
     address public immutable voter2 = address(0xfff2);
+    address public immutable voter3 = address(0xfff3);
     uint256 public immutable BLOCK = 0x300;
     uint256 public immutable NONE = 0;
     uint256 public immutable PROPOSAL_ID = 1;
 
     Storage private _storage;
     VoteStrategy private _strategy;
+    address private _strategyAddress;
 
     function setUp() public {
         _storage = new GovernanceStorage();
         _strategy = new ElectorVoterPoolStrategy(_storage);
+        _strategyAddress = address(_strategy);
         vm.startPrank(owner);
-        _storage._initializeProposal(address(_strategy));
+        _storage._initializeProposal(_strategyAddress);
         vm.stopPrank();
     }
 
@@ -36,7 +41,7 @@ contract GovernanceStorageTest is Test {
         assertEq(_storage.forVotes(PROPOSAL_ID), NONE);
         assertEq(_storage.againstVotes(PROPOSAL_ID), NONE);
         assertEq(_storage.abstentionCount(PROPOSAL_ID), NONE);
-        assertEq(_storage.totalParticipation(PROPOSAL_ID), NONE);
+        assertEq(_storage.quorum(PROPOSAL_ID), NONE);
     }
 
     function testIsReady() public {
@@ -202,23 +207,6 @@ contract GovernanceStorageTest is Test {
         assertEq(_storage.quorumRequired(PROPOSAL_ID), 100);
     }
 
-    function testRequiredParticipation() public {
-        vm.prank(owner);
-        _storage.registerSupervisor(PROPOSAL_ID, supervisor);
-        vm.prank(supervisor);
-        _storage.setRequiredParticipation(PROPOSAL_ID, 101);
-        assertEq(_storage.requiredParticipation(PROPOSAL_ID), 101);
-    }
-
-    function testFailRequiredParticipationIfReady() public {
-        vm.prank(owner);
-        _storage.registerSupervisor(PROPOSAL_ID, supervisor);
-        vm.prank(supervisor);
-        _storage.makeReady(PROPOSAL_ID);
-        vm.prank(supervisor);
-        _storage.setRequiredParticipation(PROPOSAL_ID, 101);
-    }
-
     function testSetVoteDelay() public {
         vm.prank(owner);
         _storage.registerSupervisor(PROPOSAL_ID, supervisor);
@@ -343,12 +331,12 @@ contract GovernanceStorageTest is Test {
         _storage.setQuorumThreshold(PROPOSAL_ID, 2);
         _storage.makeReady(PROPOSAL_ID);
         vm.stopPrank();
-        vm.prank(voter1);
-        _storage._abstainFromVote(PROPOSAL_ID);
+        vm.prank(_strategyAddress);
+        _storage._abstainFromVote(PROPOSAL_ID, voter1);
         assertEq(_storage.forVotes(PROPOSAL_ID), 0);
         assertEq(_storage.againstVotes(PROPOSAL_ID), 0);
         assertEq(_storage.abstentionCount(PROPOSAL_ID), 1);
-        assertEq(_storage.totalParticipation(PROPOSAL_ID), 1);
+        assertEq(_storage.quorum(PROPOSAL_ID), 1);
     }
 
     function testCastAgainstVote() public {
@@ -359,12 +347,12 @@ contract GovernanceStorageTest is Test {
         _storage.setQuorumThreshold(PROPOSAL_ID, 2);
         _storage.makeReady(PROPOSAL_ID);
         vm.stopPrank();
-        vm.prank(voter1);
-        _storage._castVoteAgainst(PROPOSAL_ID);
+        vm.prank(_strategyAddress);
+        _storage._castVoteAgainst(PROPOSAL_ID, voter1);
         assertEq(_storage.forVotes(PROPOSAL_ID), 0);
         assertEq(_storage.againstVotes(PROPOSAL_ID), 1);
         assertEq(_storage.abstentionCount(PROPOSAL_ID), 0);
-        assertEq(_storage.totalParticipation(PROPOSAL_ID), 1);
+        assertEq(_storage.quorum(PROPOSAL_ID), 1);
     }
 
     function testCastOneVote() public {
@@ -375,10 +363,32 @@ contract GovernanceStorageTest is Test {
         _storage.setQuorumThreshold(PROPOSAL_ID, 2);
         _storage.makeReady(PROPOSAL_ID);
         vm.stopPrank();
-        vm.prank(voter1);
-        _storage._castVoteFor(PROPOSAL_ID);
+        vm.prank(_strategyAddress);
+        _storage._castVoteFor(PROPOSAL_ID, voter1);
         assertEq(_storage.forVotes(PROPOSAL_ID), 1);
-        assertEq(_storage.totalParticipation(PROPOSAL_ID), 1);
+        assertEq(_storage.quorum(PROPOSAL_ID), 1);
+    }
+
+    function testQuorumAllThree() public {
+        vm.prank(owner);
+        _storage.registerSupervisor(PROPOSAL_ID, supervisor);
+        vm.startPrank(supervisor);
+        _storage.registerVoter(PROPOSAL_ID, voter1);
+        _storage.registerVoter(PROPOSAL_ID, voter2);
+        _storage.registerVoter(PROPOSAL_ID, voter3);
+        _storage.setQuorumThreshold(PROPOSAL_ID, 2);
+        _storage.makeReady(PROPOSAL_ID);
+        vm.stopPrank();
+        vm.prank(_strategyAddress);
+        _storage._castVoteFor(PROPOSAL_ID, voter1);
+        assertEq(_storage.forVotes(PROPOSAL_ID), 1);
+        vm.prank(_strategyAddress);
+        _storage._castVoteAgainst(PROPOSAL_ID, voter2);
+        assertEq(_storage.againstVotes(PROPOSAL_ID), 1);
+        vm.prank(_strategyAddress);
+        _storage._abstainFromVote(PROPOSAL_ID, voter3);
+        assertEq(_storage.abstentionCount(PROPOSAL_ID), 1);
+        assertEq(_storage.quorum(PROPOSAL_ID), 3);
     }
 
     function testCastOneVoteFromAll() public {
@@ -389,9 +399,9 @@ contract GovernanceStorageTest is Test {
         _storage.setQuorumThreshold(PROPOSAL_ID, 2);
         _storage.makeReady(PROPOSAL_ID);
         vm.stopPrank();
-        vm.prank(voter1);
-        _storage._castVoteFor(PROPOSAL_ID);
-        assertEq(_storage.totalParticipation(PROPOSAL_ID), 1);
+        vm.prank(_strategyAddress);
+        _storage._castVoteFor(PROPOSAL_ID, voter1);
+        assertEq(_storage.quorum(PROPOSAL_ID), 1);
     }
 
     function testCastVoteFromERC721() public {
@@ -404,12 +414,12 @@ contract GovernanceStorageTest is Test {
         _storage.setQuorumThreshold(PROPOSAL_ID, 1);
         _storage.makeReady(PROPOSAL_ID);
         vm.stopPrank();
-        vm.prank(voter2);
-        _storage._castVoteFor(PROPOSAL_ID);
+        vm.prank(_strategyAddress);
+        _storage._castVoteFor(PROPOSAL_ID, voter2);
         assertEq(_storage.forVotes(PROPOSAL_ID), 1);
         assertEq(_storage.againstVotes(PROPOSAL_ID), 0);
         assertEq(_storage.abstentionCount(PROPOSAL_ID), 0);
-        assertEq(_storage.totalParticipation(PROPOSAL_ID), 1);
+        assertEq(_storage.quorum(PROPOSAL_ID), 1);
     }
 
     function testPermittedAfterObservingVoteDelay() public {
@@ -422,9 +432,9 @@ contract GovernanceStorageTest is Test {
         _storage.makeReady(PROPOSAL_ID);
         uint256 startBlock = block.number;
         vm.stopPrank();
-        vm.prank(voter1);
         vm.roll(startBlock + 100);
-        _storage._castVoteFor(PROPOSAL_ID);
+        vm.prank(_strategyAddress);
+        _storage._castVoteFor(PROPOSAL_ID, voter1);
         assertEq(1, _storage.forVotes(PROPOSAL_ID));
     }
 
@@ -437,12 +447,12 @@ contract GovernanceStorageTest is Test {
         _storage.setQuorumThreshold(PROPOSAL_ID, 2);
         _storage.makeReady(PROPOSAL_ID);
         vm.stopPrank();
-        vm.prank(voter1);
-        _storage._castVoteFor(PROPOSAL_ID);
-        assertEq(_storage.totalParticipation(PROPOSAL_ID), 1);
-        vm.prank(voter1);
-        _storage._castVoteUndo(PROPOSAL_ID);
-        assertEq(_storage.totalParticipation(PROPOSAL_ID), NONE);
+        vm.prank(_strategyAddress);
+        _storage._castVoteFor(PROPOSAL_ID, voter1);
+        assertEq(_storage.quorum(PROPOSAL_ID), 1);
+        vm.prank(_strategyAddress);
+        _storage._castVoteUndo(PROPOSAL_ID, voter1);
+        assertEq(_storage.quorum(PROPOSAL_ID), NONE);
     }
 
     function testName() public {

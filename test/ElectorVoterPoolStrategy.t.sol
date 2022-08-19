@@ -137,7 +137,7 @@ contract ElectorVoterPoolTest is Test {
         _storage.makeReady(PROPOSAL_ID);
         vm.prank(supervisor);
         elector.openVote(PROPOSAL_ID);
-        elector.voteFor(PROPOSAL_ID);
+        elector.voteFor(PROPOSAL_ID, owner);
     }
 
     function testFailSupervisorCastVote() public {
@@ -150,7 +150,7 @@ contract ElectorVoterPoolTest is Test {
         vm.prank(supervisor);
         elector.openVote(PROPOSAL_ID);
         vm.prank(supervisor);
-        elector.voteFor(PROPOSAL_ID);
+        elector.voteFor(PROPOSAL_ID, supervisor);
     }
 
     function testFailCastOneVoteNotOpen() public {
@@ -162,7 +162,7 @@ contract ElectorVoterPoolTest is Test {
         _storage.makeReady(PROPOSAL_ID);
         vm.stopPrank();
         vm.prank(voter1);
-        elector.voteFor(PROPOSAL_ID);
+        elector.voteFor(PROPOSAL_ID, voter1);
     }
 
     function testFailCastOneVoteUpdatedStrategy() public {
@@ -176,7 +176,7 @@ contract ElectorVoterPoolTest is Test {
         vm.stopPrank();
         VoteStrategy strategy = new EVP2(_storage);
         vm.prank(voter1);
-        strategy.voteFor(PROPOSAL_ID);
+        strategy.voteFor(PROPOSAL_ID, voter1);
     }
 
     function testCastOneVoteFromAll() public {
@@ -188,9 +188,9 @@ contract ElectorVoterPoolTest is Test {
         _storage.makeReady(PROPOSAL_ID);
         elector.openVote(PROPOSAL_ID);
         vm.stopPrank();
-        vm.prank(voter1);
-        elector.voteFor(PROPOSAL_ID);
-        assertEq(_storage.totalParticipation(PROPOSAL_ID), 1);
+        vm.prank(owner);
+        elector.voteFor(PROPOSAL_ID, voter1);
+        assertEq(_storage.quorum(PROPOSAL_ID), 1);
     }
 
     function testFailCastOneVoteWithBurnedClass() public {
@@ -204,7 +204,7 @@ contract ElectorVoterPoolTest is Test {
         elector.openVote(PROPOSAL_ID);
         vm.stopPrank();
         vm.prank(voter1);
-        elector.voteFor(PROPOSAL_ID);
+        elector.voteFor(PROPOSAL_ID, voter1);
     }
 
     function testFailCastVoteNotOpened() public {
@@ -213,7 +213,7 @@ contract ElectorVoterPoolTest is Test {
         vm.prank(supervisor);
         _storage.registerVoter(PROPOSAL_ID, voter1);
         vm.prank(voter1);
-        elector.voteFor(PROPOSAL_ID);
+        elector.voteFor(PROPOSAL_ID, voter1);
     }
 
     function testFailCastTwoVote() public {
@@ -225,9 +225,9 @@ contract ElectorVoterPoolTest is Test {
         elector.openVote(PROPOSAL_ID);
         vm.stopPrank();
         vm.prank(voter1);
-        elector.voteFor(PROPOSAL_ID);
+        elector.voteFor(PROPOSAL_ID, voter1);
         vm.prank(voter1);
-        elector.voteFor(PROPOSAL_ID);
+        elector.voteFor(PROPOSAL_ID, voter1);
     }
 
     function testFailUndoStrategyUpgrade() public {
@@ -241,12 +241,12 @@ contract ElectorVoterPoolTest is Test {
         elector.openVote(PROPOSAL_ID);
         vm.stopPrank();
         vm.prank(voter1);
-        _storage._castVoteFor(PROPOSAL_ID);
-        assertEq(_storage.totalParticipation(PROPOSAL_ID), 1);
-        vm.prank(voter1);
+        _storage._castVoteFor(PROPOSAL_ID, voter1);
+        assertEq(_storage.quorum(PROPOSAL_ID), 1);
         VoteStrategy strategy = new EVP2(_storage);
-        strategy.undoVote(PROPOSAL_ID);
-        assertEq(_storage.totalParticipation(PROPOSAL_ID), NONE);
+        vm.prank(voter1);
+        strategy.undoVote(PROPOSAL_ID, voter1);
+        assertEq(_storage.quorum(PROPOSAL_ID), NONE);
     }
 
     function testFailUndoRequiresOpen() public {
@@ -259,7 +259,7 @@ contract ElectorVoterPoolTest is Test {
         _storage.makeReady(PROPOSAL_ID);
         vm.stopPrank();
         vm.prank(voter1);
-        elector.undoVote(PROPOSAL_ID);
+        elector.undoVote(PROPOSAL_ID, voter1);
     }
 
     function testVoterMayOnlyUndoPreviousVote() public {
@@ -273,7 +273,7 @@ contract ElectorVoterPoolTest is Test {
         elector.openVote(PROPOSAL_ID);
         vm.stopPrank();
         vm.expectRevert("Voter required");
-        elector.undoVote(PROPOSAL_ID);
+        elector.undoVote(PROPOSAL_ID, owner);
     }
 
     function testFailUndoVoteNotDefaultEnabled() public {
@@ -285,7 +285,7 @@ contract ElectorVoterPoolTest is Test {
         elector.openVote(PROPOSAL_ID);
         vm.stopPrank();
         vm.expectRevert();
-        elector.undoVote(PROPOSAL_ID);
+        elector.undoVote(PROPOSAL_ID, owner);
     }
 
     function testFailSupervisorMayNotUndoVote() public {
@@ -296,9 +296,9 @@ contract ElectorVoterPoolTest is Test {
         vm.prank(supervisor);
         elector.openVote(PROPOSAL_ID);
         vm.prank(voter1);
-        elector.voteFor(PROPOSAL_ID);
+        elector.voteFor(PROPOSAL_ID, voter1);
         vm.prank(supervisor);
-        elector.undoVote(PROPOSAL_ID);
+        elector.undoVote(PROPOSAL_ID, voter1);
     }
 
     function testFailOwnerMayNotUndoVote() public {
@@ -310,29 +310,26 @@ contract ElectorVoterPoolTest is Test {
         elector.openVote(PROPOSAL_ID);
         vm.stopPrank();
         vm.prank(voter1);
-        elector.voteFor(PROPOSAL_ID);
+        elector.voteFor(PROPOSAL_ID, voter1);
         vm.prank(owner);
-        elector.undoVote(PROPOSAL_ID);
+        elector.undoVote(PROPOSAL_ID, owner);
     }
 
-    function testMeasurePassed() public {
+    function testVotePassed() public {
         vm.roll(10);
         bytes memory code = address(_storage).code;
 
         address storageMock = address(0x99991111);
         VoteStrategy strategy = new ElectorVoterPoolStrategy(Storage(storageMock));
         vm.etch(storageMock, code);
-        uint256 requiredParticipation = 0;
-        vm.mockCall(
-            storageMock,
-            abi.encodeWithSelector(Storage.requiredParticipation.selector),
-            abi.encode(requiredParticipation)
-        );
-        uint256 forVotes = 201;
+
+        uint256 forVotes = 200;
         vm.mockCall(storageMock, abi.encodeWithSelector(Storage.forVotes.selector), abi.encode(forVotes));
-        uint256 totalParticipation = forVotes;
-        vm.mockCall(storageMock, abi.encodeWithSelector(Storage.totalParticipation.selector), abi.encode(totalParticipation));
-        uint256 quorumRequired = 200;
+        uint256 agVotes = 199;
+        vm.mockCall(storageMock, abi.encodeWithSelector(Storage.againstVotes.selector), abi.encode(agVotes));
+        uint256 quorum = forVotes + agVotes;
+        vm.mockCall(storageMock, abi.encodeWithSelector(Storage.quorum.selector), abi.encode(quorum));
+        uint256 quorumRequired = 399;
         vm.mockCall(storageMock, abi.encodeWithSelector(Storage.quorumRequired.selector), abi.encode(quorumRequired));
         vm.mockCall(storageMock, abi.encodeWithSelector(Storage._maxPassThreshold.selector), abi.encode(0xffffffff));
         vm.mockCall(storageMock, abi.encodeWithSelector(Storage.startBlock.selector), abi.encode(block.number - 2));
@@ -351,28 +348,25 @@ contract ElectorVoterPoolTest is Test {
         assertTrue(strategy.getVoteSucceeded(PROPOSAL_ID));
     }
 
-    function testMeasureFailNoQuorum() public {
+    function testVoteDidNotPass() public {
         vm.roll(10);
         bytes memory code = address(_storage).code;
 
         address storageMock = address(0x99991111);
         VoteStrategy strategy = new ElectorVoterPoolStrategy(Storage(storageMock));
         vm.etch(storageMock, code);
-        uint256 requiredParticipation = 0;
-        vm.mockCall(
-            storageMock,
-            abi.encodeWithSelector(Storage.requiredParticipation.selector),
-            abi.encode(requiredParticipation)
-        );
+
         uint256 forVotes = 199;
         vm.mockCall(storageMock, abi.encodeWithSelector(Storage.forVotes.selector), abi.encode(forVotes));
-        uint256 totalParticipation = forVotes;
-        vm.mockCall(storageMock, abi.encodeWithSelector(Storage.totalParticipation.selector), abi.encode(totalParticipation));
-        uint256 quorumRequired = 200;
+        uint256 agVotes = 200;
+        vm.mockCall(storageMock, abi.encodeWithSelector(Storage.againstVotes.selector), abi.encode(agVotes));
+        uint256 quorum = forVotes + agVotes;
+        vm.mockCall(storageMock, abi.encodeWithSelector(Storage.quorum.selector), abi.encode(quorum));
+        uint256 quorumRequired = 399;
         vm.mockCall(storageMock, abi.encodeWithSelector(Storage.quorumRequired.selector), abi.encode(quorumRequired));
+        vm.mockCall(storageMock, abi.encodeWithSelector(Storage._maxPassThreshold.selector), abi.encode(0xffffffff));
         vm.mockCall(storageMock, abi.encodeWithSelector(Storage.startBlock.selector), abi.encode(block.number - 2));
         vm.mockCall(storageMock, abi.encodeWithSelector(Storage.endBlock.selector), abi.encode(block.number - 1));
-        vm.mockCall(storageMock, abi.encodeWithSelector(Storage._maxPassThreshold.selector), abi.encode(0xffffffff));
         vm.mockCall(storageMock, abi.encodeWithSelector(Storage.isReady.selector), abi.encode(true));
         vm.mockCall(storageMock, abi.encodeWithSelector(Storage.isVeto.selector), abi.encode(false));
         vm.mockCall(storageMock, abi.encodeWithSelector(Storage.isSupervisor.selector), abi.encode(true));
@@ -387,25 +381,53 @@ contract ElectorVoterPoolTest is Test {
         assertFalse(strategy.getVoteSucceeded(PROPOSAL_ID));
     }
 
-    function testFailMeasureFailRequiredParticipation() public {
+    function testTieVoteDidNotPass() public {
         vm.roll(10);
         bytes memory code = address(_storage).code;
 
         address storageMock = address(0x99991111);
         VoteStrategy strategy = new ElectorVoterPoolStrategy(Storage(storageMock));
         vm.etch(storageMock, code);
-        uint256 requiredParticipation = 1000;
-        vm.mockCall(
-            storageMock,
-            abi.encodeWithSelector(Storage.requiredParticipation.selector),
-            abi.encode(requiredParticipation)
-        );
+
+        uint256 forVotes = 200;
+        vm.mockCall(storageMock, abi.encodeWithSelector(Storage.forVotes.selector), abi.encode(forVotes));
+        uint256 agVotes = 200;
+        vm.mockCall(storageMock, abi.encodeWithSelector(Storage.againstVotes.selector), abi.encode(agVotes));
+        uint256 quorum = forVotes + agVotes;
+        vm.mockCall(storageMock, abi.encodeWithSelector(Storage.quorum.selector), abi.encode(quorum));
+        uint256 quorumRequired = 399;
+        vm.mockCall(storageMock, abi.encodeWithSelector(Storage.quorumRequired.selector), abi.encode(quorumRequired));
+        vm.mockCall(storageMock, abi.encodeWithSelector(Storage._maxPassThreshold.selector), abi.encode(0xffffffff));
+        vm.mockCall(storageMock, abi.encodeWithSelector(Storage.startBlock.selector), abi.encode(block.number - 2));
+        vm.mockCall(storageMock, abi.encodeWithSelector(Storage.endBlock.selector), abi.encode(block.number - 1));
+        vm.mockCall(storageMock, abi.encodeWithSelector(Storage.isReady.selector), abi.encode(true));
+        vm.mockCall(storageMock, abi.encodeWithSelector(Storage.isVeto.selector), abi.encode(false));
+        vm.mockCall(storageMock, abi.encodeWithSelector(Storage.isSupervisor.selector), abi.encode(true));
+        vm.mockCall(storageMock, abi.encodeWithSelector(Storage._validOrRevert.selector), abi.encode(PROPOSAL_ID));
+        vm.mockCall(storageMock, abi.encodeWithSelector(Storage.voteStrategy.selector), abi.encode(address(strategy)));
+
+        vm.prank(supervisor);
+        strategy.openVote(PROPOSAL_ID);
+        vm.prank(supervisor);
+        strategy.endVote(PROPOSAL_ID);
+
+        assertFalse(strategy.getVoteSucceeded(PROPOSAL_ID));
+    }
+
+    function testFailMeasureNoQuorum() public {
+        vm.roll(10);
+        bytes memory code = address(_storage).code;
+
+        address storageMock = address(0x99991111);
+        VoteStrategy strategy = new ElectorVoterPoolStrategy(Storage(storageMock));
+        vm.etch(storageMock, code);
         uint256 forVotes = 199;
         vm.mockCall(storageMock, abi.encodeWithSelector(Storage.forVotes.selector), abi.encode(forVotes));
-        uint256 totalParticipation = forVotes;
-        vm.mockCall(storageMock, abi.encodeWithSelector(Storage.totalParticipation.selector), abi.encode(totalParticipation));
-        uint256 quorumRequired = 200;
-        vm.mockCall(storageMock, abi.encodeWithSelector(Storage.quorumRequired.selector), abi.encode(quorumRequired));
+        uint256 agVotes = 2;
+        vm.mockCall(storageMock, abi.encodeWithSelector(Storage.againstVotes.selector), abi.encode(agVotes));
+        uint256 quorum = forVotes + agVotes;
+        vm.mockCall(storageMock, abi.encodeWithSelector(Storage.quorum.selector), abi.encode(quorum));
+        uint256 quorumRequired = 203;
         vm.mockCall(storageMock, abi.encodeWithSelector(Storage.quorumRequired.selector), abi.encode(quorumRequired));
         vm.mockCall(storageMock, abi.encodeWithSelector(Storage.startBlock.selector), abi.encode(block.number - 2));
         vm.mockCall(storageMock, abi.encodeWithSelector(Storage.endBlock.selector), abi.encode(block.number - 1));
@@ -420,6 +442,7 @@ contract ElectorVoterPoolTest is Test {
         strategy.openVote(PROPOSAL_ID);
         vm.prank(supervisor);
         strategy.endVote(PROPOSAL_ID);
+
         strategy.getVoteSucceeded(PROPOSAL_ID);
     }
 
@@ -446,9 +469,9 @@ contract ElectorVoterPoolTest is Test {
         elector.openVote(PROPOSAL_ID);
         vm.stopPrank();
         vm.prank(voter1);
-        elector.voteFor(PROPOSAL_ID);
+        elector.voteFor(PROPOSAL_ID, voter1);
         vm.prank(voter2);
-        elector.voteFor(PROPOSAL_ID);
+        elector.voteFor(PROPOSAL_ID, voter2);
         vm.prank(supervisor);
         elector.veto(PROPOSAL_ID);
         assertTrue(_storage.isVeto(PROPOSAL_ID));
@@ -468,9 +491,9 @@ contract ElectorVoterPoolTest is Test {
         elector.openVote(PROPOSAL_ID);
         vm.stopPrank();
         vm.prank(voter1);
-        elector.voteFor(PROPOSAL_ID);
+        elector.voteFor(PROPOSAL_ID, voter1);
         vm.prank(voter2);
-        elector.voteFor(PROPOSAL_ID);
+        elector.voteFor(PROPOSAL_ID, voter2);
         vm.prank(supervisor);
         elector.endVote(PROPOSAL_ID);
         vm.prank(supervisor);
@@ -486,7 +509,7 @@ contract ElectorVoterPoolTest is Test {
         _storage.makeReady(PROPOSAL_ID);
         vm.stopPrank();
         vm.prank(voter1);
-        elector.voteAgainst(PROPOSAL_ID);
+        elector.voteAgainst(PROPOSAL_ID, voter1);
     }
 
     function testFailCastAgainstVoteUpdatedStrategy() public {
@@ -500,7 +523,7 @@ contract ElectorVoterPoolTest is Test {
         vm.stopPrank();
         VoteStrategy strategy = new EVP2(_storage);
         vm.prank(voter1);
-        strategy.voteAgainst(PROPOSAL_ID);
+        strategy.voteAgainst(PROPOSAL_ID, voter1);
     }
 
     function testFailAbstainFromVoteInvalidStrategy() public {
@@ -514,11 +537,11 @@ contract ElectorVoterPoolTest is Test {
         vm.stopPrank();
         VoteStrategy strategy = new EVP2(_storage);
         vm.prank(voter1);
-        strategy.abstainFromVote(PROPOSAL_ID);
+        strategy.abstainFromVote(PROPOSAL_ID, voter1);
         assertEq(_storage.forVotes(PROPOSAL_ID), 0);
         assertEq(_storage.againstVotes(PROPOSAL_ID), 0);
         assertEq(_storage.abstentionCount(PROPOSAL_ID), 1);
-        assertEq(_storage.totalParticipation(PROPOSAL_ID), 1);
+        assertEq(_storage.quorum(PROPOSAL_ID), 1);
     }
 
     function testFailAbstainFromVoteNotOpen() public {
@@ -530,7 +553,7 @@ contract ElectorVoterPoolTest is Test {
         _storage.makeReady(PROPOSAL_ID);
         vm.stopPrank();
         vm.prank(voter1);
-        elector.abstainFromVote(PROPOSAL_ID);
+        elector.abstainFromVote(PROPOSAL_ID, voter1);
     }
 
     function testFailVoteDelayPreventsVote(uint256 blockStep) public {
@@ -548,7 +571,7 @@ contract ElectorVoterPoolTest is Test {
         vm.prank(voter1);
         vm.roll(startBlock + blockStep);
         vm.expectRevert("Vote not ready");
-        elector.voteFor(PROPOSAL_ID);
+        elector.voteFor(PROPOSAL_ID, voter1);
     }
 
     function testFailVoteAfterDuration(uint256 blockStep) public {
@@ -563,9 +586,9 @@ contract ElectorVoterPoolTest is Test {
         uint256 startBlock = block.number;
         elector.openVote(PROPOSAL_ID);
         vm.stopPrank();
-        vm.prank(voter1);
         vm.roll(startBlock + blockStep);
-        elector.voteFor(PROPOSAL_ID);
+        vm.prank(voter1);
+        elector.voteFor(PROPOSAL_ID, voter1);
     }
 
     function testFailEndVoteWhileActive(uint256 blockStep) public {

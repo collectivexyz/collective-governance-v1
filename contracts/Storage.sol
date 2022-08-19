@@ -28,7 +28,6 @@ interface Storage {
     event RegisterVoterClassOpenVote(uint256 proposalId);
     event RegisterVoterClassERC721(uint256 proposalId, address token);
     event BurnVoterClass(uint256 proposalId);
-    event SetRequiredParticipation(uint256 proposalId, uint256 requiredParticipation);
     event SetQuorumThreshold(uint256 proposalId, uint256 passThreshold);
     event UndoVoteEnabled(uint256 proposalId);
 
@@ -44,8 +43,6 @@ interface Storage {
         address proposalSender;
         /// @notice The number of votes in support of a proposal required in order for a quorum to be reached and for a vote to succeed
         uint256 quorumRequired;
-        /// @notice Required participation yea or nea for a successful vote
-        uint256 requiredParticipation;
         /// @notice The number of blocks to delay the first vote from voting open
         uint256 voteDelay;
         /// @notice The number of blocks duration for the vote, last vote must be cast prior
@@ -112,8 +109,6 @@ interface Storage {
 
     function setQuorumThreshold(uint256 _proposalId, uint256 _passThreshold) external;
 
-    function setRequiredParticipation(uint256 _proposalId, uint256 _voteTally) external;
-
     function setVoteDelay(uint256 _proposalId, uint256 _voteDelay) external;
 
     function setRequiredVoteDuration(uint256 _proposalId, uint256 _voteDuration) external;
@@ -148,21 +143,19 @@ interface Storage {
 
     function abstentionCount(uint256 _proposalId) external view returns (uint256);
 
-    function totalParticipation(uint256 _proposalId) external view returns (uint256);
-
-    function requiredParticipation(uint256 _proposalId) external view returns (uint256);
+    function quorum(uint256 _proposalId) external view returns (uint256);
 
     function voteStrategy(uint256 _proposalId) external view returns (address);
 
     function _initializeProposal(address _strategy) external returns (uint256);
 
-    function _castVoteFor(uint256 _proposalId) external;
+    function _castVoteFor(uint256 _proposalId, address wallet) external;
 
-    function _castVoteUndo(uint256 _proposalId) external;
+    function _castVoteUndo(uint256 _proposalId, address wallet) external;
 
-    function _castVoteAgainst(uint256 _proposalId) external;
+    function _castVoteAgainst(uint256 _proposalId, address wallet) external;
 
-    function _abstainFromVote(uint256 _proposalId) external;
+    function _abstainFromVote(uint256 _proposalId, address wallet) external;
 
     function _veto(uint256 _proposalId) external;
 

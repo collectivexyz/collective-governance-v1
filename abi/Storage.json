@@ -169,25 +169,6 @@
       },
       {
         "indexed": false,
-        "internalType": "uint256",
-        "name": "requiredParticipation",
-        "type": "uint256"
-      }
-    ],
-    "name": "SetRequiredParticipation",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "proposalId",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
         "internalType": "address",
         "name": "voter",
         "type": "address"
@@ -290,6 +271,11 @@
         "internalType": "uint256",
         "name": "_proposalId",
         "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "wallet",
+        "type": "address"
       }
     ],
     "name": "_abstainFromVote",
@@ -303,6 +289,11 @@
         "internalType": "uint256",
         "name": "_proposalId",
         "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "wallet",
+        "type": "address"
       }
     ],
     "name": "_castVoteAgainst",
@@ -316,6 +307,11 @@
         "internalType": "uint256",
         "name": "_proposalId",
         "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "wallet",
+        "type": "address"
       }
     ],
     "name": "_castVoteFor",
@@ -329,6 +325,11 @@
         "internalType": "uint256",
         "name": "_proposalId",
         "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "wallet",
+        "type": "address"
       }
     ],
     "name": "_castVoteUndo",
@@ -671,6 +672,25 @@
         "type": "uint256"
       }
     ],
+    "name": "quorum",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_proposalId",
+        "type": "uint256"
+      }
+    ],
     "name": "quorumRequired",
     "outputs": [
       {
@@ -773,25 +793,6 @@
         "internalType": "uint256",
         "name": "_proposalId",
         "type": "uint256"
-      }
-    ],
-    "name": "requiredParticipation",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "_proposalId",
-        "type": "uint256"
       },
       {
         "internalType": "uint256",
@@ -800,24 +801,6 @@
       }
     ],
     "name": "setQuorumThreshold",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "_proposalId",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_voteTally",
-        "type": "uint256"
-      }
-    ],
-    "name": "setRequiredParticipation",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -867,25 +850,6 @@
       }
     ],
     "name": "startBlock",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "_proposalId",
-        "type": "uint256"
-      }
-    ],
-    "name": "totalParticipation",
     "outputs": [
       {
         "internalType": "uint256",

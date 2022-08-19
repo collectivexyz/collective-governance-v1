@@ -22,7 +22,7 @@ contract GovernanceStorage is Storage {
     string public constant name = "collective.xyz governance storage";
     uint32 public constant VERSION_1 = 1;
 
-    uint256 public constant MAXIMUM_PASS_THRESHOLD = 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF;
+    uint256 public constant MAXIMUM_QUORUM = 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF;
     uint256 public constant MINIMUM_VOTE_DURATION = 1;
 
     /// @notice global list of proposed issues by id
@@ -43,7 +43,7 @@ contract GovernanceStorage is Storage {
         Proposal storage proposal = proposalMap[_proposalId];
         require(
             _proposalId > 0 && _proposalId <= _proposalCount && proposal.id == _proposalId && !proposal.isVeto,
-            "Not a valid proposal"
+            "Invalid proposal"
         );
         _;
     }
@@ -54,16 +54,22 @@ contract GovernanceStorage is Storage {
         _;
     }
 
+    modifier requireStrategy(uint256 _proposalId) {
+        Proposal storage proposal = proposalMap[_proposalId];
+        require(proposal.voteStrategy == msg.sender, "Vote with VoteStrategy");
+        _;
+    }
+
     modifier requireElectorSupervisor(uint256 _proposalId) {
         Proposal storage proposal = proposalMap[_proposalId];
         require(proposal.supervisorPool[msg.sender], "Operation requires elector supervisor");
         _;
     }
 
-    modifier requireVoter(uint256 _proposalId) {
+    modifier requireVoter(uint256 _proposalId, address _wallet) {
         Proposal storage proposal = proposalMap[_proposalId];
-        bool isRegistered = proposal.voterPool[msg.sender];
-        bool isPartOfClass = proposal.voterClass.isVoter(msg.sender);
+        bool isRegistered = proposal.voterPool[_wallet];
+        bool isPartOfClass = proposal.voterClass.isVoter(_wallet);
         require(isRegistered || isPartOfClass, "Voter required");
         _;
     }
@@ -109,8 +115,7 @@ contract GovernanceStorage is Storage {
         Proposal storage proposal = proposalMap[proposalId];
         proposal.id = proposalId;
         proposal.proposalSender = owner;
-        proposal.quorumRequired = MAXIMUM_PASS_THRESHOLD;
-        proposal.requiredParticipation = 0;
+        proposal.quorumRequired = MAXIMUM_QUORUM;
         proposal.voteDelay = 0;
         proposal.voteDuration = MINIMUM_VOTE_DURATION;
         proposal.startBlock = 0;
@@ -257,17 +262,6 @@ contract GovernanceStorage is Storage {
         emit BurnVoterClass(_proposalId);
     }
 
-    function setRequiredParticipation(uint256 _proposalId, uint256 _voteTally)
-        public
-        requireValidProposal(_proposalId)
-        requireElectorSupervisor(_proposalId)
-        requireVotingNotReady(_proposalId)
-    {
-        Proposal storage proposal = proposalMap[_proposalId];
-        proposal.requiredParticipation = _voteTally;
-        emit SetRequiredParticipation(_proposalId, _voteTally);
-    }
-
     /// @notice establish the pass threshold for this measure
     function setQuorumThreshold(uint256 _proposalId, uint256 _passThreshold)
         public
@@ -301,16 +295,6 @@ contract GovernanceStorage is Storage {
         proposal.voteDuration = _voteDuration;
     }
 
-    function setRequiredVoteParticipation(uint256 _proposalId, uint256 _voteTally)
-        public
-        requireValidProposal(_proposalId)
-        requireElectorSupervisor(_proposalId)
-        requireVotingNotReady(_proposalId)
-    {
-        Proposal storage proposal = proposalMap[_proposalId];
-        proposal.requiredParticipation = _voteTally;
-    }
-
     function getSender(uint256 _proposalId) external view requireValidProposal(_proposalId) returns (address) {
         Proposal storage proposal = proposalMap[_proposalId];
         return proposal.proposalSender;
@@ -319,11 +303,6 @@ contract GovernanceStorage is Storage {
     function quorumRequired(uint256 _proposalId) external view requireValidProposal(_proposalId) returns (uint256) {
         Proposal storage proposal = proposalMap[_proposalId];
         return proposal.quorumRequired;
-    }
-
-    function requiredParticipation(uint256 _proposalId) external view requireValidProposal(_proposalId) returns (uint256) {
-        Proposal storage proposal = proposalMap[_proposalId];
-        return proposal.requiredParticipation;
     }
 
     function forVotes(uint256 _proposalId) external view requireValidProposal(_proposalId) returns (uint256) {
@@ -341,9 +320,8 @@ contract GovernanceStorage is Storage {
         return proposal.abstentionCount;
     }
 
-    function totalParticipation(uint256 _proposalId) external view requireValidProposal(_proposalId) returns (uint256) {
-        Proposal storage proposal = proposalMap[_proposalId];
-        return proposal.forVotes + proposal.againstVotes + proposal.abstentionCount;
+    function quorum(uint256 _proposalId) external view requireValidProposal(_proposalId) returns (uint256) {
+        return this.forVotes(_proposalId) + this.againstVotes(_proposalId) + this.abstentionCount(_proposalId);
     }
 
     function isSupervisor(uint256 _proposalId, address _supervisor)
@@ -400,91 +378,95 @@ contract GovernanceStorage is Storage {
     }
 
     /* @notice cast vote affirmative */
-    function _castVoteFor(uint256 _proposalId)
+    function _castVoteFor(uint256 _proposalId, address _wallet)
         public
         requireValidProposal(_proposalId)
-        requireVoter(_proposalId)
+        requireStrategy(_proposalId)
+        requireVoter(_proposalId, _wallet)
         requireVotingActive(_proposalId)
     {
         Proposal storage proposal = proposalMap[_proposalId];
         uint256 votesAvailable = 1;
-        if (proposal.voterClass.isVoter(msg.sender)) {
-            votesAvailable = proposal.voterClass.votesAvailable(msg.sender);
+        if (proposal.voterClass.isVoter(_wallet)) {
+            votesAvailable = proposal.voterClass.votesAvailable(_wallet);
         }
-        Receipt storage receipt = proposal.voteReceipt[msg.sender];
+        Receipt storage receipt = proposal.voteReceipt[_wallet];
         if (receipt.votesCast < votesAvailable) {
             uint256 remainingVotes = votesAvailable - receipt.votesCast;
             receipt.votesCast += remainingVotes;
             receipt.votedFor += remainingVotes;
             proposal.forVotes += remainingVotes;
-            emit VoteCast(_proposalId, msg.sender, remainingVotes);
+            emit VoteCast(_proposalId, _wallet, remainingVotes);
         } else {
             revert("Vote cast previously on this measure");
         }
     }
 
     /* @notice cast vote negative */
-    function _castVoteAgainst(uint256 _proposalId)
+    function _castVoteAgainst(uint256 _proposalId, address _wallet)
         public
         requireValidProposal(_proposalId)
-        requireVoter(_proposalId)
+        requireStrategy(_proposalId)
+        requireVoter(_proposalId, _wallet)
         requireVotingActive(_proposalId)
     {
         Proposal storage proposal = proposalMap[_proposalId];
         uint256 votesAvailable = 1;
-        if (proposal.voterClass.isVoter(msg.sender)) {
-            votesAvailable = proposal.voterClass.votesAvailable(msg.sender);
+        if (proposal.voterClass.isVoter(_wallet)) {
+            votesAvailable = proposal.voterClass.votesAvailable(_wallet);
         }
-        Receipt storage receipt = proposal.voteReceipt[msg.sender];
+        Receipt storage receipt = proposal.voteReceipt[_wallet];
         if (receipt.votesCast < votesAvailable) {
             uint256 remainingVotes = votesAvailable - receipt.votesCast;
             receipt.votesCast += remainingVotes;
             proposal.againstVotes += remainingVotes;
-            emit VoteCast(_proposalId, msg.sender, remainingVotes);
+            emit VoteCast(_proposalId, _wallet, remainingVotes);
         } else {
             revert("Vote cast previously on this measure");
         }
     }
 
     /* @notice cast vote Undo */
-    function _castVoteUndo(uint256 _proposalId)
+    function _castVoteUndo(uint256 _proposalId, address _wallet)
         public
         requireValidProposal(_proposalId)
-        requireVoter(_proposalId)
+        requireStrategy(_proposalId)
+        requireVoter(_proposalId, _wallet)
         requireUndo(_proposalId)
         requireVotingActive(_proposalId)
     {
         Proposal storage proposal = proposalMap[_proposalId];
-        Receipt storage receipt = proposal.voteReceipt[msg.sender];
+        Receipt storage receipt = proposal.voteReceipt[_wallet];
         if (receipt.votedFor > 0) {
             uint256 undoVotes = receipt.votedFor;
             receipt.votedFor -= undoVotes;
             receipt.votesCast -= undoVotes;
             proposal.forVotes -= undoVotes;
-            emit UndoVote(_proposalId, msg.sender, undoVotes);
+            emit UndoVote(_proposalId, _wallet, undoVotes);
         } else {
             revert("Nothing to undo");
         }
     }
 
     /* @notice mark abstention */
-    function _abstainFromVote(uint256 _proposalId)
+    function _abstainFromVote(uint256 _proposalId, address _wallet)
         public
         requireValidProposal(_proposalId)
-        requireVoter(_proposalId)
+        requireStrategy(_proposalId)
+        requireVoter(_proposalId, _wallet)
         requireVotingActive(_proposalId)
     {
         Proposal storage proposal = proposalMap[_proposalId];
         uint256 votesAvailable = 1;
-        if (proposal.voterClass.isVoter(msg.sender)) {
-            votesAvailable = proposal.voterClass.votesAvailable(msg.sender);
+        if (proposal.voterClass.isVoter(_wallet)) {
+            votesAvailable = proposal.voterClass.votesAvailable(_wallet);
         }
-        Receipt storage receipt = proposal.voteReceipt[msg.sender];
+        Receipt storage receipt = proposal.voteReceipt[_wallet];
         if (receipt.votesCast < votesAvailable) {
             uint256 remainingVotes = votesAvailable - receipt.votesCast;
             receipt.votesCast += remainingVotes;
             proposal.abstentionCount += remainingVotes;
-            emit VoteCast(_proposalId, msg.sender, remainingVotes);
+            emit VoteCast(_proposalId, _wallet, remainingVotes);
         } else {
             revert("Vote cast previously on this measure");
         }
@@ -529,6 +511,6 @@ contract GovernanceStorage is Storage {
     }
 
     function _maxPassThreshold() external pure returns (uint256) {
-        return MAXIMUM_PASS_THRESHOLD;
+        return MAXIMUM_QUORUM;
     }
 }

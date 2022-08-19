@@ -16,8 +16,6 @@ pragma solidity ^0.8.15;
 /// @title Governance
 /// contract enables proposing a measure to be voted upon
 interface Governance {
-    event StorageAddress(address _storage);
-    event StrategyAddress(address strategy, uint32 version);
     event ProposalCreated(address proposer, uint256 proposalId);
     event ProposalOpen(uint256 proposalId);
     event ProposalClosed(uint256 proposalId);
@@ -46,10 +44,9 @@ interface Governance {
 
     function voteSucceeded(uint256 _proposalId) external view returns (bool);
 
-    function getCurrentStrategyVersion() external view returns (uint32);
+    function getStrategyVersion() external view returns (uint32);
 
-    function getCurrentStrategyAddress() external view returns (address);
+    function getQuorumRequired(uint256 _proposalId) external view returns (uint256);
 
-    function getStorageAddress() external view returns (address);
-
+    function isOpen(uint256 _proposalId) external view returns (bool);
 }

@@ -29,29 +29,30 @@ contract CollectiveGovernance is Governance {
     Storage private _storage;
     VoteStrategy private _voteStrategy;
 
+    address[] _projectSupervisorList = new address[](1);
+
+    modifier requireElectorSupervisor(uint256 _proposalId) {
+        require(_storage.isSupervisor(_proposalId, msg.sender), "Governance requires elector supervisor");
+        _;
+    }
+
     constructor() {
         _storage = new GovernanceStorage();
-        emit StorageAddress(address(_storage));
         _voteStrategy = new ElectorVoterPoolStrategy(_storage);
-        emit StrategyAddress(address(_voteStrategy), _voteStrategy.version());
+        _projectSupervisorList[0] = address(this);
     }
 
-    function getCurrentStrategyVersion() external view returns (uint32) {
+    function getStrategyVersion() external view returns (uint32) {
         return _voteStrategy.version();
-    }
-
-    function getCurrentStrategyAddress() external view returns (address) {
-        return address(_voteStrategy);
-    }
-
-    function getStorageAddress() external view returns (address) {
-        return address(_storage);
     }
 
     function propose() external returns (uint256) {
         address owner = msg.sender;
         uint256 proposalId = _storage._initializeProposal(address(_voteStrategy));
         _storage.registerSupervisor(proposalId, owner);
+        for (uint256 i = 0; i < _projectSupervisorList.length; i++) {
+            _storage.registerSupervisor(proposalId, _projectSupervisorList[i]);
+        }
         emit ProposalCreated(owner, proposalId);
         return proposalId;
     }
@@ -61,7 +62,7 @@ contract CollectiveGovernance is Governance {
         uint256 _quorumThreshold,
         address _erc721,
         uint256 _requiredDuration
-    ) external {
+    ) external requireElectorSupervisor(_proposalId) {
         _storage.setQuorumThreshold(_proposalId, _quorumThreshold);
         _storage.setRequiredVoteDuration(_proposalId, _requiredDuration);
         _storage.registerVoterClassERC721(_proposalId, _erc721);
@@ -70,7 +71,7 @@ contract CollectiveGovernance is Governance {
         emit ProposalOpen(_proposalId);
     }
 
-    function endVote(uint256 _proposalId) external {
+    function endVote(uint256 _proposalId) external requireElectorSupervisor(_proposalId) {
         address _strategyAddress = _storage.voteStrategy(_proposalId);
         VoteStrategy _strategy = VoteStrategy(_strategyAddress);
         _strategy.endVote(_proposalId);
@@ -80,19 +81,19 @@ contract CollectiveGovernance is Governance {
     function voteFor(uint256 _proposalId) external {
         address _strategyAddress = _storage.voteStrategy(_proposalId);
         VoteStrategy _strategy = VoteStrategy(_strategyAddress);
-        _strategy.voteFor(_proposalId);
+        _strategy.voteFor(_proposalId, msg.sender);
     }
 
     function voteAgainst(uint256 _proposalId) external {
         address _strategyAddress = _storage.voteStrategy(_proposalId);
         VoteStrategy _strategy = VoteStrategy(_strategyAddress);
-        _strategy.voteAgainst(_proposalId);
+        _strategy.voteAgainst(_proposalId, msg.sender);
     }
 
     function abstainFromVote(uint256 _proposalId) external {
         address _strategyAddress = _storage.voteStrategy(_proposalId);
         VoteStrategy _strategy = VoteStrategy(_strategyAddress);
-        _strategy.abstainFromVote(_proposalId);
+        _strategy.abstainFromVote(_proposalId, msg.sender);
     }
 
     function voteSucceeded(uint256 _proposalId) external view returns (bool) {
@@ -103,5 +104,15 @@ contract CollectiveGovernance is Governance {
 
     function version() public pure virtual returns (uint32) {
         return VERSION_1;
+    }
+
+    function getQuorumRequired(uint256 _proposalId) external view returns (uint256) {
+        return _storage.quorumRequired(_proposalId);
+    }
+
+    function isOpen(uint256 _proposalId) external view returns (bool) {
+        address _strategyAddress = _storage.voteStrategy(_proposalId);
+        VoteStrategy _strategy = VoteStrategy(_strategyAddress);
+        return _strategy.isOpen(_proposalId);
     }
 }
