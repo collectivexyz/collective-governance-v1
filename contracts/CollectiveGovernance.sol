@@ -126,7 +126,8 @@ contract CollectiveGovernance is Governance, VoteStrategy {
 
     function isOpen(uint256 _proposalId) public view requireStrategyVersion(_proposalId) returns (bool) {
         _storage._validOrRevert(_proposalId);
-        return isVoteOpenByProposalId[_proposalId];
+        uint256 endBlock = _storage.endBlock(_proposalId);
+        return isVoteOpenByProposalId[_proposalId] && block.number < endBlock;
     }
 
     /// @notice forbid any further voting
@@ -137,6 +138,9 @@ contract CollectiveGovernance is Governance, VoteStrategy {
         requireVoteOpen(_proposalId)
     {
         _storage._validOrRevert(_proposalId);
+        if (!_storage.isReady(_proposalId)) {
+            _storage.makeReady(_proposalId);
+        }
         uint256 _endBlock = _storage.endBlock(_proposalId);
         require(_endBlock < block.number, "Voting remains active");
         isVoteOpenByProposalId[_proposalId] = false;

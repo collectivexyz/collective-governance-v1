@@ -79,6 +79,17 @@ contract CollectiveGovernanceTest is Test {
         vm.stopPrank();
         vm.prank(voter);
         governance.voteFor(PROPOSAL_ID);
+        assertEq(_storage.forVotes(PROPOSAL_ID), 1);
+    }
+
+    function testCastSimpleVoteWhileActive() public {
+        vm.startPrank(owner, owner);
+        governance.configure(PROPOSAL_ID, 2, address(erc721), 10);
+        vm.stopPrank();
+        vm.prank(voter);
+        vm.roll(block.number + 2);
+        governance.voteFor(PROPOSAL_ID);
+        assertEq(_storage.forVotes(PROPOSAL_ID), 1);
     }
 
     function testFailNonVoter() public {
@@ -95,6 +106,7 @@ contract CollectiveGovernanceTest is Test {
         vm.stopPrank();
         vm.prank(voter);
         governance.voteAgainst(PROPOSAL_ID);
+        assertEq(_storage.againstVotes(PROPOSAL_ID), 1);
     }
 
     function testFailVoteAgainstNonVoter() public {
@@ -111,6 +123,7 @@ contract CollectiveGovernanceTest is Test {
         vm.stopPrank();
         vm.prank(voter);
         governance.abstainFromVote(PROPOSAL_ID);
+        assertEq(_storage.abstentionCount(PROPOSAL_ID), 1);
     }
 
     function testFailAbstentionNonVoter() public {
@@ -660,5 +673,4 @@ contract CollectiveGovernanceTest is Test {
     function testFailDirectStorageAccessToVeto() public {
         _storage._veto(PROPOSAL_ID);
     }
-
 }

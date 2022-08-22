@@ -88,7 +88,7 @@ contract GovernanceStorage is Storage {
 
     modifier requireVotingActive(uint256 _proposalId) {
         Proposal storage proposal = proposalMap[_proposalId];
-        require(proposal.startBlock >= block.number && proposal.endBlock > block.number, "Vote not active");
+        require(proposal.startBlock <= block.number && proposal.endBlock > block.number, "Vote not active");
         _;
     }
 
