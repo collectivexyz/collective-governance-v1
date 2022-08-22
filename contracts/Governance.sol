@@ -34,19 +34,5 @@ interface Governance {
 
     function version() external pure returns (uint32);
 
-    function endVote(uint256 _proposalId) external;
-
-    function voteFor(uint256 _proposalId) external;
-
-    function voteAgainst(uint256 _proposalId) external;
-
-    function abstainFromVote(uint256 _proposalId) external;
-
-    function voteSucceeded(uint256 _proposalId) external view returns (bool);
-
-    function getStrategyVersion() external view returns (uint32);
-
-    function getQuorumRequired(uint256 _proposalId) external view returns (uint256);
-
-    function isOpen(uint256 _proposalId) external view returns (bool);
+    function getStorageAddress() external view returns (address);
 }

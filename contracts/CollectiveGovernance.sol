@@ -17,38 +17,74 @@ import "../contracts/Storage.sol";
 import "../contracts/GovernanceStorage.sol";
 import "../contracts/Governance.sol";
 import "../contracts/VoteStrategy.sol";
-import "../contracts/ElectorVoterPoolStrategy.sol";
 
 /// @title CollectiveGovernance
 // factory contract for governance
-contract CollectiveGovernance is Governance {
+contract CollectiveGovernance is Governance, VoteStrategy {
     /// @notice contract name
     string public constant name = "collective.xyz governance";
     uint32 public constant VERSION_1 = 1;
 
     Storage private _storage;
-    VoteStrategy private _voteStrategy;
+
+    /// @notice voting is open or not
+    mapping(uint256 => bool) isVoteOpenByProposalId;
 
     address[] _projectSupervisorList = new address[](1);
 
+    modifier requireStrategyVersion(uint256 _proposalId) {
+        address strategy = _storage.voteStrategy(_proposalId);
+        require(address(this) == strategy, "Strategy not valid for this proposalId");
+        _;
+    }
+
+    modifier requireVoteOpen(uint256 _proposalId) {
+        require(
+            _storage.isReady(_proposalId) && isVoteOpenByProposalId[_proposalId] && !_storage.isVeto(_proposalId),
+            "Voting is closed."
+        );
+        _;
+    }
+
+    modifier requireVoteReady(uint256 _proposalId) {
+        require(_storage.isReady(_proposalId) && !_storage.isVeto(_proposalId), "Voting is not ready.");
+        _;
+    }
+
+    modifier requireVoteClosed(uint256 _proposalId) {
+        require(
+            _storage.isReady(_proposalId) && !isVoteOpenByProposalId[_proposalId] && !_storage.isVeto(_proposalId),
+            "Voting is not closed."
+        );
+        _;
+    }
+
+    modifier requireVoter(uint256 _proposalId, address _wallet) {
+        require(_storage.isVoter(_proposalId, _wallet), "Voting interest required");
+        _;
+    }
+
     modifier requireElectorSupervisor(uint256 _proposalId) {
-        require(_storage.isSupervisor(_proposalId, msg.sender), "Governance requires elector supervisor");
+        require(_storage.isSupervisor(_proposalId, msg.sender), "Elector supervisor required");
         _;
     }
 
     constructor() {
         _storage = new GovernanceStorage();
-        _voteStrategy = new ElectorVoterPoolStrategy(_storage);
         _projectSupervisorList[0] = address(this);
     }
 
-    function getStrategyVersion() external view returns (uint32) {
-        return _voteStrategy.version();
+    function version() public pure virtual returns (uint32) {
+        return VERSION_1;
+    }
+
+    function getStorageAddress() external view returns (address) {
+        return address(_storage);
     }
 
     function propose() external returns (uint256) {
         address owner = msg.sender;
-        uint256 proposalId = _storage._initializeProposal(address(_voteStrategy));
+        uint256 proposalId = _storage._initializeProposal(address(this));
         _storage.registerSupervisor(proposalId, owner);
         for (uint256 i = 0; i < _projectSupervisorList.length; i++) {
             _storage.registerSupervisor(proposalId, _projectSupervisorList[i]);
@@ -67,52 +103,106 @@ contract CollectiveGovernance is Governance {
         _storage.setRequiredVoteDuration(_proposalId, _requiredDuration);
         _storage.registerVoterClassERC721(_proposalId, _erc721);
         _storage.makeReady(_proposalId);
-        _voteStrategy.openVote(_proposalId);
+        this.openVote(_proposalId);
         emit ProposalOpen(_proposalId);
     }
 
-    function endVote(uint256 _proposalId) external requireElectorSupervisor(_proposalId) {
-        address _strategyAddress = _storage.voteStrategy(_proposalId);
-        VoteStrategy _strategy = VoteStrategy(_strategyAddress);
-        _strategy.endVote(_proposalId);
+    /// @notice allow voting
+    function openVote(uint256 _proposalId)
+        public
+        requireStrategyVersion(_proposalId)
+        requireElectorSupervisor(_proposalId)
+        requireVoteReady(_proposalId)
+    {
+        _storage._validOrRevert(_proposalId);
+        require(_storage.quorumRequired(_proposalId) < _storage._maxPassThreshold(), "Quorum must be set prior to opening vote");
+        if (!isVoteOpenByProposalId[_proposalId]) {
+            isVoteOpenByProposalId[_proposalId] = true;
+            emit VoteOpen(_proposalId);
+        } else {
+            revert("Already open.");
+        }
+    }
+
+    function isOpen(uint256 _proposalId) public view requireStrategyVersion(_proposalId) returns (bool) {
+        _storage._validOrRevert(_proposalId);
+        return isVoteOpenByProposalId[_proposalId];
+    }
+
+    /// @notice forbid any further voting
+    function endVote(uint256 _proposalId)
+        public
+        requireStrategyVersion(_proposalId)
+        requireElectorSupervisor(_proposalId)
+        requireVoteOpen(_proposalId)
+    {
+        _storage._validOrRevert(_proposalId);
+        uint256 _endBlock = _storage.endBlock(_proposalId);
+        require(_endBlock < block.number, "Voting remains active");
+        isVoteOpenByProposalId[_proposalId] = false;
+        emit VoteClosed(_proposalId);
         emit ProposalClosed(_proposalId);
     }
 
-    function voteFor(uint256 _proposalId) external {
-        address _strategyAddress = _storage.voteStrategy(_proposalId);
-        VoteStrategy _strategy = VoteStrategy(_strategyAddress);
-        _strategy.voteFor(_proposalId, msg.sender);
+    /// @notice veto the current measure
+    function veto(uint256 _proposalId)
+        public
+        requireStrategyVersion(_proposalId)
+        requireElectorSupervisor(_proposalId)
+        requireVoteOpen(_proposalId)
+    {
+        _storage._veto(_proposalId);
     }
 
-    function voteAgainst(uint256 _proposalId) external {
-        address _strategyAddress = _storage.voteStrategy(_proposalId);
-        VoteStrategy _strategy = VoteStrategy(_strategyAddress);
-        _strategy.voteAgainst(_proposalId, msg.sender);
+    // @notice cast an affirmative vote for the measure
+    function voteFor(uint256 _proposalId)
+        public
+        requireStrategyVersion(_proposalId)
+        requireVoter(_proposalId, msg.sender)
+        requireVoteOpen(_proposalId)
+    {
+        _storage._castVoteFor(_proposalId, msg.sender);
     }
 
-    function abstainFromVote(uint256 _proposalId) external {
-        address _strategyAddress = _storage.voteStrategy(_proposalId);
-        VoteStrategy _strategy = VoteStrategy(_strategyAddress);
-        _strategy.abstainFromVote(_proposalId, msg.sender);
+    // @notice undo any previous vote
+    function undoVote(uint256 _proposalId)
+        public
+        requireStrategyVersion(_proposalId)
+        requireVoter(_proposalId, msg.sender)
+        requireVoteOpen(_proposalId)
+    {
+        _storage._castVoteUndo(_proposalId, msg.sender);
     }
 
-    function voteSucceeded(uint256 _proposalId) external view returns (bool) {
-        address _strategyAddress = _storage.voteStrategy(_proposalId);
-        VoteStrategy _strategy = VoteStrategy(_strategyAddress);
-        return _strategy.getVoteSucceeded(_proposalId);
+    function voteAgainst(uint256 _proposalId)
+        public
+        requireStrategyVersion(_proposalId)
+        requireVoter(_proposalId, msg.sender)
+        requireVoteOpen(_proposalId)
+    {
+        _storage._castVoteAgainst(_proposalId, msg.sender);
     }
 
-    function version() public pure virtual returns (uint32) {
-        return VERSION_1;
+    function abstainFromVote(uint256 _proposalId)
+        public
+        requireStrategyVersion(_proposalId)
+        requireVoter(_proposalId, msg.sender)
+        requireVoteOpen(_proposalId)
+    {
+        _storage._abstainFromVote(_proposalId, msg.sender);
     }
 
-    function getQuorumRequired(uint256 _proposalId) external view returns (uint256) {
-        return _storage.quorumRequired(_proposalId);
-    }
-
-    function isOpen(uint256 _proposalId) external view returns (bool) {
-        address _strategyAddress = _storage.voteStrategy(_proposalId);
-        VoteStrategy _strategy = VoteStrategy(_strategyAddress);
-        return _strategy.isOpen(_proposalId);
+    /// @notice get the result of the measure pass or failed
+    function getVoteSucceeded(uint256 _proposalId)
+        public
+        view
+        requireStrategyVersion(_proposalId)
+        requireVoteClosed(_proposalId)
+        returns (bool)
+    {
+        _storage._validOrRevert(_proposalId);
+        uint256 totalVotesCast = _storage.quorum(_proposalId);
+        require(totalVotesCast >= _storage.quorumRequired(_proposalId), "Not enough participants");
+        return _storage.forVotes(_proposalId) > _storage.againstVotes(_proposalId);
     }
 }

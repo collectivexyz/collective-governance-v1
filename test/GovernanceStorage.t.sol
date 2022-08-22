@@ -2,13 +2,10 @@
 pragma solidity ^0.8.15;
 
 import "@openzeppelin/contracts/interfaces/IERC721.sol";
-
 import "forge-std/Test.sol";
-
 import "../contracts/GovernanceStorage.sol";
+import "../contracts/CollectiveGovernance.sol";
 import "../contracts/VoteStrategy.sol";
-import "../contracts/ElectorVoterPoolStrategy.sol";
-
 import "./MockERC721.sol";
 
 contract GovernanceStorageTest is Test {
@@ -30,7 +27,7 @@ contract GovernanceStorageTest is Test {
 
     function setUp() public {
         _storage = new GovernanceStorage();
-        _strategy = new ElectorVoterPoolStrategy(_storage);
+        _strategy = new CollectiveGovernance();
         _strategyAddress = address(_strategy);
         vm.startPrank(owner);
         _storage._initializeProposal(_strategyAddress);

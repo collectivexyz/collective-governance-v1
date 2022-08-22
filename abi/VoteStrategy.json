@@ -31,11 +31,6 @@
         "internalType": "uint256",
         "name": "_proposalId",
         "type": "uint256"
-      },
-      {
-        "internalType": "address",
-        "name": "wallet",
-        "type": "address"
       }
     ],
     "name": "abstainFromVote",
@@ -95,19 +90,6 @@
     "type": "function"
   },
   {
-    "inputs": [],
-    "name": "name",
-    "outputs": [
-      {
-        "internalType": "string",
-        "name": "",
-        "type": "string"
-      }
-    ],
-    "stateMutability": "pure",
-    "type": "function"
-  },
-  {
     "inputs": [
       {
         "internalType": "uint256",
@@ -126,29 +108,11 @@
         "internalType": "uint256",
         "name": "_proposalId",
         "type": "uint256"
-      },
-      {
-        "internalType": "address",
-        "name": "wallet",
-        "type": "address"
       }
     ],
     "name": "undoVote",
     "outputs": [],
     "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "version",
-    "outputs": [
-      {
-        "internalType": "uint32",
-        "name": "",
-        "type": "uint32"
-      }
-    ],
-    "stateMutability": "pure",
     "type": "function"
   },
   {
@@ -170,11 +134,6 @@
         "internalType": "uint256",
         "name": "_proposalId",
         "type": "uint256"
-      },
-      {
-        "internalType": "address",
-        "name": "wallet",
-        "type": "address"
       }
     ],
     "name": "voteAgainst",
@@ -188,11 +147,6 @@
         "internalType": "uint256",
         "name": "_proposalId",
         "type": "uint256"
-      },
-      {
-        "internalType": "address",
-        "name": "wallet",
-        "type": "address"
       }
     ],
     "name": "voteFor",
