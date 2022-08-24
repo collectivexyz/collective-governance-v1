@@ -6,6 +6,32 @@ Open communities exist to serve the common good and therefore should be given an
 
 This smart contract enables a measure to be proposed, voted upon and successfully fulfilled. It also provides safety measures to prevent tampering, invalid election design or unexpected system problems from nullifying the possible benefit of a given measure.
 
+### Contract Deployment Details
+
+0.8.1
+
+```
+forge create --contracts contracts/CollectiveGovernance.sol --rpc-url ${DEVNET_RPC} --private-key ${DEVNET_WALLET} --etherscan-api-key ${ETHERSCAN_API_KEY} --verify CollectiveGovernance
+Compiling 23 files with 0.8.16
+Solc 0.8.16 finished in 106.73s
+Compiler run successful
+Deployer: 0x6CEb0bF1f28ca4165d5C0A04f61DC733987eD6ad
+Deployed to: 0x833b33A274DB2b26a030bEF1DF0A3981f01C1364
+Transaction hash: 0x6208b1cd80f24dd95a05b3d7c9b9b08ce8b365fe2380a68ea493cf95584a1dbe
+Starting contract verification...
+Waiting for etherscan to detect contract deployment...
+Submitting verification for [contracts/CollectiveGovernance.sol:CollectiveGovernance] Ok("0x833b33A274DB2b26a030bEF1DF0A3981f01C1364").
+Submitting verification for [contracts/CollectiveGovernance.sol:CollectiveGovernance] Ok("0x833b33A274DB2b26a030bEF1DF0A3981f01C1364").
+Submitting verification for [contracts/CollectiveGovernance.sol:CollectiveGovernance] Ok("0x833b33A274DB2b26a030bEF1DF0A3981f01C1364").
+Submitted contract for verification:
+	Response: `OK`
+	GUID: `a9uaapvndtyz3emtpihzpksmebkat3tdmb14zag68fppcpt4r2`
+	URL:
+        https://goerli.etherscan.io/address/0x833b33a274db2b26a030bef1df0a3981f01c1364
+Waiting for verification result...
+Contract source code already verified
+```
+
 ### Model
 
 ![Collective Governance](docs/images/CollectiveGovernance.png)
