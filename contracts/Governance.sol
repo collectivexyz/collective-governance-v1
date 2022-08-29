@@ -13,6 +13,8 @@
  */
 pragma solidity ^0.8.15;
 
+import "../contracts/VoteStrategy.sol";
+
 /// @title Governance
 /// contract enables proposing a measure to be voted upon
 interface Governance {

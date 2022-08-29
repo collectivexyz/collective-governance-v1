@@ -31,6 +31,8 @@ contract GovernanceStorage is Storage {
     /// @notice The total number of proposals
     uint256 internal _proposalCount;
 
+    address private _cognate;
+
     /// @notice The latest proposal for each proposer
     mapping(address => uint256) internal _latestProposalId;
 
@@ -48,21 +50,15 @@ contract GovernanceStorage is Storage {
         _;
     }
 
-    modifier requireProposalSender(uint256 _proposalId) {
+    modifier requireProposalSender(uint256 _proposalId, address _sender) {
         Proposal storage proposal = proposalMap[_proposalId];
-        require(proposal.proposalSender == msg.sender, "Not proposal creator");
+        require(proposal.proposalSender == _sender, "Not proposal creator");
         _;
     }
 
-    modifier requireStrategy(uint256 _proposalId) {
+    modifier requireElectorSupervisor(uint256 _proposalId, address _sender) {
         Proposal storage proposal = proposalMap[_proposalId];
-        require(proposal.voteStrategy == msg.sender, "Vote with VoteStrategy");
-        _;
-    }
-
-    modifier requireElectorSupervisor(uint256 _proposalId) {
-        Proposal storage proposal = proposalMap[_proposalId];
-        require(proposal.supervisorPool[msg.sender], "Operation requires elector supervisor");
+        require(proposal.supervisorPool[_sender], "Operation requires elector supervisor");
         _;
     }
 
@@ -98,23 +94,30 @@ contract GovernanceStorage is Storage {
         _;
     }
 
-    /// @notice initialize a proposal and return the id
-    function _initializeProposal(address _strategy) external returns (uint256) {
-        address owner = msg.sender;
+    modifier requireCognate() {
+        require(msg.sender == _cognate, "Sender unknown");
+        _;
+    }
 
-        uint256 latestProposalId = _latestProposalId[owner];
+    constructor(address cognate) {
+        _cognate = cognate;
+    }
+
+    /// @notice initialize a proposal and return the id
+    function _initializeProposal(address _sender) external requireCognate returns (uint256) {
+        uint256 latestProposalId = _latestProposalId[_sender];
         if (latestProposalId != 0) {
             Proposal storage latestProposal = proposalMap[latestProposalId];
             require(!latestProposal.isReady, "Too many proposals in process");
         }
         _proposalCount++;
         uint256 proposalId = _proposalCount;
-        _latestProposalId[owner] = proposalId;
+        _latestProposalId[_sender] = proposalId;
 
         // proposal
         Proposal storage proposal = proposalMap[proposalId];
         proposal.id = proposalId;
-        proposal.proposalSender = owner;
+        proposal.proposalSender = _sender;
         proposal.quorumRequired = MAXIMUM_QUORUM;
         proposal.voteDelay = 0;
         proposal.voteDuration = MINIMUM_VOTE_DURATION;
@@ -127,18 +130,22 @@ contract GovernanceStorage is Storage {
         proposal.isReady = false;
         proposal.isUndoEnabled = false;
         proposal.voterClass = new VoterClassNullObject();
-        proposal.voteStrategy = _strategy;
 
-        emit InitializeProposal(proposalId, owner);
+        emit InitializeProposal(proposalId, _sender);
         return proposalId;
     }
 
     /// @notice add a vote superviser to the supervisor pool with rights to add or remove voters prior to start of voting, also right to veto the outcome after voting is closed
-    function registerSupervisor(uint256 _proposalId, address _supervisor)
+    function registerSupervisor(
+        uint256 _proposalId,
+        address _supervisor,
+        address _sender
+    )
         public
+        requireCognate
         requireValidAddress(_supervisor)
         requireValidProposal(_proposalId)
-        requireProposalSender(_proposalId)
+        requireProposalSender(_proposalId, _sender)
         requireVotingNotReady(_proposalId)
     {
         Proposal storage proposal = proposalMap[_proposalId];
@@ -149,11 +156,16 @@ contract GovernanceStorage is Storage {
     }
 
     /// @notice remove the supervisor from the supervisor pool suspending their rights to modify the election
-    function burnSupervisor(uint256 _proposalId, address _supervisor)
+    function burnSupervisor(
+        uint256 _proposalId,
+        address _supervisor,
+        address _sender
+    )
         public
+        requireCognate
         requireValidAddress(_supervisor)
         requireValidProposal(_proposalId)
-        requireProposalSender(_proposalId)
+        requireProposalSender(_proposalId, _sender)
         requireVotingNotReady(_proposalId)
     {
         Proposal storage proposal = proposalMap[_proposalId];
@@ -164,10 +176,11 @@ contract GovernanceStorage is Storage {
     }
 
     /// @notice enable vote undo feature
-    function enableUndoVote(uint256 _proposalId)
+    function enableUndoVote(uint256 _proposalId, address _sender)
         public
+        requireCognate
         requireValidProposal(_proposalId)
-        requireElectorSupervisor(_proposalId)
+        requireElectorSupervisor(_proposalId, _sender)
         requireVotingNotReady(_proposalId)
     {
         Proposal storage proposal = proposalMap[_proposalId];
@@ -176,11 +189,16 @@ contract GovernanceStorage is Storage {
     }
 
     /// @notice register a voter on this measure
-    function registerVoter(uint256 _proposalId, address _voter)
+    function registerVoter(
+        uint256 _proposalId,
+        address _voter,
+        address _sender
+    )
         public
+        requireCognate
         requireValidAddress(_voter)
         requireValidProposal(_proposalId)
-        requireElectorSupervisor(_proposalId)
+        requireElectorSupervisor(_proposalId, _sender)
         requireVotingNotReady(_proposalId)
     {
         Proposal storage proposal = proposalMap[_proposalId];
@@ -193,10 +211,15 @@ contract GovernanceStorage is Storage {
     }
 
     /// @notice register a list of voters on this measure
-    function registerVoters(uint256 _proposalId, address[] memory _voter)
+    function registerVoters(
+        uint256 _proposalId,
+        address[] memory _voter,
+        address _sender
+    )
         public
+        requireCognate
         requireValidProposal(_proposalId)
-        requireElectorSupervisor(_proposalId)
+        requireElectorSupervisor(_proposalId, _sender)
         requireVotingNotReady(_proposalId)
     {
         Proposal storage proposal = proposalMap[_proposalId];
@@ -211,11 +234,16 @@ contract GovernanceStorage is Storage {
     }
 
     /// @notice burn the specified voter, removing their rights to participate in the election
-    function burnVoter(uint256 _proposalId, address _voter)
+    function burnVoter(
+        uint256 _proposalId,
+        address _voter,
+        address _sender
+    )
         public
+        requireCognate
         requireValidAddress(_voter)
         requireValidProposal(_proposalId)
-        requireElectorSupervisor(_proposalId)
+        requireElectorSupervisor(_proposalId, _sender)
         requireVotingNotReady(_proposalId)
     {
         Proposal storage proposal = proposalMap[_proposalId];
@@ -226,11 +254,16 @@ contract GovernanceStorage is Storage {
     }
 
     /// @notice register a voting class for this measure
-    function registerVoterClassERC721(uint256 _proposalId, address _token)
+    function registerVoterClassERC721(
+        uint256 _proposalId,
+        address _token,
+        address _sender
+    )
         public
+        requireCognate
         requireValidAddress(_token)
         requireValidProposal(_proposalId)
-        requireElectorSupervisor(_proposalId)
+        requireElectorSupervisor(_proposalId, _sender)
         requireVotingNotReady(_proposalId)
     {
         Proposal storage proposal = proposalMap[_proposalId];
@@ -239,10 +272,11 @@ contract GovernanceStorage is Storage {
     }
 
     /// @notice register a voting class for this measure
-    function registerVoterClassOpenVote(uint256 _proposalId)
+    function registerVoterClassOpenVote(uint256 _proposalId, address _sender)
         public
+        requireCognate
         requireValidProposal(_proposalId)
-        requireElectorSupervisor(_proposalId)
+        requireElectorSupervisor(_proposalId, _sender)
         requireVotingNotReady(_proposalId)
     {
         Proposal storage proposal = proposalMap[_proposalId];
@@ -251,10 +285,11 @@ contract GovernanceStorage is Storage {
     }
 
     /// @notice burn voter class
-    function burnVoterClass(uint256 _proposalId)
+    function burnVoterClass(uint256 _proposalId, address _sender)
         public
+        requireCognate
         requireValidProposal(_proposalId)
-        requireElectorSupervisor(_proposalId)
+        requireElectorSupervisor(_proposalId, _sender)
         requireVotingNotReady(_proposalId)
     {
         Proposal storage proposal = proposalMap[_proposalId];
@@ -263,10 +298,15 @@ contract GovernanceStorage is Storage {
     }
 
     /// @notice establish the pass threshold for this measure
-    function setQuorumThreshold(uint256 _proposalId, uint256 _passThreshold)
+    function setQuorumThreshold(
+        uint256 _proposalId,
+        uint256 _passThreshold,
+        address _sender
+    )
         public
+        requireCognate
         requireValidProposal(_proposalId)
-        requireElectorSupervisor(_proposalId)
+        requireElectorSupervisor(_proposalId, _sender)
         requireVotingNotReady(_proposalId)
     {
         Proposal storage proposal = proposalMap[_proposalId];
@@ -274,20 +314,30 @@ contract GovernanceStorage is Storage {
         emit SetQuorumThreshold(_proposalId, _passThreshold);
     }
 
-    function setVoteDelay(uint256 _proposalId, uint256 _voteDelay)
+    function setVoteDelay(
+        uint256 _proposalId,
+        uint256 _voteDelay,
+        address _sender
+    )
         public
+        requireCognate
         requireValidProposal(_proposalId)
-        requireElectorSupervisor(_proposalId)
+        requireElectorSupervisor(_proposalId, _sender)
         requireVotingNotReady(_proposalId)
     {
         Proposal storage proposal = proposalMap[_proposalId];
         proposal.voteDelay = _voteDelay;
     }
 
-    function setRequiredVoteDuration(uint256 _proposalId, uint256 _voteDuration)
+    function setRequiredVoteDuration(
+        uint256 _proposalId,
+        uint256 _voteDuration,
+        address _sender
+    )
         public
+        requireCognate
         requireValidProposal(_proposalId)
-        requireElectorSupervisor(_proposalId)
+        requireElectorSupervisor(_proposalId, _sender)
         requireVotingNotReady(_proposalId)
     {
         require(_voteDuration >= MINIMUM_VOTE_DURATION, "Voting duration is not valid");
@@ -352,7 +402,12 @@ contract GovernanceStorage is Storage {
         return proposal.isVeto;
     }
 
-    function makeReady(uint256 _proposalId) external requireElectorSupervisor(_proposalId) requireVotingNotReady(_proposalId) {
+    function makeReady(uint256 _proposalId, address _sender)
+        external
+        requireCognate
+        requireElectorSupervisor(_proposalId, _sender)
+        requireVotingNotReady(_proposalId)
+    {
         Proposal storage proposal = proposalMap[_proposalId];
         proposal.isReady = true;
         proposal.startBlock = block.number + proposal.voteDelay;
@@ -367,7 +422,12 @@ contract GovernanceStorage is Storage {
     }
 
     /// @notice veto the current measure
-    function _veto(uint256 _proposalId) public requireValidProposal(_proposalId) requireElectorSupervisor(_proposalId) {
+    function _veto(uint256 _proposalId, address _sender)
+        public
+        requireCognate
+        requireValidProposal(_proposalId)
+        requireElectorSupervisor(_proposalId, _sender)
+    {
         Proposal storage proposal = proposalMap[_proposalId];
         if (!proposal.isVeto) {
             proposal.isVeto = true;
@@ -380,8 +440,8 @@ contract GovernanceStorage is Storage {
     /* @notice cast vote affirmative */
     function _castVoteFor(uint256 _proposalId, address _wallet)
         public
+        requireCognate
         requireValidProposal(_proposalId)
-        requireStrategy(_proposalId)
         requireVoter(_proposalId, _wallet)
         requireVotingActive(_proposalId)
     {
@@ -405,8 +465,8 @@ contract GovernanceStorage is Storage {
     /* @notice cast vote negative */
     function _castVoteAgainst(uint256 _proposalId, address _wallet)
         public
+        requireCognate
         requireValidProposal(_proposalId)
-        requireStrategy(_proposalId)
         requireVoter(_proposalId, _wallet)
         requireVotingActive(_proposalId)
     {
@@ -429,8 +489,8 @@ contract GovernanceStorage is Storage {
     /* @notice cast vote Undo */
     function _castVoteUndo(uint256 _proposalId, address _wallet)
         public
+        requireCognate
         requireValidProposal(_proposalId)
-        requireStrategy(_proposalId)
         requireVoter(_proposalId, _wallet)
         requireUndo(_proposalId)
         requireVotingActive(_proposalId)
@@ -451,8 +511,8 @@ contract GovernanceStorage is Storage {
     /* @notice mark abstention */
     function _abstainFromVote(uint256 _proposalId, address _wallet)
         public
+        requireCognate
         requireValidProposal(_proposalId)
-        requireStrategy(_proposalId)
         requireVoter(_proposalId, _wallet)
         requireVotingActive(_proposalId)
     {
@@ -492,11 +552,6 @@ contract GovernanceStorage is Storage {
         return proposal.endBlock;
     }
 
-    function voteStrategy(uint256 _proposalId) external view requireValidProposal(_proposalId) returns (address) {
-        Proposal storage proposal = proposalMap[_proposalId];
-        return proposal.voteStrategy;
-    }
-
     function version() public pure virtual returns (uint32) {
         return VERSION_1;
     }
@@ -504,6 +559,7 @@ contract GovernanceStorage is Storage {
     function _validOrRevert(uint256 _proposalId)
         external
         view
+        requireCognate
         requireValidProposal(_proposalId)
     // solium-disable-next-line no-empty-blocks
     {

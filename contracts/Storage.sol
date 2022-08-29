@@ -67,8 +67,6 @@ interface Storage {
         bool isUndoEnabled;
         /// @notice general voter class enabled for this vote
         VoterClass voterClass;
-        /// @notice Strategy applied to this proposal
-        address voteStrategy;
         /// @notice Receipts of ballots for the entire set of voters
         mapping(address => Receipt) voteReceipt;
         /// @notice configured supervisors
@@ -91,31 +89,67 @@ interface Storage {
 
     function version() external pure returns (uint32);
 
-    function registerSupervisor(uint256 _proposalId, address _supervisor) external;
+    function registerSupervisor(
+        uint256 _proposalId,
+        address _supervisor,
+        address _sender
+    ) external;
 
-    function burnSupervisor(uint256 _proposalId, address _supervisor) external;
+    function burnSupervisor(
+        uint256 _proposalId,
+        address _supervisor,
+        address _sender
+    ) external;
 
-    function registerVoter(uint256 _proposalId, address _voter) external;
+    function registerVoter(
+        uint256 _proposalId,
+        address _voter,
+        address _sender
+    ) external;
 
-    function registerVoters(uint256 _proposalId, address[] memory _voter) external;
+    function registerVoters(
+        uint256 _proposalId,
+        address[] memory _voter,
+        address _sender
+    ) external;
 
-    function burnVoter(uint256 _proposalId, address _voter) external;
+    function burnVoter(
+        uint256 _proposalId,
+        address _voter,
+        address _sender
+    ) external;
 
-    function registerVoterClassERC721(uint256 _proposalId, address token) external;
+    function registerVoterClassERC721(
+        uint256 _proposalId,
+        address token,
+        address _sender
+    ) external;
 
-    function registerVoterClassOpenVote(uint256 _proposalId) external;
+    function registerVoterClassOpenVote(uint256 _proposalId, address _sender) external;
 
-    function burnVoterClass(uint256 _proposalId) external;
+    function burnVoterClass(uint256 _proposalId, address _sender) external;
 
-    function setQuorumThreshold(uint256 _proposalId, uint256 _passThreshold) external;
+    function setQuorumThreshold(
+        uint256 _proposalId,
+        uint256 _passThreshold,
+        address _sender
+    ) external;
 
-    function setVoteDelay(uint256 _proposalId, uint256 _voteDelay) external;
+    function setVoteDelay(
+        uint256 _proposalId,
+        uint256 _voteDelay,
+        address _sender
+    ) external;
 
-    function setRequiredVoteDuration(uint256 _proposalId, uint256 _voteDuration) external;
+    function setRequiredVoteDuration(
+        uint256 _proposalId,
+        uint256 _voteDuration,
+        address _sender
+    ) external;
 
-    function enableUndoVote(uint256 _proposalId) external;
+    function enableUndoVote(uint256 _proposalId, address _sender) external;
 
-    function makeReady(uint256 _proposalId) external;
+    function makeReady(uint256 _proposalId, address _sender) external;
 
     function isSupervisor(uint256 _proposalId, address _supervisor) external returns (bool);
 
@@ -145,19 +179,17 @@ interface Storage {
 
     function quorum(uint256 _proposalId) external view returns (uint256);
 
-    function voteStrategy(uint256 _proposalId) external view returns (address);
+    function _initializeProposal(address _sender) external returns (uint256);
 
-    function _initializeProposal(address _strategy) external returns (uint256);
+    function _castVoteFor(uint256 _proposalId, address _wallet) external;
 
-    function _castVoteFor(uint256 _proposalId, address wallet) external;
+    function _castVoteUndo(uint256 _proposalId, address _wallet) external;
 
-    function _castVoteUndo(uint256 _proposalId, address wallet) external;
+    function _castVoteAgainst(uint256 _proposalId, address _wallet) external;
 
-    function _castVoteAgainst(uint256 _proposalId, address wallet) external;
+    function _abstainFromVote(uint256 _proposalId, address _wallet) external;
 
-    function _abstainFromVote(uint256 _proposalId, address wallet) external;
-
-    function _veto(uint256 _proposalId) external;
+    function _veto(uint256 _proposalId, address _sender) external;
 
     function _validOrRevert(uint256 _proposalId) external view;
 

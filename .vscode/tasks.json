@@ -4,12 +4,24 @@
   "version": "2.0.0",
   "tasks": [
     {
+      "label": "install",
+      "type": "shell",
+      "command": "yarn install --dev",
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "group": {
+        "kind": "build"
+      }
+    },
+    {
       "label": "lint",
       "type": "shell",
       "command": "yarn lint",
       "options": {
         "cwd": "${workspaceFolder}"
       },
+      "dependsOn": "install",
       "group": {
         "kind": "build"
       }
@@ -47,7 +59,7 @@
       "options": {
         "cwd": "${workspaceFolder}"
       },
-      "dependsOn": "abi",
+      "dependsOn": "lint",
       "group": {
         "kind": "test",
         "isDefault": true
