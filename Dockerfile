@@ -50,7 +50,7 @@ RUN export DEBIAN_FRONTEND=noninteractive && \
   apt update && \
   apt install -y -q --no-install-recommends \
   git gnupg2 curl build-essential \
-  sudo ripgrep npm procps top \
+  sudo ripgrep npm procps \
   ca-certificates apt-transport-https && \
   apt clean && \
   rm -rf /var/lib/apt/lists/*

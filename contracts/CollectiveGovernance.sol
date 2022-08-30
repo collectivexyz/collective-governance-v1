@@ -32,6 +32,11 @@ contract CollectiveGovernance is Governance, VoteStrategy {
 
     address[] _projectSupervisorList = new address[](1);
 
+    constructor() {
+        _storage = new GovernanceStorage();
+        _projectSupervisorList[0] = address(this);
+    }
+
     modifier requireVoteOpen(uint256 _proposalId) {
         require(
             _storage.isReady(_proposalId) && isVoteOpenByProposalId[_proposalId] && !_storage.isVeto(_proposalId),
@@ -63,12 +68,6 @@ contract CollectiveGovernance is Governance, VoteStrategy {
         _;
     }
 
-    constructor() {
-        address cognate = address(this);
-        _storage = new GovernanceStorage(cognate);
-        _projectSupervisorList[0] = address(this);
-    }
-
     function version() public pure virtual returns (uint32) {
         return VERSION_1;
     }
@@ -79,7 +78,7 @@ contract CollectiveGovernance is Governance, VoteStrategy {
 
     function propose() external returns (uint256) {
         address _sender = msg.sender;
-        uint256 proposalId = _storage._initializeProposal(_sender);
+        uint256 proposalId = _storage.initializeProposal(_sender);
         _storage.registerSupervisor(proposalId, _sender, _sender);
         for (uint256 i = 0; i < _projectSupervisorList.length; i++) {
             _storage.registerSupervisor(proposalId, _projectSupervisorList[i], _sender);
@@ -105,8 +104,8 @@ contract CollectiveGovernance is Governance, VoteStrategy {
 
     /// @notice allow voting
     function openVote(uint256 _proposalId) public requireElectorSupervisor(_proposalId) requireVoteReady(_proposalId) {
-        _storage._validOrRevert(_proposalId);
-        require(_storage.quorumRequired(_proposalId) < _storage._maxPassThreshold(), "Quorum must be set prior to opening vote");
+        _storage.validOrRevert(_proposalId);
+        require(_storage.quorumRequired(_proposalId) < _storage.maxPassThreshold(), "Quorum must be set prior to opening vote");
         if (!isVoteOpenByProposalId[_proposalId]) {
             isVoteOpenByProposalId[_proposalId] = true;
             emit VoteOpen(_proposalId);
@@ -116,14 +115,14 @@ contract CollectiveGovernance is Governance, VoteStrategy {
     }
 
     function isOpen(uint256 _proposalId) public view returns (bool) {
-        _storage._validOrRevert(_proposalId);
+        _storage.validOrRevert(_proposalId);
         uint256 endBlock = _storage.endBlock(_proposalId);
         return isVoteOpenByProposalId[_proposalId] && block.number < endBlock;
     }
 
     /// @notice forbid any further voting
     function endVote(uint256 _proposalId) public requireElectorSupervisor(_proposalId) requireVoteOpen(_proposalId) {
-        _storage._validOrRevert(_proposalId);
+        _storage.validOrRevert(_proposalId);
         if (!_storage.isReady(_proposalId)) {
             _storage.makeReady(_proposalId, msg.sender);
         }
@@ -136,30 +135,36 @@ contract CollectiveGovernance is Governance, VoteStrategy {
 
     /// @notice veto the current measure
     function veto(uint256 _proposalId) public requireElectorSupervisor(_proposalId) requireVoteOpen(_proposalId) {
-        _storage._veto(_proposalId, msg.sender);
+        _storage.veto(_proposalId, msg.sender);
     }
 
     // @notice cast an affirmative vote for the measure
     function voteFor(uint256 _proposalId) public requireVoter(_proposalId, msg.sender) requireVoteOpen(_proposalId) {
-        _storage._castVoteFor(_proposalId, msg.sender);
+        VoterClass _class = _storage.voterClass(_proposalId);
+        uint256 votesAvailable = _class.votesAvailable(msg.sender);
+        _storage.voteForByShare(_proposalId, msg.sender, uint160(msg.sender), votesAvailable);
     }
 
     // @notice undo any previous vote
     function undoVote(uint256 _proposalId) public requireVoter(_proposalId, msg.sender) requireVoteOpen(_proposalId) {
-        _storage._castVoteUndo(_proposalId, msg.sender);
+        _storage.undoVoteById(_proposalId, msg.sender, uint160(msg.sender));
     }
 
     function voteAgainst(uint256 _proposalId) public requireVoter(_proposalId, msg.sender) requireVoteOpen(_proposalId) {
-        _storage._castVoteAgainst(_proposalId, msg.sender);
+        VoterClass _class = _storage.voterClass(_proposalId);
+        uint256 votesAvailable = _class.votesAvailable(msg.sender);
+        _storage.voteAgainstByShare(_proposalId, msg.sender, uint160(msg.sender), votesAvailable);
     }
 
     function abstainFromVote(uint256 _proposalId) public requireVoter(_proposalId, msg.sender) requireVoteOpen(_proposalId) {
-        _storage._abstainFromVote(_proposalId, msg.sender);
+        VoterClass _class = _storage.voterClass(_proposalId);
+        uint256 votesAvailable = _class.votesAvailable(msg.sender);
+        _storage.abstainForShare(_proposalId, msg.sender, uint160(msg.sender), votesAvailable);
     }
 
     /// @notice get the result of the measure pass or failed
     function getVoteSucceeded(uint256 _proposalId) public view requireVoteClosed(_proposalId) returns (bool) {
-        _storage._validOrRevert(_proposalId);
+        _storage.validOrRevert(_proposalId);
         uint256 totalVotesCast = _storage.quorum(_proposalId);
         require(totalVotesCast >= _storage.quorumRequired(_proposalId), "Not enough participants");
         return _storage.forVotes(_proposalId) > _storage.againstVotes(_proposalId);

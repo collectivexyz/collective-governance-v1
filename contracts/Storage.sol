@@ -25,14 +25,15 @@ interface Storage {
     event BurnSupervisor(uint256 proposalId, address supervisor);
     event RegisterVoter(uint256 proposalId, address voter);
     event BurnVoter(uint256 proposalId, address voter);
+    event RegisterVoterClassVoterPool(uint256 proposalId);
     event RegisterVoterClassOpenVote(uint256 proposalId);
     event RegisterVoterClassERC721(uint256 proposalId, address token);
     event BurnVoterClass(uint256 proposalId);
     event SetQuorumThreshold(uint256 proposalId, uint256 passThreshold);
     event UndoVoteEnabled(uint256 proposalId);
 
-    event VoteCast(uint256 proposalId, address voter, uint256 totalVotesCast);
-    event UndoVote(uint256 proposalId, address voter, uint256 votesUndone);
+    event VoteCast(uint256 proposalId, address voter, uint256 shareId, uint256 totalVotesCast);
+    event UndoVote(uint256 proposalId, address voter, uint256 shareId, uint256 votesUndone);
     event VoteVeto(uint256 proposalId, address supervisor);
     event VoteReady(uint256 proposalId, uint256 startBlock, uint256 endBlock);
 
@@ -68,21 +69,21 @@ interface Storage {
         /// @notice general voter class enabled for this vote
         VoterClass voterClass;
         /// @notice Receipts of ballots for the entire set of voters
-        mapping(address => Receipt) voteReceipt;
+        mapping(uint256 => Receipt) voteReceipt;
         /// @notice configured supervisors
         mapping(address => bool) supervisorPool;
-        /// @notice whitelisted voters
-        mapping(address => bool) voterPool;
     }
 
     /// @notice Ballot receipt record for a voter
     struct Receipt {
         /// @notice number of votes cast for
-        uint256 votedFor;
+        uint256 shareFor;
         /// @notice The number of votes the voter had, which were cast
         uint256 votesCast;
-        /// @notice mapping of tokens voted
-        mapping(uint256 => bool) tokenVoted;
+        /// @notice id of reserved shares
+        uint256 shareId;
+        /// @notice has this share been reversed
+        bool undoCast;
     }
 
     function name() external pure returns (string memory);
@@ -124,6 +125,8 @@ interface Storage {
         address token,
         address _sender
     ) external;
+
+    function registerVoterClassVoterPool(uint256 _proposalId, address _sender) external;
 
     function registerVoterClassOpenVote(uint256 _proposalId, address _sender) external;
 
@@ -179,19 +182,40 @@ interface Storage {
 
     function quorum(uint256 _proposalId) external view returns (uint256);
 
-    function _initializeProposal(address _sender) external returns (uint256);
+    function voterClass(uint256 _proposalId) external view returns (VoterClass);
 
-    function _castVoteFor(uint256 _proposalId, address _wallet) external;
+    function initializeProposal(address _sender) external returns (uint256);
 
-    function _castVoteUndo(uint256 _proposalId, address _wallet) external;
+    function voteForByShare(
+        uint256 _proposalId,
+        address _wallet,
+        uint256 _shareId,
+        uint256 _voteWeight
+    ) external;
 
-    function _castVoteAgainst(uint256 _proposalId, address _wallet) external;
+    function undoVoteById(
+        uint256 _proposalId,
+        address _wallet,
+        uint256 _receiptId
+    ) external;
 
-    function _abstainFromVote(uint256 _proposalId, address _wallet) external;
+    function voteAgainstByShare(
+        uint256 _proposalId,
+        address _wallet,
+        uint256 _shareId,
+        uint256 _voteWeight
+    ) external;
 
-    function _veto(uint256 _proposalId, address _sender) external;
+    function abstainForShare(
+        uint256 _proposalId,
+        address _wallet,
+        uint256 _shareId,
+        uint256 _voteWeight
+    ) external;
 
-    function _validOrRevert(uint256 _proposalId) external view;
+    function veto(uint256 _proposalId, address _sender) external;
 
-    function _maxPassThreshold() external pure returns (uint256);
+    function validOrRevert(uint256 _proposalId) external view;
+
+    function maxPassThreshold() external pure returns (uint256);
 }

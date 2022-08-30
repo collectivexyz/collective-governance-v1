@@ -364,13 +364,13 @@ contract CollectiveGovernanceTest is Test {
         vm.mockCall(storageMock, abi.encodeWithSelector(Storage.quorum.selector), abi.encode(quorum));
         uint256 quorumRequired = 399;
         vm.mockCall(storageMock, abi.encodeWithSelector(Storage.quorumRequired.selector), abi.encode(quorumRequired));
-        vm.mockCall(storageMock, abi.encodeWithSelector(Storage._maxPassThreshold.selector), abi.encode(0xffffffff));
+        vm.mockCall(storageMock, abi.encodeWithSelector(Storage.maxPassThreshold.selector), abi.encode(0xffffffff));
         vm.mockCall(storageMock, abi.encodeWithSelector(Storage.startBlock.selector), abi.encode(block.number - 2));
         vm.mockCall(storageMock, abi.encodeWithSelector(Storage.endBlock.selector), abi.encode(block.number - 1));
         vm.mockCall(storageMock, abi.encodeWithSelector(Storage.isReady.selector), abi.encode(true));
         vm.mockCall(storageMock, abi.encodeWithSelector(Storage.isVeto.selector), abi.encode(false));
         vm.mockCall(storageMock, abi.encodeWithSelector(Storage.isSupervisor.selector), abi.encode(true));
-        vm.mockCall(storageMock, abi.encodeWithSelector(Storage._validOrRevert.selector), abi.encode(PROPOSAL_ID));
+        vm.mockCall(storageMock, abi.encodeWithSelector(Storage.validOrRevert.selector), abi.encode(PROPOSAL_ID));
 
         vm.prank(supervisor);
         governance.openVote(PROPOSAL_ID);
@@ -395,13 +395,13 @@ contract CollectiveGovernanceTest is Test {
         vm.mockCall(storageMock, abi.encodeWithSelector(Storage.quorum.selector), abi.encode(quorum));
         uint256 quorumRequired = 399;
         vm.mockCall(storageMock, abi.encodeWithSelector(Storage.quorumRequired.selector), abi.encode(quorumRequired));
-        vm.mockCall(storageMock, abi.encodeWithSelector(Storage._maxPassThreshold.selector), abi.encode(0xffffffff));
+        vm.mockCall(storageMock, abi.encodeWithSelector(Storage.maxPassThreshold.selector), abi.encode(0xffffffff));
         vm.mockCall(storageMock, abi.encodeWithSelector(Storage.startBlock.selector), abi.encode(block.number - 2));
         vm.mockCall(storageMock, abi.encodeWithSelector(Storage.endBlock.selector), abi.encode(block.number - 1));
         vm.mockCall(storageMock, abi.encodeWithSelector(Storage.isReady.selector), abi.encode(true));
         vm.mockCall(storageMock, abi.encodeWithSelector(Storage.isVeto.selector), abi.encode(false));
         vm.mockCall(storageMock, abi.encodeWithSelector(Storage.isSupervisor.selector), abi.encode(true));
-        vm.mockCall(storageMock, abi.encodeWithSelector(Storage._validOrRevert.selector), abi.encode(PROPOSAL_ID));
+        vm.mockCall(storageMock, abi.encodeWithSelector(Storage.validOrRevert.selector), abi.encode(PROPOSAL_ID));
 
         vm.prank(supervisor);
         governance.openVote(PROPOSAL_ID);
@@ -426,13 +426,13 @@ contract CollectiveGovernanceTest is Test {
         vm.mockCall(storageMock, abi.encodeWithSelector(Storage.quorum.selector), abi.encode(quorum));
         uint256 quorumRequired = 399;
         vm.mockCall(storageMock, abi.encodeWithSelector(Storage.quorumRequired.selector), abi.encode(quorumRequired));
-        vm.mockCall(storageMock, abi.encodeWithSelector(Storage._maxPassThreshold.selector), abi.encode(0xffffffff));
+        vm.mockCall(storageMock, abi.encodeWithSelector(Storage.maxPassThreshold.selector), abi.encode(0xffffffff));
         vm.mockCall(storageMock, abi.encodeWithSelector(Storage.startBlock.selector), abi.encode(block.number - 2));
         vm.mockCall(storageMock, abi.encodeWithSelector(Storage.endBlock.selector), abi.encode(block.number - 1));
         vm.mockCall(storageMock, abi.encodeWithSelector(Storage.isReady.selector), abi.encode(true));
         vm.mockCall(storageMock, abi.encodeWithSelector(Storage.isVeto.selector), abi.encode(false));
         vm.mockCall(storageMock, abi.encodeWithSelector(Storage.isSupervisor.selector), abi.encode(true));
-        vm.mockCall(storageMock, abi.encodeWithSelector(Storage._validOrRevert.selector), abi.encode(PROPOSAL_ID));
+        vm.mockCall(storageMock, abi.encodeWithSelector(Storage.validOrRevert.selector), abi.encode(PROPOSAL_ID));
 
         vm.prank(supervisor);
         governance.openVote(PROPOSAL_ID);
@@ -458,11 +458,11 @@ contract CollectiveGovernanceTest is Test {
         vm.mockCall(storageMock, abi.encodeWithSelector(Storage.quorumRequired.selector), abi.encode(quorumRequired));
         vm.mockCall(storageMock, abi.encodeWithSelector(Storage.startBlock.selector), abi.encode(block.number - 2));
         vm.mockCall(storageMock, abi.encodeWithSelector(Storage.endBlock.selector), abi.encode(block.number - 1));
-        vm.mockCall(storageMock, abi.encodeWithSelector(Storage._maxPassThreshold.selector), abi.encode(0xffffffff));
+        vm.mockCall(storageMock, abi.encodeWithSelector(Storage.maxPassThreshold.selector), abi.encode(0xffffffff));
         vm.mockCall(storageMock, abi.encodeWithSelector(Storage.isReady.selector), abi.encode(true));
         vm.mockCall(storageMock, abi.encodeWithSelector(Storage.isVeto.selector), abi.encode(false));
         vm.mockCall(storageMock, abi.encodeWithSelector(Storage.isSupervisor.selector), abi.encode(true));
-        vm.mockCall(storageMock, abi.encodeWithSelector(Storage._validOrRevert.selector), abi.encode(PROPOSAL_ID));
+        vm.mockCall(storageMock, abi.encodeWithSelector(Storage.validOrRevert.selector), abi.encode(PROPOSAL_ID));
 
         vm.prank(supervisor);
         governance.openVote(PROPOSAL_ID);
@@ -591,6 +591,7 @@ contract CollectiveGovernanceTest is Test {
         vm.assume(blockStep >= 16 && blockStep < UINT256MAX - block.number);
         address strategy = address(governance);
         vm.startPrank(strategy);
+        _storage.registerVoterClassVoterPool(PROPOSAL_ID, supervisor);
         _storage.registerVoter(PROPOSAL_ID, voter1, supervisor);
         _storage.setQuorumThreshold(PROPOSAL_ID, 1, supervisor);
         _storage.setVoteDelay(PROPOSAL_ID, 5, supervisor);
@@ -684,8 +685,7 @@ contract CollectiveGovernanceTest is Test {
         vm.startPrank(owner, owner);
         governance.configure(PROPOSAL_ID, 2, address(erc721), 2);
         vm.stopPrank();
-
-        _storage._castVoteFor(PROPOSAL_ID, voter1);
+        _storage.voteForByShare(PROPOSAL_ID, voter1, uint160(voter1), 1);
     }
 
     function testFailDirectStorageAccessToCastVoteAgainst() public {
@@ -693,28 +693,27 @@ contract CollectiveGovernanceTest is Test {
         governance.configure(PROPOSAL_ID, 2, address(erc721), 2);
         vm.stopPrank();
 
-        _storage._castVoteAgainst(PROPOSAL_ID, voter1);
+        _storage.voteAgainstByShare(PROPOSAL_ID, voter1, uint160(voter1), 1);
     }
 
     function testFailDirectStorageAccessToAbstain() public {
         vm.startPrank(owner, owner);
         governance.configure(PROPOSAL_ID, 2, address(erc721), 2);
         vm.stopPrank();
-
-        _storage._abstainFromVote(PROPOSAL_ID, voter1);
+        _storage.abstainForShare(PROPOSAL_ID, voter1, uint160(voter1), 1);
     }
 
     function testFailDirectStorageAccessToUndo() public {
         vm.startPrank(owner, owner);
         governance.configure(PROPOSAL_ID, 2, address(erc721), 2);
         vm.stopPrank();
-        _storage._castVoteUndo(PROPOSAL_ID, voter1);
+        _storage.undoVoteById(PROPOSAL_ID, voter1, uint160(voter1));
     }
 
     function testFailDirectStorageAccessToVeto() public {
         vm.startPrank(owner, owner);
         governance.configure(PROPOSAL_ID, 2, address(erc721), 2);
         vm.stopPrank();
-        _storage._veto(PROPOSAL_ID, msg.sender);
+        _storage.veto(PROPOSAL_ID, msg.sender);
     }
 }
