@@ -169,6 +169,22 @@ contract CollectiveGovernance is Governance, VoteStrategy {
         }
     }
 
+    function voteForWithTokenList(uint256 _proposalId, uint256[] memory _tokenIdList)
+        external
+        requireVoteOpen(_proposalId)
+        requireNoVeto(_proposalId)
+    {
+        uint256 count = 0;
+        for (uint256 i = 0; i < _tokenIdList.length; i++) {
+            count += _storage.voteForByShare(_proposalId, msg.sender, _tokenIdList[i]);
+        }
+        if (count > 0) {
+            emit VoteTally(_proposalId, msg.sender, count);
+        } else {
+            revert("Not voter");
+        }
+    }
+
     // @notice undo any previous vote
     function undoVote(uint256 _proposalId) public requireVoteOpen(_proposalId) requireNoVeto(_proposalId) {
         VoterClass _class = _storage.voterClass(_proposalId);
@@ -226,6 +242,22 @@ contract CollectiveGovernance is Governance, VoteStrategy {
         }
     }
 
+    function voteAgainstWithTokenList(uint256 _proposalId, uint256[] memory _tokenIdList)
+        external
+        requireVoteOpen(_proposalId)
+        requireNoVeto(_proposalId)
+    {
+        uint256 count = 0;
+        for (uint256 i = 0; i < _tokenIdList.length; i++) {
+            count += _storage.voteAgainstByShare(_proposalId, msg.sender, _tokenIdList[i]);
+        }
+        if (count > 0) {
+            emit VoteTally(_proposalId, msg.sender, count);
+        } else {
+            revert("Not voter");
+        }
+    }
+
     function abstainFromVote(uint256 _proposalId) public requireVoteOpen(_proposalId) requireNoVeto(_proposalId) {
         VoterClass _class = _storage.voterClass(_proposalId);
         uint256[] memory _shareList = _class.discover(msg.sender);
@@ -247,6 +279,22 @@ contract CollectiveGovernance is Governance, VoteStrategy {
         requireNoVeto(_proposalId)
     {
         uint256 count = _storage.abstainForShare(_proposalId, msg.sender, _tokenId);
+        if (count > 0) {
+            emit AbstentionTally(_proposalId, msg.sender, count);
+        } else {
+            revert("Not voter");
+        }
+    }
+
+    function abstainWithTokenList(uint256 _proposalId, uint256[] memory _tokenIdList)
+        external
+        requireVoteOpen(_proposalId)
+        requireNoVeto(_proposalId)
+    {
+        uint256 count = 0;
+        for (uint256 i = 0; i < _tokenIdList.length; i++) {
+            count += _storage.abstainForShare(_proposalId, msg.sender, _tokenIdList[i]);
+        }
         if (count > 0) {
             emit AbstentionTally(_proposalId, msg.sender, count);
         } else {

@@ -32,11 +32,25 @@ interface VoteStrategy {
 
     function voteFor(uint256 _proposalId) external;
 
+    function voteForWithTokenId(uint256 _proposalId, uint256 _tokenId) external;
+
+    function voteForWithTokenList(uint256 _proposalId, uint256[] memory _tokenIdList) external;
+
     function voteAgainst(uint256 _proposalId) external;
+
+    function voteAgainstWithTokenId(uint256 _proposalId, uint256 _tokenId) external;
+
+    function voteAgainstWithTokenList(uint256 _proposalId, uint256[] memory _tokenIdList) external;
 
     function abstainFromVote(uint256 _proposalId) external;
 
+    function abstainWithTokenId(uint256 _proposalId, uint256 _tokenId) external;
+
+    function abstainWithTokenList(uint256 _proposalId, uint256[] memory _tokenIdList) external;
+
     function undoVote(uint256 _proposalId) external;
+
+    function undoWithTokenId(uint256 _proposalId, uint256 _tokenId) external;
 
     function veto(uint256 _proposalId) external;
 

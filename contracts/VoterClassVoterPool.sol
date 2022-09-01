@@ -76,13 +76,10 @@ contract VoterClassVoterPool is VoterClass {
         return _voterPool[_wallet];
     }
 
-    function discover(address _wallet) external view returns (uint256[] memory) {
-        if (this.isVoter(_wallet)) {
-            uint256[] memory shareList = new uint256[](1);
-            shareList[0] = uint160(_wallet);
-            return shareList;
-        }
-        revert("Not voter");
+    function discover(address _wallet) external view requireVoter(_wallet) returns (uint256[] memory) {
+        uint256[] memory shareList = new uint256[](1);
+        shareList[0] = uint160(_wallet);
+        return shareList;
     }
 
     /// @notice commit votes for shareId return number voted
