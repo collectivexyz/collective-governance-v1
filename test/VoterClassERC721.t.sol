@@ -16,7 +16,9 @@ contract VoterClassERC721Test is Test {
     VoterClass _class;
 
     function setUp() public {
-        _tokenContract = new MockERC721(_owner, _tokenId);
+        MockERC721 merc721 = new MockERC721();
+        merc721.mintTo(_owner, _tokenId);
+        _tokenContract = merc721;
         _class = new VoterClassERC721(address(_tokenContract), 1);
     }
 

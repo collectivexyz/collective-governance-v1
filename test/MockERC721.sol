@@ -6,51 +6,73 @@ import "forge-std/Test.sol";
 import "@openzeppelin/contracts/interfaces/IERC721.sol";
 
 contract MockERC721 is IERC721 {
-    address private _owner;
-    uint256 private _tokenId;
+    mapping(address => uint256) _ownerBalanceMap;
+    mapping(uint256 => address) _tokenMap;
 
-    constructor(address owner, uint256 tokenId) {
-        _owner = owner;
-        _tokenId = tokenId;
+    modifier tokenExists(uint256 _tokenId) {
+        require(_tokenMap[_tokenId] != address(0x0), "Token does not exist");
+        _;
     }
 
-    function balanceOf(address owner) external view returns (uint256) {
-        if (_owner == owner) {
-            return 1;
-        }
-        return 0;
+    modifier tokenDoesNotExist(uint256 _tokenId) {
+        require(_tokenMap[_tokenId] == address(0x0), "Token exists");
+        _;
     }
 
-    function ownerOf(uint256 tokenId) external view returns (address) {
-        if (_tokenId == tokenId) {
-            return _owner;
+    modifier tokenOwnedBy(uint256 _tokenId, address _owner) {
+        require(_tokenMap[_tokenId] == _owner, "Not token owner");
+        _;
+    }
+
+    function mintTo(address _owner, uint256 _tokenId) external tokenDoesNotExist(_tokenId) {
+        _ownerBalanceMap[_owner] += 1;
+        _tokenMap[_tokenId] = _owner;
+    }
+
+    function balanceOf(address _owner) external view returns (uint256) {
+        return _ownerBalanceMap[_owner];
+    }
+
+    function ownerOf(uint256 _tokenId) external view returns (address) {
+        address owner = _tokenMap[_tokenId];
+        if (owner == address(0)) {
+            revert("token does not exist");
         }
-        revert("token does not exist");
+        return owner;
     }
 
     function safeTransferFrom(
-        address, /* from */
-        address, /* to */
-        uint256, /* tokenId */
+        address _from,
+        address _to,
+        uint256 _tokenId,
         bytes calldata /* data */
-    ) external pure {
-        revert("Not implemented");
+    ) external tokenExists(_tokenId) tokenOwnedBy(_tokenId, _from) {
+        require(_from == msg.sender, "Not token owner");
+        _ownerBalanceMap[_from] -= 1;
+        _ownerBalanceMap[_to] += 1;
+        _tokenMap[_tokenId] = _to;
     }
 
     function safeTransferFrom(
-        address, /* from */
-        address, /* to */
-        uint256 /* tokenId */
-    ) external pure {
-        revert("Not implemented");
+        address _from,
+        address _to,
+        uint256 _tokenId
+    ) external tokenExists(_tokenId) tokenOwnedBy(_tokenId, _from) {
+        require(_from == msg.sender, "Not token owner");
+        _ownerBalanceMap[_from] -= 1;
+        _ownerBalanceMap[_to] += 1;
+        _tokenMap[_tokenId] = _to;
     }
 
     function transferFrom(
-        address, /* from */
-        address, /* to */
-        uint256 /* tokenId */
-    ) external pure {
-        revert("Not implemented");
+        address _from,
+        address _to,
+        uint256 _tokenId
+    ) external {
+        require(_from == msg.sender, "Not token owner");
+        _ownerBalanceMap[_from] -= 1;
+        _ownerBalanceMap[_to] += 1;
+        _tokenMap[_tokenId] = _to;
     }
 
     function approve(

@@ -38,22 +38,24 @@ contract CollectiveGovernance is Governance, VoteStrategy {
     }
 
     modifier requireVoteOpen(uint256 _proposalId) {
-        require(
-            _storage.isReady(_proposalId) && isVoteOpenByProposalId[_proposalId] && !_storage.isVeto(_proposalId),
-            "Voting is closed."
-        );
+        require(_storage.isReady(_proposalId) && isVoteOpenByProposalId[_proposalId], "Voting is closed");
+        _;
+    }
+
+    modifier requireNoVeto(uint256 _proposalId) {
+        require(!_storage.isVeto(_proposalId), "Vote is veto");
         _;
     }
 
     modifier requireVoteReady(uint256 _proposalId) {
-        require(_storage.isReady(_proposalId) && !_storage.isVeto(_proposalId), "Voting is not ready.");
+        require(_storage.isReady(_proposalId) && !_storage.isVeto(_proposalId), "Voting is not ready");
         _;
     }
 
     modifier requireVoteClosed(uint256 _proposalId) {
         require(
             _storage.isReady(_proposalId) && !isVoteOpenByProposalId[_proposalId] && !_storage.isVeto(_proposalId),
-            "Voting is not closed."
+            "Voting is not closed"
         );
         _;
     }
@@ -105,7 +107,7 @@ contract CollectiveGovernance is Governance, VoteStrategy {
             isVoteOpenByProposalId[_proposalId] = true;
             emit VoteOpen(_proposalId);
         } else {
-            revert("Already open.");
+            revert("Already open");
         }
     }
 
@@ -129,12 +131,17 @@ contract CollectiveGovernance is Governance, VoteStrategy {
     }
 
     /// @notice veto the current measure
-    function veto(uint256 _proposalId) public requireElectorSupervisor(_proposalId) requireVoteOpen(_proposalId) {
+    function veto(uint256 _proposalId)
+        public
+        requireElectorSupervisor(_proposalId)
+        requireVoteOpen(_proposalId)
+        requireNoVeto(_proposalId)
+    {
         _storage.veto(_proposalId, msg.sender);
     }
 
     // @notice cast an affirmative vote for the measure
-    function voteFor(uint256 _proposalId) public requireVoteOpen(_proposalId) {
+    function voteFor(uint256 _proposalId) public requireVoteOpen(_proposalId) requireNoVeto(_proposalId) {
         VoterClass _class = _storage.voterClass(_proposalId);
         uint256[] memory _shareList = _class.discover(msg.sender);
         uint256 count = 0;
@@ -149,7 +156,11 @@ contract CollectiveGovernance is Governance, VoteStrategy {
         }
     }
 
-    function voteForWithTokenId(uint256 _proposalId, uint256 _tokenId) public requireVoteOpen(_proposalId) {
+    function voteForWithTokenId(uint256 _proposalId, uint256 _tokenId)
+        public
+        requireVoteOpen(_proposalId)
+        requireNoVeto(_proposalId)
+    {
         uint256 count = _storage.voteForByShare(_proposalId, msg.sender, _tokenId);
         if (count > 0) {
             emit VoteTally(_proposalId, msg.sender, count);
@@ -159,7 +170,7 @@ contract CollectiveGovernance is Governance, VoteStrategy {
     }
 
     // @notice undo any previous vote
-    function undoVote(uint256 _proposalId) public requireVoteOpen(_proposalId) {
+    function undoVote(uint256 _proposalId) public requireVoteOpen(_proposalId) requireNoVeto(_proposalId) {
         VoterClass _class = _storage.voterClass(_proposalId);
         uint256[] memory _shareList = _class.discover(msg.sender);
         uint256 count = 0;
@@ -174,7 +185,11 @@ contract CollectiveGovernance is Governance, VoteStrategy {
         }
     }
 
-    function undoWithTokenId(uint256 _proposalId, uint256 _tokenId) public requireVoteOpen(_proposalId) {
+    function undoWithTokenId(uint256 _proposalId, uint256 _tokenId)
+        public
+        requireVoteOpen(_proposalId)
+        requireNoVeto(_proposalId)
+    {
         uint256 count = _storage.undoVoteById(_proposalId, msg.sender, _tokenId);
         if (count > 0) {
             emit VoteUndo(_proposalId, msg.sender, count);
@@ -183,7 +198,7 @@ contract CollectiveGovernance is Governance, VoteStrategy {
         }
     }
 
-    function voteAgainst(uint256 _proposalId) public requireVoteOpen(_proposalId) {
+    function voteAgainst(uint256 _proposalId) public requireVoteOpen(_proposalId) requireNoVeto(_proposalId) {
         VoterClass _class = _storage.voterClass(_proposalId);
         uint256[] memory _shareList = _class.discover(msg.sender);
         uint256 count = 0;
@@ -198,7 +213,11 @@ contract CollectiveGovernance is Governance, VoteStrategy {
         }
     }
 
-    function voteAgainstWithTokenId(uint256 _proposalId, uint256 _tokenId) public requireVoteOpen(_proposalId) {
+    function voteAgainstWithTokenId(uint256 _proposalId, uint256 _tokenId)
+        public
+        requireVoteOpen(_proposalId)
+        requireNoVeto(_proposalId)
+    {
         uint256 count = _storage.voteAgainstByShare(_proposalId, msg.sender, _tokenId);
         if (count > 0) {
             emit VoteTally(_proposalId, msg.sender, count);
@@ -207,7 +226,7 @@ contract CollectiveGovernance is Governance, VoteStrategy {
         }
     }
 
-    function abstainFromVote(uint256 _proposalId) public requireVoteOpen(_proposalId) {
+    function abstainFromVote(uint256 _proposalId) public requireVoteOpen(_proposalId) requireNoVeto(_proposalId) {
         VoterClass _class = _storage.voterClass(_proposalId);
         uint256[] memory _shareList = _class.discover(msg.sender);
         uint256 count = 0;
@@ -222,7 +241,11 @@ contract CollectiveGovernance is Governance, VoteStrategy {
         }
     }
 
-    function abstainWithTokenId(uint256 _proposalId, uint256 _tokenId) public requireVoteOpen(_proposalId) {
+    function abstainWithTokenId(uint256 _proposalId, uint256 _tokenId)
+        public
+        requireVoteOpen(_proposalId)
+        requireNoVeto(_proposalId)
+    {
         uint256 count = _storage.abstainForShare(_proposalId, msg.sender, _tokenId);
         if (count > 0) {
             emit AbstentionTally(_proposalId, msg.sender, count);
@@ -232,7 +255,13 @@ contract CollectiveGovernance is Governance, VoteStrategy {
     }
 
     /// @notice get the result of the measure pass or failed
-    function getVoteSucceeded(uint256 _proposalId) public view requireVoteClosed(_proposalId) returns (bool) {
+    function getVoteSucceeded(uint256 _proposalId)
+        public
+        view
+        requireVoteClosed(_proposalId)
+        requireNoVeto(_proposalId)
+        returns (bool)
+    {
         _storage.validOrRevert(_proposalId);
         uint256 totalVotesCast = _storage.quorum(_proposalId);
         require(totalVotesCast >= _storage.quorumRequired(_proposalId), "Not enough participants");

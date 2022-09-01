@@ -82,7 +82,7 @@ contract VoterClassVoterPool is VoterClass {
             shareList[0] = uint160(_wallet);
             return shareList;
         }
-        revert("Not possible to discover share");
+        revert("Not voter");
     }
 
     /// @notice commit votes for shareId return number voted

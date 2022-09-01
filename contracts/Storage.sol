@@ -76,6 +76,8 @@ interface Storage {
 
     /// @notice Ballot receipt record for a voter
     struct Receipt {
+        /// @notice address of voting wallet
+        address wallet;
         /// @notice id of reserved shares
         uint256 shareId;
         /// @notice number of votes cast for

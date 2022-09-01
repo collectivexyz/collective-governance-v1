@@ -71,7 +71,7 @@ contract VoterClassERC721 is VoterClass {
     function confirm(address _wallet, uint256 _shareId) external requireCognate requireValidShare(_shareId) returns (uint256) {
         require(!_committedVote[_shareId], "Share committed");
         uint256 voteCount = this.votesAvailable(_wallet, _shareId);
-        require(voteCount > 0, "Not owner");
+        require(voteCount > 0, "Not owner of specified token");
         _committedVote[_shareId] = true;
         emit VoteCommitted(_shareId, _weight);
         return _weight * voteCount;

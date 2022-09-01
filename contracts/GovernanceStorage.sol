@@ -49,18 +49,27 @@ contract GovernanceStorage is Storage {
 
     modifier requireValidProposal(uint256 _proposalId) {
         Proposal storage proposal = proposalMap[_proposalId];
-        require(
-            _proposalId > 0 && _proposalId <= _proposalCount && proposal.id == _proposalId && !proposal.isVeto,
-            "Invalid proposal"
-        );
+        require(_proposalId > 0 && _proposalId <= _proposalCount && proposal.id == _proposalId, "Invalid proposal");
         _;
     }
 
-    modifier requireAffirmativeReceipt(uint256 _proposalId, uint256 _receiptId) {
+    modifier requireVoteCast(uint256 _proposalId, uint256 _receiptId) {
         Proposal storage proposal = proposalMap[_proposalId];
         require(_receiptId > 0, "Receipt id is not valid");
         Receipt storage receipt = proposal.voteReceipt[_receiptId];
-        require(receipt.votesCast > 0 && !receipt.abstention && !receipt.undoCast, "Receipt does not have affirmitive votes");
+        require(receipt.shareId == _receiptId, "No vote cast");
+        require(receipt.votesCast > 0 && !receipt.abstention && !receipt.undoCast, "No affirmative vote");
+        _;
+    }
+
+    modifier requireReceiptForWallet(
+        uint256 _proposalId,
+        uint256 _receiptId,
+        address _wallet
+    ) {
+        Proposal storage proposal = proposalMap[_proposalId];
+        Receipt storage receipt = proposal.voteReceipt[_receiptId];
+        require(receipt.wallet == _wallet, "Not voter");
         _;
     }
 
@@ -88,7 +97,7 @@ contract GovernanceStorage is Storage {
 
     modifier requireElectorSupervisor(uint256 _proposalId, address _sender) {
         Proposal storage proposal = proposalMap[_proposalId];
-        require(proposal.supervisorPool[_sender], "Operation requires elector supervisor");
+        require(proposal.supervisorPool[_sender], "Operation requires supervisor");
         _;
     }
 
@@ -112,7 +121,7 @@ contract GovernanceStorage is Storage {
 
     modifier requireUndo(uint256 _proposalId) {
         Proposal storage proposal = proposalMap[_proposalId];
-        require(proposal.isUndoEnabled, "Undo not enabled for this vote");
+        require(proposal.isUndoEnabled, "Undo not enabled");
         _;
     }
 
@@ -522,7 +531,7 @@ contract GovernanceStorage is Storage {
             proposal.isVeto = true;
             emit VoteVeto(_proposalId, msg.sender);
         } else {
-            revert("Double veto");
+            revert("Already vetoed");
         }
     }
 
@@ -542,6 +551,7 @@ contract GovernanceStorage is Storage {
         uint256 _shareCount = proposal.voterClass.confirm(_wallet, _shareId);
         require(_shareCount > 0, "Share not available");
         Receipt storage receipt = proposal.voteReceipt[_shareId];
+        receipt.wallet = _wallet;
         receipt.shareId = _shareId;
         receipt.votesCast = _shareCount;
         receipt.shareFor = _shareCount;
@@ -566,6 +576,7 @@ contract GovernanceStorage is Storage {
         uint256 _shareCount = proposal.voterClass.confirm(_wallet, _shareId);
         require(_shareCount > 0, "Share not available");
         Receipt storage receipt = proposal.voteReceipt[_shareId];
+        receipt.wallet = _wallet;
         receipt.shareId = _shareId;
         receipt.votesCast = _shareCount;
         receipt.abstention = false;
@@ -583,6 +594,7 @@ contract GovernanceStorage is Storage {
         uint256 _shareCount = proposal.voterClass.confirm(_wallet, _shareId);
         require(_shareCount > 0, "Share not available");
         Receipt storage receipt = proposal.voteReceipt[_shareId];
+        receipt.wallet = _wallet;
         receipt.shareId = _shareId;
         receipt.votesCast = _shareCount;
         receipt.abstention = true;
@@ -599,7 +611,8 @@ contract GovernanceStorage is Storage {
         public
         requireCognate
         requireValidProposal(_proposalId)
-        requireAffirmativeReceipt(_proposalId, _receiptId)
+        requireVoteCast(_proposalId, _receiptId)
+        requireReceiptForWallet(_proposalId, _receiptId, _wallet)
         requireUndo(_proposalId)
         requireVotingActive(_proposalId)
         returns (uint256)
