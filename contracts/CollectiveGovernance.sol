@@ -58,11 +58,6 @@ contract CollectiveGovernance is Governance, VoteStrategy {
         _;
     }
 
-    modifier requireVoter(uint256 _proposalId, address _wallet) {
-        require(_storage.isVoter(_proposalId, _wallet), "Voting interest required");
-        _;
-    }
-
     modifier requireElectorSupervisor(uint256 _proposalId) {
         require(_storage.isSupervisor(_proposalId, msg.sender), "Elector supervisor required");
         _;
@@ -139,27 +134,101 @@ contract CollectiveGovernance is Governance, VoteStrategy {
     }
 
     // @notice cast an affirmative vote for the measure
-    function voteFor(uint256 _proposalId) public requireVoter(_proposalId, msg.sender) requireVoteOpen(_proposalId) {
+    function voteFor(uint256 _proposalId) public requireVoteOpen(_proposalId) {
         VoterClass _class = _storage.voterClass(_proposalId);
-        uint256 votesAvailable = _class.votesAvailable(msg.sender);
-        _storage.voteForByShare(_proposalId, msg.sender, uint160(msg.sender), votesAvailable);
+        uint256[] memory _shareList = _class.discover(msg.sender);
+        uint256 count = 0;
+        for (uint256 i = 0; i < _shareList.length; i++) {
+            uint256 shareId = _shareList[i];
+            count += _storage.voteForByShare(_proposalId, msg.sender, shareId);
+        }
+        if (count > 0) {
+            emit VoteTally(_proposalId, msg.sender, count);
+        } else {
+            revert("Not voter");
+        }
+    }
+
+    function voteForWithTokenId(uint256 _proposalId, uint256 _tokenId) public requireVoteOpen(_proposalId) {
+        uint256 count = _storage.voteForByShare(_proposalId, msg.sender, _tokenId);
+        if (count > 0) {
+            emit VoteTally(_proposalId, msg.sender, count);
+        } else {
+            revert("Not voter");
+        }
     }
 
     // @notice undo any previous vote
-    function undoVote(uint256 _proposalId) public requireVoter(_proposalId, msg.sender) requireVoteOpen(_proposalId) {
-        _storage.undoVoteById(_proposalId, msg.sender, uint160(msg.sender));
+    function undoVote(uint256 _proposalId) public requireVoteOpen(_proposalId) {
+        VoterClass _class = _storage.voterClass(_proposalId);
+        uint256[] memory _shareList = _class.discover(msg.sender);
+        uint256 count = 0;
+        for (uint256 i = 0; i < _shareList.length; i++) {
+            uint256 shareId = _shareList[i];
+            count += _storage.undoVoteById(_proposalId, msg.sender, shareId);
+        }
+        if (count > 0) {
+            emit VoteUndo(_proposalId, msg.sender, count);
+        } else {
+            revert("Not voter");
+        }
     }
 
-    function voteAgainst(uint256 _proposalId) public requireVoter(_proposalId, msg.sender) requireVoteOpen(_proposalId) {
-        VoterClass _class = _storage.voterClass(_proposalId);
-        uint256 votesAvailable = _class.votesAvailable(msg.sender);
-        _storage.voteAgainstByShare(_proposalId, msg.sender, uint160(msg.sender), votesAvailable);
+    function undoWithTokenId(uint256 _proposalId, uint256 _tokenId) public requireVoteOpen(_proposalId) {
+        uint256 count = _storage.undoVoteById(_proposalId, msg.sender, _tokenId);
+        if (count > 0) {
+            emit VoteUndo(_proposalId, msg.sender, count);
+        } else {
+            revert("Not voter");
+        }
     }
 
-    function abstainFromVote(uint256 _proposalId) public requireVoter(_proposalId, msg.sender) requireVoteOpen(_proposalId) {
+    function voteAgainst(uint256 _proposalId) public requireVoteOpen(_proposalId) {
         VoterClass _class = _storage.voterClass(_proposalId);
-        uint256 votesAvailable = _class.votesAvailable(msg.sender);
-        _storage.abstainForShare(_proposalId, msg.sender, uint160(msg.sender), votesAvailable);
+        uint256[] memory _shareList = _class.discover(msg.sender);
+        uint256 count = 0;
+        for (uint256 i = 0; i < _shareList.length; i++) {
+            uint256 shareId = _shareList[i];
+            count += _storage.voteAgainstByShare(_proposalId, msg.sender, shareId);
+        }
+        if (count > 0) {
+            emit VoteTally(_proposalId, msg.sender, count);
+        } else {
+            revert("Not voter");
+        }
+    }
+
+    function voteAgainstWithTokenId(uint256 _proposalId, uint256 _tokenId) public requireVoteOpen(_proposalId) {
+        uint256 count = _storage.voteAgainstByShare(_proposalId, msg.sender, _tokenId);
+        if (count > 0) {
+            emit VoteTally(_proposalId, msg.sender, count);
+        } else {
+            revert("Not voter");
+        }
+    }
+
+    function abstainFromVote(uint256 _proposalId) public requireVoteOpen(_proposalId) {
+        VoterClass _class = _storage.voterClass(_proposalId);
+        uint256[] memory _shareList = _class.discover(msg.sender);
+        uint256 count = 0;
+        for (uint256 i = 0; i < _shareList.length; i++) {
+            uint256 shareId = _shareList[i];
+            count = _storage.abstainForShare(_proposalId, msg.sender, shareId);
+        }
+        if (count > 0) {
+            emit AbstentionTally(_proposalId, msg.sender, count);
+        } else {
+            revert("Not voter");
+        }
+    }
+
+    function abstainWithTokenId(uint256 _proposalId, uint256 _tokenId) public requireVoteOpen(_proposalId) {
+        uint256 count = _storage.abstainForShare(_proposalId, msg.sender, _tokenId);
+        if (count > 0) {
+            emit AbstentionTally(_proposalId, msg.sender, count);
+        } else {
+            revert("Not voter");
+        }
     }
 
     /// @notice get the result of the measure pass or failed

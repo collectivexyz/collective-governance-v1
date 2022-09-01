@@ -18,22 +18,67 @@ import "./VoterClass.sol";
 
 /// @notice voting class for ERC-721 contract
 contract VoterClassERC721 is VoterClass {
-    address public _contractAddress;
+    address private _cognate;
+
+    uint256 private _weight;
+
+    address private _contractAddress;
+
+    IERC721 private _nftContract;
+
+    /// @notice commited vote
+    mapping(uint256 => bool) private _committedVote;
+
+    constructor(address _contract, uint256 _voteWeight) {
+        _cognate = msg.sender;
+        _weight = _voteWeight;
+        _contractAddress = _contract;
+        _nftContract = IERC721(_contract);
+    }
+
+    modifier requireCognate() {
+        require(_cognate == msg.sender, "Not permitted");
+        _;
+    }
 
     modifier requireValidAddress(address _wallet) {
         require(_wallet != address(0), "Not a valid wallet");
         _;
     }
 
-    constructor(address _contract) {
-        _contractAddress = _contract;
+    modifier requireValidShare(uint256 _shareId) {
+        require(_shareId != 0, "Share not valid");
+        _;
     }
 
     function isVoter(address _wallet) external view requireValidAddress(_wallet) returns (bool) {
-        return IERC721(_contractAddress).balanceOf(_wallet) > 0;
+        return _nftContract.balanceOf(_wallet) > 0;
     }
 
-    function votesAvailable(address _wallet) external view requireValidAddress(_wallet) returns (uint256) {
-        return IERC721(_contractAddress).balanceOf(_wallet);
+    function votesAvailable(address _wallet, uint256 _shareId) external view requireValidAddress(_wallet) returns (uint256) {
+        address tokenOwner = _nftContract.ownerOf(_shareId);
+        if (_wallet == tokenOwner) {
+            return 1;
+        }
+        return 0;
+    }
+
+    function discover(address _wallet) external pure requireValidAddress(_wallet) returns (uint256[] memory) {
+        revert("Discovery not supported for ERC721");
+    }
+
+    /// @notice commit votes for shareId return number voted
+    function confirm(address _wallet, uint256 _shareId) external requireCognate requireValidShare(_shareId) returns (uint256) {
+        require(!_committedVote[_shareId], "Share committed");
+        uint256 voteCount = this.votesAvailable(_wallet, _shareId);
+        require(voteCount > 0, "Not owner");
+        _committedVote[_shareId] = true;
+        emit VoteCommitted(_shareId, _weight);
+        return _weight * voteCount;
+    }
+
+    /// @notice return voting weight of each confirmed share
+    function weight() external view returns (uint256) {
+        return _weight;
     }
 }

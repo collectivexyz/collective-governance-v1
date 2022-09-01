@@ -20,8 +20,11 @@ import "./VoterClassNullObject.sol";
 /// upgradable implementation of voting for Collective Governance
 interface VoteStrategy {
     // event section
-    event VoteOpen(uint256 proposalId);
-    event VoteClosed(uint256 proposalId);
+    event VoteOpen(uint256 _proposalId);
+    event VoteClosed(uint256 _proposalId);
+    event VoteTally(uint256 _proposalId, address _wallet, uint256 _count);
+    event AbstentionTally(uint256 _proposalId, address _wallet, uint256 _count);
+    event VoteUndo(uint256 _proposalId, address _wallet, uint256 _count);
 
     function openVote(uint256 _proposalId) external;
 

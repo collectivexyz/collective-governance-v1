@@ -22,6 +22,9 @@ contract VoterClassVoterPool is VoterClass {
     /// @notice whitelisted voters
     mapping(address => bool) private _voterPool;
 
+    /// @notice commited vote
+    mapping(uint256 => bool) private _committedVote;
+
     address private _cognate;
 
     uint256 private _weight;
@@ -36,8 +39,18 @@ contract VoterClassVoterPool is VoterClass {
         _;
     }
 
+    modifier requireValidShare(address _wallet, uint256 _shareId) {
+        require(_shareId > 0 && _shareId == uint160(_wallet), "Not a valid share");
+        _;
+    }
+
+    modifier requireVoter(address _wallet) {
+        require(_voterPool[_wallet], "Not voter");
+        _;
+    }
+
     modifier requireCognate() {
-        require(_cognate == msg.sender, "Modification not permitted");
+        require(_cognate == msg.sender, "Not permitted");
         _;
     }
 
@@ -63,10 +76,31 @@ contract VoterClassVoterPool is VoterClass {
         return _voterPool[_wallet];
     }
 
-    function votesAvailable(address _wallet) external view requireValidAddress(_wallet) returns (uint256) {
+    function discover(address _wallet) external view returns (uint256[] memory) {
         if (this.isVoter(_wallet)) {
-            return _weight;
+            uint256[] memory shareList = new uint256[](1);
+            shareList[0] = uint160(_wallet);
+            return shareList;
         }
-        return 0;
+        revert("Not possible to discover share");
+    }
+
+    /// @notice commit votes for shareId return number voted
+    function confirm(address _wallet, uint256 _shareId)
+        external
+        requireCognate
+        requireVoter(_wallet)
+        requireValidShare(_wallet, _shareId)
+        returns (uint256)
+    {
+        require(!_committedVote[_shareId], "Share committed");
+        _committedVote[_shareId] = true;
+        emit VoteCommitted(_shareId, _weight);
+        return _weight;
+    }
+
+    /// @notice return voting weight of each confirmed share
+    function weight() external view returns (uint256) {
+        return _weight;
     }
 }

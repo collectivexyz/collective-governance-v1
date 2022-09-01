@@ -17,8 +17,29 @@ import "./VoterClass.sol";
 
 /// @notice voting class to include every address
 contract VoterClassOpenVote is VoterClass {
+    uint256 private _weight;
+
+    mapping(uint256 => bool) private _committedVote;
+
+    address private _cognate;
+
+    constructor(uint256 _voteWeight) {
+        _cognate = msg.sender;
+        _weight = _voteWeight;
+    }
+
+    modifier requireCognate() {
+        require(_cognate == msg.sender, "Not permitted");
+        _;
+    }
+
     modifier requireValidAddress(address _wallet) {
         require(_wallet != address(0), "Not a valid wallet");
+        _;
+    }
+
+    modifier requireValidShare(address _wallet, uint256 _shareId) {
+        require(_shareId > 0 && _shareId == uint160(_wallet), "Not a valid share");
         _;
     }
 
@@ -26,7 +47,27 @@ contract VoterClassOpenVote is VoterClass {
         return true;
     }
 
-    function votesAvailable(address _wallet) external pure requireValidAddress(_wallet) returns (uint256) {
-        return 1;
+    function discover(address _wallet) external pure requireValidAddress(_wallet) returns (uint256[] memory) {
+        uint256[] memory shareList = new uint256[](1);
+        shareList[0] = uint160(_wallet);
+        return shareList;
+    }
+
+    /// @notice commit votes for shareId return number voted
+    function confirm(address _wallet, uint256 _shareId)
+        external
+        requireCognate
+        requireValidShare(_wallet, _shareId)
+        returns (uint256)
+    {
+        require(!_committedVote[_shareId], "Share committed");
+        _committedVote[_shareId] = true;
+        emit VoteCommitted(_shareId, _weight);
+        return _weight;
+    }
+
+    /// @notice return voting weight of each confirmed share
+    function weight() external view returns (uint256) {
+        return _weight;
     }
 }

@@ -338,7 +338,7 @@ contract GovernanceStorageTest is Test {
         _storage.registerVoter(PROPOSAL_ID, voter1, supervisor);
         _storage.setQuorumThreshold(PROPOSAL_ID, 2, supervisor);
         _storage.makeReady(PROPOSAL_ID, supervisor);
-        _storage.abstainForShare(PROPOSAL_ID, voter1, uint160(voter1), 1);
+        _storage.abstainForShare(PROPOSAL_ID, voter1, uint160(voter1));
         assertEq(_storage.forVotes(PROPOSAL_ID), 0);
         assertEq(_storage.againstVotes(PROPOSAL_ID), 0);
         assertEq(_storage.abstentionCount(PROPOSAL_ID), 1);
@@ -352,7 +352,7 @@ contract GovernanceStorageTest is Test {
         _storage.setQuorumThreshold(PROPOSAL_ID, 2, supervisor);
         _storage.makeReady(PROPOSAL_ID, supervisor);
         vm.prank(voter1);
-        _storage.abstainForShare(PROPOSAL_ID, voter1, uint160(voter1), 1);
+        _storage.abstainForShare(PROPOSAL_ID, voter1, uint160(voter1));
     }
 
     function testCastAgainstVote() public {
@@ -361,7 +361,7 @@ contract GovernanceStorageTest is Test {
         _storage.registerVoter(PROPOSAL_ID, voter1, supervisor);
         _storage.setQuorumThreshold(PROPOSAL_ID, 2, supervisor);
         _storage.makeReady(PROPOSAL_ID, supervisor);
-        _storage.voteAgainstByShare(PROPOSAL_ID, voter1, uint160(voter1), 1);
+        _storage.voteAgainstByShare(PROPOSAL_ID, voter1, uint160(voter1));
         assertEq(_storage.forVotes(PROPOSAL_ID), 0);
         assertEq(_storage.againstVotes(PROPOSAL_ID), 1);
         assertEq(_storage.abstentionCount(PROPOSAL_ID), 0);
@@ -375,7 +375,7 @@ contract GovernanceStorageTest is Test {
         _storage.setQuorumThreshold(PROPOSAL_ID, 2, supervisor);
         _storage.makeReady(PROPOSAL_ID, supervisor);
         vm.prank(voter1);
-        _storage.voteAgainstByShare(PROPOSAL_ID, voter1, uint160(voter1), 1);
+        _storage.voteAgainstByShare(PROPOSAL_ID, voter1, uint160(voter1));
     }
 
     function testCastOneVote() public {
@@ -384,9 +384,113 @@ contract GovernanceStorageTest is Test {
         _storage.registerVoter(PROPOSAL_ID, voter1, supervisor);
         _storage.setQuorumThreshold(PROPOSAL_ID, 2, supervisor);
         _storage.makeReady(PROPOSAL_ID, supervisor);
-        _storage.voteForByShare(PROPOSAL_ID, voter1, uint160(voter1), 1);
+        _storage.voteForByShare(PROPOSAL_ID, voter1, uint160(voter1));
         assertEq(_storage.forVotes(PROPOSAL_ID), 1);
         assertEq(_storage.quorum(PROPOSAL_ID), 1);
+    }
+
+    function testVoterReceipt() public {
+        _storage.registerSupervisor(PROPOSAL_ID, supervisor, owner);
+        _storage.registerVoterClassVoterPool(PROPOSAL_ID, supervisor);
+        _storage.registerVoter(PROPOSAL_ID, voter1, supervisor);
+        _storage.setQuorumThreshold(PROPOSAL_ID, 2, supervisor);
+        _storage.makeReady(PROPOSAL_ID, supervisor);
+        _storage.voteForByShare(PROPOSAL_ID, voter1, uint160(voter1));
+
+        (uint256 shareId, uint256 shareFor, uint256 voteCast, bool abstention, bool isUndo) = _storage.voteReceipt(
+            PROPOSAL_ID,
+            uint160(voter1)
+        );
+
+        assertEq(shareId, uint160(voter1));
+        assertEq(shareFor, 1);
+        assertEq(voteCast, 1);
+        assertFalse(abstention);
+        assertFalse(isUndo);
+    }
+
+    function testVoterReceiptWithUndo() public {
+        _storage.registerSupervisor(PROPOSAL_ID, supervisor, owner);
+        _storage.registerVoterClassVoterPool(PROPOSAL_ID, supervisor);
+        _storage.registerVoter(PROPOSAL_ID, voter1, supervisor);
+        _storage.enableUndoVote(PROPOSAL_ID, supervisor);
+        _storage.setQuorumThreshold(PROPOSAL_ID, 2, supervisor);
+        _storage.makeReady(PROPOSAL_ID, supervisor);
+        _storage.voteForByShare(PROPOSAL_ID, voter1, uint160(voter1));
+        _storage.undoVoteById(PROPOSAL_ID, voter1, uint160(voter1));
+
+        (uint256 shareId, uint256 shareFor, uint256 voteCast, bool abstention, bool isUndo) = _storage.voteReceipt(
+            PROPOSAL_ID,
+            uint160(voter1)
+        );
+
+        assertEq(shareId, uint160(voter1));
+        assertEq(shareFor, 1);
+        assertEq(voteCast, 1);
+        assertFalse(abstention);
+        assertTrue(isUndo);
+    }
+
+    function testFailAgainstWithUndo() public {
+        _storage.registerSupervisor(PROPOSAL_ID, supervisor, owner);
+        _storage.registerVoterClassVoterPool(PROPOSAL_ID, supervisor);
+        _storage.registerVoter(PROPOSAL_ID, voter1, supervisor);
+        _storage.enableUndoVote(PROPOSAL_ID, supervisor);
+        _storage.setQuorumThreshold(PROPOSAL_ID, 2, supervisor);
+        _storage.makeReady(PROPOSAL_ID, supervisor);
+        _storage.voteAgainstByShare(PROPOSAL_ID, voter1, uint160(voter1));
+        _storage.undoVoteById(PROPOSAL_ID, voter1, uint160(voter1));
+    }
+
+    function testFailAbstainWithUndo() public {
+        _storage.registerSupervisor(PROPOSAL_ID, supervisor, owner);
+        _storage.registerVoterClassVoterPool(PROPOSAL_ID, supervisor);
+        _storage.registerVoter(PROPOSAL_ID, voter1, supervisor);
+        _storage.enableUndoVote(PROPOSAL_ID, supervisor);
+        _storage.setQuorumThreshold(PROPOSAL_ID, 2, supervisor);
+        _storage.makeReady(PROPOSAL_ID, supervisor);
+        _storage.abstainForShare(PROPOSAL_ID, voter1, uint160(voter1));
+        _storage.undoVoteById(PROPOSAL_ID, voter1, uint160(voter1));
+    }
+
+    function testVoteAgainstReceipt() public {
+        _storage.registerSupervisor(PROPOSAL_ID, supervisor, owner);
+        _storage.registerVoterClassVoterPool(PROPOSAL_ID, supervisor);
+        _storage.registerVoter(PROPOSAL_ID, voter1, supervisor);
+        _storage.setQuorumThreshold(PROPOSAL_ID, 2, supervisor);
+        _storage.makeReady(PROPOSAL_ID, supervisor);
+        _storage.voteAgainstByShare(PROPOSAL_ID, voter1, uint160(voter1));
+
+        (uint256 shareId, uint256 shareFor, uint256 voteCast, bool abstention, bool isUndo) = _storage.voteReceipt(
+            PROPOSAL_ID,
+            uint160(voter1)
+        );
+
+        assertEq(shareId, uint160(voter1));
+        assertEq(shareFor, 0);
+        assertEq(voteCast, 1);
+        assertFalse(abstention);
+        assertFalse(isUndo);
+    }
+
+    function testAbstentionReceipt() public {
+        _storage.registerSupervisor(PROPOSAL_ID, supervisor, owner);
+        _storage.registerVoterClassVoterPool(PROPOSAL_ID, supervisor);
+        _storage.registerVoter(PROPOSAL_ID, voter1, supervisor);
+        _storage.setQuorumThreshold(PROPOSAL_ID, 2, supervisor);
+        _storage.makeReady(PROPOSAL_ID, supervisor);
+        _storage.abstainForShare(PROPOSAL_ID, voter1, uint160(voter1));
+
+        (uint256 shareId, uint256 shareFor, uint256 voteCast, bool abstention, bool isUndo) = _storage.voteReceipt(
+            PROPOSAL_ID,
+            uint160(voter1)
+        );
+
+        assertEq(shareId, uint160(voter1));
+        assertEq(shareFor, 0);
+        assertEq(voteCast, 1);
+        assertTrue(abstention);
+        assertFalse(isUndo);
     }
 
     function testFailVoterDirectlyCastOneVote() public {
@@ -396,7 +500,7 @@ contract GovernanceStorageTest is Test {
         _storage.setQuorumThreshold(PROPOSAL_ID, 2, supervisor);
         _storage.makeReady(PROPOSAL_ID, supervisor);
         vm.prank(voter1);
-        _storage.voteForByShare(PROPOSAL_ID, voter1, uint160(voter1), 1);
+        _storage.voteForByShare(PROPOSAL_ID, voter1, uint160(voter1));
     }
 
     function testQuorumAllThree() public {
@@ -407,11 +511,11 @@ contract GovernanceStorageTest is Test {
         _storage.registerVoter(PROPOSAL_ID, voter3, supervisor);
         _storage.setQuorumThreshold(PROPOSAL_ID, 2, supervisor);
         _storage.makeReady(PROPOSAL_ID, supervisor);
-        _storage.voteForByShare(PROPOSAL_ID, voter1, uint160(voter1), 1);
+        _storage.voteForByShare(PROPOSAL_ID, voter1, uint160(voter1));
         assertEq(_storage.forVotes(PROPOSAL_ID), 1);
-        _storage.voteAgainstByShare(PROPOSAL_ID, voter2, uint160(voter2), 1);
+        _storage.voteAgainstByShare(PROPOSAL_ID, voter2, uint160(voter2));
         assertEq(_storage.againstVotes(PROPOSAL_ID), 1);
-        _storage.abstainForShare(PROPOSAL_ID, voter3, uint160(voter3), 1);
+        _storage.abstainForShare(PROPOSAL_ID, voter3, uint160(voter3));
         assertEq(_storage.abstentionCount(PROPOSAL_ID), 1);
         assertEq(_storage.quorum(PROPOSAL_ID), 3);
     }
@@ -421,7 +525,7 @@ contract GovernanceStorageTest is Test {
         _storage.registerVoterClassOpenVote(PROPOSAL_ID, supervisor);
         _storage.setQuorumThreshold(PROPOSAL_ID, 2, supervisor);
         _storage.makeReady(PROPOSAL_ID, supervisor);
-        _storage.voteForByShare(PROPOSAL_ID, voter1, uint160(voter1), 1);
+        _storage.voteForByShare(PROPOSAL_ID, voter1, uint160(voter1));
         assertEq(_storage.quorum(PROPOSAL_ID), 1);
     }
 
@@ -432,7 +536,7 @@ contract GovernanceStorageTest is Test {
         _storage.registerVoterClassERC721(PROPOSAL_ID, address(token), supervisor);
         _storage.setQuorumThreshold(PROPOSAL_ID, 1, supervisor);
         _storage.makeReady(PROPOSAL_ID, supervisor);
-        _storage.voteForByShare(PROPOSAL_ID, voter2, uint160(voter2), 1);
+        _storage.voteForByShare(PROPOSAL_ID, voter2, tokenId);
         assertEq(_storage.forVotes(PROPOSAL_ID), 1);
         assertEq(_storage.againstVotes(PROPOSAL_ID), 0);
         assertEq(_storage.abstentionCount(PROPOSAL_ID), 0);
@@ -448,21 +552,33 @@ contract GovernanceStorageTest is Test {
         _storage.makeReady(PROPOSAL_ID, supervisor);
         uint256 startBlock = block.number;
         vm.roll(startBlock + 100);
-        _storage.voteForByShare(PROPOSAL_ID, voter1, uint160(voter1), 1);
+        _storage.voteForByShare(PROPOSAL_ID, voter1, uint160(voter1));
         assertEq(1, _storage.forVotes(PROPOSAL_ID));
     }
 
-    function testVoterMayChangeTheirMind() public {
+    function testVoteWithUndo() public {
         _storage.registerSupervisor(PROPOSAL_ID, supervisor, owner);
         _storage.enableUndoVote(PROPOSAL_ID, supervisor);
         _storage.registerVoterClassVoterPool(PROPOSAL_ID, supervisor);
         _storage.registerVoter(PROPOSAL_ID, voter1, supervisor);
         _storage.setQuorumThreshold(PROPOSAL_ID, 2, supervisor);
         _storage.makeReady(PROPOSAL_ID, supervisor);
-        _storage.voteForByShare(PROPOSAL_ID, voter1, uint160(voter1), 1);
+        _storage.voteForByShare(PROPOSAL_ID, voter1, uint160(voter1));
         assertEq(_storage.quorum(PROPOSAL_ID), 1);
         _storage.undoVoteById(PROPOSAL_ID, voter1, uint160(voter1));
         assertEq(_storage.quorum(PROPOSAL_ID), NONE);
+    }
+
+    function testFailVoteWithDoubleUndo() public {
+        _storage.registerSupervisor(PROPOSAL_ID, supervisor, owner);
+        _storage.enableUndoVote(PROPOSAL_ID, supervisor);
+        _storage.registerVoterClassVoterPool(PROPOSAL_ID, supervisor);
+        _storage.registerVoter(PROPOSAL_ID, voter1, supervisor);
+        _storage.setQuorumThreshold(PROPOSAL_ID, 2, supervisor);
+        _storage.makeReady(PROPOSAL_ID, supervisor);
+        _storage.voteForByShare(PROPOSAL_ID, voter1, uint160(voter1));
+        _storage.undoVoteById(PROPOSAL_ID, voter1, uint160(voter1));
+        _storage.undoVoteById(PROPOSAL_ID, voter1, uint160(voter1));
     }
 
     function testName() public {

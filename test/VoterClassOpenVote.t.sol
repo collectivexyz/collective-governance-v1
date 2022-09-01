@@ -11,24 +11,49 @@ contract VoterClassOpenVoteTest is Test {
     VoterClass _class;
 
     function setUp() public {
-        _class = new VoterClassOpenVote();
+        _class = new VoterClassOpenVote(1);
     }
 
-    function testIsVoter() public {
-        assertTrue(_class.isVoter(_owner));
-        assertTrue(_class.isVoter(_notowner));
+    function testDiscoverVoteOwner() public {
+        uint256[] memory shareList = _class.discover(_owner);
+        assertEq(shareList.length, 1);
+        assertEq(uint160(_owner), shareList[0]);
     }
 
-    function testVotesAvailable() public {
-        assertEq(_class.votesAvailable(_owner), 1);
-        assertEq(_class.votesAvailable(_notowner), 1);
+    function testDiscoverVoteNotOwner() public {
+        uint256[] memory shareList = _class.discover(_notowner);
+        assertEq(shareList.length, 1);
+        assertEq(uint160(_notowner), shareList[0]);
     }
 
-    function testFailIsVoterValidAddressRequired() public view {
-        _class.isVoter(_nobody);
+    function testFailDiscoverVoteNobody() public view {
+        _class.discover(_nobody);
     }
 
-    function testFailvotesAvailableValidAddressRequired() public view {
-        _class.votesAvailable(_nobody);
+    function testConfirmOwner() public {
+        uint256 shareCount = _class.confirm(_owner, uint160(_owner));
+        assertEq(shareCount, 1);
+    }
+
+    function testFailConfirmWrongId() public {
+        _class.confirm(_owner, uint160(_notowner));
+    }
+
+    function testConfirmNotOwner() public {
+        uint256 shareCount = _class.confirm(_notowner, uint160(_notowner));
+        assertEq(shareCount, 1);
+    }
+
+    function testFailConfirmNotOwner() public {
+        vm.prank(_owner);
+        _class.confirm(_owner, uint160(_owner));
+    }
+
+    function testFailConfirmNobody() public {
+        _class.confirm(_nobody, 0x0);
+    }
+
+    function testWeight() public {
+        assertEq(1, _class.weight());
     }
 }

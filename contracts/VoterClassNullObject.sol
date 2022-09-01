@@ -25,7 +25,20 @@ contract VoterClassNullObject is VoterClass {
         return false;
     }
 
-    function votesAvailable(address _wallet) external pure requireValidAddress(_wallet) returns (uint256) {
+    function discover(address _wallet) external pure requireValidAddress(_wallet) returns (uint256[] memory) {
+        revert("Not a voter");
+    }
+
+    /// @notice commit votes for shareId return number voted
+    function confirm(
+        address, /* _wallet */
+        uint256 /* shareId */
+    ) external pure returns (uint256) {
+        return 0;
+    }
+
+    /// @notice return voting weight of each confirmed share
+    function weight() external pure returns (uint256) {
         return 0;
     }
 }

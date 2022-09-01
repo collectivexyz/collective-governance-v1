@@ -15,7 +15,15 @@ pragma solidity ^0.8.15;
 
 /// @notice Interface indicating membership in a voting class
 interface VoterClass {
+    event VoteCommitted(uint256 _shareId, uint256 _weight);
+
     function isVoter(address _wallet) external view returns (bool);
 
-    function votesAvailable(address _wallet) external view returns (uint256);
+    function discover(address _wallet) external view returns (uint256[] memory);
+
+    /// @notice commit votes for shareId return number voted
+    function confirm(address _wallet, uint256 shareId) external returns (uint256);
+
+    /// @notice return voting weight of each confirmed share
+    function weight() external view returns (uint256);
 }

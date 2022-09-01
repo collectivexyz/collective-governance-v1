@@ -56,10 +56,27 @@ contract GovernanceStorage is Storage {
         _;
     }
 
+    modifier requireAffirmativeReceipt(uint256 _proposalId, uint256 _receiptId) {
+        Proposal storage proposal = proposalMap[_proposalId];
+        require(_receiptId > 0, "Receipt id is not valid");
+        Receipt storage receipt = proposal.voteReceipt[_receiptId];
+        require(receipt.votesCast > 0 && !receipt.abstention && !receipt.undoCast, "Receipt does not have affirmitive votes");
+        _;
+    }
+
     modifier requireValidReceipt(uint256 _proposalId, uint256 _receiptId) {
         Proposal storage proposal = proposalMap[_proposalId];
+        require(_receiptId > 0, "Receipt id is not valid");
         Receipt storage receipt = proposal.voteReceipt[_receiptId];
-        require(_receiptId > 0 && receipt.votesCast > 0, "Invalid receipt");
+        require(receipt.shareId > 0, "Receipt not initialized");
+        _;
+    }
+
+    modifier requireShareAvailable(uint256 _proposalId, uint256 _shareId) {
+        Proposal storage proposal = proposalMap[_proposalId];
+        require(_shareId > 0, "Share id is not valid");
+        Receipt storage receipt = proposal.voteReceipt[_shareId];
+        require(receipt.votesCast == 0 && !receipt.abstention && !receipt.undoCast, "Already voted");
         _;
     }
 
@@ -72,13 +89,6 @@ contract GovernanceStorage is Storage {
     modifier requireElectorSupervisor(uint256 _proposalId, address _sender) {
         Proposal storage proposal = proposalMap[_proposalId];
         require(proposal.supervisorPool[_sender], "Operation requires elector supervisor");
-        _;
-    }
-
-    modifier requireVoter(uint256 _proposalId, address _wallet) {
-        Proposal storage proposal = proposalMap[_proposalId];
-        bool isPartOfClass = proposal.voterClass.isVoter(_wallet);
-        require(isPartOfClass, "Voter required");
         _;
     }
 
@@ -108,11 +118,6 @@ contract GovernanceStorage is Storage {
 
     modifier requireCognate() {
         require(msg.sender == _cognate, "Not permitted");
-        _;
-    }
-
-    modifier requireNonZeroShare(uint256 _shareCount) {
-        require(_shareCount > 0, "Non zero vote count is required");
         _;
     }
 
@@ -234,6 +239,7 @@ contract GovernanceStorage is Storage {
     {
         Proposal storage proposal = proposalMap[_proposalId];
         VoterClassVoterPool _class = VoterClassVoterPool(address(proposal.voterClass));
+        require(address(_class) != address(0x0), "Voter pool required");
         uint256 addedCount = 0;
         for (uint256 i = 0; i < _voter.length; i++) {
             if (_voter[i] != address(0)) {
@@ -289,7 +295,7 @@ contract GovernanceStorage is Storage {
         requireVotingNotReady(_proposalId)
     {
         Proposal storage proposal = proposalMap[_proposalId];
-        proposal.voterClass = new VoterClassERC721(_token);
+        proposal.voterClass = new VoterClassERC721(_token, 1);
         emit RegisterVoterClassERC721(_proposalId, _token);
     }
 
@@ -302,7 +308,7 @@ contract GovernanceStorage is Storage {
         requireVotingNotReady(_proposalId)
     {
         Proposal storage proposal = proposalMap[_proposalId];
-        proposal.voterClass = new VoterClassOpenVote();
+        proposal.voterClass = new VoterClassOpenVote(1);
         emit RegisterVoterClassOpenVote(_proposalId);
     }
 
@@ -468,6 +474,24 @@ contract GovernanceStorage is Storage {
         return proposal.endBlock;
     }
 
+    function voteReceipt(uint256 _proposalId, uint256 _shareId)
+        external
+        view
+        requireValidProposal(_proposalId)
+        requireValidReceipt(_proposalId, _shareId)
+        returns (
+            uint256,
+            uint256,
+            uint256,
+            bool,
+            bool
+        )
+    {
+        Proposal storage proposal = proposalMap[_proposalId];
+        Receipt storage receipt = proposal.voteReceipt[_shareId];
+        return (receipt.shareId, receipt.shareFor, receipt.votesCast, receipt.abstention, receipt.undoCast);
+    }
+
     function version() public pure virtual returns (uint32) {
         return VERSION_1;
     }
@@ -505,58 +529,66 @@ contract GovernanceStorage is Storage {
     function voteForByShare(
         uint256 _proposalId,
         address _wallet,
-        uint256 _shareId,
-        uint256 _voteWeight
+        uint256 _shareId
     )
         external
         requireCognate
         requireValidProposal(_proposalId)
-        requireNonZeroShare(_voteWeight)
-        requireVoter(_proposalId, _wallet)
+        requireShareAvailable(_proposalId, _shareId)
         requireVotingActive(_proposalId)
+        returns (uint256)
     {
         Proposal storage proposal = proposalMap[_proposalId];
-        if (proposal.voterClass.isVoter(_wallet)) {
-            Receipt storage receipt = proposal.voteReceipt[_shareId];
-            if (receipt.votesCast == 0 && !receipt.undoCast) {
-                receipt.votesCast = _voteWeight;
-                receipt.shareFor = _voteWeight;
-                proposal.forVotes += _voteWeight;
-                emit VoteCast(_proposalId, _wallet, _shareId, _voteWeight);
-            } else {
-                revert("Share voted previously");
-            }
-        } else {
-            revert("No shares available");
-        }
+        uint256 _shareCount = proposal.voterClass.confirm(_wallet, _shareId);
+        require(_shareCount > 0, "Share not available");
+        Receipt storage receipt = proposal.voteReceipt[_shareId];
+        receipt.shareId = _shareId;
+        receipt.votesCast = _shareCount;
+        receipt.shareFor = _shareCount;
+        proposal.forVotes += _shareCount;
+        emit VoteCast(_proposalId, _wallet, _shareId, _shareCount);
+        return _shareCount;
     }
 
     function voteAgainstByShare(
         uint256 _proposalId,
         address _wallet,
-        uint256 _shareId,
-        uint256 _voteWeight
+        uint256 _shareId
     )
         public
         requireCognate
         requireValidProposal(_proposalId)
-        requireNonZeroShare(_voteWeight)
-        requireVoter(_proposalId, _wallet)
+        requireShareAvailable(_proposalId, _shareId)
         requireVotingActive(_proposalId)
+        returns (uint256)
     {
         Proposal storage proposal = proposalMap[_proposalId];
-        if (proposal.voterClass.isVoter(_wallet)) {
-            Receipt storage receipt = proposal.voteReceipt[_shareId];
-            if (receipt.votesCast == 0 && !receipt.undoCast) {
-                receipt.votesCast = _voteWeight;
-                proposal.againstVotes += _voteWeight;
-                emit VoteCast(_proposalId, _wallet, _shareId, _voteWeight);
-            } else {
-                revert("Share voted previously");
-            }
-        } else {
-            revert("No shares available");
-        }
+        uint256 _shareCount = proposal.voterClass.confirm(_wallet, _shareId);
+        require(_shareCount > 0, "Share not available");
+        Receipt storage receipt = proposal.voteReceipt[_shareId];
+        receipt.shareId = _shareId;
+        receipt.votesCast = _shareCount;
+        receipt.abstention = false;
+        proposal.againstVotes += _shareCount;
+        emit VoteCast(_proposalId, _wallet, _shareId, _shareCount);
+        return _shareCount;
+    }
+
+    function abstainForShare(
+        uint256 _proposalId,
+        address _wallet,
+        uint256 _shareId
+    ) public requireCognate requireValidProposal(_proposalId) requireVotingActive(_proposalId) returns (uint256) {
+        Proposal storage proposal = proposalMap[_proposalId];
+        uint256 _shareCount = proposal.voterClass.confirm(_wallet, _shareId);
+        require(_shareCount > 0, "Share not available");
+        Receipt storage receipt = proposal.voteReceipt[_shareId];
+        receipt.shareId = _shareId;
+        receipt.votesCast = _shareCount;
+        receipt.abstention = true;
+        proposal.abstentionCount += _shareCount;
+        emit VoteCast(_proposalId, _wallet, _shareId, _shareCount);
+        return _shareCount;
     }
 
     function undoVoteById(
@@ -567,48 +599,18 @@ contract GovernanceStorage is Storage {
         public
         requireCognate
         requireValidProposal(_proposalId)
-        requireValidReceipt(_proposalId, _receiptId)
-        requireVoter(_proposalId, _wallet)
+        requireAffirmativeReceipt(_proposalId, _receiptId)
         requireUndo(_proposalId)
         requireVotingActive(_proposalId)
+        returns (uint256)
     {
         Proposal storage proposal = proposalMap[_proposalId];
         Receipt storage receipt = proposal.voteReceipt[_receiptId];
-        if (receipt.shareFor > 0 && !receipt.undoCast) {
-            uint256 undoVotes = receipt.shareFor;
-            receipt.undoCast = true;
-            proposal.forVotes -= undoVotes;
-            emit UndoVote(_proposalId, _wallet, _receiptId, undoVotes);
-        } else {
-            revert("Nothing to undo");
-        }
-    }
-
-    function abstainForShare(
-        uint256 _proposalId,
-        address _wallet,
-        uint256 _shareId,
-        uint256 _voteWeight
-    )
-        public
-        requireCognate
-        requireValidProposal(_proposalId)
-        requireNonZeroShare(_voteWeight)
-        requireVoter(_proposalId, _wallet)
-        requireVotingActive(_proposalId)
-    {
-        Proposal storage proposal = proposalMap[_proposalId];
-        if (proposal.voterClass.isVoter(_wallet)) {
-            Receipt storage receipt = proposal.voteReceipt[_shareId];
-            if (receipt.votesCast == 0 && !receipt.undoCast) {
-                receipt.votesCast = _voteWeight;
-                proposal.abstentionCount += _voteWeight;
-                emit VoteCast(_proposalId, _wallet, _shareId, _voteWeight);
-            } else {
-                revert("Share voted previously");
-            }
-        } else {
-            revert("No shares available");
-        }
+        require(receipt.shareFor > 0, "Vote not affirmative");
+        uint256 undoVotes = receipt.shareFor;
+        receipt.undoCast = true;
+        proposal.forVotes -= undoVotes;
+        emit UndoVote(_proposalId, _wallet, _receiptId, undoVotes);
+        return undoVotes;
     }
 }

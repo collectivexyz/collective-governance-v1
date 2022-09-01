@@ -76,12 +76,14 @@ interface Storage {
 
     /// @notice Ballot receipt record for a voter
     struct Receipt {
+        /// @notice id of reserved shares
+        uint256 shareId;
         /// @notice number of votes cast for
         uint256 shareFor;
         /// @notice The number of votes the voter had, which were cast
         uint256 votesCast;
-        /// @notice id of reserved shares
-        uint256 shareId;
+        /// @notice did the voter abstain
+        bool abstention;
         /// @notice has this share been reversed
         bool undoCast;
     }
@@ -184,34 +186,42 @@ interface Storage {
 
     function voterClass(uint256 _proposalId) external view returns (VoterClass);
 
+    function voteReceipt(uint256 _proposalId, uint256 shareId)
+        external
+        view
+        returns (
+            uint256 _shareId,
+            uint256 _shareFor,
+            uint256 _votesCast,
+            bool _isAbstention,
+            bool _isUndo
+        );
+
     function initializeProposal(address _sender) external returns (uint256);
 
     function voteForByShare(
         uint256 _proposalId,
         address _wallet,
-        uint256 _shareId,
-        uint256 _voteWeight
-    ) external;
+        uint256 _shareId
+    ) external returns (uint256);
+
+    function voteAgainstByShare(
+        uint256 _proposalId,
+        address _wallet,
+        uint256 _shareId
+    ) external returns (uint256);
+
+    function abstainForShare(
+        uint256 _proposalId,
+        address _wallet,
+        uint256 _shareId
+    ) external returns (uint256);
 
     function undoVoteById(
         uint256 _proposalId,
         address _wallet,
         uint256 _receiptId
-    ) external;
-
-    function voteAgainstByShare(
-        uint256 _proposalId,
-        address _wallet,
-        uint256 _shareId,
-        uint256 _voteWeight
-    ) external;
-
-    function abstainForShare(
-        uint256 _proposalId,
-        address _wallet,
-        uint256 _shareId,
-        uint256 _voteWeight
-    ) external;
+    ) external returns (uint256);
 
     function veto(uint256 _proposalId, address _sender) external;
 

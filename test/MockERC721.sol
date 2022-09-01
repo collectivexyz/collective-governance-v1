@@ -14,16 +14,16 @@ contract MockERC721 is IERC721 {
         _tokenId = tokenId;
     }
 
-    function balanceOf(address owner) external view returns (uint256 balance) {
+    function balanceOf(address owner) external view returns (uint256) {
         if (_owner == owner) {
             return 1;
         }
         return 0;
     }
 
-    function ownerOf(uint256 tokenId) external view returns (address owner) {
+    function ownerOf(uint256 tokenId) external view returns (address) {
         if (_tokenId == tokenId) {
-            return owner;
+            return _owner;
         }
         revert("token does not exist");
     }
