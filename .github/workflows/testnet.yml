@@ -40,12 +40,6 @@ jobs:
           yarn lint
           yarn install --production
 
-      - name: Run Forge build
-        run: |
-          forge --version
-          forge build --sizes
-        id: build
-
       - name: Run Forge tests
         run: |
           forge test -vvv
