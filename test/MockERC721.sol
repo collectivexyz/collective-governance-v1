@@ -1,8 +1,6 @@
 // SPDX-License-Identifier: BSD-3-Clause
 pragma solidity ^0.8.15;
 
-import "forge-std/Test.sol";
-
 import "@openzeppelin/contracts/interfaces/IERC721.sol";
 
 contract MockERC721 is IERC721 {
@@ -24,7 +22,7 @@ contract MockERC721 is IERC721 {
         _;
     }
 
-    function mintTo(address _owner, uint256 _tokenId) external tokenDoesNotExist(_tokenId) {
+    function mintTo(address _owner, uint256 _tokenId) public virtual tokenDoesNotExist(_tokenId) {
         _ownerBalanceMap[_owner] += 1;
         _tokenMap[_tokenId] = _owner;
     }
@@ -102,7 +100,7 @@ contract MockERC721 is IERC721 {
         revert("Not implemented");
     }
 
-    function supportsInterface(bytes4) external pure returns (bool) {
-        revert("Not implemented");
+    function supportsInterface(bytes4 interfaceId) external pure virtual returns (bool) {
+        return interfaceId == type(IERC721).interfaceId;
     }
 }

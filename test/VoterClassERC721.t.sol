@@ -1,11 +1,13 @@
 // SPDX-License-Identifier: BSD-3-Clause
 pragma solidity ^0.8.15;
 
-import "@openzeppelin/contracts/token/ERC721/extensions/IERC721Enumerable.sol";
+import "@openzeppelin/contracts/interfaces/IERC165.sol";
+import "@openzeppelin/contracts/interfaces/IERC721.sol";
 
 import "forge-std/Test.sol";
 import "../contracts/VoterClassERC721.sol";
 import "./MockERC721.sol";
+import "./MockERC721Enum.sol";
 
 contract VoterClassERC721Test is Test {
     uint256 immutable _tokenId = 0xf733b17d;
@@ -22,8 +24,23 @@ contract VoterClassERC721Test is Test {
         _class = new VoterClassERC721(address(_tokenContract), 1);
     }
 
-    function testFailDiscovery() public view {
+    function testDiscovery() public {
+        vm.expectRevert("ERC-721 Enumerable required");
         _class.discover(_owner);
+    }
+
+    function testDiscovery721Enumerable() public {
+        MockERC721Enum merc721 = new MockERC721Enum();
+        merc721.mintTo(_owner, _tokenId);
+        merc721.mintTo(_owner, _tokenId + 1);
+        merc721.mintTo(_owner, _tokenId + 2);
+        merc721.mintTo(_owner, _tokenId + 3);
+        _class = new VoterClassERC721(address(merc721), 1);
+        uint256[] memory tokenIdList = _class.discover(_owner);
+        assertEq(tokenIdList.length, 4);
+        for (uint256 i = 0; i < 4; i++) {
+            assertEq(tokenIdList[i], _tokenId + i);
+        }
     }
 
     function testConfirmOwner() public {

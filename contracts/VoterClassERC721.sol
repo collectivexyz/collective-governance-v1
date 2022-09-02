@@ -14,6 +14,7 @@
 pragma solidity ^0.8.15;
 
 import "@openzeppelin/contracts/interfaces/IERC721.sol";
+import "@openzeppelin/contracts/token/ERC721/extensions/IERC721Enumerable.sol";
 import "./VoterClass.sol";
 
 /// @notice voting class for ERC-721 contract
@@ -63,8 +64,16 @@ contract VoterClassERC721 is VoterClass {
         return 0;
     }
 
-    function discover(address _wallet) external pure requireValidAddress(_wallet) returns (uint256[] memory) {
-        revert("Discovery not supported for ERC721");
+    function discover(address _wallet) external view requireValidAddress(_wallet) returns (uint256[] memory) {
+        bytes4 interfaceId721 = type(IERC721Enumerable).interfaceId;
+        require(_nftContract.supportsInterface(interfaceId721), "ERC-721 Enumerable required");
+        IERC721Enumerable enumContract = IERC721Enumerable(_contractAddress);
+        uint256 tokenBalance = _nftContract.balanceOf(_wallet);
+        uint256[] memory tokenIdList = new uint256[](tokenBalance);
+        for (uint256 i = 0; i < tokenBalance; i++) {
+            tokenIdList[i] = enumContract.tokenOfOwnerByIndex(_wallet, i);
+        }
+        return tokenIdList;
     }
 
     /// @notice commit votes for shareId return number voted

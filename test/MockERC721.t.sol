@@ -2,6 +2,7 @@
 pragma solidity ^0.8.15;
 
 import "@openzeppelin/contracts/interfaces/IERC721.sol";
+import "@openzeppelin/contracts/token/ERC721/extensions/IERC721Enumerable.sol";
 
 import "forge-std/Test.sol";
 import "./MockERC721.sol";
@@ -35,5 +36,15 @@ contract MockERC721Test is Test {
         assertEq(erc721.ownerOf(_tokenId), _nextowner);
         assertEq(erc721.balanceOf(_owner), 0);
         assertEq(erc721.balanceOf(_nextowner), 1);
+    }
+
+    function testIsERC721() public {
+        bytes4 interfaceId = type(IERC721).interfaceId;
+        assertTrue(erc721.supportsInterface(interfaceId));
+    }
+
+    function testIsERC721Enumerable() public {
+        bytes4 interfaceId = type(IERC721Enumerable).interfaceId;
+        assertFalse(erc721.supportsInterface(interfaceId));
     }
 }
