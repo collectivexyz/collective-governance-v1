@@ -147,6 +147,19 @@
         "internalType": "uint256",
         "name": "proposalId",
         "type": "uint256"
+      }
+    ],
+    "name": "RegisterVoterClassVoterPool",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "proposalId",
+        "type": "uint256"
       },
       {
         "indexed": false,
@@ -172,6 +185,12 @@
         "internalType": "address",
         "name": "voter",
         "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "shareId",
+        "type": "uint256"
       },
       {
         "indexed": false,
@@ -210,6 +229,12 @@
         "internalType": "address",
         "name": "voter",
         "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "shareId",
+        "type": "uint256"
       },
       {
         "indexed": false,
@@ -274,78 +299,16 @@
       },
       {
         "internalType": "address",
-        "name": "wallet",
+        "name": "_wallet",
         "type": "address"
-      }
-    ],
-    "name": "_abstainFromVote",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "_proposalId",
-        "type": "uint256"
       },
       {
-        "internalType": "address",
-        "name": "wallet",
-        "type": "address"
-      }
-    ],
-    "name": "_castVoteAgainst",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
         "internalType": "uint256",
-        "name": "_proposalId",
+        "name": "_shareId",
         "type": "uint256"
-      },
-      {
-        "internalType": "address",
-        "name": "wallet",
-        "type": "address"
       }
     ],
-    "name": "_castVoteFor",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "_proposalId",
-        "type": "uint256"
-      },
-      {
-        "internalType": "address",
-        "name": "wallet",
-        "type": "address"
-      }
-    ],
-    "name": "_castVoteUndo",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "_strategy",
-        "type": "address"
-      }
-    ],
-    "name": "_initializeProposal",
+    "name": "abstainForShare",
     "outputs": [
       {
         "internalType": "uint256",
@@ -353,45 +316,6 @@
         "type": "uint256"
       }
     ],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "_maxPassThreshold",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "pure",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "_proposalId",
-        "type": "uint256"
-      }
-    ],
-    "name": "validOrRevert",
-    "outputs": [],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "_proposalId",
-        "type": "uint256"
-      }
-    ],
-    "name": "_veto",
-    "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
   },
@@ -444,6 +368,11 @@
         "internalType": "address",
         "name": "_supervisor",
         "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_sender",
+        "type": "address"
       }
     ],
     "name": "burnSupervisor",
@@ -462,6 +391,11 @@
         "internalType": "address",
         "name": "_voter",
         "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_sender",
+        "type": "address"
       }
     ],
     "name": "burnVoter",
@@ -475,6 +409,11 @@
         "internalType": "uint256",
         "name": "_proposalId",
         "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "_sender",
+        "type": "address"
       }
     ],
     "name": "burnVoterClass",
@@ -488,6 +427,11 @@
         "internalType": "uint256",
         "name": "_proposalId",
         "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "_sender",
+        "type": "address"
       }
     ],
     "name": "enableUndoVote",
@@ -550,6 +494,25 @@
       }
     ],
     "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_sender",
+        "type": "address"
+      }
+    ],
+    "name": "initializeProposal",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "nonpayable",
     "type": "function"
   },
   {
@@ -644,11 +607,29 @@
         "internalType": "uint256",
         "name": "_proposalId",
         "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "_sender",
+        "type": "address"
       }
     ],
     "name": "makeReady",
     "outputs": [],
     "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "maxPassThreshold",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "pure",
     "type": "function"
   },
   {
@@ -713,6 +694,11 @@
         "internalType": "address",
         "name": "_supervisor",
         "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_sender",
+        "type": "address"
       }
     ],
     "name": "registerSupervisor",
@@ -730,6 +716,11 @@
       {
         "internalType": "address",
         "name": "_voter",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_sender",
         "type": "address"
       }
     ],
@@ -749,6 +740,11 @@
         "internalType": "address",
         "name": "token",
         "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_sender",
+        "type": "address"
       }
     ],
     "name": "registerVoterClassERC721",
@@ -762,6 +758,11 @@
         "internalType": "uint256",
         "name": "_proposalId",
         "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "_sender",
+        "type": "address"
       }
     ],
     "name": "registerVoterClassOpenVote",
@@ -777,9 +778,32 @@
         "type": "uint256"
       },
       {
+        "internalType": "address",
+        "name": "_sender",
+        "type": "address"
+      }
+    ],
+    "name": "registerVoterClassVoterPool",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_proposalId",
+        "type": "uint256"
+      },
+      {
         "internalType": "address[]",
         "name": "_voter",
         "type": "address[]"
+      },
+      {
+        "internalType": "address",
+        "name": "_sender",
+        "type": "address"
       }
     ],
     "name": "registerVoters",
@@ -798,6 +822,11 @@
         "internalType": "uint256",
         "name": "_passThreshold",
         "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "_sender",
+        "type": "address"
       }
     ],
     "name": "setQuorumThreshold",
@@ -816,6 +845,11 @@
         "internalType": "uint256",
         "name": "_voteDuration",
         "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "_sender",
+        "type": "address"
       }
     ],
     "name": "setRequiredVoteDuration",
@@ -834,6 +868,11 @@
         "internalType": "uint256",
         "name": "_voteDelay",
         "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "_sender",
+        "type": "address"
       }
     ],
     "name": "setVoteDelay",
@@ -861,6 +900,48 @@
     "type": "function"
   },
   {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_proposalId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "_wallet",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_receiptId",
+        "type": "uint256"
+      }
+    ],
+    "name": "undoVoteById",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_proposalId",
+        "type": "uint256"
+      }
+    ],
+    "name": "validOrRevert",
+    "outputs": [],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [],
     "name": "version",
     "outputs": [
@@ -871,6 +952,53 @@
       }
     ],
     "stateMutability": "pure",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_proposalId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "_sender",
+        "type": "address"
+      }
+    ],
+    "name": "veto",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_proposalId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "_wallet",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_shareId",
+        "type": "uint256"
+      }
+    ],
+    "name": "voteAgainstByShare",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "nonpayable",
     "type": "function"
   },
   {
@@ -917,12 +1045,85 @@
         "internalType": "uint256",
         "name": "_proposalId",
         "type": "uint256"
-      }
-    ],
-    "name": "voteStrategy",
-    "outputs": [
+      },
       {
         "internalType": "address",
+        "name": "_wallet",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_shareId",
+        "type": "uint256"
+      }
+    ],
+    "name": "voteForByShare",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_proposalId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "shareId",
+        "type": "uint256"
+      }
+    ],
+    "name": "voteReceipt",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "_shareId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_shareFor",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_votesCast",
+        "type": "uint256"
+      },
+      {
+        "internalType": "bool",
+        "name": "_isAbstention",
+        "type": "bool"
+      },
+      {
+        "internalType": "bool",
+        "name": "_isUndo",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_proposalId",
+        "type": "uint256"
+      }
+    ],
+    "name": "voterClass",
+    "outputs": [
+      {
+        "internalType": "contract VoterClass",
         "name": "",
         "type": "address"
       }
