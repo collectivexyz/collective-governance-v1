@@ -80,7 +80,6 @@ USER mr
 ENV PATH=${PATH}:~/.cargo/bin
 RUN yarn install
 RUN yarn lint
-RUN ~mr/.cargo/bin/forge build --sizes
 RUN ~mr/.cargo/bin/forge test -vvv
 
 RUN bin/update_abi.sh

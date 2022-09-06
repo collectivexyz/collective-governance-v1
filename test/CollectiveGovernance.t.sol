@@ -868,7 +868,17 @@ contract CollectiveGovernanceTest is Test {
         _storage.veto(PROPOSAL_ID, msg.sender);
     }
 
-    function mintTokens() internal returns (IERC721) {
+    function testSupportsInterfaceGovernance() public {
+        bytes4 govId = type(Governance).interfaceId;
+        assertTrue(governance.supportsInterface(govId));
+    }
+
+    function testSupportsInterfaceVoteStrategy() public {
+        bytes4 vsId = type(VoteStrategy).interfaceId;
+        assertTrue(governance.supportsInterface(vsId));
+    }
+
+    function mintTokens() private returns (IERC721) {
         MockERC721 merc721 = new MockERC721();
         merc721.mintTo(voter1, TOKEN_ID1);
         merc721.mintTo(voter1, TOKEN_ID2);

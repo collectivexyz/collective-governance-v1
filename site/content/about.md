@@ -17,15 +17,15 @@ This smart contract enables a measure to be proposed, voted upon and successfull
 
     * Introduce a smart contract that enables on chain proposal of measures, along with conclusive determination of the community support for the measure and potential fulfillment of the aim of a measure.  For example execution of a transfer.
     * Require participation in measure outcome that is restricted to a pre-selected audience of participants
-    * Support audiences specified by ownership of a particular token, such as ERC-721.  Importantly, participation does not require any contract specialization. Any ERC-721 including those already existing will work.
-    * Any ERC-721 including those already existing will work (works with vanilla ERC-721 interface)
+    * Support audiences specified by ownership of a particular token, list of wallets or general population
+    * Voting works with the existing ERC-721 standard.  Existing NFTs can form a voting class and participation does not require any contract specialization.  ERC721Enumerable is also supported.
     * Provide safe, fair and verifiable measure outcomes
     * Contract is very literate, information is transparent without prior knowledge
     * Support for execution of a transaction on successful outcome
-    * Each community has their own storage/contract address, which are isolated from one another, people can e.g. query the contract address for all the proposals, each communitie's proposal IDs start at index 1
-    * Tokens can’t vote twice, even if transferred to another wallet
+    * Each community has their own storage/contract address, which are isolated from one another, people can e.g. query the contract address for all the proposals, each communities proposal IDs start at index 1
+    * Tokens can’t vote twice, even when transferred to another wallet
     * Allow veto at any time while voting is underway
-    * Provide no special authority to the contract owner.   Once in motion a measure may not be tampered with for any reason
+    * Provide no special authority to the contract owner.   Once in motion a measure may not be tampered with
 
 ### Contract Requirements
 

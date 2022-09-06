@@ -13,6 +13,8 @@
  */
 pragma solidity ^0.8.15;
 
+import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
+
 import "../contracts/Storage.sol";
 import "../contracts/GovernanceStorage.sol";
 import "../contracts/Governance.sol";
@@ -20,7 +22,7 @@ import "../contracts/VoteStrategy.sol";
 
 /// @title CollectiveGovernance
 // factory contract for governance
-contract CollectiveGovernance is Governance, VoteStrategy {
+contract CollectiveGovernance is Governance, VoteStrategy, ERC165 {
     /// @notice contract name
     string public constant name = "collective.xyz governance";
     uint32 public constant VERSION_1 = 1;
@@ -314,5 +316,13 @@ contract CollectiveGovernance is Governance, VoteStrategy {
         uint256 totalVotesCast = _storage.quorum(_proposalId);
         require(totalVotesCast >= _storage.quorumRequired(_proposalId), "Not enough participants");
         return _storage.forVotes(_proposalId) > _storage.againstVotes(_proposalId);
+    }
+
+    /// @notice ERC-165
+    function supportsInterface(bytes4 interfaceId) public view virtual override(ERC165) returns (bool) {
+        return
+            interfaceId == type(Governance).interfaceId ||
+            interfaceId == type(VoteStrategy).interfaceId ||
+            super.supportsInterface(interfaceId);
     }
 }
