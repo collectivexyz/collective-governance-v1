@@ -1,7 +1,9 @@
 // SPDX-License-Identifier: BSD-3-Clause
 pragma solidity ^0.8.15;
 
+import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
 import "@openzeppelin/contracts/interfaces/IERC721.sol";
+import "@openzeppelin/contracts/token/ERC721/extensions/IERC721Enumerable.sol";
 
 import "forge-std/Test.sol";
 
@@ -876,6 +878,11 @@ contract CollectiveGovernanceTest is Test {
     function testSupportsInterfaceVoteStrategy() public {
         bytes4 vsId = type(VoteStrategy).interfaceId;
         assertTrue(governance.supportsInterface(vsId));
+    }
+
+    function testSupportsInterfaceERC165() public {
+        bytes4 esId = type(ERC165).interfaceId;
+        assertTrue(governance.supportsInterface(esId));
     }
 
     function mintTokens() private returns (IERC721) {
