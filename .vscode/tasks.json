@@ -53,6 +53,19 @@
       }
     },
     {
+      "label": "deploy",
+      "type": "shell",
+      "command": "forge create --contracts contracts/CollectiveGovernance.sol --rpc-url ${DEVNET_RPC_URL} --private-key ${ETH_DEV_PRIVATE} --etherscan-api-key ${ETHERSCAN_API_KEY} --verify CollectiveGovernance",
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "dependsOn": "abi",
+      "group": {
+        "kind": "build",
+        "isDefault": false
+      }
+    },
+    {
       "label": "test",
       "type": "shell",
       "command": "forge test -vvv",

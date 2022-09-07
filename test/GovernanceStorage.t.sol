@@ -630,4 +630,36 @@ contract GovernanceStorageTest is Test {
     function testVersion() public {
         assertEq(_storage.version(), 1);
     }
+
+    function testLatestProposal() public {
+        uint256 latestProposalId = _storage.latestProposal(owner);
+        assertEq(PROPOSAL_ID, latestProposalId);
+        _storage.registerSupervisor(latestProposalId, supervisor, owner);
+        _storage.makeReady(latestProposalId, supervisor);
+        uint256 endBlock = _storage.endBlock(latestProposalId);
+        vm.roll(endBlock);
+        uint256 nextId = _storage.initializeProposal(owner);
+        latestProposalId = _storage.latestProposal(owner);
+        assertEq(latestProposalId, nextId);
+    }
+
+    function testLatestRevertIfNone() public {
+        vm.expectRevert("No current proposal");
+        _storage.latestProposal(supervisor);
+    }
+
+    function testLatestProposalRevertItsNotOverTillItsOver() public {
+        uint256 latestProposalId = _storage.latestProposal(owner);
+        assertEq(PROPOSAL_ID, latestProposalId);
+        _storage.registerSupervisor(latestProposalId, supervisor, owner);
+        _storage.makeReady(latestProposalId, supervisor);
+        // vote requires minimum one block
+        vm.expectRevert("Too many proposals");
+        _storage.initializeProposal(owner);
+    }
+
+    function testRevertOnSecondProposal() public {
+        vm.expectRevert("Too many proposals");
+        _storage.initializeProposal(owner);
+    }
 }

@@ -188,6 +188,8 @@ interface Storage {
 
     function voterClass(uint256 _proposalId) external view returns (VoterClass);
 
+    function latestProposal(address _sender) external view returns (uint256);
+
     function voteReceipt(uint256 _proposalId, uint256 shareId)
         external
         view

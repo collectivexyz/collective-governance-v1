@@ -134,8 +134,8 @@ contract GovernanceStorage is Storage {
     function initializeProposal(address _sender) external requireCognate returns (uint256) {
         uint256 latestProposalId = _latestProposalId[_sender];
         if (latestProposalId != 0) {
-            Proposal storage latestProposal = proposalMap[latestProposalId];
-            require(!latestProposal.isReady, "Too many proposals in process");
+            Proposal storage lastProposal = proposalMap[latestProposalId];
+            require(lastProposal.isReady && block.number >= lastProposal.endBlock, "Too many proposals");
         }
         _proposalCount++;
         uint256 proposalId = _proposalCount;
@@ -481,6 +481,12 @@ contract GovernanceStorage is Storage {
     function endBlock(uint256 _proposalId) external view requireValidProposal(_proposalId) returns (uint256) {
         Proposal storage proposal = proposalMap[_proposalId];
         return proposal.endBlock;
+    }
+
+    function latestProposal(address _sender) external view returns (uint256) {
+        uint256 latestProposalId = _latestProposalId[_sender];
+        require(latestProposalId > 0, "No current proposal");
+        return latestProposalId;
     }
 
     function voteReceipt(uint256 _proposalId, uint256 _shareId)
