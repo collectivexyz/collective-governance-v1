@@ -27,7 +27,7 @@ contract CollectiveGovernance is Governance, VoteStrategy, ERC165 {
     string public constant name = "collective.xyz governance";
     uint32 public constant VERSION_1 = 1;
 
-    Storage private _storage;
+    Storage public _storage;
 
     /// @notice voting is open or not
     mapping(uint256 => bool) isVoteOpenByProposalId;
@@ -86,7 +86,7 @@ contract CollectiveGovernance is Governance, VoteStrategy, ERC165 {
         return proposalId;
     }
 
-    function configure(
+    function configureTokenVoteERC721(
         uint256 _proposalId,
         uint256 _quorumThreshold,
         address _erc721,
@@ -96,6 +96,20 @@ contract CollectiveGovernance is Governance, VoteStrategy, ERC165 {
         _storage.setQuorumThreshold(_proposalId, _quorumThreshold, _sender);
         _storage.setRequiredVoteDuration(_proposalId, _requiredDuration, _sender);
         _storage.registerVoterClassERC721(_proposalId, _erc721, _sender);
+        _storage.makeReady(_proposalId, _sender);
+        this.openVote(_proposalId);
+        emit ProposalOpen(_proposalId);
+    }
+
+    function configureOpenVote(
+        uint256 _proposalId,
+        uint256 _quorumThreshold,
+        uint256 _requiredDuration
+    ) external requireElectorSupervisor(_proposalId) {
+        address _sender = msg.sender;
+        _storage.setQuorumThreshold(_proposalId, _quorumThreshold, _sender);
+        _storage.setRequiredVoteDuration(_proposalId, _requiredDuration, _sender);
+        _storage.registerVoterClassOpenVote(_proposalId, _sender);
         _storage.makeReady(_proposalId, _sender);
         this.openVote(_proposalId);
         emit ProposalOpen(_proposalId);

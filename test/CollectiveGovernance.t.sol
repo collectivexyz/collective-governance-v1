@@ -70,27 +70,36 @@ contract CollectiveGovernanceTest is Test {
         assertEq(pid, PROPOSAL_ID);
     }
 
-    function testConfigure() public {
+    function testConfigure721() public {
         vm.startPrank(owner, owner);
-        governance.configure(PROPOSAL_ID, 2, address(_erc721), 2);
+        governance.configureTokenVoteERC721(PROPOSAL_ID, 2, address(_erc721), 2);
         vm.stopPrank();
         assertTrue(governance.isOpen(PROPOSAL_ID));
         assertEq(_storage.quorumRequired(PROPOSAL_ID), 2);
         assertTrue(governance.isOpen(PROPOSAL_ID));
     }
 
-    function testCastSimpleVote() public {
+    function testCastSimpleVote721() public {
         vm.startPrank(owner, owner);
-        governance.configure(PROPOSAL_ID, 2, address(_erc721), 2);
+        governance.configureTokenVoteERC721(PROPOSAL_ID, 2, address(_erc721), 2);
         vm.stopPrank();
         vm.prank(voter1);
         governance.voteForWithTokenId(PROPOSAL_ID, TOKEN_ID1);
         assertEq(_storage.forVotes(PROPOSAL_ID), 1);
     }
 
+    function testCastSimpleVoteOpen() public {
+        vm.startPrank(owner, owner);
+        governance.configureOpenVote(PROPOSAL_ID, 2, 2);
+        vm.stopPrank();
+        vm.prank(voter1);
+        governance.voteFor(PROPOSAL_ID);
+        assertEq(_storage.forVotes(PROPOSAL_ID), 1);
+    }
+
     function testCastMultipleVote() public {
         vm.startPrank(owner, owner);
-        governance.configure(PROPOSAL_ID, 5, address(_erc721), 2);
+        governance.configureTokenVoteERC721(PROPOSAL_ID, 5, address(_erc721), 2);
         vm.stopPrank();
         vm.prank(voter1);
         governance.voteForWithTokenList(PROPOSAL_ID, _tokenIdList);
@@ -99,7 +108,7 @@ contract CollectiveGovernanceTest is Test {
 
     function testCastMultipleVoteAgainst() public {
         vm.startPrank(owner, owner);
-        governance.configure(PROPOSAL_ID, 5, address(_erc721), 2);
+        governance.configureTokenVoteERC721(PROPOSAL_ID, 5, address(_erc721), 2);
         vm.stopPrank();
         vm.prank(voter1);
         governance.voteAgainstWithTokenList(PROPOSAL_ID, _tokenIdList);
@@ -108,7 +117,7 @@ contract CollectiveGovernanceTest is Test {
 
     function testCastMultipleVoteAbstain() public {
         vm.startPrank(owner, owner);
-        governance.configure(PROPOSAL_ID, 5, address(_erc721), 2);
+        governance.configureTokenVoteERC721(PROPOSAL_ID, 5, address(_erc721), 2);
         vm.stopPrank();
         vm.prank(voter1);
         governance.abstainWithTokenList(PROPOSAL_ID, _tokenIdList);
@@ -117,7 +126,7 @@ contract CollectiveGovernanceTest is Test {
 
     function testCastSimpleVoteWhileActive() public {
         vm.startPrank(owner, owner);
-        governance.configure(PROPOSAL_ID, 2, address(_erc721), 10);
+        governance.configureTokenVoteERC721(PROPOSAL_ID, 2, address(_erc721), 10);
         vm.stopPrank();
         vm.prank(voter1);
         vm.roll(block.number + 2);
@@ -127,7 +136,7 @@ contract CollectiveGovernanceTest is Test {
 
     function testNonVoter() public {
         vm.startPrank(owner, owner);
-        governance.configure(PROPOSAL_ID, 2, address(_erc721), 2);
+        governance.configureTokenVoteERC721(PROPOSAL_ID, 2, address(_erc721), 2);
         vm.stopPrank();
         vm.expectRevert("Not owner of specified token");
         vm.prank(nonvoter);
@@ -136,7 +145,7 @@ contract CollectiveGovernanceTest is Test {
 
     function testVoteAgainst() public {
         vm.startPrank(owner, owner);
-        governance.configure(PROPOSAL_ID, 2, address(_erc721), 2);
+        governance.configureTokenVoteERC721(PROPOSAL_ID, 2, address(_erc721), 2);
         vm.stopPrank();
         vm.prank(voter1);
         governance.voteAgainstWithTokenId(PROPOSAL_ID, TOKEN_ID1);
@@ -145,7 +154,7 @@ contract CollectiveGovernanceTest is Test {
 
     function testVoteAgainstNonVoter() public {
         vm.startPrank(owner, owner);
-        governance.configure(PROPOSAL_ID, 2, address(_erc721), 2);
+        governance.configureTokenVoteERC721(PROPOSAL_ID, 2, address(_erc721), 2);
         vm.stopPrank();
         vm.expectRevert("Not owner of specified token");
         vm.prank(nonvoter);
@@ -154,7 +163,7 @@ contract CollectiveGovernanceTest is Test {
 
     function testAbstain() public {
         vm.startPrank(owner, owner);
-        governance.configure(PROPOSAL_ID, 2, address(_erc721), 2);
+        governance.configureTokenVoteERC721(PROPOSAL_ID, 2, address(_erc721), 2);
         vm.stopPrank();
         vm.prank(voter1);
         governance.abstainWithTokenId(PROPOSAL_ID, TOKEN_ID1);
@@ -163,7 +172,7 @@ contract CollectiveGovernanceTest is Test {
 
     function testAbstentionNonVoter() public {
         vm.startPrank(owner, owner);
-        governance.configure(PROPOSAL_ID, 2, address(_erc721), 2);
+        governance.configureTokenVoteERC721(PROPOSAL_ID, 2, address(_erc721), 2);
         vm.stopPrank();
         vm.prank(nonvoter);
         vm.expectRevert("Not owner of specified token");
@@ -350,7 +359,7 @@ contract CollectiveGovernanceTest is Test {
 
     function testCastDoubleVoteOnTransferToken() public {
         vm.startPrank(owner, owner);
-        governance.configure(PROPOSAL_ID, 2, address(_erc721), 2);
+        governance.configureTokenVoteERC721(PROPOSAL_ID, 2, address(_erc721), 2);
         vm.stopPrank();
         vm.prank(voter1);
         governance.voteForWithTokenId(PROPOSAL_ID, TOKEN_ID1);
@@ -392,7 +401,7 @@ contract CollectiveGovernanceTest is Test {
         vm.prank(_cognate);
         _storage.enableUndoVote(PROPOSAL_ID, supervisor);
         vm.startPrank(owner, owner);
-        governance.configure(PROPOSAL_ID, 2, address(_erc721), 2);
+        governance.configureTokenVoteERC721(PROPOSAL_ID, 2, address(_erc721), 2);
         vm.stopPrank();
         vm.prank(voter1);
         governance.voteForWithTokenId(PROPOSAL_ID, TOKEN_ID1);
@@ -773,7 +782,7 @@ contract CollectiveGovernanceTest is Test {
 
     function testDirectStorageAccessToBurnClass() public {
         vm.startPrank(owner, owner);
-        governance.configure(PROPOSAL_ID, 2, address(_erc721), 2);
+        governance.configureTokenVoteERC721(PROPOSAL_ID, 2, address(_erc721), 2);
         vm.stopPrank();
         vm.expectRevert("Not permitted");
         vm.prank(supervisor);
@@ -782,7 +791,7 @@ contract CollectiveGovernanceTest is Test {
 
     function testDirectStorageAccessToQuorum() public {
         vm.startPrank(owner, owner);
-        governance.configure(PROPOSAL_ID, 2, address(_erc721), 2);
+        governance.configureTokenVoteERC721(PROPOSAL_ID, 2, address(_erc721), 2);
         vm.stopPrank();
         vm.expectRevert("Not permitted");
         vm.prank(supervisor);
@@ -791,7 +800,7 @@ contract CollectiveGovernanceTest is Test {
 
     function testDirectStorageAccessToDuration() public {
         vm.startPrank(owner, owner);
-        governance.configure(PROPOSAL_ID, 2, address(_erc721), 2);
+        governance.configureTokenVoteERC721(PROPOSAL_ID, 2, address(_erc721), 2);
         vm.stopPrank();
         vm.expectRevert("Not permitted");
         vm.prank(supervisor);
@@ -800,7 +809,7 @@ contract CollectiveGovernanceTest is Test {
 
     function testDirectStorageAccessToDelay() public {
         vm.startPrank(owner, owner);
-        governance.configure(PROPOSAL_ID, 2, address(_erc721), 2);
+        governance.configureTokenVoteERC721(PROPOSAL_ID, 2, address(_erc721), 2);
         vm.stopPrank();
         vm.expectRevert("Not permitted");
         vm.prank(supervisor);
@@ -809,7 +818,7 @@ contract CollectiveGovernanceTest is Test {
 
     function testDirectStorageAccessToUndoVote() public {
         vm.startPrank(owner, owner);
-        governance.configure(PROPOSAL_ID, 2, address(_erc721), 2);
+        governance.configureTokenVoteERC721(PROPOSAL_ID, 2, address(_erc721), 2);
         vm.stopPrank();
         vm.expectRevert("Not permitted");
         vm.prank(supervisor);
@@ -818,7 +827,7 @@ contract CollectiveGovernanceTest is Test {
 
     function testDirectStorageAccessToReady() public {
         vm.startPrank(owner, owner);
-        governance.configure(PROPOSAL_ID, 2, address(_erc721), 2);
+        governance.configureTokenVoteERC721(PROPOSAL_ID, 2, address(_erc721), 2);
         vm.stopPrank();
         vm.expectRevert("Not permitted");
         vm.prank(supervisor);
@@ -827,7 +836,7 @@ contract CollectiveGovernanceTest is Test {
 
     function testDirectStorageAccessToCastVote() public {
         vm.startPrank(owner, owner);
-        governance.configure(PROPOSAL_ID, 2, address(_erc721), 2);
+        governance.configureTokenVoteERC721(PROPOSAL_ID, 2, address(_erc721), 2);
         vm.stopPrank();
         vm.expectRevert("Not permitted");
         vm.prank(voter1);
@@ -836,7 +845,7 @@ contract CollectiveGovernanceTest is Test {
 
     function testDirectStorageAccessToCastVoteAgainst() public {
         vm.startPrank(owner, owner);
-        governance.configure(PROPOSAL_ID, 2, address(_erc721), 2);
+        governance.configureTokenVoteERC721(PROPOSAL_ID, 2, address(_erc721), 2);
         vm.stopPrank();
         vm.expectRevert("Not permitted");
         vm.prank(voter1);
@@ -845,7 +854,7 @@ contract CollectiveGovernanceTest is Test {
 
     function testDirectStorageAccessToAbstain() public {
         vm.startPrank(owner, owner);
-        governance.configure(PROPOSAL_ID, 2, address(_erc721), 2);
+        governance.configureTokenVoteERC721(PROPOSAL_ID, 2, address(_erc721), 2);
         vm.stopPrank();
         vm.expectRevert("Not permitted");
         vm.prank(voter1);
@@ -854,7 +863,7 @@ contract CollectiveGovernanceTest is Test {
 
     function testDirectStorageAccessToUndo() public {
         vm.startPrank(owner, owner);
-        governance.configure(PROPOSAL_ID, 2, address(_erc721), 2);
+        governance.configureTokenVoteERC721(PROPOSAL_ID, 2, address(_erc721), 2);
         vm.stopPrank();
         vm.expectRevert("Not permitted");
         vm.prank(voter1);
@@ -863,7 +872,7 @@ contract CollectiveGovernanceTest is Test {
 
     function testDirectStorageAccessToVeto() public {
         vm.startPrank(owner, owner);
-        governance.configure(PROPOSAL_ID, 2, address(_erc721), 2);
+        governance.configureTokenVoteERC721(PROPOSAL_ID, 2, address(_erc721), 2);
         vm.stopPrank();
         vm.expectRevert("Not permitted");
         vm.prank(supervisor);

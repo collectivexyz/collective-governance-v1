@@ -29,17 +29,18 @@ contract GovernanceStorage is Storage {
     /// @notice global list of proposed issues by id
     mapping(uint256 => Proposal) public proposalMap;
 
-    /// @notice The total number of proposals
-    uint256 internal _proposalCount;
-
     /// @notice only the peer contract may modify the vote
     address private _cognate;
+
+    /// @notice The total number of proposals
+    uint256 internal _proposalCount;
 
     /// @notice The latest proposal for each proposer
     mapping(address => uint256) internal _latestProposalId;
 
     constructor() {
         _cognate = msg.sender;
+        _proposalCount = 0;
     }
 
     modifier requireValidAddress(address _wallet) {
@@ -293,19 +294,19 @@ contract GovernanceStorage is Storage {
     /// @notice register a voting class for this measure
     function registerVoterClassERC721(
         uint256 _proposalId,
-        address _token,
+        address _tokenContract,
         address _sender
     )
         public
         requireCognate
-        requireValidAddress(_token)
+        requireValidAddress(_tokenContract)
         requireValidProposal(_proposalId)
         requireElectorSupervisor(_proposalId, _sender)
         requireVotingNotReady(_proposalId)
     {
         Proposal storage proposal = proposalMap[_proposalId];
-        proposal.voterClass = new VoterClassERC721(_token, 1);
-        emit RegisterVoterClassERC721(_proposalId, _token);
+        proposal.voterClass = new VoterClassERC721(_tokenContract, 1);
+        emit RegisterVoterClassERC721(_proposalId, _tokenContract);
     }
 
     /// @notice register a voting class for this measure

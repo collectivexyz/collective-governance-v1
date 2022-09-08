@@ -25,10 +25,16 @@ interface Governance {
     /// @notice propose a measurement of a vote class @returns proposal id
     function propose() external returns (uint256);
 
-    function configure(
+    function configureTokenVoteERC721(
         uint256 proposalId,
         uint256 quorumThreshold,
         address erc721,
+        uint256 requiredDuration
+    ) external;
+
+    function configureOpenVote(
+        uint256 proposalId,
+        uint256 quorumThreshold,
         uint256 requiredDuration
     ) external;
 

@@ -59,9 +59,9 @@
       "options": {
         "cwd": "${workspaceFolder}"
       },
-      "dependsOn": "abi",
+      "dependsOn": "test",
       "group": {
-        "kind": "build",
+        "kind": "test",
         "isDefault": false
       }
     },

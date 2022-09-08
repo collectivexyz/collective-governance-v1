@@ -57,6 +57,29 @@
         "type": "uint256"
       },
       {
+        "internalType": "uint256",
+        "name": "requiredDuration",
+        "type": "uint256"
+      }
+    ],
+    "name": "configureOpenVote",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "proposalId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "quorumThreshold",
+        "type": "uint256"
+      },
+      {
         "internalType": "address",
         "name": "erc721",
         "type": "address"
@@ -67,7 +90,7 @@
         "type": "uint256"
       }
     ],
-    "name": "configure",
+    "name": "configureTokenVoteERC721",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

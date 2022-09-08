@@ -21,20 +21,17 @@ import "./VoterClass.sol";
 contract VoterClassERC721 is VoterClass {
     address private _cognate;
 
-    uint256 private _weight;
-
     address private _contractAddress;
 
-    IERC721 private _nftContract;
+    uint256 private _weight;
 
     /// @notice commited vote
     mapping(uint256 => bool) private _committedVote;
 
     constructor(address _contract, uint256 _voteWeight) {
         _cognate = msg.sender;
-        _weight = _voteWeight;
         _contractAddress = _contract;
-        _nftContract = IERC721(_contract);
+        _weight = _voteWeight;
     }
 
     modifier requireCognate() {
@@ -53,11 +50,11 @@ contract VoterClassERC721 is VoterClass {
     }
 
     function isVoter(address _wallet) external view requireValidAddress(_wallet) returns (bool) {
-        return _nftContract.balanceOf(_wallet) > 0;
+        return IERC721(_contractAddress).balanceOf(_wallet) > 0;
     }
 
     function votesAvailable(address _wallet, uint256 _shareId) external view requireValidAddress(_wallet) returns (uint256) {
-        address tokenOwner = _nftContract.ownerOf(_shareId);
+        address tokenOwner = IERC721(_contractAddress).ownerOf(_shareId);
         if (_wallet == tokenOwner) {
             return 1;
         }
@@ -66,9 +63,9 @@ contract VoterClassERC721 is VoterClass {
 
     function discover(address _wallet) external view requireValidAddress(_wallet) returns (uint256[] memory) {
         bytes4 interfaceId721 = type(IERC721Enumerable).interfaceId;
-        require(_nftContract.supportsInterface(interfaceId721), "ERC-721 Enumerable required");
+        require(IERC721(_contractAddress).supportsInterface(interfaceId721), "ERC-721 Enumerable required");
         IERC721Enumerable enumContract = IERC721Enumerable(_contractAddress);
-        uint256 tokenBalance = _nftContract.balanceOf(_wallet);
+        uint256 tokenBalance = IERC721(_contractAddress).balanceOf(_wallet);
         uint256[] memory tokenIdList = new uint256[](tokenBalance);
         for (uint256 i = 0; i < tokenBalance; i++) {
             tokenIdList[i] = enumContract.tokenOfOwnerByIndex(_wallet, i);
