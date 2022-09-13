@@ -56,12 +56,11 @@ contract VoterClassERC721Test is Test {
         _class.confirm(_notowner, _tokenId);
     }
 
-    function testFailConfirmNotOwnerDirect() public {
-        vm.prank(_owner);
-        _class.confirm(_owner, _tokenId);
-    }
-
     function testWeight() public {
         assertEq(1, _class.weight());
+    }
+
+    function testFinal() public {
+        assertTrue(_class.isFinal());
     }
 }

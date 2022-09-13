@@ -12,13 +12,25 @@
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 pragma solidity ^0.8.15;
+
+import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
+
 import "./VoterClass.sol";
 
 /// @notice voting class for ERC-721 contract
-contract VoterClassNullObject is VoterClass {
+contract VoterClassNullObject is VoterClass, ERC165 {
+    string public constant name = "collective.xyz VoterClassNullObject";
+
+    // solium-disable-next-line no-empty-blocks
+    constructor() {}
+
     modifier requireValidAddress(address _wallet) {
         require(_wallet != address(0), "Not a valid wallet");
         _;
+    }
+
+    function isFinal() external pure returns (bool) {
+        return true;
     }
 
     function isVoter(address _wallet) external pure requireValidAddress(_wallet) returns (bool) {
@@ -39,6 +51,14 @@ contract VoterClassNullObject is VoterClass {
 
     /// @notice return voting weight of each confirmed share
     function weight() external pure returns (uint256) {
+        return 0;
+    }
+
+    function supportsInterface(bytes4) public view virtual override(ERC165) returns (bool) {
+        return false;
+    }
+
+    function version() external pure returns (uint32) {
         return 0;
     }
 }

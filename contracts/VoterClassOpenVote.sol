@@ -13,24 +13,19 @@
  */
 pragma solidity ^0.8.15;
 
+import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
+
 import "./VoterClass.sol";
 
 /// @notice voting class to include every address
-contract VoterClassOpenVote is VoterClass {
+contract VoterClassOpenVote is VoterClass, ERC165 {
+    string public constant name = "collective.xyz VoterClassOpenVote";
+    uint32 public constant VERSION_1 = 1;
+
     uint256 private _weight;
 
-    mapping(uint256 => bool) private _committedVote;
-
-    address private _cognate;
-
     constructor(uint256 _voteWeight) {
-        _cognate = msg.sender;
         _weight = _voteWeight;
-    }
-
-    modifier requireCognate() {
-        require(_cognate == msg.sender, "Not permitted");
-        _;
     }
 
     modifier requireValidAddress(address _wallet) {
@@ -41,6 +36,10 @@ contract VoterClassOpenVote is VoterClass {
     modifier requireValidShare(address _wallet, uint256 _shareId) {
         require(_shareId > 0 && _shareId == uint160(_wallet), "Not a valid share");
         _;
+    }
+
+    function isFinal() external pure returns (bool) {
+        return true;
     }
 
     function isVoter(address _wallet) external pure requireValidAddress(_wallet) returns (bool) {
@@ -54,20 +53,20 @@ contract VoterClassOpenVote is VoterClass {
     }
 
     /// @notice commit votes for shareId return number voted
-    function confirm(address _wallet, uint256 _shareId)
-        external
-        requireCognate
-        requireValidShare(_wallet, _shareId)
-        returns (uint256)
-    {
-        require(!_committedVote[_shareId], "Share committed");
-        _committedVote[_shareId] = true;
-        emit VoteCommitted(_shareId, _weight);
+    function confirm(address _wallet, uint256 _shareId) external view requireValidShare(_wallet, _shareId) returns (uint256) {
         return _weight;
     }
 
     /// @notice return voting weight of each confirmed share
     function weight() external view returns (uint256) {
         return _weight;
+    }
+
+    function supportsInterface(bytes4 interfaceId) public view virtual override(ERC165) returns (bool) {
+        return interfaceId == type(VoterClass).interfaceId || super.supportsInterface(interfaceId);
+    }
+
+    function version() external pure returns (uint32) {
+        return VERSION_1;
     }
 }

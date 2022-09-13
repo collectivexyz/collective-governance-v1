@@ -13,8 +13,6 @@
  */
 pragma solidity ^0.8.15;
 
-import "../contracts/VoteStrategy.sol";
-
 /// @title Governance
 /// contract enables proposing a measure to be voted upon
 interface Governance {
@@ -25,22 +23,15 @@ interface Governance {
     /// @notice propose a measurement of a vote class @returns proposal id
     function propose() external returns (uint256);
 
-    function configureTokenVoteERC721(
+    function configure(
         uint256 proposalId,
         uint256 quorumThreshold,
-        address erc721,
         uint256 requiredDuration
     ) external;
 
-    function configureOpenVote(
-        uint256 proposalId,
-        uint256 quorumThreshold,
-        uint256 requiredDuration
-    ) external;
+    function getStorageAddress() external view returns (address);
 
     function name() external pure returns (string memory);
 
     function version() external pure returns (uint32);
-
-    function getStorageAddress() external view returns (address);
 }

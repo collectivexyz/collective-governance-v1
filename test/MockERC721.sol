@@ -1,9 +1,11 @@
 // SPDX-License-Identifier: BSD-3-Clause
 pragma solidity ^0.8.15;
 
+import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
+import "@openzeppelin/contracts/token/ERC721/extensions/IERC721Enumerable.sol";
 import "@openzeppelin/contracts/interfaces/IERC721.sol";
 
-contract MockERC721 is IERC721 {
+contract MockERC721 is IERC721, ERC165 {
     mapping(address => uint256) _ownerBalanceMap;
     mapping(uint256 => address) _tokenMap;
 
@@ -100,7 +102,7 @@ contract MockERC721 is IERC721 {
         revert("Not implemented");
     }
 
-    function supportsInterface(bytes4 interfaceId) external pure virtual returns (bool) {
-        return interfaceId == type(IERC721).interfaceId;
+    function supportsInterface(bytes4 interfaceId) public view virtual override(ERC165, IERC165) returns (bool) {
+        return interfaceId == type(IERC721).interfaceId || super.supportsInterface(interfaceId);
     }
 }

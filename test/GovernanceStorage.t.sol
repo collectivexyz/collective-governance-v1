@@ -2,10 +2,16 @@
 pragma solidity ^0.8.15;
 
 import "@openzeppelin/contracts/interfaces/IERC721.sol";
+
 import "forge-std/Test.sol";
+
 import "../contracts/GovernanceStorage.sol";
 import "../contracts/CollectiveGovernance.sol";
 import "../contracts/VoteStrategy.sol";
+import "../contracts/VoterClass.sol";
+import "../contracts/VoterClassVoterPool.sol";
+import "../contracts/VoterClassERC721.sol";
+
 import "./MockERC721.sol";
 
 contract GovernanceStorageTest is Test {
@@ -27,7 +33,13 @@ contract GovernanceStorageTest is Test {
     VoteStrategy private _strategy;
 
     function setUp() public {
-        _storage = new GovernanceStorage();
+        vm.clearMockedCalls();
+        VoterClassVoterPool _voterClass = new VoterClassVoterPool(1);
+        _voterClass.addVoter(voter1);
+        _voterClass.addVoter(voter2);
+        _voterClass.addVoter(voter3);
+        _voterClass.makeFinal();
+        _storage = new GovernanceStorage(_voterClass);
         _storage.initializeProposal(owner);
     }
 
@@ -92,136 +104,8 @@ contract GovernanceStorageTest is Test {
     function testReadyByBurnedSupervisor() public {
         _storage.registerSupervisor(PROPOSAL_ID, supervisor, owner);
         _storage.burnSupervisor(PROPOSAL_ID, supervisor, owner);
-        vm.expectRevert("Operation requires supervisor");
+        vm.expectRevert("Requires supervisor");
         _storage.makeReady(PROPOSAL_ID, supervisor);
-    }
-
-    function testVoterByBurnedSupervisor() public {
-        _storage.registerSupervisor(PROPOSAL_ID, supervisor, owner);
-        _storage.registerVoterClassVoterPool(PROPOSAL_ID, supervisor);
-        _storage.burnSupervisor(PROPOSAL_ID, supervisor, owner);
-        vm.expectRevert("Operation requires supervisor");
-        _storage.registerVoter(PROPOSAL_ID, voter1, supervisor);
-    }
-
-    function testVoterClassByBurnedSupervisor() public {
-        _storage.registerSupervisor(PROPOSAL_ID, supervisor, owner);
-        _storage.burnSupervisor(PROPOSAL_ID, supervisor, owner);
-        vm.expectRevert("Operation requires supervisor");
-        _storage.registerVoterClassVoterPool(PROPOSAL_ID, supervisor);
-    }
-
-    function testBurnVoterByBurnedSupervisor() public {
-        _storage.registerSupervisor(PROPOSAL_ID, supervisor, owner);
-        _storage.registerVoterClassVoterPool(PROPOSAL_ID, supervisor);
-        _storage.registerVoter(PROPOSAL_ID, voter1, supervisor);
-        _storage.burnSupervisor(PROPOSAL_ID, supervisor, owner);
-        vm.expectRevert("Operation requires supervisor");
-        _storage.burnVoter(PROPOSAL_ID, voter1, supervisor);
-    }
-
-    function testSupervisorRegisterVoter() public {
-        _storage.registerSupervisor(PROPOSAL_ID, supervisor, owner);
-        _storage.registerVoterClassVoterPool(PROPOSAL_ID, supervisor);
-        _storage.registerVoter(PROPOSAL_ID, voter1, supervisor);
-        assertTrue(_storage.isVoter(PROPOSAL_ID, voter1));
-    }
-
-    function testSupervisorDirectlyRegisterVoter() public {
-        _storage.registerSupervisor(PROPOSAL_ID, supervisor, owner);
-        _storage.registerVoterClassVoterPool(PROPOSAL_ID, supervisor);
-        vm.expectRevert("Not permitted");
-        vm.prank(supervisor);
-        _storage.registerVoter(PROPOSAL_ID, voter1, supervisor);
-    }
-
-    function testSupervisorRegisterVoterIfReady() public {
-        _storage.registerSupervisor(PROPOSAL_ID, supervisor, owner);
-        _storage.registerVoterClassVoterPool(PROPOSAL_ID, supervisor);
-        _storage.makeReady(PROPOSAL_ID, supervisor);
-        vm.expectRevert("Vote not modifiable");
-        _storage.registerVoter(PROPOSAL_ID, voter1, supervisor);
-    }
-
-    function testSupervisorRegisterMoreThanOneVoter() public {
-        address[] memory voter = new address[](2);
-        voter[0] = voter1;
-        voter[1] = voter2;
-
-        _storage.registerSupervisor(PROPOSAL_ID, supervisor, owner);
-        _storage.registerVoterClassVoterPool(PROPOSAL_ID, supervisor);
-        _storage.registerVoters(PROPOSAL_ID, voter, supervisor);
-        assertTrue(_storage.isVoter(PROPOSAL_ID, voter1));
-        assertTrue(_storage.isVoter(PROPOSAL_ID, voter2));
-    }
-
-    function testSupervisorDirectlyRegisterMoreThanOneVoter() public {
-        address[] memory voter = new address[](2);
-        voter[0] = voter1;
-        voter[1] = voter2;
-        _storage.registerSupervisor(PROPOSAL_ID, supervisor, owner);
-        _storage.registerVoterClassVoterPool(PROPOSAL_ID, supervisor);
-        vm.prank(supervisor);
-        vm.expectRevert("Not permitted");
-        _storage.registerVoters(PROPOSAL_ID, voter, supervisor);
-    }
-
-    function testSupervisorRegisterThenBurnVoter() public {
-        _storage.registerSupervisor(PROPOSAL_ID, supervisor, owner);
-        _storage.registerVoterClassVoterPool(PROPOSAL_ID, supervisor);
-        _storage.registerVoter(PROPOSAL_ID, voter1, supervisor);
-        _storage.burnVoter(PROPOSAL_ID, voter1, supervisor);
-        assertFalse(_storage.isVoter(PROPOSAL_ID, voter1));
-    }
-
-    function testSupervisorRegisterDirectlyThenBurnVoter() public {
-        _storage.registerSupervisor(PROPOSAL_ID, supervisor, owner);
-        _storage.registerVoterClassVoterPool(PROPOSAL_ID, supervisor);
-        _storage.registerVoter(PROPOSAL_ID, voter1, supervisor);
-        vm.expectRevert("Not permitted");
-        vm.prank(supervisor);
-        _storage.burnVoter(PROPOSAL_ID, voter1, supervisor);
-    }
-
-    function testAddVoterIfReady() public {
-        _storage.registerSupervisor(PROPOSAL_ID, supervisor, owner);
-        _storage.registerVoterClassVoterPool(PROPOSAL_ID, supervisor);
-        _storage.makeReady(PROPOSAL_ID, supervisor);
-        vm.expectRevert("Vote not modifiable");
-        _storage.registerVoter(PROPOSAL_ID, voter1, supervisor);
-    }
-
-    function testBurnVoterIfOpen() public {
-        _storage.registerSupervisor(PROPOSAL_ID, supervisor, owner);
-        _storage.registerVoterClassVoterPool(PROPOSAL_ID, supervisor);
-        _storage.registerVoter(PROPOSAL_ID, voter1, supervisor);
-        _storage.makeReady(PROPOSAL_ID, supervisor);
-        vm.expectRevert("Vote not modifiable");
-        _storage.burnVoter(PROPOSAL_ID, voter1, supervisor);
-    }
-
-    function testOwnerRegisterVoter() public {
-        _storage.registerSupervisor(PROPOSAL_ID, supervisor, owner);
-        _storage.registerVoterClassVoterPool(PROPOSAL_ID, supervisor);
-        vm.expectRevert("Operation requires supervisor");
-        _storage.registerVoter(PROPOSAL_ID, voter1, owner);
-    }
-
-    function testOwnerBurnVoter() public {
-        _storage.registerSupervisor(PROPOSAL_ID, supervisor, owner);
-        _storage.registerVoterClassVoterPool(PROPOSAL_ID, supervisor);
-        _storage.registerVoter(PROPOSAL_ID, voter1, supervisor);
-        vm.expectRevert("Operation requires supervisor");
-        _storage.burnVoter(PROPOSAL_ID, voter1, owner);
-    }
-
-    function testOwnerHackBurnVoter() public {
-        _storage.registerSupervisor(PROPOSAL_ID, supervisor, owner);
-        _storage.registerVoterClassVoterPool(PROPOSAL_ID, supervisor);
-        _storage.registerVoter(PROPOSAL_ID, voter1, supervisor);
-        vm.expectRevert("Not permitted");
-        vm.prank(owner);
-        _storage.burnVoter(PROPOSAL_ID, voter1, supervisor);
     }
 
     function testSetQuorumThreshold() public {
@@ -303,7 +187,7 @@ contract GovernanceStorageTest is Test {
 
     function testSetMinimumVoteDurationRequiredSupervisor() public {
         _storage.registerSupervisor(PROPOSAL_ID, supervisor, owner);
-        vm.expectRevert("Operation requires supervisor");
+        vm.expectRevert("Requires supervisor");
         _storage.setRequiredVoteDuration(PROPOSAL_ID, 0, cognate);
     }
 
@@ -329,7 +213,7 @@ contract GovernanceStorageTest is Test {
 
     function testMakeReadyRequireSupervisor() public {
         _storage.registerSupervisor(PROPOSAL_ID, supervisor, owner);
-        vm.expectRevert("Operation requires supervisor");
+        vm.expectRevert("Requires supervisor");
         _storage.makeReady(PROPOSAL_ID, cognate);
     }
 
@@ -349,15 +233,13 @@ contract GovernanceStorageTest is Test {
 
     function testOwnerMayNotVeto() public {
         _storage.registerSupervisor(PROPOSAL_ID, supervisor, owner);
-        vm.expectRevert("Operation requires supervisor");
+        vm.expectRevert("Requires supervisor");
         _storage.veto(PROPOSAL_ID, owner);
     }
 
     function testVoterMayNotVeto() public {
         _storage.registerSupervisor(PROPOSAL_ID, supervisor, owner);
-        _storage.registerVoterClassVoterPool(PROPOSAL_ID, supervisor);
-        _storage.registerVoter(PROPOSAL_ID, voter1, supervisor);
-        vm.expectRevert("Operation requires supervisor");
+        vm.expectRevert("Requires supervisor");
         _storage.veto(PROPOSAL_ID, voter1);
     }
 
@@ -369,8 +251,6 @@ contract GovernanceStorageTest is Test {
 
     function testAbstainFromVote() public {
         _storage.registerSupervisor(PROPOSAL_ID, supervisor, owner);
-        _storage.registerVoterClassVoterPool(PROPOSAL_ID, supervisor);
-        _storage.registerVoter(PROPOSAL_ID, voter1, supervisor);
         _storage.setQuorumThreshold(PROPOSAL_ID, 2, supervisor);
         _storage.makeReady(PROPOSAL_ID, supervisor);
         _storage.abstainForShare(PROPOSAL_ID, voter1, uint160(voter1));
@@ -382,8 +262,6 @@ contract GovernanceStorageTest is Test {
 
     function testVoterDirectAbstainFromVote() public {
         _storage.registerSupervisor(PROPOSAL_ID, supervisor, owner);
-        _storage.registerVoterClassVoterPool(PROPOSAL_ID, supervisor);
-        _storage.registerVoter(PROPOSAL_ID, voter1, supervisor);
         _storage.setQuorumThreshold(PROPOSAL_ID, 2, supervisor);
         _storage.makeReady(PROPOSAL_ID, supervisor);
         vm.expectRevert("Not permitted");
@@ -393,8 +271,6 @@ contract GovernanceStorageTest is Test {
 
     function testCastAgainstVote() public {
         _storage.registerSupervisor(PROPOSAL_ID, supervisor, owner);
-        _storage.registerVoterClassVoterPool(PROPOSAL_ID, supervisor);
-        _storage.registerVoter(PROPOSAL_ID, voter1, supervisor);
         _storage.setQuorumThreshold(PROPOSAL_ID, 2, supervisor);
         _storage.makeReady(PROPOSAL_ID, supervisor);
         _storage.voteAgainstByShare(PROPOSAL_ID, voter1, uint160(voter1));
@@ -406,8 +282,6 @@ contract GovernanceStorageTest is Test {
 
     function testVoterDirectCastAgainstVote() public {
         _storage.registerSupervisor(PROPOSAL_ID, supervisor, owner);
-        _storage.registerVoterClassVoterPool(PROPOSAL_ID, supervisor);
-        _storage.registerVoter(PROPOSAL_ID, voter1, supervisor);
         _storage.setQuorumThreshold(PROPOSAL_ID, 2, supervisor);
         _storage.makeReady(PROPOSAL_ID, supervisor);
         vm.expectRevert("Not permitted");
@@ -417,8 +291,6 @@ contract GovernanceStorageTest is Test {
 
     function testCastOneVote() public {
         _storage.registerSupervisor(PROPOSAL_ID, supervisor, owner);
-        _storage.registerVoterClassVoterPool(PROPOSAL_ID, supervisor);
-        _storage.registerVoter(PROPOSAL_ID, voter1, supervisor);
         _storage.setQuorumThreshold(PROPOSAL_ID, 2, supervisor);
         _storage.makeReady(PROPOSAL_ID, supervisor);
         _storage.voteForByShare(PROPOSAL_ID, voter1, uint160(voter1));
@@ -428,8 +300,6 @@ contract GovernanceStorageTest is Test {
 
     function testVoterReceipt() public {
         _storage.registerSupervisor(PROPOSAL_ID, supervisor, owner);
-        _storage.registerVoterClassVoterPool(PROPOSAL_ID, supervisor);
-        _storage.registerVoter(PROPOSAL_ID, voter1, supervisor);
         _storage.setQuorumThreshold(PROPOSAL_ID, 2, supervisor);
         _storage.makeReady(PROPOSAL_ID, supervisor);
         _storage.voteForByShare(PROPOSAL_ID, voter1, uint160(voter1));
@@ -448,8 +318,6 @@ contract GovernanceStorageTest is Test {
 
     function testVoterReceiptWithUndo() public {
         _storage.registerSupervisor(PROPOSAL_ID, supervisor, owner);
-        _storage.registerVoterClassVoterPool(PROPOSAL_ID, supervisor);
-        _storage.registerVoter(PROPOSAL_ID, voter1, supervisor);
         _storage.enableUndoVote(PROPOSAL_ID, supervisor);
         _storage.setQuorumThreshold(PROPOSAL_ID, 2, supervisor);
         _storage.makeReady(PROPOSAL_ID, supervisor);
@@ -470,8 +338,6 @@ contract GovernanceStorageTest is Test {
 
     function testAgainstWithUndo() public {
         _storage.registerSupervisor(PROPOSAL_ID, supervisor, owner);
-        _storage.registerVoterClassVoterPool(PROPOSAL_ID, supervisor);
-        _storage.registerVoter(PROPOSAL_ID, voter1, supervisor);
         _storage.enableUndoVote(PROPOSAL_ID, supervisor);
         _storage.setQuorumThreshold(PROPOSAL_ID, 2, supervisor);
         _storage.makeReady(PROPOSAL_ID, supervisor);
@@ -482,8 +348,6 @@ contract GovernanceStorageTest is Test {
 
     function testAbstainWithUndo() public {
         _storage.registerSupervisor(PROPOSAL_ID, supervisor, owner);
-        _storage.registerVoterClassVoterPool(PROPOSAL_ID, supervisor);
-        _storage.registerVoter(PROPOSAL_ID, voter1, supervisor);
         _storage.enableUndoVote(PROPOSAL_ID, supervisor);
         _storage.setQuorumThreshold(PROPOSAL_ID, 2, supervisor);
         _storage.makeReady(PROPOSAL_ID, supervisor);
@@ -494,8 +358,6 @@ contract GovernanceStorageTest is Test {
 
     function testVoteAgainstReceipt() public {
         _storage.registerSupervisor(PROPOSAL_ID, supervisor, owner);
-        _storage.registerVoterClassVoterPool(PROPOSAL_ID, supervisor);
-        _storage.registerVoter(PROPOSAL_ID, voter1, supervisor);
         _storage.setQuorumThreshold(PROPOSAL_ID, 2, supervisor);
         _storage.makeReady(PROPOSAL_ID, supervisor);
         _storage.voteAgainstByShare(PROPOSAL_ID, voter1, uint160(voter1));
@@ -514,8 +376,6 @@ contract GovernanceStorageTest is Test {
 
     function testAbstentionReceipt() public {
         _storage.registerSupervisor(PROPOSAL_ID, supervisor, owner);
-        _storage.registerVoterClassVoterPool(PROPOSAL_ID, supervisor);
-        _storage.registerVoter(PROPOSAL_ID, voter1, supervisor);
         _storage.setQuorumThreshold(PROPOSAL_ID, 2, supervisor);
         _storage.makeReady(PROPOSAL_ID, supervisor);
         _storage.abstainForShare(PROPOSAL_ID, voter1, uint160(voter1));
@@ -534,8 +394,6 @@ contract GovernanceStorageTest is Test {
 
     function testVoterDirectlyCastOneVote() public {
         _storage.registerSupervisor(PROPOSAL_ID, supervisor, owner);
-        _storage.registerVoterClassVoterPool(PROPOSAL_ID, supervisor);
-        _storage.registerVoter(PROPOSAL_ID, voter1, supervisor);
         _storage.setQuorumThreshold(PROPOSAL_ID, 2, supervisor);
         _storage.makeReady(PROPOSAL_ID, supervisor);
         vm.expectRevert("Not permitted");
@@ -545,10 +403,6 @@ contract GovernanceStorageTest is Test {
 
     function testQuorumAllThree() public {
         _storage.registerSupervisor(PROPOSAL_ID, supervisor, owner);
-        _storage.registerVoterClassVoterPool(PROPOSAL_ID, supervisor);
-        _storage.registerVoter(PROPOSAL_ID, voter1, supervisor);
-        _storage.registerVoter(PROPOSAL_ID, voter2, supervisor);
-        _storage.registerVoter(PROPOSAL_ID, voter3, supervisor);
         _storage.setQuorumThreshold(PROPOSAL_ID, 2, supervisor);
         _storage.makeReady(PROPOSAL_ID, supervisor);
         _storage.voteForByShare(PROPOSAL_ID, voter1, uint160(voter1));
@@ -561,8 +415,9 @@ contract GovernanceStorageTest is Test {
     }
 
     function testCastOneVoteFromAll() public {
+        _storage = new GovernanceStorage(new VoterClassOpenVote(1));
+        _storage.initializeProposal(owner);
         _storage.registerSupervisor(PROPOSAL_ID, supervisor, owner);
-        _storage.registerVoterClassOpenVote(PROPOSAL_ID, supervisor);
         _storage.setQuorumThreshold(PROPOSAL_ID, 2, supervisor);
         _storage.makeReady(PROPOSAL_ID, supervisor);
         _storage.voteForByShare(PROPOSAL_ID, voter1, uint160(voter1));
@@ -573,8 +428,9 @@ contract GovernanceStorageTest is Test {
         uint256 tokenId = 0x71;
         MockERC721 token = new MockERC721();
         token.mintTo(voter2, tokenId);
+        _storage = new GovernanceStorage(new VoterClassERC721(address(token), 1));
+        _storage.initializeProposal(owner);
         _storage.registerSupervisor(PROPOSAL_ID, supervisor, owner);
-        _storage.registerVoterClassERC721(PROPOSAL_ID, address(token), supervisor);
         _storage.setQuorumThreshold(PROPOSAL_ID, 1, supervisor);
         _storage.makeReady(PROPOSAL_ID, supervisor);
         _storage.voteForByShare(PROPOSAL_ID, voter2, tokenId);
@@ -586,8 +442,6 @@ contract GovernanceStorageTest is Test {
 
     function testPermittedAfterObservingVoteDelay() public {
         _storage.registerSupervisor(PROPOSAL_ID, supervisor, owner);
-        _storage.registerVoterClassVoterPool(PROPOSAL_ID, supervisor);
-        _storage.registerVoter(PROPOSAL_ID, voter1, supervisor);
         _storage.setQuorumThreshold(PROPOSAL_ID, 1, supervisor);
         _storage.setVoteDelay(PROPOSAL_ID, 100, supervisor);
         _storage.makeReady(PROPOSAL_ID, supervisor);
@@ -600,8 +454,6 @@ contract GovernanceStorageTest is Test {
     function testVoteWithUndo() public {
         _storage.registerSupervisor(PROPOSAL_ID, supervisor, owner);
         _storage.enableUndoVote(PROPOSAL_ID, supervisor);
-        _storage.registerVoterClassVoterPool(PROPOSAL_ID, supervisor);
-        _storage.registerVoter(PROPOSAL_ID, voter1, supervisor);
         _storage.setQuorumThreshold(PROPOSAL_ID, 2, supervisor);
         _storage.makeReady(PROPOSAL_ID, supervisor);
         _storage.voteForByShare(PROPOSAL_ID, voter1, uint160(voter1));
@@ -613,8 +465,6 @@ contract GovernanceStorageTest is Test {
     function testVoteWithDoubleUndo() public {
         _storage.registerSupervisor(PROPOSAL_ID, supervisor, owner);
         _storage.enableUndoVote(PROPOSAL_ID, supervisor);
-        _storage.registerVoterClassVoterPool(PROPOSAL_ID, supervisor);
-        _storage.registerVoter(PROPOSAL_ID, voter1, supervisor);
         _storage.setQuorumThreshold(PROPOSAL_ID, 2, supervisor);
         _storage.makeReady(PROPOSAL_ID, supervisor);
         _storage.voteForByShare(PROPOSAL_ID, voter1, uint160(voter1));

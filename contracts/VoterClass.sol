@@ -15,7 +15,7 @@ pragma solidity ^0.8.15;
 
 /// @notice Interface indicating membership in a voting class
 interface VoterClass {
-    event VoteCommitted(uint256 _shareId, uint256 _weight);
+    function isFinal() external view returns (bool);
 
     function isVoter(address _wallet) external view returns (bool);
 
@@ -26,4 +26,8 @@ interface VoterClass {
 
     /// @notice return voting weight of each confirmed share
     function weight() external view returns (uint256);
+
+    function name() external pure returns (string memory);
+
+    function version() external pure returns (uint32);
 }

@@ -14,9 +14,7 @@
 pragma solidity ^0.8.15;
 
 import "../contracts/Storage.sol";
-import "../contracts/VoterClassERC721.sol";
-import "../contracts/VoterClassOpenVote.sol";
-import "../contracts/VoterClassVoterPool.sol";
+import "../contracts/VoterClass.sol";
 
 contract GovernanceStorage is Storage {
     /// @notice contract name
@@ -33,13 +31,17 @@ contract GovernanceStorage is Storage {
     address private _cognate;
 
     /// @notice The total number of proposals
-    uint256 internal _proposalCount;
+    uint256 private _proposalCount;
+
+    /// @notice Voter class for storage
+    VoterClass private _voterClass;
 
     /// @notice The latest proposal for each proposer
     mapping(address => uint256) internal _latestProposalId;
 
-    constructor() {
+    constructor(VoterClass _class) {
         _cognate = msg.sender;
+        _voterClass = _class;
         _proposalCount = 0;
     }
 
@@ -86,19 +88,19 @@ contract GovernanceStorage is Storage {
         Proposal storage proposal = proposalMap[_proposalId];
         require(_shareId > 0, "Share id is not valid");
         Receipt storage receipt = proposal.voteReceipt[_shareId];
-        require(receipt.votesCast == 0 && !receipt.abstention && !receipt.undoCast, "Already voted");
+        require(receipt.shareId == 0 && receipt.votesCast == 0 && !receipt.abstention && !receipt.undoCast, "Already voted");
         _;
     }
 
     modifier requireProposalSender(uint256 _proposalId, address _sender) {
         Proposal storage proposal = proposalMap[_proposalId];
-        require(proposal.proposalSender == _sender, "Not proposal creator");
+        require(proposal.proposalSender == _sender, "Not creator");
         _;
     }
 
     modifier requireElectorSupervisor(uint256 _proposalId, address _sender) {
         Proposal storage proposal = proposalMap[_proposalId];
-        require(proposal.supervisorPool[_sender], "Operation requires supervisor");
+        require(proposal.supervisorPool[_sender], "Requires supervisor");
         _;
     }
 
@@ -157,7 +159,6 @@ contract GovernanceStorage is Storage {
         proposal.isVeto = false;
         proposal.isReady = false;
         proposal.isUndoEnabled = false;
-        proposal.voterClass = new VoterClassNullObject();
 
         emit InitializeProposal(proposalId, _sender);
         return proposalId;
@@ -169,7 +170,7 @@ contract GovernanceStorage is Storage {
         address _supervisor,
         address _sender
     )
-        public
+        external
         requireCognate
         requireValidAddress(_supervisor)
         requireValidProposal(_proposalId)
@@ -189,7 +190,7 @@ contract GovernanceStorage is Storage {
         address _supervisor,
         address _sender
     )
-        public
+        external
         requireCognate
         requireValidAddress(_supervisor)
         requireValidProposal(_proposalId)
@@ -205,7 +206,7 @@ contract GovernanceStorage is Storage {
 
     /// @notice enable vote undo feature
     function enableUndoVote(uint256 _proposalId, address _sender)
-        public
+        external
         requireCognate
         requireValidProposal(_proposalId)
         requireElectorSupervisor(_proposalId, _sender)
@@ -216,132 +217,13 @@ contract GovernanceStorage is Storage {
         emit UndoVoteEnabled(_proposalId);
     }
 
-    /// @notice register a voter on this measure
-    function registerVoter(
-        uint256 _proposalId,
-        address _voter,
-        address _sender
-    )
-        public
-        requireCognate
-        requireValidAddress(_voter)
-        requireValidProposal(_proposalId)
-        requireElectorSupervisor(_proposalId, _sender)
-        requireVotingNotReady(_proposalId)
-    {
-        Proposal storage proposal = proposalMap[_proposalId];
-        VoterClassVoterPool _class = VoterClassVoterPool(address(proposal.voterClass));
-        _class.addVoter(_voter);
-        emit RegisterVoter(_proposalId, _voter);
-    }
-
-    /// @notice register a list of voters on this measure
-    function registerVoters(
-        uint256 _proposalId,
-        address[] memory _voter,
-        address _sender
-    )
-        public
-        requireCognate
-        requireValidProposal(_proposalId)
-        requireElectorSupervisor(_proposalId, _sender)
-        requireVotingNotReady(_proposalId)
-    {
-        Proposal storage proposal = proposalMap[_proposalId];
-        VoterClassVoterPool _class = VoterClassVoterPool(address(proposal.voterClass));
-        require(address(_class) != address(0x0), "Voter pool required");
-        uint256 addedCount = 0;
-        for (uint256 i = 0; i < _voter.length; i++) {
-            if (_voter[i] != address(0)) {
-                _class.addVoter(_voter[i]);
-                emit RegisterVoter(_proposalId, _voter[i]);
-            }
-            addedCount++;
-        }
-    }
-
-    /// @notice burn the specified voter, removing their rights to participate in the election
-    function burnVoter(
-        uint256 _proposalId,
-        address _voter,
-        address _sender
-    )
-        public
-        requireCognate
-        requireValidAddress(_voter)
-        requireValidProposal(_proposalId)
-        requireElectorSupervisor(_proposalId, _sender)
-        requireVotingNotReady(_proposalId)
-    {
-        Proposal storage proposal = proposalMap[_proposalId];
-        VoterClassVoterPool _class = VoterClassVoterPool(address(proposal.voterClass));
-        _class.removeVoter(_voter);
-        emit BurnVoter(_proposalId, _voter);
-    }
-
-    function registerVoterClassVoterPool(uint256 _proposalId, address _sender)
-        public
-        requireCognate
-        requireValidProposal(_proposalId)
-        requireElectorSupervisor(_proposalId, _sender)
-        requireVotingNotReady(_proposalId)
-    {
-        Proposal storage proposal = proposalMap[_proposalId];
-        proposal.voterClass = new VoterClassVoterPool(1);
-        emit RegisterVoterClassVoterPool(_proposalId);
-    }
-
-    /// @notice register a voting class for this measure
-    function registerVoterClassERC721(
-        uint256 _proposalId,
-        address _tokenContract,
-        address _sender
-    )
-        public
-        requireCognate
-        requireValidAddress(_tokenContract)
-        requireValidProposal(_proposalId)
-        requireElectorSupervisor(_proposalId, _sender)
-        requireVotingNotReady(_proposalId)
-    {
-        Proposal storage proposal = proposalMap[_proposalId];
-        proposal.voterClass = new VoterClassERC721(_tokenContract, 1);
-        emit RegisterVoterClassERC721(_proposalId, _tokenContract);
-    }
-
-    /// @notice register a voting class for this measure
-    function registerVoterClassOpenVote(uint256 _proposalId, address _sender)
-        public
-        requireCognate
-        requireValidProposal(_proposalId)
-        requireElectorSupervisor(_proposalId, _sender)
-        requireVotingNotReady(_proposalId)
-    {
-        Proposal storage proposal = proposalMap[_proposalId];
-        proposal.voterClass = new VoterClassOpenVote(1);
-        emit RegisterVoterClassOpenVote(_proposalId);
-    }
-
-    /// @notice burn voter class
-    function burnVoterClass(uint256 _proposalId, address _sender)
-        public
-        requireCognate
-        requireValidProposal(_proposalId)
-        requireElectorSupervisor(_proposalId, _sender)
-        requireVotingNotReady(_proposalId)
-    {
-        Proposal storage proposal = proposalMap[_proposalId];
-        proposal.voterClass = new VoterClassNullObject();
-        emit BurnVoterClass(_proposalId);
-    }
-
     /// @notice establish the pass threshold for this measure
     function setQuorumThreshold(
         uint256 _proposalId,
         uint256 _passThreshold,
         address _sender
     )
-        public
+        external
         requireCognate
         requireValidProposal(_proposalId)
         requireElectorSupervisor(_proposalId, _sender)
@@ -357,7 +239,7 @@ contract GovernanceStorage is Storage {
         uint256 _voteDelay,
         address _sender
     )
-        public
+        external
         requireCognate
         requireValidProposal(_proposalId)
         requireElectorSupervisor(_proposalId, _sender)
@@ -372,7 +254,7 @@ contract GovernanceStorage is Storage {
         uint256 _voteDuration,
         address _sender
     )
-        public
+        external
         requireCognate
         requireValidProposal(_proposalId)
         requireElectorSupervisor(_proposalId, _sender)
@@ -412,9 +294,8 @@ contract GovernanceStorage is Storage {
         return this.forVotes(_proposalId) + this.againstVotes(_proposalId) + this.abstentionCount(_proposalId);
     }
 
-    function voterClass(uint256 _proposalId) external view requireValidProposal(_proposalId) returns (VoterClass) {
-        Proposal storage proposal = proposalMap[_proposalId];
-        return proposal.voterClass;
+    function voterClass() external view returns (VoterClass) {
+        return _voterClass;
     }
 
     function isSupervisor(uint256 _proposalId, address _supervisor)
@@ -435,8 +316,7 @@ contract GovernanceStorage is Storage {
         requireValidProposal(_proposalId)
         returns (bool)
     {
-        Proposal storage proposal = proposalMap[_proposalId];
-        return proposal.voterClass.isVoter(_voter);
+        return _voterClass.isVoter(_voter);
     }
 
     function isVeto(uint256 _proposalId) external view returns (bool) {
@@ -528,7 +408,7 @@ contract GovernanceStorage is Storage {
 
     /// @notice veto the current measure
     function veto(uint256 _proposalId, address _sender)
-        public
+        external
         requireCognate
         requireValidProposal(_proposalId)
         requireElectorSupervisor(_proposalId, _sender)
@@ -555,7 +435,7 @@ contract GovernanceStorage is Storage {
         returns (uint256)
     {
         Proposal storage proposal = proposalMap[_proposalId];
-        uint256 _shareCount = proposal.voterClass.confirm(_wallet, _shareId);
+        uint256 _shareCount = _voterClass.confirm(_wallet, _shareId);
         require(_shareCount > 0, "Share not available");
         Receipt storage receipt = proposal.voteReceipt[_shareId];
         receipt.wallet = _wallet;
@@ -572,7 +452,7 @@ contract GovernanceStorage is Storage {
         address _wallet,
         uint256 _shareId
     )
-        public
+        external
         requireCognate
         requireValidProposal(_proposalId)
         requireShareAvailable(_proposalId, _shareId)
@@ -580,7 +460,7 @@ contract GovernanceStorage is Storage {
         returns (uint256)
     {
         Proposal storage proposal = proposalMap[_proposalId];
-        uint256 _shareCount = proposal.voterClass.confirm(_wallet, _shareId);
+        uint256 _shareCount = _voterClass.confirm(_wallet, _shareId);
         require(_shareCount > 0, "Share not available");
         Receipt storage receipt = proposal.voteReceipt[_shareId];
         receipt.wallet = _wallet;
@@ -598,9 +478,10 @@ contract GovernanceStorage is Storage {
         uint256 _shareId
     ) public requireCognate requireValidProposal(_proposalId) requireVotingActive(_proposalId) returns (uint256) {
         Proposal storage proposal = proposalMap[_proposalId];
-        uint256 _shareCount = proposal.voterClass.confirm(_wallet, _shareId);
+        uint256 _shareCount = _voterClass.confirm(_wallet, _shareId);
         require(_shareCount > 0, "Share not available");
         Receipt storage receipt = proposal.voteReceipt[_shareId];
+        require(receipt.shareId == 0 && receipt.votesCast == 0, "Share already voted");
         receipt.wallet = _wallet;
         receipt.shareId = _shareId;
         receipt.votesCast = _shareCount;

@@ -13,20 +13,21 @@
  */
 pragma solidity ^0.8.15;
 
+import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
 import "@openzeppelin/contracts/interfaces/IERC721.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/IERC721Enumerable.sol";
 import "./VoterClass.sol";
 
 /// @notice voting class for ERC-721 contract
-contract VoterClassERC721 is VoterClass {
+contract VoterClassERC721 is VoterClass, ERC165 {
+    string public constant name = "collective.xyz VoterClassERC721";
+    uint32 public constant VERSION_1 = 1;
+
     address private _cognate;
 
     address private _contractAddress;
 
     uint256 private _weight;
-
-    /// @notice commited vote
-    mapping(uint256 => bool) private _committedVote;
 
     constructor(address _contract, uint256 _voteWeight) {
         _cognate = msg.sender;
@@ -49,6 +50,10 @@ contract VoterClassERC721 is VoterClass {
         _;
     }
 
+    function isFinal() external pure returns (bool) {
+        return true;
+    }
+
     function isVoter(address _wallet) external view requireValidAddress(_wallet) returns (bool) {
         return IERC721(_contractAddress).balanceOf(_wallet) > 0;
     }
@@ -65,7 +70,9 @@ contract VoterClassERC721 is VoterClass {
         bytes4 interfaceId721 = type(IERC721Enumerable).interfaceId;
         require(IERC721(_contractAddress).supportsInterface(interfaceId721), "ERC-721 Enumerable required");
         IERC721Enumerable enumContract = IERC721Enumerable(_contractAddress);
-        uint256 tokenBalance = IERC721(_contractAddress).balanceOf(_wallet);
+        IERC721 _nft = IERC721(_contractAddress);
+        uint256 tokenBalance = _nft.balanceOf(_wallet);
+        require(tokenBalance > 0, "Token owner required");
         uint256[] memory tokenIdList = new uint256[](tokenBalance);
         for (uint256 i = 0; i < tokenBalance; i++) {
             tokenIdList[i] = enumContract.tokenOfOwnerByIndex(_wallet, i);
@@ -74,17 +81,22 @@ contract VoterClassERC721 is VoterClass {
     }
 
     /// @notice commit votes for shareId return number voted
-    function confirm(address _wallet, uint256 _shareId) external requireCognate requireValidShare(_shareId) returns (uint256) {
-        require(!_committedVote[_shareId], "Share committed");
+    function confirm(address _wallet, uint256 _shareId) external view requireValidShare(_shareId) returns (uint256) {
         uint256 voteCount = this.votesAvailable(_wallet, _shareId);
         require(voteCount > 0, "Not owner of specified token");
-        _committedVote[_shareId] = true;
-        emit VoteCommitted(_shareId, _weight);
         return _weight * voteCount;
     }
 
     /// @notice return voting weight of each confirmed share
     function weight() external view returns (uint256) {
         return _weight;
+    }
+
+    function supportsInterface(bytes4 interfaceId) public view virtual override(ERC165) returns (bool) {
+        return interfaceId == type(VoterClass).interfaceId || super.supportsInterface(interfaceId);
+    }
+
+    function version() external pure returns (uint32) {
+        return VERSION_1;
     }
 }

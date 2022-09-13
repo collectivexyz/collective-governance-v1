@@ -44,16 +44,15 @@ contract VoterClassOpenVoteTest is Test {
         assertEq(shareCount, 1);
     }
 
-    function testFailConfirmNotOwner() public {
-        vm.prank(_owner);
-        _class.confirm(_owner, uint160(_owner));
-    }
-
     function testFailConfirmNobody() public {
         _class.confirm(_nobody, 0x0);
     }
 
     function testWeight() public {
         assertEq(1, _class.weight());
+    }
+
+    function testFinal() public {
+        assertTrue(_class.isFinal());
     }
 }

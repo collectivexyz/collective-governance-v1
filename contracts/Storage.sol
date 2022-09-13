@@ -23,12 +23,6 @@ interface Storage {
     event InitializeProposal(uint256 proposalId, address owner);
     event AddSupervisor(uint256 proposalId, address supervisor);
     event BurnSupervisor(uint256 proposalId, address supervisor);
-    event RegisterVoter(uint256 proposalId, address voter);
-    event BurnVoter(uint256 proposalId, address voter);
-    event RegisterVoterClassVoterPool(uint256 proposalId);
-    event RegisterVoterClassOpenVote(uint256 proposalId);
-    event RegisterVoterClassERC721(uint256 proposalId, address token);
-    event BurnVoterClass(uint256 proposalId);
     event SetQuorumThreshold(uint256 proposalId, uint256 passThreshold);
     event UndoVoteEnabled(uint256 proposalId);
 
@@ -66,8 +60,6 @@ interface Storage {
         bool isReady;
         /// @notice this proposal allows undo votes
         bool isUndoEnabled;
-        /// @notice general voter class enabled for this vote
-        VoterClass voterClass;
         /// @notice Receipts of ballots for the entire set of voters
         mapping(uint256 => Receipt) voteReceipt;
         /// @notice configured supervisors
@@ -100,41 +92,13 @@ interface Storage {
         address _sender
     ) external;
 
+    /*
+    -- should be disallowed to burn a project supervisor */
     function burnSupervisor(
         uint256 _proposalId,
         address _supervisor,
         address _sender
     ) external;
-
-    function registerVoter(
-        uint256 _proposalId,
-        address _voter,
-        address _sender
-    ) external;
-
-    function registerVoters(
-        uint256 _proposalId,
-        address[] memory _voter,
-        address _sender
-    ) external;
-
-    function burnVoter(
-        uint256 _proposalId,
-        address _voter,
-        address _sender
-    ) external;
-
-    function registerVoterClassERC721(
-        uint256 _proposalId,
-        address token,
-        address _sender
-    ) external;
-
-    function registerVoterClassVoterPool(uint256 _proposalId, address _sender) external;
-
-    function registerVoterClassOpenVote(uint256 _proposalId, address _sender) external;
-
-    function burnVoterClass(uint256 _proposalId, address _sender) external;
 
     function setQuorumThreshold(
         uint256 _proposalId,
@@ -186,8 +150,6 @@ interface Storage {
 
     function quorum(uint256 _proposalId) external view returns (uint256);
 
-    function voterClass(uint256 _proposalId) external view returns (VoterClass);
-
     function latestProposal(address _sender) external view returns (uint256);
 
     function voteReceipt(uint256 _proposalId, uint256 shareId)
@@ -200,6 +162,8 @@ interface Storage {
             bool _isAbstention,
             bool _isUndo
         );
+
+    function voterClass() external view returns (VoterClass);
 
     function initializeProposal(address _sender) external returns (uint256);
 

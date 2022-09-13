@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: BSD-3-Clause
 /*
  * Copyright 2022 collective.xyz
+ *
  * Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
  *
  * 1. Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
@@ -19,6 +20,9 @@ import "../contracts/Storage.sol";
 import "../contracts/GovernanceStorage.sol";
 import "../contracts/Governance.sol";
 import "../contracts/VoteStrategy.sol";
+import "../contracts/VoterClass.sol";
+import "../contracts/VoterClassERC721.sol";
+import "../contracts/VoterClassOpenVote.sol";
 
 /// @title CollectiveGovernance
 // factory contract for governance
@@ -27,16 +31,20 @@ contract CollectiveGovernance is Governance, VoteStrategy, ERC165 {
     string public constant name = "collective.xyz governance";
     uint32 public constant VERSION_1 = 1;
 
-    Storage public _storage;
+    VoterClass private _voterClass;
+
+    address[] _projectSupervisorList;
+
+    Storage private _storage;
 
     /// @notice voting is open or not
     mapping(uint256 => bool) isVoteOpenByProposalId;
 
-    address[] _projectSupervisorList = new address[](1);
-
-    constructor() {
-        _storage = new GovernanceStorage();
-        _projectSupervisorList[0] = address(this);
+    constructor(address[] memory _supervisorList, VoterClass _class) {
+        _voterClass = _class;
+        _projectSupervisorList = _supervisorList;
+        require(_class.isFinal(), "Voter Class is modifiable");
+        _storage = new GovernanceStorage(_voterClass);
     }
 
     modifier requireVoteOpen(uint256 _proposalId) {
@@ -63,16 +71,8 @@ contract CollectiveGovernance is Governance, VoteStrategy, ERC165 {
     }
 
     modifier requireElectorSupervisor(uint256 _proposalId) {
-        require(_storage.isSupervisor(_proposalId, msg.sender), "Elector supervisor required");
+        require(_storage.isSupervisor(_proposalId, msg.sender), "Supervisor required");
         _;
-    }
-
-    function version() public pure virtual returns (uint32) {
-        return VERSION_1;
-    }
-
-    function getStorageAddress() external view returns (address) {
-        return address(_storage);
     }
 
     function propose() external returns (uint256) {
@@ -86,22 +86,7 @@ contract CollectiveGovernance is Governance, VoteStrategy, ERC165 {
         return proposalId;
     }
 
-    function configureTokenVoteERC721(
-        uint256 _proposalId,
-        uint256 _quorumThreshold,
-        address _erc721,
-        uint256 _requiredDuration
-    ) external requireElectorSupervisor(_proposalId) {
-        address _sender = msg.sender;
-        _storage.setQuorumThreshold(_proposalId, _quorumThreshold, _sender);
-        _storage.setRequiredVoteDuration(_proposalId, _requiredDuration, _sender);
-        _storage.registerVoterClassERC721(_proposalId, _erc721, _sender);
-        _storage.makeReady(_proposalId, _sender);
-        this.openVote(_proposalId);
-        emit ProposalOpen(_proposalId);
-    }
-
-    function configureOpenVote(
+    function configure(
         uint256 _proposalId,
         uint256 _quorumThreshold,
         uint256 _requiredDuration
@@ -109,14 +94,12 @@ contract CollectiveGovernance is Governance, VoteStrategy, ERC165 {
         address _sender = msg.sender;
         _storage.setQuorumThreshold(_proposalId, _quorumThreshold, _sender);
         _storage.setRequiredVoteDuration(_proposalId, _requiredDuration, _sender);
-        _storage.registerVoterClassOpenVote(_proposalId, _sender);
         _storage.makeReady(_proposalId, _sender);
-        this.openVote(_proposalId);
         emit ProposalOpen(_proposalId);
     }
 
     /// @notice allow voting
-    function openVote(uint256 _proposalId) public requireElectorSupervisor(_proposalId) requireVoteReady(_proposalId) {
+    function openVote(uint256 _proposalId) external requireElectorSupervisor(_proposalId) requireVoteReady(_proposalId) {
         _storage.validOrRevert(_proposalId);
         require(_storage.quorumRequired(_proposalId) < _storage.maxPassThreshold(), "Quorum must be set prior to opening vote");
         if (!isVoteOpenByProposalId[_proposalId]) {
@@ -127,7 +110,7 @@ contract CollectiveGovernance is Governance, VoteStrategy, ERC165 {
         }
     }
 
-    function isOpen(uint256 _proposalId) public view returns (bool) {
+    function isOpen(uint256 _proposalId) external view returns (bool) {
         _storage.validOrRevert(_proposalId);
         uint256 endBlock = _storage.endBlock(_proposalId);
         return isVoteOpenByProposalId[_proposalId] && block.number < endBlock;
@@ -148,7 +131,7 @@ contract CollectiveGovernance is Governance, VoteStrategy, ERC165 {
 
     /// @notice veto the current measure
     function veto(uint256 _proposalId)
-        public
+        external
         requireElectorSupervisor(_proposalId)
         requireVoteOpen(_proposalId)
         requireNoVeto(_proposalId)
@@ -157,9 +140,8 @@ contract CollectiveGovernance is Governance, VoteStrategy, ERC165 {
     }
 
     // @notice cast an affirmative vote for the measure
-    function voteFor(uint256 _proposalId) public requireVoteOpen(_proposalId) requireNoVeto(_proposalId) {
-        VoterClass _class = _storage.voterClass(_proposalId);
-        uint256[] memory _shareList = _class.discover(msg.sender);
+    function voteFor(uint256 _proposalId) external requireVoteOpen(_proposalId) requireNoVeto(_proposalId) {
+        uint256[] memory _shareList = _voterClass.discover(msg.sender);
         uint256 count = 0;
         for (uint256 i = 0; i < _shareList.length; i++) {
             uint256 shareId = _shareList[i];
@@ -173,7 +155,7 @@ contract CollectiveGovernance is Governance, VoteStrategy, ERC165 {
     }
 
     function voteForWithTokenId(uint256 _proposalId, uint256 _tokenId)
-        public
+        external
         requireVoteOpen(_proposalId)
         requireNoVeto(_proposalId)
     {
@@ -202,9 +184,8 @@ contract CollectiveGovernance is Governance, VoteStrategy, ERC165 {
     }
 
     // @notice undo any previous vote
-    function undoVote(uint256 _proposalId) public requireVoteOpen(_proposalId) requireNoVeto(_proposalId) {
-        VoterClass _class = _storage.voterClass(_proposalId);
-        uint256[] memory _shareList = _class.discover(msg.sender);
+    function undoVote(uint256 _proposalId) external requireVoteOpen(_proposalId) requireNoVeto(_proposalId) {
+        uint256[] memory _shareList = _voterClass.discover(msg.sender);
         uint256 count = 0;
         for (uint256 i = 0; i < _shareList.length; i++) {
             uint256 shareId = _shareList[i];
@@ -218,7 +199,7 @@ contract CollectiveGovernance is Governance, VoteStrategy, ERC165 {
     }
 
     function undoWithTokenId(uint256 _proposalId, uint256 _tokenId)
-        public
+        external
         requireVoteOpen(_proposalId)
         requireNoVeto(_proposalId)
     {
@@ -231,8 +212,7 @@ contract CollectiveGovernance is Governance, VoteStrategy, ERC165 {
     }
 
     function voteAgainst(uint256 _proposalId) public requireVoteOpen(_proposalId) requireNoVeto(_proposalId) {
-        VoterClass _class = _storage.voterClass(_proposalId);
-        uint256[] memory _shareList = _class.discover(msg.sender);
+        uint256[] memory _shareList = _voterClass.discover(msg.sender);
         uint256 count = 0;
         for (uint256 i = 0; i < _shareList.length; i++) {
             uint256 shareId = _shareList[i];
@@ -246,7 +226,7 @@ contract CollectiveGovernance is Governance, VoteStrategy, ERC165 {
     }
 
     function voteAgainstWithTokenId(uint256 _proposalId, uint256 _tokenId)
-        public
+        external
         requireVoteOpen(_proposalId)
         requireNoVeto(_proposalId)
     {
@@ -274,9 +254,8 @@ contract CollectiveGovernance is Governance, VoteStrategy, ERC165 {
         }
     }
 
-    function abstainFromVote(uint256 _proposalId) public requireVoteOpen(_proposalId) requireNoVeto(_proposalId) {
-        VoterClass _class = _storage.voterClass(_proposalId);
-        uint256[] memory _shareList = _class.discover(msg.sender);
+    function abstainFromVote(uint256 _proposalId) external requireVoteOpen(_proposalId) requireNoVeto(_proposalId) {
+        uint256[] memory _shareList = _voterClass.discover(msg.sender);
         uint256 count = 0;
         for (uint256 i = 0; i < _shareList.length; i++) {
             uint256 shareId = _shareList[i];
@@ -290,7 +269,7 @@ contract CollectiveGovernance is Governance, VoteStrategy, ERC165 {
     }
 
     function abstainWithTokenId(uint256 _proposalId, uint256 _tokenId)
-        public
+        external
         requireVoteOpen(_proposalId)
         requireNoVeto(_proposalId)
     {
@@ -320,7 +299,7 @@ contract CollectiveGovernance is Governance, VoteStrategy, ERC165 {
 
     /// @notice get the result of the measure pass or failed
     function getVoteSucceeded(uint256 _proposalId)
-        public
+        external
         view
         requireVoteClosed(_proposalId)
         requireNoVeto(_proposalId)
@@ -338,5 +317,13 @@ contract CollectiveGovernance is Governance, VoteStrategy, ERC165 {
             interfaceId == type(Governance).interfaceId ||
             interfaceId == type(VoteStrategy).interfaceId ||
             super.supportsInterface(interfaceId);
+    }
+
+    function getStorageAddress() external view returns (address) {
+        return address(_storage);
+    }
+
+    function version() external pure virtual returns (uint32) {
+        return VERSION_1;
     }
 }
