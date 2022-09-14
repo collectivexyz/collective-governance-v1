@@ -6,8 +6,8 @@ import "@openzeppelin/contracts/token/ERC721/extensions/IERC721Enumerable.sol";
 import "@openzeppelin/contracts/interfaces/IERC721.sol";
 
 contract MockERC721 is IERC721, ERC165 {
-    mapping(address => uint256) _ownerBalanceMap;
-    mapping(uint256 => address) _tokenMap;
+    mapping(address => uint256) private _ownerBalanceMap;
+    mapping(uint256 => address) private _tokenMap;
 
     modifier tokenExists(uint256 _tokenId) {
         require(_tokenMap[_tokenId] != address(0x0), "Token does not exist");

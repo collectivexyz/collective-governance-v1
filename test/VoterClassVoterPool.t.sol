@@ -5,11 +5,11 @@ import "forge-std/Test.sol";
 import "../contracts/VoterClassVoterPool.sol";
 
 contract VoterClassVoterPoolTest is Test {
-    address immutable _voter = address(0xffeeeeff);
-    address immutable _notvoter = address(0x55);
-    address immutable _nobody = address(0x0);
+    address private immutable _voter = address(0xffeeeeff);
+    address private immutable _notvoter = address(0x55);
+    address private immutable _nobody = address(0x0);
 
-    VoterClassVoterPool _class;
+    VoterClassVoterPool private _class;
 
     function setUp() public {
         _class = new VoterClassVoterPool(1);

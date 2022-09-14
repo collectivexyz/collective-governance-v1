@@ -32,25 +32,27 @@
  */
 pragma solidity ^0.8.15;
 
-/// @title Governance
-/// contract enables proposing a measure to be voted upon
-interface Governance {
-    event ProposalCreated(address proposer, uint256 proposalId);
-    event ProposalOpen(uint256 proposalId);
-    event ProposalClosed(uint256 proposalId);
+import "../contracts/VoterClass.sol";
+import "../contracts/VoterClassOpenVote.sol";
+import "../contracts/VoterClassVoterPool.sol";
+import "../contracts/VoterClassERC721.sol";
 
-    /// @notice propose a measurement of a vote class @returns proposal id
-    function propose() external returns (uint256);
+contract VoterClassFactory {
+    // solhint-disable-next-line no-empty-blocks
+    constructor() {}
 
-    function configure(
-        uint256 proposalId,
-        uint256 quorumThreshold,
-        uint256 requiredDuration
-    ) external;
+    function createOpenVote(uint256 _weight) external returns (address) {
+        VoterClass _class = new VoterClassOpenVote(_weight);
+        return address(_class);
+    }
 
-    function getStorageAddress() external view returns (address);
+    function createVoterPool(uint256 _weight) external returns (address) {
+        VoterClass _class = new VoterClassVoterPool(_weight);
+        return address(_class);
+    }
 
-    function name() external pure returns (string memory);
-
-    function version() external pure returns (uint32);
+    function createERC721(address erc721, uint256 _weight) external returns (address) {
+        VoterClass _class = new VoterClassERC721(erc721, _weight);
+        return address(_class);
+    }
 }

@@ -1,17 +1,36 @@
 // SPDX-License-Identifier: BSD-3-Clause
 /*
- * Copyright 2022 collective.xyz
+ * BSD 3-Clause License
  *
- * Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
+ * Copyright (c) 2022, Collective.XYZ
+ * All rights reserved.
  *
- * 1. Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
  *
- * 2. Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
+ * 1. Redistributions of source code must retain the above copyright notice, this
+ *    list of conditions and the following disclaimer.
  *
- * 3. Neither the name of the copyright holder nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.
+ * 2. Redistributions in binary form must reproduce the above copyright notice,
+ *    this list of conditions and the following disclaimer in the documentation
+ *    and/or other materials provided with the distribution.
  *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * 3. Neither the name of the copyright holder nor the names of its
+ *    contributors may be used to endorse or promote products derived from
+ *    this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+ * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+ * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+ * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+ * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
 pragma solidity ^0.8.15;
 
 import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
@@ -28,17 +47,17 @@ import "../contracts/VoterClassOpenVote.sol";
 // factory contract for governance
 contract CollectiveGovernance is Governance, VoteStrategy, ERC165 {
     /// @notice contract name
-    string public constant name = "collective.xyz governance";
+    string public constant NAME = "collective.xyz governance";
     uint32 public constant VERSION_1 = 1;
 
-    VoterClass private _voterClass;
+    VoterClass private immutable _voterClass;
 
-    address[] _projectSupervisorList;
+    Storage private immutable _storage;
 
-    Storage private _storage;
+    address[] private _projectSupervisorList;
 
     /// @notice voting is open or not
-    mapping(uint256 => bool) isVoteOpenByProposalId;
+    mapping(uint256 => bool) private isVoteOpenByProposalId;
 
     constructor(address[] memory _supervisorList, VoterClass _class) {
         _voterClass = _class;
@@ -101,7 +120,7 @@ contract CollectiveGovernance is Governance, VoteStrategy, ERC165 {
     /// @notice allow voting
     function openVote(uint256 _proposalId) external requireElectorSupervisor(_proposalId) requireVoteReady(_proposalId) {
         _storage.validOrRevert(_proposalId);
-        require(_storage.quorumRequired(_proposalId) < _storage.maxPassThreshold(), "Quorum must be set prior to opening vote");
+        require(_storage.quorumRequired(_proposalId) < _storage.maxPassThreshold(), "Quorum required");
         if (!isVoteOpenByProposalId[_proposalId]) {
             isVoteOpenByProposalId[_proposalId] = true;
             emit VoteOpen(_proposalId);
@@ -321,6 +340,10 @@ contract CollectiveGovernance is Governance, VoteStrategy, ERC165 {
 
     function getStorageAddress() external view returns (address) {
         return address(_storage);
+    }
+
+    function name() external pure virtual returns (string memory) {
+        return NAME;
     }
 
     function version() external pure virtual returns (uint32) {

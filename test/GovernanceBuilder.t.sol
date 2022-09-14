@@ -12,11 +12,11 @@ import "../contracts/VoterClassERC721.sol";
 import "./MockERC721.sol";
 
 contract GovernanceBuilderTest is Test {
-    GovernanceBuilder private _builder;
+    address private constant _OWNER = address(0x1);
+    address private constant _SUPERVISOR = address(0x123);
+    address private constant _VOTER1 = address(0xfff1);
 
-    address public immutable owner = address(0x1);
-    address public immutable supervisor = address(0x123);
-    address public immutable voter1 = address(0xfff1);
+    GovernanceBuilder private _builder;
 
     function setUp() public {
         vm.clearMockedCalls();
@@ -25,42 +25,42 @@ contract GovernanceBuilderTest is Test {
 
     function testWithSupervisor() public {
         VoterClass _class = new VoterClassNullObject();
-        address _governance = _builder.aGovernance().withSupervisor(supervisor).withVoterClass(_class).build();
+        address _governance = _builder.aGovernance().withSupervisor(_SUPERVISOR).withVoterClass(_class).build();
         Governance _gov = Governance(_governance);
         _gov.propose();
         address _storage = _gov.getStorageAddress();
-        assertTrue(Storage(_storage).isSupervisor(1, supervisor));
+        assertTrue(Storage(_storage).isSupervisor(1, _SUPERVISOR));
     }
 
     function testWithOpenVote() public {
         VoterClass _class = new VoterClassOpenVote(1);
-        address _governance = _builder.aGovernance().withSupervisor(supervisor).withVoterClass(_class).build();
+        address _governance = _builder.aGovernance().withSupervisor(_SUPERVISOR).withVoterClass(_class).build();
         Governance _gov = Governance(_governance);
         _gov.propose();
         address _storage = _gov.getStorageAddress();
-        assertTrue(Storage(_storage).isVoter(1, voter1));
+        assertTrue(Storage(_storage).isVoter(1, _VOTER1));
     }
 
     function testWithVoterPool() public {
         VoterClassVoterPool _class = new VoterClassVoterPool(1);
-        _class.addVoter(voter1);
+        _class.addVoter(_VOTER1);
         _class.makeFinal();
-        address _governance = _builder.aGovernance().withSupervisor(supervisor).withVoterClass(_class).build();
+        address _governance = _builder.aGovernance().withSupervisor(_SUPERVISOR).withVoterClass(_class).build();
         Governance _gov = Governance(_governance);
         _gov.propose();
         address _storage = _gov.getStorageAddress();
-        assertTrue(Storage(_storage).isVoter(1, voter1));
+        assertTrue(Storage(_storage).isVoter(1, _VOTER1));
     }
 
     function testWithERC721() public {
         MockERC721 merc721 = new MockERC721();
-        merc721.mintTo(voter1, 0x10);
+        merc721.mintTo(_VOTER1, 0x10);
         VoterClass _class = new VoterClassERC721(address(merc721), 1);
-        address _governance = _builder.aGovernance().withSupervisor(supervisor).withVoterClass(_class).build();
+        address _governance = _builder.aGovernance().withSupervisor(_SUPERVISOR).withVoterClass(_class).build();
         Governance _gov = Governance(_governance);
         uint256 pid = _gov.propose();
         address _storage = _gov.getStorageAddress();
-        assertTrue(Storage(_storage).isVoter(pid, voter1));
+        assertTrue(Storage(_storage).isVoter(pid, _VOTER1));
     }
 
     function testFailSupervisorIsRequired() public {
@@ -69,6 +69,6 @@ contract GovernanceBuilderTest is Test {
     }
 
     function testFailVoterClassIsRequired() public {
-        _builder.aGovernance().withSupervisor(supervisor).build();
+        _builder.aGovernance().withSupervisor(_SUPERVISOR).build();
     }
 }

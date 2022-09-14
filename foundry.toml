@@ -3,7 +3,7 @@ src = 'src'
 out = 'out'
 libs = ['lib']
 optimizer = true
-optimizer_runs = 50
+optimizer_runs = 500
 via-ir = true
 block_number = 1
 

@@ -1,15 +1,34 @@
 // SPDX-License-Identifier: BSD-3-Clause
 /*
- * Copyright 2022 collective.xyz
- * Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
+ * BSD 3-Clause License
  *
- * 1. Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
+ * Copyright (c) 2022, Collective.XYZ
+ * All rights reserved.
  *
- * 2. Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
  *
- * 3. Neither the name of the copyright holder nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.
+ * 1. Redistributions of source code must retain the above copyright notice, this
+ *    list of conditions and the following disclaimer.
  *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * 2. Redistributions in binary form must reproduce the above copyright notice,
+ *    this list of conditions and the following disclaimer in the documentation
+ *    and/or other materials provided with the distribution.
+ *
+ * 3. Neither the name of the copyright holder nor the names of its
+ *    contributors may be used to endorse or promote products derived from
+ *    this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+ * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+ * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+ * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+ * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 pragma solidity ^0.8.15;
 
@@ -18,26 +37,26 @@ import "../contracts/VoterClass.sol";
 
 contract GovernanceStorage is Storage {
     /// @notice contract name
-    string public constant name = "collective.xyz governance storage";
+    string public constant NAME = "collective.xyz governance storage";
     uint32 public constant VERSION_1 = 1;
 
     uint256 public constant MAXIMUM_QUORUM = 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF;
     uint256 public constant MINIMUM_VOTE_DURATION = 1;
 
-    /// @notice global list of proposed issues by id
-    mapping(uint256 => Proposal) public proposalMap;
-
     /// @notice only the peer contract may modify the vote
-    address private _cognate;
+    address private immutable _cognate;
+
+    /// @notice Voter class for storage
+    VoterClass private immutable _voterClass;
 
     /// @notice The total number of proposals
     uint256 private _proposalCount;
 
-    /// @notice Voter class for storage
-    VoterClass private _voterClass;
+    /// @notice global list of proposed issues by id
+    mapping(uint256 => Proposal) public proposalMap;
 
     /// @notice The latest proposal for each proposer
-    mapping(address => uint256) internal _latestProposalId;
+    mapping(address => uint256) private _latestProposalId;
 
     constructor(VoterClass _class) {
         _cognate = msg.sender;
@@ -164,7 +183,8 @@ contract GovernanceStorage is Storage {
         return proposalId;
     }
 
-    /// @notice add a vote superviser to the supervisor pool with rights to add or remove voters prior to start of voting, also right to veto the outcome after voting is closed
+    /// @notice add a vote superviser to the supervisor pool with rights to add or
+    /// remove voters prior to start of voting, also right to veto the outcome after voting is closed
     function registerSupervisor(
         uint256 _proposalId,
         address _supervisor,
@@ -275,23 +295,23 @@ contract GovernanceStorage is Storage {
         return proposal.quorumRequired;
     }
 
-    function forVotes(uint256 _proposalId) external view requireValidProposal(_proposalId) returns (uint256) {
+    function forVotes(uint256 _proposalId) public view requireValidProposal(_proposalId) returns (uint256) {
         Proposal storage proposal = proposalMap[_proposalId];
         return proposal.forVotes;
     }
 
-    function againstVotes(uint256 _proposalId) external view requireValidProposal(_proposalId) returns (uint256) {
+    function againstVotes(uint256 _proposalId) public view requireValidProposal(_proposalId) returns (uint256) {
         Proposal storage proposal = proposalMap[_proposalId];
         return proposal.againstVotes;
     }
 
-    function abstentionCount(uint256 _proposalId) external view requireValidProposal(_proposalId) returns (uint256) {
+    function abstentionCount(uint256 _proposalId) public view requireValidProposal(_proposalId) returns (uint256) {
         Proposal storage proposal = proposalMap[_proposalId];
         return proposal.abstentionCount;
     }
 
     function quorum(uint256 _proposalId) external view requireValidProposal(_proposalId) returns (uint256) {
-        return this.forVotes(_proposalId) + this.againstVotes(_proposalId) + this.abstentionCount(_proposalId);
+        return forVotes(_proposalId) + againstVotes(_proposalId) + abstentionCount(_proposalId);
     }
 
     function voterClass() external view returns (VoterClass) {
@@ -388,16 +408,12 @@ contract GovernanceStorage is Storage {
         return (receipt.shareId, receipt.shareFor, receipt.votesCast, receipt.abstention, receipt.undoCast);
     }
 
-    function version() public pure virtual returns (uint32) {
-        return VERSION_1;
-    }
-
     function validOrRevert(uint256 _proposalId)
         external
         view
         requireCognate
         requireValidProposal(_proposalId)
-    // solium-disable-next-line no-empty-blocks
+    // solhint-disable-next-line no-empty-blocks
     {
 
     }
@@ -513,5 +529,13 @@ contract GovernanceStorage is Storage {
         proposal.forVotes -= undoVotes;
         emit UndoVote(_proposalId, _wallet, _receiptId, undoVotes);
         return undoVotes;
+    }
+
+    function name() external pure virtual returns (string memory) {
+        return NAME;
+    }
+
+    function version() public pure virtual returns (uint32) {
+        return VERSION_1;
     }
 }

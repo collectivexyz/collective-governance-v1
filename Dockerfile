@@ -37,12 +37,13 @@ WORKDIR /rustup
 ENV USER=mr
 USER mr
 RUN /rustup/rustup-init.sh -y --default-toolchain stable --profile minimal
+RUN rustup default stable
 
 ## Foundry
 WORKDIR /foundry
 
 # latest https://github.com/foundry-rs/foundry
-RUN ~mr/.cargo/bin/cargo install --git https://github.com/foundry-rs/foundry --locked foundry-cli
+RUN ~mr/.cargo/bin/cargo install --git https://github.com/foundry-rs/foundry --profile local --locked foundry-cli
 
 FROM debian:stable-slim
 
@@ -79,7 +80,7 @@ ENV USER=mr
 USER mr
 ENV PATH=${PATH}:~/.cargo/bin
 RUN yarn install
-RUN yarn lint
+RUN yarn hint
 RUN ~mr/.cargo/bin/forge test -vvv
 
 RUN bin/update_abi.sh
