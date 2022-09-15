@@ -74,6 +74,15 @@ contract GovernanceBuilder is Builder {
         return this;
     }
 
+    function withVoterClassErc721(address _erc721Address) public returns (Builder) {
+        VoterClass _class = new VoterClassERC721(_erc721Address, 1);
+        GovernanceProperties storage _properties = _buildMap[msg.sender];
+        _properties._class = _class;
+        emit BuilderVoterClassAdded(msg.sender, _class.name(), _class.version());
+        return this;
+    }
+
+
     function build() external returns (address) {
         address _creator = msg.sender;
         GovernanceProperties storage _properties = _buildMap[_creator];
