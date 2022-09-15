@@ -42,21 +42,13 @@ contract VoterClassERC721 is VoterClass, ERC165 {
     string public constant NAME = "collective.xyz VoterClassERC721";
     uint32 public constant VERSION_1 = 1;
 
-    address private immutable _cognate;
-
     address private immutable _contractAddress;
 
     uint256 private immutable _weight;
 
     constructor(address _contract, uint256 _voteWeight) {
-        _cognate = msg.sender;
         _contractAddress = _contract;
         _weight = _voteWeight;
-    }
-
-    modifier requireCognate() {
-        require(_cognate == msg.sender, "Not permitted");
-        _;
     }
 
     modifier requireValidAddress(address _wallet) {
