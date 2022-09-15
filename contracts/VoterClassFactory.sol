@@ -38,8 +38,8 @@ import "../contracts/VoterClassVoterPool.sol";
 import "../contracts/VoterClassERC721.sol";
 
 contract VoterClassFactory {
-    event VoterClassCreated(address _voterClass);
-    event VoterClassCreated(address _voterClass, address _project);
+    event VoterClassCreated(address voterClass);
+    event VoterClassCreated(address voterClass, address project);
 
     // solhint-disable-next-line no-empty-blocks
     constructor() {}

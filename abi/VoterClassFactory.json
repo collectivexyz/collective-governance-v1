@@ -10,7 +10,7 @@
       {
         "indexed": false,
         "internalType": "address",
-        "name": "_voterClass",
+        "name": "voterClass",
         "type": "address"
       }
     ],
@@ -23,13 +23,13 @@
       {
         "indexed": false,
         "internalType": "address",
-        "name": "_voterClass",
+        "name": "voterClass",
         "type": "address"
       },
       {
         "indexed": false,
         "internalType": "address",
-        "name": "_project",
+        "name": "project",
         "type": "address"
       }
     ],

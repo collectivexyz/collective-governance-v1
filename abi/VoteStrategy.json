@@ -5,19 +5,19 @@
       {
         "indexed": false,
         "internalType": "uint256",
-        "name": "_proposalId",
+        "name": "proposalId",
         "type": "uint256"
       },
       {
         "indexed": false,
         "internalType": "address",
-        "name": "_wallet",
+        "name": "wallet",
         "type": "address"
       },
       {
         "indexed": false,
         "internalType": "uint256",
-        "name": "_count",
+        "name": "count",
         "type": "uint256"
       }
     ],
@@ -30,7 +30,7 @@
       {
         "indexed": false,
         "internalType": "uint256",
-        "name": "_proposalId",
+        "name": "proposalId",
         "type": "uint256"
       }
     ],
@@ -43,7 +43,7 @@
       {
         "indexed": false,
         "internalType": "uint256",
-        "name": "_proposalId",
+        "name": "proposalId",
         "type": "uint256"
       }
     ],
@@ -56,19 +56,19 @@
       {
         "indexed": false,
         "internalType": "uint256",
-        "name": "_proposalId",
+        "name": "proposalId",
         "type": "uint256"
       },
       {
         "indexed": false,
         "internalType": "address",
-        "name": "_wallet",
+        "name": "wallet",
         "type": "address"
       },
       {
         "indexed": false,
         "internalType": "uint256",
-        "name": "_count",
+        "name": "count",
         "type": "uint256"
       }
     ],
@@ -81,19 +81,19 @@
       {
         "indexed": false,
         "internalType": "uint256",
-        "name": "_proposalId",
+        "name": "proposalId",
         "type": "uint256"
       },
       {
         "indexed": false,
         "internalType": "address",
-        "name": "_wallet",
+        "name": "wallet",
         "type": "address"
       },
       {
         "indexed": false,
         "internalType": "uint256",
-        "name": "_count",
+        "name": "count",
         "type": "uint256"
       }
     ],

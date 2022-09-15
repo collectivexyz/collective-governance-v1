@@ -48,8 +48,8 @@ interface VoterPool {
 
 /// @notice voting class for ERC-721 contract
 contract VoterClassVoterPool is VoterClass, ERC165 {
-    event RegisterVoter(address _voter);
-    event BurnVoter(address _voter);
+    event RegisterVoter(address voter);
+    event BurnVoter(address voter);
 
     string public constant NAME = "collective.xyz VoterClassVoterPool";
     uint32 public constant VERSION_1 = 1;

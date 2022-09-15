@@ -35,7 +35,7 @@ pragma solidity ^0.8.15;
 /// @title Governance
 /// contract enables proposing a measure to be voted upon
 interface Governance {
-    event ProposalCreated(address proposer, uint256 proposalId);
+    event ProposalCreated(address sender, uint256 proposalId);
     event ProposalOpen(uint256 proposalId);
     event ProposalClosed(uint256 proposalId);
 

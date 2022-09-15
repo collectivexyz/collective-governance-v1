@@ -35,10 +35,10 @@ pragma solidity ^0.8.15;
 import "../contracts/VoterClass.sol";
 
 interface Builder {
-    event GovernanceContractCreated(address _creator, address _governance);
-    event BuilderContractInitialized(address _creator);
-    event BuilderSupervisorAdded(address _creator, address _supervisor);
-    event BuilderVoterClassAdded(address _creator, string _name, uint32 _version);
+    event GovernanceContractCreated(address creator, address governance);
+    event BuilderContractInitialized(address creator);
+    event BuilderSupervisorAdded(address creator, address supervisor);
+    event BuilderVoterClassAdded(address creator, string name, uint32 version);
 
     struct GovernanceProperties {
         address[] _supervisorList;
