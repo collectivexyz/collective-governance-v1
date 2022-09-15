@@ -33,35 +33,23 @@
 pragma solidity ^0.8.15;
 
 import "../contracts/VoterClass.sol";
-import "../contracts/VoterClassOpenVote.sol";
-import "../contracts/VoterClassVoterPool.sol";
-import "../contracts/VoterClassERC721.sol";
 
-contract VoterClassFactory {
-    event VoterClassCreated(address _voterClass);
-    event VoterClassCreated(address _voterClass, address _project);
+interface Builder {
+    event GovernanceContractCreated(address _creator, address _governance);
+    event BuilderContractInitialized(address _creator);
+    event BuilderSupervisorAdded(address _creator, address _supervisor);
+    event BuilderVoterClassAdded(address _creator, string _name, uint32 _version);
 
-    // solhint-disable-next-line no-empty-blocks
-    constructor() {}
-
-    function createOpenVote(uint256 _weight) external returns (address) {
-        VoterClass _class = new VoterClassOpenVote(_weight);
-        address _classAddr = address(_class);
-        emit VoterClassCreated(_classAddr);
-        return _classAddr;
+    struct GovernanceProperties {
+        address[] _supervisorList;
+        VoterClass _class;
     }
 
-    function createVoterPool(uint256 _weight) external returns (address) {
-        VoterClass _class = new VoterClassVoterPool(_weight);
-        address _classAddr = address(_class);
-        emit VoterClassCreated(_classAddr);
-        return _classAddr;
-    }
+    function withSupervisor(address _supervisor) external returns (Builder);
 
-    function createERC721(address _erc721, uint256 _weight) external returns (address) {
-        VoterClass _class = new VoterClassERC721(_erc721, _weight);
-        address _classAddr = address(_class);
-        emit VoterClassCreated(_classAddr, _erc721);
-        return _classAddr;
-    }
+    function withVoterClassAddress(address _classAddress) external returns (Builder);
+
+    function withVoterClass(VoterClass _class) external returns (Builder);
+
+    function build() external returns (address);
 }

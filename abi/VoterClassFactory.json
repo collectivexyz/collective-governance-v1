@@ -5,10 +5,42 @@
     "type": "constructor"
   },
   {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "_voterClass",
+        "type": "address"
+      }
+    ],
+    "name": "VoterClassCreated",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "_voterClass",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "_project",
+        "type": "address"
+      }
+    ],
+    "name": "VoterClassCreated",
+    "type": "event"
+  },
+  {
     "inputs": [
       {
         "internalType": "address",
-        "name": "erc721",
+        "name": "_erc721",
         "type": "address"
       },
       {

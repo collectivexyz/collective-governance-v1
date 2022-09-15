@@ -37,7 +37,6 @@ WORKDIR /rustup
 ENV USER=mr
 USER mr
 RUN /rustup/rustup-init.sh -y --default-toolchain stable --profile minimal
-RUN rustup default stable
 
 ## Foundry
 WORKDIR /foundry
@@ -79,6 +78,7 @@ COPY --chown=mr:mr . .
 ENV USER=mr
 USER mr
 ENV PATH=${PATH}:~/.cargo/bin
+RUN ~mr/.cargo/bin/rustup default stable
 RUN yarn install
 RUN yarn hint
 RUN ~mr/.cargo/bin/forge test -vvv

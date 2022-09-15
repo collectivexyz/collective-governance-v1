@@ -195,5 +195,24 @@
     ],
     "stateMutability": "nonpayable",
     "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_classAddress",
+        "type": "address"
+      }
+    ],
+    "name": "withVoterClassAddress",
+    "outputs": [
+      {
+        "internalType": "contract Builder",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function"
   }
 ]

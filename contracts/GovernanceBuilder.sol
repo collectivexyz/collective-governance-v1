@@ -32,27 +32,12 @@
  */
 pragma solidity ^0.8.15;
 
+import "@openzeppelin/contracts/interfaces/IERC165.sol";
+
 import "../contracts/Governance.sol";
 import "../contracts/CollectiveGovernance.sol";
 import "../contracts/VoterClass.sol";
-
-interface Builder {
-    event GovernanceContractCreated(address _creator, address _governance);
-    event BuilderContractInitialized(address _creator);
-    event BuilderSupervisorAdded(address _creator, address _supervisor);
-    event BuilderVoterClassAdded(address _creator, string _name, uint32 _version);
-
-    struct GovernanceProperties {
-        address[] _supervisorList;
-        VoterClass _class;
-    }
-
-    function withSupervisor(address _supervisor) external returns (Builder);
-
-    function withVoterClass(VoterClass _class) external returns (Builder);
-
-    function build() external returns (address);
-}
+import "../contracts/Builder.sol";
 
 contract GovernanceBuilder is Builder {
     string public constant NAME = "collective.xyz governance contract builder";
@@ -76,7 +61,13 @@ contract GovernanceBuilder is Builder {
         return this;
     }
 
-    function withVoterClass(VoterClass _class) external returns (Builder) {
+    function withVoterClassAddress(address _classAddress) external returns (Builder) {
+        IERC165 erc165 = IERC165(_classAddress);
+        require(erc165.supportsInterface(type(VoterClass).interfaceId), "VoterClass required");
+        return withVoterClass(VoterClass(_classAddress));
+    }
+
+    function withVoterClass(VoterClass _class) public returns (Builder) {
         GovernanceProperties storage _properties = _buildMap[msg.sender];
         _properties._class = _class;
         emit BuilderVoterClassAdded(msg.sender, _class.name(), _class.version());

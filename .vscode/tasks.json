@@ -97,7 +97,7 @@
       "options": {
         "cwd": "${workspaceFolder}"
       },
-      "dependsOn": "deployfactory",
+      "dependsOn": "production",
       "group": {
         "kind": "test",
         "isDefault": false
