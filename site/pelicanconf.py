@@ -1,5 +1,5 @@
 AUTHOR = 'collective.xyz'
-SITENAME = 'Ethereum Community Smart Contract'
+SITENAME = 'Community Governance Smart Contract'
 SITEURL = ''
 
 PATH = 'content'
@@ -22,10 +22,11 @@ CC_LICENSE = {
 }
 
 # Blogroll
-LINKS = (('GitHub', 'https://github.com/momentranks/eth-community-v1'),)
+LINKS = (('Collective Governance', 'https://github.com/momentranks/collective-governance-v1'),
+         ('Governance-JS', 'https://github.com/momentranks/collective_governance_js'),
+         ('Read the Docs', '/docs/contracts',))
 
-SOCIAL = (('You can add links in your config file', '#'),
-          ('Another social link', '#'),)
+SOCIAL = (('Collective.XYZ', 'https://twitter.com/collectivexyz'),)
 
 DEFAULT_PAGINATION = False
 

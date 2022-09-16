@@ -4,13 +4,13 @@
         <meta charset="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <meta name="generator" content="Pelican" />
-        <title>Ethereum Community Smart Contract - collective.xyz</title>
+        <title>Community Governance Smart Contract - collective.xyz</title>
         <link rel="stylesheet" href="/theme/css/main.css" />
 </head>
 
 <body id="index" class="home">
         <header id="banner" class="body">
-                <h1><a href="/">Ethereum Community Smart Contract</a></h1>
+                <h1><a href="/">Community Governance Smart Contract</a></h1>
                 <nav><ul>
                     <li><a href="/pages/license.html">License</a></li>
                     <li><a href="/category/about.html">About</a></li>
@@ -25,8 +25,8 @@
                 Published: Fri 08 July 2022
         </abbr>
 		<br />
-        <abbr class="modified" title="2022-07-27T00:00:00-05:00">
-                Updated: Wed 27 July 2022
+        <abbr class="modified" title="2022-09-15T00:00:00-05:00">
+                Updated: Thu 15 September 2022
         </abbr>
 
         <address class="vcard author">
@@ -34,67 +34,50 @@
         </address>
 <p>In <a href="/category/about.html">About</a>.</p>
 
-</footer><!-- /.post-info --><h2>Open Elector Design for Community Measures</h2>
-<p>Open communities exist to serve the common good and therefore should be given an opportunity to make collective decisions about how resources are used or allocated. Such decisions, referred to as 'measures' augment participation and enable communities to become benefactors on a broader scale.</p>
-<p>This smart contract enables a measure to be proposed, voted upon and successfully fulfilled. It also provides safety measures to prevent tampering, invalid election design or unexpected system problems from nullifying the possible benefit of a given measure.</p>
-<h3>Model</h3>
-<p><img alt="Collective Governance" src="/images/CollectiveGovernance.png"></p>
-<h3>Design Aims</h3>
-<div class="highlight"><pre><span></span><code><span class="o">*</span><span class="w"> </span><span class="nv">Introduce</span><span class="w"> </span><span class="nv">a</span><span class="w"> </span><span class="nv">smart</span><span class="w"> </span><span class="nv">contract</span><span class="w"> </span><span class="nv">that</span><span class="w"> </span><span class="nv">enables</span><span class="w"> </span><span class="nv">on</span><span class="w"> </span><span class="nv">chain</span><span class="w"> </span><span class="nv">proposal</span><span class="w"> </span><span class="nv">of</span><span class="w"> </span><span class="nv">measures</span>,<span class="w"> </span><span class="nv">along</span><span class="w"> </span><span class="nv">with</span><span class="w"> </span><span class="nv">conclusive</span><span class="w"> </span><span class="nv">determination</span><span class="w"> </span><span class="nv">of</span><span class="w"> </span><span class="nv">the</span><span class="w"> </span><span class="nv">community</span><span class="w"> </span><span class="nv">support</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="nv">the</span><span class="w"> </span><span class="nv">measure</span><span class="w"> </span><span class="nv">and</span><span class="w"> </span><span class="nv">potential</span><span class="w"> </span><span class="nv">fulfillment</span><span class="w"> </span><span class="nv">of</span><span class="w"> </span><span class="nv">the</span><span class="w"> </span><span class="nv">aim</span><span class="w"> </span><span class="nv">of</span><span class="w"> </span><span class="nv">a</span><span class="w"> </span><span class="nv">measure</span>.<span class="w">  </span><span class="k">For</span><span class="w"> </span><span class="nv">example</span><span class="w"> </span><span class="nv">execution</span><span class="w"> </span><span class="nv">of</span><span class="w"> </span><span class="nv">a</span><span class="w"> </span><span class="nv">transfer</span>.<span class="w"></span>
-<span class="o">*</span><span class="w"> </span><span class="nv">Require</span><span class="w"> </span><span class="nv">participation</span><span class="w"> </span><span class="nv">in</span><span class="w"> </span><span class="nv">measure</span><span class="w"> </span><span class="nv">outcome</span><span class="w"> </span><span class="nv">that</span><span class="w"> </span><span class="nv">is</span><span class="w"> </span><span class="nv">restricted</span><span class="w"> </span><span class="nv">to</span><span class="w"> </span><span class="nv">a</span><span class="w"> </span><span class="nv">pre</span><span class="o">-</span><span class="nv">selected</span><span class="w"> </span><span class="nv">audience</span><span class="w"> </span><span class="nv">of</span><span class="w"> </span><span class="nv">participants</span><span class="w"></span>
-<span class="o">*</span><span class="w"> </span><span class="nv">Support</span><span class="w"> </span><span class="nv">audiences</span><span class="w"> </span><span class="nv">specified</span><span class="w"> </span><span class="nv">by</span><span class="w"> </span><span class="nv">ownership</span><span class="w"> </span><span class="nv">of</span><span class="w"> </span><span class="nv">a</span><span class="w"> </span><span class="nv">particular</span><span class="w"> </span><span class="nv">token</span>,<span class="w"> </span><span class="nv">list</span><span class="w"> </span><span class="nv">of</span><span class="w"> </span><span class="nv">wallets</span><span class="w"> </span><span class="nv">or</span><span class="w"> </span><span class="nv">general</span><span class="w"> </span><span class="nv">population</span><span class="w"></span>
-<span class="o">*</span><span class="w"> </span><span class="nv">Voting</span><span class="w"> </span><span class="nv">works</span><span class="w"> </span><span class="nv">with</span><span class="w"> </span><span class="nv">the</span><span class="w"> </span><span class="nv">existing</span><span class="w"> </span><span class="nv">ERC</span><span class="o">-</span><span class="mi">721</span><span class="w"> </span><span class="nv">standard</span>.<span class="w">  </span><span class="nv">Existing</span><span class="w"> </span><span class="nv">NFTs</span><span class="w"> </span><span class="nv">can</span><span class="w"> </span><span class="nv">form</span><span class="w"> </span><span class="nv">a</span><span class="w"> </span><span class="nv">voting</span><span class="w"> </span><span class="nv">class</span><span class="w"> </span><span class="nv">and</span><span class="w"> </span><span class="nv">participation</span><span class="w"> </span><span class="nv">does</span><span class="w"> </span><span class="nv">not</span><span class="w"> </span><span class="nv">require</span><span class="w"> </span><span class="nv">any</span><span class="w"> </span><span class="nv">contract</span><span class="w"> </span><span class="nv">specialization</span>.<span class="w">  </span><span class="nv">ERC721Enumerable</span><span class="w"> </span><span class="nv">is</span><span class="w"> </span><span class="nv">also</span><span class="w"> </span><span class="nv">supported</span>.<span class="w"></span>
-<span class="o">*</span><span class="w"> </span><span class="nv">Provide</span><span class="w"> </span><span class="nv">safe</span>,<span class="w"> </span><span class="nv">fair</span><span class="w"> </span><span class="nv">and</span><span class="w"> </span><span class="nv">verifiable</span><span class="w"> </span><span class="nv">measure</span><span class="w"> </span><span class="nv">outcomes</span><span class="w"></span>
-<span class="o">*</span><span class="w"> </span><span class="nv">Contract</span><span class="w"> </span><span class="nv">is</span><span class="w"> </span><span class="nv">very</span><span class="w"> </span><span class="nv">literate</span>,<span class="w"> </span><span class="nv">information</span><span class="w"> </span><span class="nv">is</span><span class="w"> </span><span class="nv">transparent</span><span class="w"> </span><span class="nv">without</span><span class="w"> </span><span class="nv">prior</span><span class="w"> </span><span class="nv">knowledge</span><span class="w"></span>
-<span class="o">*</span><span class="w"> </span><span class="nv">Support</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="nv">execution</span><span class="w"> </span><span class="nv">of</span><span class="w"> </span><span class="nv">a</span><span class="w"> </span><span class="nv">transaction</span><span class="w"> </span><span class="nv">on</span><span class="w"> </span><span class="nv">successful</span><span class="w"> </span><span class="nv">outcome</span><span class="w"></span>
-<span class="o">*</span><span class="w"> </span><span class="nv">Each</span><span class="w"> </span><span class="nv">community</span><span class="w"> </span><span class="nv">has</span><span class="w"> </span><span class="nv">their</span><span class="w"> </span><span class="nv">own</span><span class="w"> </span><span class="nv">storage</span><span class="o">/</span><span class="nv">contract</span><span class="w"> </span><span class="nv">address</span>,<span class="w"> </span><span class="nv">which</span><span class="w"> </span><span class="nv">are</span><span class="w"> </span><span class="nv">isolated</span><span class="w"> </span><span class="nv">from</span><span class="w"> </span><span class="nv">one</span><span class="w"> </span><span class="nv">another</span>,<span class="w"> </span><span class="nv">people</span><span class="w"> </span><span class="nv">can</span><span class="w"> </span><span class="nv">e</span>.<span class="nv">g</span>.<span class="w"> </span><span class="nv">query</span><span class="w"> </span><span class="nv">the</span><span class="w"> </span><span class="nv">contract</span><span class="w"> </span><span class="nv">address</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="nv">all</span><span class="w"> </span><span class="nv">the</span><span class="w"> </span><span class="nv">proposals</span>,<span class="w"> </span><span class="nv">each</span><span class="w"> </span><span class="nv">communities</span><span class="w"> </span><span class="nv">proposal</span><span class="w"> </span><span class="nv">IDs</span><span class="w"> </span><span class="nv">start</span><span class="w"> </span><span class="nv">at</span><span class="w"> </span><span class="nv">index</span><span class="w"> </span><span class="mi">1</span><span class="w"></span>
-<span class="o">*</span><span class="w"> </span><span class="nv">Tokens</span><span class="w"> </span><span class="nv">can</span>’<span class="nv">t</span><span class="w"> </span><span class="nv">vote</span><span class="w"> </span><span class="nv">twice</span>,<span class="w"> </span><span class="nv">even</span><span class="w"> </span><span class="nv">when</span><span class="w"> </span><span class="nv">transferred</span><span class="w"> </span><span class="nv">to</span><span class="w"> </span><span class="nv">another</span><span class="w"> </span><span class="nv">wallet</span><span class="w"></span>
-<span class="o">*</span><span class="w"> </span><span class="nv">Allow</span><span class="w"> </span><span class="nv">veto</span><span class="w"> </span><span class="nv">at</span><span class="w"> </span><span class="nv">any</span><span class="w"> </span><span class="nv">time</span><span class="w"> </span><span class="k">while</span><span class="w"> </span><span class="nv">voting</span><span class="w"> </span><span class="nv">is</span><span class="w"> </span><span class="nv">underway</span><span class="w"></span>
-<span class="o">*</span><span class="w"> </span><span class="nv">Provide</span><span class="w"> </span><span class="nv">no</span><span class="w"> </span><span class="nv">special</span><span class="w"> </span><span class="nv">authority</span><span class="w"> </span><span class="nv">to</span><span class="w"> </span><span class="nv">the</span><span class="w"> </span><span class="nv">contract</span><span class="w"> </span><span class="nv">owner</span>.<span class="w">   </span><span class="nv">Once</span><span class="w"> </span><span class="nv">in</span><span class="w"> </span><span class="nv">motion</span><span class="w"> </span><span class="nv">a</span><span class="w"> </span><span class="nv">measure</span><span class="w"> </span><span class="nv">may</span><span class="w"> </span><span class="nv">not</span><span class="w"> </span><span class="nv">be</span><span class="w"> </span><span class="nv">tampered</span><span class="w"> </span><span class="nv">with</span><span class="w"></span>
-</code></pre></div>
-
-<h3>Contract Requirements</h3>
-<p>Collective governance is implemented as a hierarchical set of tiered contracts. An initial function is implemented to create a contract which enables and supports the voting on a particular measure from election setup through conclusion or veto.</p>
-<p>The creation stage uses addresses to specify a set of election supervisors who are responsible for establishing the characteristics and lifecycle of the proposed measure. The supervisor will determine the voting class, i.e. particular tokens or other characteristics that specify who is allowed to vote. They will specify the required number of votes to pass the measure and they will then open the voting and allow the measure to succeed or fail.</p>
-<p>Negative votes are automatic and do not require gas. Any measure must reach the threshold specified by a supervisor in order to pass. Any supervisor may veto the measure at any time during voting thus nullifying the outcome of the measure. The vetoed measure is effectively void with no result.</p>
-<p>Any voter is allowed to change their mind and cast a negative vote while the voting remains open.</p>
-<h3>Functional Requirements</h3>
+</footer><!-- /.post-info --><h2>Open Smart Contract for Community Governance</h2>
+<p>This is an Ethereum based smart contract with support for open voting and token voting for all communities.</p>
+<h2>Deployment Locations</h2>
+<h3>Görli Testnet</h3>
+<table>
+<thead>
+<tr>
+<th>Contract</th>
+<th>Address</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h2>Quick Start</h2>
+<h3>JavaScript</h3>
 <ol>
-<li>Contract owner is required to add an election supervisor, but has no other capabilities</li>
-<li>Arbitrary number of election supervisors are supported</li>
-<li>Supervisor may add voter by address or add voter class (by token address), but may not vote or undo votes</li>
-<li>Supervisor may remove voter or voter class for measure prior to start of voting</li>
-<li>Supervisor may begin and end the voting process</li>
-<li>Supervisor may set the fixed threshold (number) at which the measure is considered successful</li>
-<li>No changes are permitted once voting is open, the voter context is final and voter can be assured against manipulation of the rules during the voting process</li>
-<li>Voter may cast an affirmative vote once voting has been opened. A negative or abstention vote is never required and therefore incurs no gas fees. Vote total is tallied according to Voter class membership, i.e. number of held tokens for ERC-712, or 1 for general public</li>
-<li>A voter may undo their vote at any time while voting is open</li>
-<li>No votes or vote changes (undo) are allowed after voting has ended</li>
-<li>Supervisor may veto the measure prior to the end of voting to ensure the outcome of the measure aligns with the collective interest</li>
-<li>A vetoed measure has no result and effectively is void</li>
-<li>A token may only be used one time to verify membership in a voting class. A transferred token has no particular rights if another has already participated in this measure</li>
-<li>All successful operations are verifiable on chain</li>
+<li>To connect to the project from JavaScript checkout our js project <a href="https://github.com/momentranks/collective_governance_js">collective_governance_js</a></li>
 </ol>
-<h3>Terminology</h3>
-<p>Measure - A goal or aim initiated by the community
-ElectorDelegate - A contract responsible for community participation in voting on a measure
-Voter - A community member, who may be a member of a special subclass (ERC-721 token), participating in the outcome of the measure
-Supervisor - A steward for the measure to enable the community to come to a valid conclusion
-Owner - the initial contract creator who has no special authority over the outcome of any particular measure</p>                </article>
+<h3>Solidity Examples</h3>
+<h2>Project</h2>
+<p><a href="https://github.com/momentranks/collective-governance-v1">Visit the Project Page</a>
+<a href="/docs/contracts">Read the Docs</a></p>                </article>
             </aside><!-- /#featured -->
         <section id="extras" class="body">
                 <div class="blogroll">
                         <h2>links</h2>
                         <ul>
-                            <li><a href="https://github.com/momentranks/eth-community-v1">GitHub</a></li>
+                            <li><a href="https://github.com/momentranks/collective-governance-v1">Collective Governance</a></li>
+                            <li><a href="https://github.com/momentranks/collective_governance_js">Governance-JS</a></li>
+                            <li><a href="/docs/contracts">Read the Docs</a></li>
                         </ul>
                 </div><!-- /.blogroll -->
                 <div class="social">
                         <h2>social</h2>
                         <ul>
 
-                            <li><a href="#">You can add links in your config file</a></li>
-                            <li><a href="#">Another social link</a></li>
+                            <li><a href="https://twitter.com/collectivexyz">Collective.XYZ</a></li>
                         </ul>
                 </div><!-- /.social -->
         </section><!-- /#extras -->

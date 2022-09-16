@@ -2,13 +2,12 @@ ARG VERSION=stable-slim
 FROM debian:${VERSION}
 
 RUN export DEBIAN_FRONTEND=noninteractive && \
-        apt update && \
-        apt install -y -q --no-install-recommends \
-        build-essential python3 python3-pip git
+    apt update && \
+    apt install -y -q --no-install-recommends \
+    python3 python3-pip git
 
 RUN apt clean
 RUN rm -rf /var/lib/apt/lists/*
-
 
 WORKDIR /tools
 ENV WORKPATH=/tools
@@ -23,5 +22,5 @@ WORKDIR /site
 
 RUN pelican content --output /htmltmp
 
-CMD cp -vr /htmltmp/* /html && pelican --listen --bind 0.0.0.0 /html
+CMD cp -vr /htmltmp/* /html && pelican /html
 

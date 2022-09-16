@@ -1,6 +1,6 @@
 # collective-governance-v1
 
-## Open Elector Design for Community Measures
+## Open Smart Contract for Community Governance
 
 Open communities exist to serve the common good and therefore should be given an opportunity to make collective decisions about how resources are used or allocated. Such decisions, referred to as 'measures' augment participation and enable communities to become benefactors on a broader scale.
 
