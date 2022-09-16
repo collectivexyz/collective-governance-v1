@@ -98,7 +98,7 @@ contract CollectiveGovernanceTest is Test {
         governance.openVote(PROPOSAL_ID);
         vm.stopPrank();
         vm.prank(_VOTER1);
-        governance.voteForWithTokenId(PROPOSAL_ID, TOKEN_ID1);
+        governance.voteFor(PROPOSAL_ID, TOKEN_ID1);
         assertEq(_storage.forVotes(PROPOSAL_ID), 1);
     }
 
@@ -108,7 +108,7 @@ contract CollectiveGovernanceTest is Test {
         governance.openVote(PROPOSAL_ID);
         vm.stopPrank();
         vm.prank(_VOTER1);
-        governance.voteForWithTokenId(PROPOSAL_ID, TOKEN_ID1);
+        governance.voteFor(PROPOSAL_ID, TOKEN_ID1);
         assertEq(_storage.forVotes(PROPOSAL_ID), 1);
     }
 
@@ -118,7 +118,7 @@ contract CollectiveGovernanceTest is Test {
         governance.openVote(PROPOSAL_ID);
         vm.stopPrank();
         vm.prank(_VOTER1);
-        governance.voteForWithTokenList(PROPOSAL_ID, _tokenIdList);
+        governance.voteFor(PROPOSAL_ID, _tokenIdList);
         assertEq(_storage.forVotes(PROPOSAL_ID), 3);
     }
 
@@ -128,7 +128,7 @@ contract CollectiveGovernanceTest is Test {
         governance.openVote(PROPOSAL_ID);
         vm.stopPrank();
         vm.prank(_VOTER1);
-        governance.voteAgainstWithTokenList(PROPOSAL_ID, _tokenIdList);
+        governance.voteAgainst(PROPOSAL_ID, _tokenIdList);
         assertEq(_storage.againstVotes(PROPOSAL_ID), 3);
     }
 
@@ -138,7 +138,7 @@ contract CollectiveGovernanceTest is Test {
         governance.openVote(PROPOSAL_ID);
         vm.stopPrank();
         vm.prank(_VOTER1);
-        governance.abstainWithTokenList(PROPOSAL_ID, _tokenIdList);
+        governance.abstainFrom(PROPOSAL_ID, _tokenIdList);
         assertEq(_storage.abstentionCount(PROPOSAL_ID), 3);
     }
 
@@ -149,7 +149,7 @@ contract CollectiveGovernanceTest is Test {
         vm.stopPrank();
         vm.prank(_VOTER1);
         vm.roll(block.number + 2);
-        governance.voteForWithTokenId(PROPOSAL_ID, TOKEN_ID1);
+        governance.voteFor(PROPOSAL_ID, TOKEN_ID1);
         assertEq(_storage.forVotes(PROPOSAL_ID), 1);
     }
 
@@ -160,7 +160,7 @@ contract CollectiveGovernanceTest is Test {
         vm.stopPrank();
         vm.expectRevert("Not owner");
         vm.prank(_NOT_VOTER);
-        governance.voteForWithTokenId(PROPOSAL_ID, TOKEN_ID1);
+        governance.voteFor(PROPOSAL_ID, TOKEN_ID1);
     }
 
     function testVoteAgainst() public {
@@ -169,7 +169,7 @@ contract CollectiveGovernanceTest is Test {
         governance.openVote(PROPOSAL_ID);
         vm.stopPrank();
         vm.prank(_VOTER1);
-        governance.voteAgainstWithTokenId(PROPOSAL_ID, TOKEN_ID1);
+        governance.voteAgainst(PROPOSAL_ID, TOKEN_ID1);
         assertEq(_storage.againstVotes(PROPOSAL_ID), 1);
     }
 
@@ -180,7 +180,7 @@ contract CollectiveGovernanceTest is Test {
         vm.stopPrank();
         vm.expectRevert("Not owner");
         vm.prank(_NOT_VOTER);
-        governance.voteAgainstWithTokenId(PROPOSAL_ID, TOKEN_ID1);
+        governance.voteAgainst(PROPOSAL_ID, TOKEN_ID1);
     }
 
     function testAbstain() public {
@@ -189,7 +189,7 @@ contract CollectiveGovernanceTest is Test {
         governance.openVote(PROPOSAL_ID);
         vm.stopPrank();
         vm.prank(_VOTER1);
-        governance.abstainWithTokenId(PROPOSAL_ID, TOKEN_ID1);
+        governance.abstainFrom(PROPOSAL_ID, TOKEN_ID1);
         assertEq(_storage.abstentionCount(PROPOSAL_ID), 1);
     }
 
@@ -200,7 +200,7 @@ contract CollectiveGovernanceTest is Test {
         vm.stopPrank();
         vm.prank(_NOT_VOTER);
         vm.expectRevert("Not owner");
-        governance.abstainWithTokenId(PROPOSAL_ID, TOKEN_ID1);
+        governance.abstainFrom(PROPOSAL_ID, TOKEN_ID1);
     }
 
     function testOpenVote() public {
@@ -361,12 +361,12 @@ contract CollectiveGovernanceTest is Test {
         governance.openVote(PROPOSAL_ID);
         vm.stopPrank();
         vm.prank(_VOTER1);
-        governance.voteForWithTokenId(PROPOSAL_ID, TOKEN_ID1);
+        governance.voteFor(PROPOSAL_ID, TOKEN_ID1);
         vm.prank(_VOTER1);
         _erc721.transferFrom(_VOTER1, _VOTER2, TOKEN_ID1);
         vm.expectRevert("Already voted");
         vm.prank(_VOTER2);
-        governance.voteForWithTokenId(PROPOSAL_ID, TOKEN_ID1);
+        governance.voteFor(PROPOSAL_ID, TOKEN_ID1);
     }
 
     function testUndoRequiresOpen() public {
@@ -410,12 +410,12 @@ contract CollectiveGovernanceTest is Test {
         vm.prank(_OWNER);
         governance.openVote(PROPOSAL_ID);
         vm.prank(_VOTER1);
-        governance.voteForWithTokenId(PROPOSAL_ID, TOKEN_ID1);
+        governance.voteFor(PROPOSAL_ID, TOKEN_ID1);
         vm.prank(_VOTER1);
         _erc721.transferFrom(_VOTER1, _VOTER2, TOKEN_ID1);
         vm.expectRevert("Not voter");
         vm.prank(_VOTER2);
-        governance.undoWithTokenId(PROPOSAL_ID, TOKEN_ID1);
+        governance.undoVote(PROPOSAL_ID, TOKEN_ID1);
     }
 
     function testUndoVoteNotDefaultEnabled() public {
@@ -701,7 +701,7 @@ contract CollectiveGovernanceTest is Test {
         vm.stopPrank();
         vm.expectRevert("Voting is closed");
         vm.prank(_VOTER1);
-        governance.abstainFromVote(PROPOSAL_ID);
+        governance.abstainFrom(PROPOSAL_ID);
     }
 
     function testVoteDelayPreventsVote(uint256 blockStep) public {

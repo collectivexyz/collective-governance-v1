@@ -106,9 +106,14 @@
         "internalType": "uint256",
         "name": "_proposalId",
         "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_tokenId",
+        "type": "uint256"
       }
     ],
-    "name": "abstainFromVote",
+    "name": "abstainFrom",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -119,14 +124,9 @@
         "internalType": "uint256",
         "name": "_proposalId",
         "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_tokenId",
-        "type": "uint256"
       }
     ],
-    "name": "abstainWithTokenId",
+    "name": "abstainFrom",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -144,7 +144,7 @@
         "type": "uint256[]"
       }
     ],
-    "name": "abstainWithTokenList",
+    "name": "abstainFrom",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -219,6 +219,11 @@
         "internalType": "uint256",
         "name": "_proposalId",
         "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_tokenId",
+        "type": "uint256"
       }
     ],
     "name": "undoVote",
@@ -232,14 +237,9 @@
         "internalType": "uint256",
         "name": "_proposalId",
         "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_tokenId",
-        "type": "uint256"
       }
     ],
-    "name": "undoWithTokenId",
+    "name": "undoVote",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -283,7 +283,7 @@
         "type": "uint256"
       }
     ],
-    "name": "voteAgainstWithTokenId",
+    "name": "voteAgainst",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -301,20 +301,7 @@
         "type": "uint256[]"
       }
     ],
-    "name": "voteAgainstWithTokenList",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "_proposalId",
-        "type": "uint256"
-      }
-    ],
-    "name": "voteFor",
+    "name": "voteAgainst",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -332,7 +319,7 @@
         "type": "uint256"
       }
     ],
-    "name": "voteForWithTokenId",
+    "name": "voteFor",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -350,7 +337,20 @@
         "type": "uint256[]"
       }
     ],
-    "name": "voteForWithTokenList",
+    "name": "voteFor",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_proposalId",
+        "type": "uint256"
+      }
+    ],
+    "name": "voteFor",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

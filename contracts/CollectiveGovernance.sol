@@ -173,11 +173,7 @@ contract CollectiveGovernance is Governance, VoteStrategy, ERC165 {
         }
     }
 
-    function voteForWithTokenId(uint256 _proposalId, uint256 _tokenId)
-        external
-        requireVoteOpen(_proposalId)
-        requireNoVeto(_proposalId)
-    {
+    function voteFor(uint256 _proposalId, uint256 _tokenId) external requireVoteOpen(_proposalId) requireNoVeto(_proposalId) {
         uint256 count = _storage.voteForByShare(_proposalId, msg.sender, _tokenId);
         if (count > 0) {
             emit VoteTally(_proposalId, msg.sender, count);
@@ -186,7 +182,7 @@ contract CollectiveGovernance is Governance, VoteStrategy, ERC165 {
         }
     }
 
-    function voteForWithTokenList(uint256 _proposalId, uint256[] memory _tokenIdList)
+    function voteFor(uint256 _proposalId, uint256[] memory _tokenIdList)
         external
         requireVoteOpen(_proposalId)
         requireNoVeto(_proposalId)
@@ -217,11 +213,7 @@ contract CollectiveGovernance is Governance, VoteStrategy, ERC165 {
         }
     }
 
-    function undoWithTokenId(uint256 _proposalId, uint256 _tokenId)
-        external
-        requireVoteOpen(_proposalId)
-        requireNoVeto(_proposalId)
-    {
+    function undoVote(uint256 _proposalId, uint256 _tokenId) external requireVoteOpen(_proposalId) requireNoVeto(_proposalId) {
         uint256 count = _storage.undoVoteById(_proposalId, msg.sender, _tokenId);
         if (count > 0) {
             emit VoteUndo(_proposalId, msg.sender, count);
@@ -244,11 +236,7 @@ contract CollectiveGovernance is Governance, VoteStrategy, ERC165 {
         }
     }
 
-    function voteAgainstWithTokenId(uint256 _proposalId, uint256 _tokenId)
-        external
-        requireVoteOpen(_proposalId)
-        requireNoVeto(_proposalId)
-    {
+    function voteAgainst(uint256 _proposalId, uint256 _tokenId) external requireVoteOpen(_proposalId) requireNoVeto(_proposalId) {
         uint256 count = _storage.voteAgainstByShare(_proposalId, msg.sender, _tokenId);
         if (count > 0) {
             emit VoteTally(_proposalId, msg.sender, count);
@@ -257,7 +245,7 @@ contract CollectiveGovernance is Governance, VoteStrategy, ERC165 {
         }
     }
 
-    function voteAgainstWithTokenList(uint256 _proposalId, uint256[] memory _tokenIdList)
+    function voteAgainst(uint256 _proposalId, uint256[] memory _tokenIdList)
         external
         requireVoteOpen(_proposalId)
         requireNoVeto(_proposalId)
@@ -273,7 +261,7 @@ contract CollectiveGovernance is Governance, VoteStrategy, ERC165 {
         }
     }
 
-    function abstainFromVote(uint256 _proposalId) external requireVoteOpen(_proposalId) requireNoVeto(_proposalId) {
+    function abstainFrom(uint256 _proposalId) external requireVoteOpen(_proposalId) requireNoVeto(_proposalId) {
         uint256[] memory _shareList = _voterClass.discover(msg.sender);
         uint256 count = 0;
         for (uint256 i = 0; i < _shareList.length; i++) {
@@ -287,11 +275,7 @@ contract CollectiveGovernance is Governance, VoteStrategy, ERC165 {
         }
     }
 
-    function abstainWithTokenId(uint256 _proposalId, uint256 _tokenId)
-        external
-        requireVoteOpen(_proposalId)
-        requireNoVeto(_proposalId)
-    {
+    function abstainFrom(uint256 _proposalId, uint256 _tokenId) external requireVoteOpen(_proposalId) requireNoVeto(_proposalId) {
         uint256 count = _storage.abstainForShare(_proposalId, msg.sender, _tokenId);
         if (count > 0) {
             emit AbstentionTally(_proposalId, msg.sender, count);
@@ -300,7 +284,7 @@ contract CollectiveGovernance is Governance, VoteStrategy, ERC165 {
         }
     }
 
-    function abstainWithTokenList(uint256 _proposalId, uint256[] memory _tokenIdList)
+    function abstainFrom(uint256 _proposalId, uint256[] memory _tokenIdList)
         external
         requireVoteOpen(_proposalId)
         requireNoVeto(_proposalId)
