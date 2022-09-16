@@ -4,13 +4,24 @@ RUN export DEBIAN_FRONTEND=noninteractive && \
   apt update && \
   apt install -y -q --no-install-recommends \
   git curl gnupg2 build-essential openssl libssl-dev pkg-config \
-  ca-certificates apt-transport-https && \
+  ca-certificates apt-transport-https \
+  python3 && \
   apt clean && \
   rm -rf /var/lib/apt/lists/*
 
 RUN useradd --create-home -s /bin/bash mr
 RUN usermod -a -G sudo mr
 RUN echo '%mr ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
+
+# SOLC Docs
+WORKDIR /ethereum
+ADD https://gist.githubusercontent.com/jac18281828/8b3b0191957deb51714297e42974f3fc/raw/caa50c1e97fc098d0a14ae40a6f44a776dad5b49/sha3sum.py /ethereum/sha3sum
+ADD https://github.com/ethereum/solidity/releases/download/v0.8.17/solc-static-linux /ethereum/solc
+
+COPY ./bin/solc_install.sh /ethereum/solc_install.sh
+RUN chmod 755 /ethereum/solc_install.sh /ethereum/sha3sum
+RUN /ethereum/solc_install.sh
+RUN solc --version
 
 ## Go Lang
 ARG GO_VERSION=1.18.5
@@ -37,6 +48,8 @@ WORKDIR /rustup
 ENV USER=mr
 USER mr
 RUN /rustup/rustup-init.sh -y --default-toolchain stable --profile minimal
+RUN ~mr/.cargo/bin/rustup default stable
+
 
 ## Foundry
 WORKDIR /foundry
@@ -63,6 +76,9 @@ RUN useradd --create-home -s /bin/bash mr
 RUN usermod -a -G sudo mr
 RUN echo '%mr ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
 
+# SOLC for Docs
+COPY --from=builder /usr/local/bin/solc /usr/local/bin/solc
+
 # GO LANG
 COPY --from=builder /usr/local/go /usr/local/go
 
@@ -78,10 +94,8 @@ COPY --chown=mr:mr . .
 ENV USER=mr
 USER mr
 ENV PATH=${PATH}:~/.cargo/bin
-RUN ~mr/.cargo/bin/rustup default stable
 RUN yarn install
 RUN yarn hint
 RUN ~mr/.cargo/bin/forge test -vvv
 
 RUN bin/update_abi.sh
-
