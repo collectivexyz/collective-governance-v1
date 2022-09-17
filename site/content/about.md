@@ -5,7 +5,6 @@ Modified: 09-15-2022
 
 ## Open Smart Contract for Community Governance
 
-This is an Ethereum based smart contract with support for open voting and token voting for all communities.
 
 ## Deployment Locations
 

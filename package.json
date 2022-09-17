@@ -1,7 +1,7 @@
 {
   "name": "collective-governance-v1",
   "version": "0.8.2",
-  "description": "Open Elector Design for Communities",
+  "description": "Open Source Community Governance Smart Contract",
   "main": "index.js",
   "directories": {
     "doc": "docs",

@@ -1,4 +1,7 @@
 BSD 3-Clause License
+____________________
+
+.. _license: 
 
 Copyright (c) 2022, Collective.XYZ
 All rights reserved.

@@ -1,0 +1,52 @@
+.. Collective Governance documentation master file
+
+.. _collectivegovernance:
+
+=================================================
+Collective Governance
+=================================================
+
+-------------------------------------------------
+Open Source Community Governance Smart Contract
+-------------------------------------------------
+
+This is an Ethereum based smart contract with support for open voting and token voting.  It is open for all communities on the public blockchain.
+
+.. toctree::
+   :maxdepth: 2
+   :caption: Contents:
+
+   gettingstarted
+   javascript_example
+   license
+
+.. _deployment:
+
+Deployment
+==========
+
+Görli Testnet
+_____________
+
+=====================  ==========================================  =========== ===================
+Contract               Eth Address                                 Version     Description
+=====================  ==========================================  =========== ===================
+CollectiveGovernance   0x833b33A274DB2b26a030bEF1DF0A3981f01C1364  0.8.1       Governance Contract
+=====================  ==========================================  =========== ===================
+
+
+Project Links
+=============
+* `GitHub`_
+* `JavaScript Reference`_
+  
+.. _GitHub: https://github.com/momentranks/collective-governance-v1
+.. _JavaScript Reference: https://github.com/momentranks/collective_governance_js
+
+
+Indices and tables
+==================
+
+* :ref:`genindex`
+* :ref:`modindex`
+* :ref:`search`
