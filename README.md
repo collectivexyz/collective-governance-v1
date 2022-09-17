@@ -1,5 +1,7 @@
 # collective-governance-v1
 
+Read the [Documentation](https://momentranks.github.io/collective-governance-v1/)
+
 ## Open Smart Contract for Community Governance
 
 Open communities exist to serve the common good and therefore should be given an opportunity to make collective decisions about how resources are used or allocated. Such decisions, referred to as 'measures' augment participation and enable communities to become benefactors on a broader scale.
@@ -8,16 +10,15 @@ This smart contract enables a measure to be proposed, voted upon and successfull
 
 ### Contract Deployment Details
 
-| Contract          | Ethereum Address | Version |
-| ----------------- | ------------------------------------------ | ----- | 
-| VoterClassFactory | 0xF9eaeE9363d4C93bAe4b23c761705355f37fFfb0 | 0.8.2 | 
-| GovernanceBuilder | 0xfFF82B3c94710305492E974cA56dAeeC74D0FC36 | 0.8.2 | 
-
+| Contract          | Ethereum Address                           | Version |
+| ----------------- | ------------------------------------------ | ------- |
+| GovernanceBuilder | 0xfFF82B3c94710305492E974cA56dAeeC74D0FC36 | 0.8.2   |
+| VoterClassFactory | 0xF9eaeE9363d4C93bAe4b23c761705355f37fFfb0 | 0.8.2   |
 
 ### 0.8.2
 
 ```
-Run forge create --contracts contracts/VoterClassFactory.sol --rpc-url ${DEVNET_RPC_URL} --private-key ${ETH_DEV_PRIVATE} --etherscan-api-key ${ETHERSCAN_API_KEY} --verify VoterClassFactory        
+Run forge create --contracts contracts/VoterClassFactory.sol --rpc-url ${DEVNET_RPC_URL} --private-key ${ETH_DEV_PRIVATE} --etherscan-api-key ${ETHERSCAN_API_KEY} --verify VoterClassFactory
 Compiling 36 files with 0.8.17
 Solc 0.8.17 finished in 205.79s
 Compiler run successful
