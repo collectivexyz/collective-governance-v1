@@ -22,18 +22,17 @@ This is an Ethereum based smart contract with support for open voting and token 
 
 .. _deployment:
 
-Deployment Location
-===================
-
+Contract Deployment Details
+===========================
 
 Görli Testnet
 _____________
 
-
 =====================  ==========================================  =========== ===================
-Contract               Eth Address                                 Version     Description
+Contract               Ethereum Address                            Version     Description
 =====================  ==========================================  =========== ===================
-CollectiveGovernance   0x833b33A274DB2b26a030bEF1DF0A3981f01C1364  0.8.1       Governance Contract
+GovernanceBuilder      0xfFF82B3c94710305492E974cA56dAeeC74D0FC36  0.8.2       Governance Contract Builder
+VoterClassFactory      0xF9eaeE9363d4C93bAe4b23c761705355f37fFfb0  0.8.2       VoterClass Factory
 =====================  ==========================================  =========== ===================
 
 

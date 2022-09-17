@@ -36,7 +36,7 @@ contract MockERC721 is IERC721, ERC165 {
     function ownerOf(uint256 _tokenId) external view returns (address) {
         address owner = _tokenMap[_tokenId];
         if (owner == address(0)) {
-            revert("token does not exist");
+            revert("No such token");
         }
         return owner;
     }

@@ -15,5 +15,5 @@ Types of VoterClass:
 
 Once the proper VoterClass has been established, an online community can build a new Governance Contract.  The :ref:`<GovernanceBuilder>` provides a convienient method to create a new Governance Contract.
 
-To build a GovernanceBuilder a VoterClass must be provided, specified by the address as well as one or more :ref:`<Supervisors>` who may configure voting parameters as well as veto vote outcomes which are not in the best interest of the community.
+To build a GovernanceBuilder a VoterClass must be provided, specified by the address as well as one or more :ref:`<Supervisor>` who may configure voting parameters as well as veto vote outcomes which are not in the best interest of the community.
 

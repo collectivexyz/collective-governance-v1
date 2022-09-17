@@ -34,6 +34,7 @@ contract CollectiveGovernanceTest is Test {
     uint256 private constant TOKEN_ID1 = 77;
     uint256 private constant TOKEN_ID2 = 78;
     uint256 private constant TOKEN_ID3 = 79;
+    uint256 private constant INVALID_TOKEN = TOKEN_ID1 - 1;
 
     GovernanceBuilder private _builder;
     CollectiveGovernance private governance;
@@ -100,6 +101,26 @@ contract CollectiveGovernanceTest is Test {
         vm.prank(_VOTER1);
         governance.voteFor(PROPOSAL_ID, TOKEN_ID1);
         assertEq(_storage.forVotes(PROPOSAL_ID), 1);
+    }
+
+    function testCastSimpleVote721BadShare() public {
+        vm.startPrank(_SUPERVISOR, _SUPERVISOR);
+        governance.configure(PROPOSAL_ID, 2, 2);
+        governance.openVote(PROPOSAL_ID);
+        vm.stopPrank();
+        vm.prank(_VOTER1);
+        vm.expectRevert("Share id is not valid");
+        governance.voteFor(PROPOSAL_ID, NONE);
+    }
+
+    function testCastSimpleVote721NoShare() public {
+        vm.startPrank(_SUPERVISOR, _SUPERVISOR);
+        governance.configure(PROPOSAL_ID, 2, 2);
+        governance.openVote(PROPOSAL_ID);
+        vm.stopPrank();
+        vm.expectRevert("No such token");
+        vm.prank(_VOTER1);
+        governance.voteFor(PROPOSAL_ID, INVALID_TOKEN);
     }
 
     function testCastSimpleVoteOpen() public {

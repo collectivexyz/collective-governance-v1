@@ -8,28 +8,62 @@ This smart contract enables a measure to be proposed, voted upon and successfull
 
 ### Contract Deployment Details
 
-0.8.1
+| Contract          | Ethereum Address | Version |
+| ----------------- | ------------------------------------------ | ----- | 
+| VoterClassFactory | 0xF9eaeE9363d4C93bAe4b23c761705355f37fFfb0 | 0.8.2 | 
+| GovernanceBuilder | 0xfFF82B3c94710305492E974cA56dAeeC74D0FC36 | 0.8.2 | 
+
+
+### 0.8.2
 
 ```
-forge create --contracts contracts/CollectiveGovernance.sol --rpc-url ${DEVNET_RPC} --private-key ${DEVNET_WALLET} --etherscan-api-key ${ETHERSCAN_API_KEY} --verify CollectiveGovernance
-Compiling 23 files with 0.8.16
-Solc 0.8.16 finished in 106.73s
+Run forge create --contracts contracts/VoterClassFactory.sol --rpc-url ${DEVNET_RPC_URL} --private-key ${ETH_DEV_PRIVATE} --etherscan-api-key ${ETHERSCAN_API_KEY} --verify VoterClassFactory        
+Compiling 36 files with 0.8.17
+Solc 0.8.17 finished in 205.79s
 Compiler run successful
-Deployer: 0x6CEb0bF1f28ca4165d5C0A04f61DC733987eD6ad
-Deployed to: 0x833b33A274DB2b26a030bEF1DF0A3981f01C1364
-Transaction hash: 0x6208b1cd80f24dd95a05b3d7c9b9b08ce8b365fe2380a68ea493cf95584a1dbe
+Deployer: 0x6CEbXXXXXXXXX
+Deployed to: 0xF9eaeE9363d4C93bAe4b23c761705355f37fFfb0
+Transaction hash: 0xa9adb7f91b31187875eb9c3caff744124bd5bf9affba2ce97821f8ae439a89d2
 Starting contract verification...
 Waiting for etherscan to detect contract deployment...
-Submitting verification for [contracts/CollectiveGovernance.sol:CollectiveGovernance] Ok("0x833b33A274DB2b26a030bEF1DF0A3981f01C1364").
-Submitting verification for [contracts/CollectiveGovernance.sol:CollectiveGovernance] Ok("0x833b33A274DB2b26a030bEF1DF0A3981f01C1364").
-Submitting verification for [contracts/CollectiveGovernance.sol:CollectiveGovernance] Ok("0x833b33A274DB2b26a030bEF1DF0A3981f01C1364").
+
+Submitting verification for [contracts/VoterClassFactory.sol:VoterClassFactory] "0xF9eaeE9363d4C93bAe4b23c761705355f37fFfb0".
+
+Submitting verification for [contracts/VoterClassFactory.sol:VoterClassFactory] "0xF9eaeE9363d4C93bAe4b23c761705355f37fFfb0".
+
+Submitting verification for [contracts/VoterClassFactory.sol:VoterClassFactory] "0xF9eaeE9363d4C93bAe4b23c761705355f37fFfb0".
+
+Submitting verification for [contracts/VoterClassFactory.sol:VoterClassFactory] "0xF9eaeE9363d4C93bAe4b23c761705355f37fFfb0".
+
+Submitting verification for [contracts/VoterClassFactory.sol:VoterClassFactory] "0xF9eaeE9363d4C93bAe4b23c761705355f37fFfb0".
 Submitted contract for verification:
 	Response: `OK`
-	GUID: `a9uaapvndtyz3emtpihzpksmebkat3tdmb14zag68fppcpt4r2`
+	GUID: `ea54nmczs6e1e4yksxwztce4atevjpx2wvlfis1rj14ev8ng7v`
 	URL:
-        https://goerli.etherscan.io/address/0x833b33a274db2b26a030bef1df0a3981f01c1364
+        https://goerli.etherscan.io/address/0xf9eaee9363d4c93bae4b23c761705355f37fffb0
 Waiting for verification result...
-Contract source code already verified
+Contract successfully verified
+Compiling 36 files with 0.8.17
+Solc 0.8.17 finished in 209.98s
+Compiler run successful
+Deployer: 0x6CEbXXXXXXXXX
+Deployed to: 0xfFF82B3c94710305492E974cA56dAeeC74D0FC36
+Transaction hash: 0x765888e625ec0af0ab9a579059e6d6df95e6fe6ae84a7b7e9d8f2665e07eb4b4
+Starting contract verification...
+Waiting for etherscan to detect contract deployment...
+
+Submitting verification for [contracts/GovernanceBuilder.sol:GovernanceBuilder] "0xfFF82B3c94710305492E974cA56dAeeC74D0FC36".
+
+Submitting verification for [contracts/GovernanceBuilder.sol:GovernanceBuilder] "0xfFF82B3c94710305492E974cA56dAeeC74D0FC36".
+
+Submitting verification for [contracts/GovernanceBuilder.sol:GovernanceBuilder] "0xfFF82B3c94710305492E974cA56dAeeC74D0FC36".
+Submitted contract for verification:
+	Response: `OK`
+	GUID: `z9fldndqqqcwj368kmcp9wya9iqq5afeg5nyhzttm995yg4nxv`
+	URL:
+        https://goerli.etherscan.io/address/0xfff82b3c94710305492e974ca56daeec74d0fc36
+Waiting for verification result...
+Contract successfully verified
 ```
 
 ### Model

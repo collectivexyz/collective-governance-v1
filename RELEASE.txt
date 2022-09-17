@@ -1,2 +1,2 @@
 0.8.1: Intial version simple voting works
-0.8.2: Support for voting by token and prevent double voting on transfers
+0.8.2: One token one vote
