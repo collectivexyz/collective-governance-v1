@@ -1,44 +1,86 @@
-
 <!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
-<html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
-
-    <title>JavaScript Examples &#8212; Collective Governance  documentation</title>
-    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="_static/alabaster.css" />
-    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
-    <script src="_static/jquery.js"></script>
-    <script src="_static/underscore.js"></script>
-    <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
-    <script src="_static/doctools.js"></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>JavaScript Examples &mdash; Collective Governance  documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="_static/doctools.js"></script>
+    <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="BSD 3-Clause License" href="license.html" />
-    <link rel="prev" title="Getting Started" href="gettingstarted.html" />
-   
-  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
-  
-  
-  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+    <link rel="prev" title="Getting Started" href="gettingstarted.html" /> 
+</head>
 
-  </head><body>
-  
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="index.html" class="icon icon-home"> Collective Governance
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="gettingstarted.html">Getting Started</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">JavaScript Examples</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#voterclass">VoterClass</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#governance">Governance</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#voting">Voting</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="license.html">BSD 3-Clause License</a></li>
+</ul>
 
-    <div class="document">
-      <div class="documentwrapper">
-        <div class="bodywrapper">
-          
+        </div>
+      </div>
+    </nav>
 
-          <div class="body" role="main">
-            
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Collective Governance</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>JavaScript Examples</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/javascript_example.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
   <section id="javascript-examples">
-<h1>JavaScript Examples<a class="headerlink" href="#javascript-examples" title="Permalink to this heading">¶</a></h1>
+<h1>JavaScript Examples<a class="headerlink" href="#javascript-examples" title="Permalink to this heading"></a></h1>
 <p>Examples based on <a class="reference external" href="https://github.com/momentranks/collective_governance_js">JavaScript Reference</a>.   ABI files are available from <a class="reference external" href="https://github.com/momentranks/collective-governance-v1">GitHub</a></p>
 <section id="voterclass">
-<span id="javascript"></span><h2>VoterClass<a class="headerlink" href="#voterclass" title="Permalink to this heading">¶</a></h2>
+<span id="javascript"></span><h2>VoterClass<a class="headerlink" href="#voterclass" title="Permalink to this heading"></a></h2>
 <p>The first step is to build a VoterClass for your project.  This can be reused for all future projects and voting.</p>
 <div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="kd">const</span><span class="w"> </span><span class="nx">voterClassFactory</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="ow">new</span><span class="w"> </span><span class="nx">VoterClassFactory</span><span class="p">(...);</span><span class="w"></span>
 <span class="kd">const</span><span class="w"> </span><span class="nx">classAddress</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">await</span><span class="w"> </span><span class="nx">voterClassFactory</span><span class="p">.</span><span class="nx">createERC721</span><span class="p">(</span><span class="nx">config</span><span class="p">.</span><span class="nx">tokenContract</span><span class="p">,</span><span class="w"> </span><span class="mf">1</span><span class="p">);</span><span class="w"></span>
@@ -48,7 +90,7 @@
 <p>Make a note of the Ethereum address for the class you created.  For example <a class="reference external" href="https://goerli.etherscan.io/address/0x6bAc373e27f844259F3B79A6E7dAFf3868eBDc13">0x6bAc373e27f844259F3B79A6E7dAFf3868eBDc13</a></p>
 </section>
 <section id="governance">
-<h2>Governance<a class="headerlink" href="#governance" title="Permalink to this heading">¶</a></h2>
+<h2>Governance<a class="headerlink" href="#governance" title="Permalink to this heading"></a></h2>
 <p>The next step is to build the Governance Contract for your community.   This will take the VoterClass as an argument and reuse it for all future votes.</p>
 <div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="kd">const</span><span class="w"> </span><span class="nx">governanceBuilder</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="ow">new</span><span class="w"> </span><span class="nx">GovernanceBuilder</span><span class="p">(</span><span class="nx">config</span><span class="p">.</span><span class="nx">abiPath</span><span class="p">,</span><span class="w"> </span><span class="nx">config</span><span class="p">.</span><span class="nx">builderAddress</span><span class="p">,</span><span class="w"> </span><span class="nx">web3</span><span class="p">,</span><span class="w"> </span><span class="nx">wallet</span><span class="p">,</span><span class="w"> </span><span class="nx">config</span><span class="p">.</span><span class="nx">getGas</span><span class="p">());</span><span class="w"></span>
 <span class="kd">const</span><span class="w"> </span><span class="nx">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">await</span><span class="w"> </span><span class="nx">governanceBuilder</span><span class="p">.</span><span class="nx">name</span><span class="p">();</span><span class="w"></span>
@@ -62,7 +104,7 @@
 </div>
 <p>Make a note of the address of the created contract as this will be used for all future governance calls.</p>
 <section id="voting">
-<h3>Voting<a class="headerlink" href="#voting" title="Permalink to this heading">¶</a></h3>
+<h3>Voting<a class="headerlink" href="#voting" title="Permalink to this heading"></a></h3>
 <p>Now you can create proposals using the governance contract.</p>
 <div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="kd">const</span><span class="w"> </span><span class="nx">web3</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="ow">new</span><span class="w"> </span><span class="nx">Web3</span><span class="p">(</span><span class="nx">config</span><span class="p">.</span><span class="nx">rpcUrl</span><span class="p">);</span><span class="w"></span>
 
@@ -100,78 +142,34 @@
 </section>
 
 
+           </div>
           </div>
-          
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="gettingstarted.html" class="btn btn-neutral float-left" title="Getting Started" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="license.html" class="btn btn-neutral float-right" title="BSD 3-Clause License" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Collective.XYZ.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
         </div>
       </div>
-      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
-        <div class="sphinxsidebarwrapper">
-<h1 class="logo"><a href="index.html">Collective Governance</a></h1>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
 
-
-
-
-
-
-
-
-<h3>Navigation</h3>
-<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
-<ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="gettingstarted.html">Getting Started</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">JavaScript Examples</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#voterclass">VoterClass</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#governance">Governance</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="license.html">BSD 3-Clause License</a></li>
-</ul>
-
-<div class="relations">
-<h3>Related Topics</h3>
-<ul>
-  <li><a href="index.html">Documentation overview</a><ul>
-      <li>Previous: <a href="gettingstarted.html" title="previous chapter">Getting Started</a></li>
-      <li>Next: <a href="license.html" title="next chapter">BSD 3-Clause License</a></li>
-  </ul></li>
-</ul>
-</div>
-<div id="searchbox" style="display: none" role="search">
-  <h3 id="searchlabel">Quick search</h3>
-    <div class="searchformwrapper">
-    <form class="search" action="search.html" method="get">
-      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
-      <input type="submit" value="Go" />
-    </form>
-    </div>
-</div>
-<script>document.getElementById('searchbox').style.display = "block"</script>
-
-
-
-
-
-
-
-
-        </div>
-      </div>
-      <div class="clearer"></div>
-    </div>
-    <div class="footer">
-      &copy;2022, Collective.XYZ.
-      
-      |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 5.1.1</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
-      
-      |
-      <a href="_sources/javascript_example.rst.txt"
-          rel="nofollow">Page source</a>
-    </div>
-
-    
-
-    
-  </body>
+</body>
 </html>

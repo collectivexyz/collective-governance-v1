@@ -69,7 +69,7 @@ Contract successfully verified
 
 ### Model
 
-![Collective Governance](docs/images/CollectiveGovernance.png)
+![Collective Governance](docs/_static/images/CollectiveGovernance.png)
 
 ### Design Aims
 
