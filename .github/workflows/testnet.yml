@@ -11,6 +11,10 @@ on:
   release:
     types: [created]
 
+concurrency:
+  group: "testnet"
+  cancel-in-progress: true
+
 env:
   FOUNDRY_PROFILE: ci
   DEVNET_RPC_URL: ${{ secrets.ALCHEMY_DEVNET_RPC }}
