@@ -1,9 +1,0 @@
-=============
-API Reference
-=============
-
-Introduction
-____________
-
-
-:ref:`collectivegovernance`_ implements a flexible approach to voting to support a variety of communities.   Each community can define the individuals who may participate in governance decision making by defining a 'VoterClass'
