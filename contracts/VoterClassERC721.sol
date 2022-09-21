@@ -37,7 +37,12 @@ import "@openzeppelin/contracts/interfaces/IERC721.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/IERC721Enumerable.sol";
 import "./VoterClass.sol";
 
-/// @notice voting class for ERC-721 contract
+/// @title ERC721 Implementation of VoterClass
+/// @notice This contract implements a voter pool based on ownership of an ERC-721 token.
+/// A class member is considered a voter if they have signing access to a wallet that is marked
+/// ownerOf a token of the specified address
+/// @dev ERC721Enumerable is supported for discovery, however if the token contract does not support enumeration
+/// then vote by specific tokenId is still supported
 contract VoterClassERC721 is VoterClass, ERC165 {
     string public constant NAME = "collective.xyz VoterClassERC721";
     uint32 public constant VERSION_1 = 1;
@@ -46,6 +51,8 @@ contract VoterClassERC721 is VoterClass, ERC165 {
 
     uint256 private immutable _weight;
 
+    /// @param _contract Address of the token contract
+    /// @param _voteWeight The integral weight to apply to each token held by the wallet
     constructor(address _contract, uint256 _voteWeight) {
         _contractAddress = _contract;
         _weight = _voteWeight;
@@ -61,22 +68,33 @@ contract VoterClassERC721 is VoterClass, ERC165 {
         _;
     }
 
+    /// @notice ERC-721 VoterClass is always final
+    /// @dev always returns true
+    /// @return bool true if final
     function isFinal() external pure returns (bool) {
         return true;
     }
 
+    /// @notice determine if wallet holds at least one token from the ERC-721 contract
+    /// @return bool true if wallet can sign for votes on this class
     function isVoter(address _wallet) external view requireValidAddress(_wallet) returns (bool) {
         return IERC721(_contractAddress).balanceOf(_wallet) > 0;
     }
 
-    function votesAvailable(address _wallet, uint256 _shareId) external view requireValidAddress(_wallet) returns (uint256) {
-        address tokenOwner = IERC721(_contractAddress).ownerOf(_shareId);
+    /// @notice tabulate the number of votes available for the specific wallet and tokenId
+    /// @param _wallet The wallet to test for ownership
+    /// @param _tokenId The id of the token associated with the ERC-721 contract
+    function votesAvailable(address _wallet, uint256 _tokenId) external view requireValidAddress(_wallet) returns (uint256) {
+        address tokenOwner = IERC721(_contractAddress).ownerOf(_tokenId);
         if (_wallet == tokenOwner) {
             return 1;
         }
         return 0;
     }
 
+    /// @notice discover an array of tokenIds associated with the specified wallet
+    /// @dev discovery requires support for ERC721Enumerable, otherwise execution will revert
+    /// @return uint256[] array in memory of share ids
     function discover(address _wallet) external view requireValidAddress(_wallet) returns (uint256[] memory) {
         bytes4 interfaceId721 = type(IERC721Enumerable).interfaceId;
         require(IERC721(_contractAddress).supportsInterface(interfaceId721), "ERC-721 Enumerable required");
@@ -91,26 +109,34 @@ contract VoterClassERC721 is VoterClass, ERC165 {
         return tokenIdList;
     }
 
-    /// @notice commit votes for shareId return number voted
-    function confirm(address _wallet, uint256 _shareId) external view requireValidShare(_shareId) returns (uint256) {
-        uint256 voteCount = this.votesAvailable(_wallet, _shareId);
+    /// @notice confirm tokenId is associated with wallet for voting
+    /// @dev does not require IERC721Enumerable, tokenId ownership is checked directly using ERC-721
+    /// @return uint256 The number of weighted votes confirmed
+    function confirm(address _wallet, uint256 _tokenId) external view requireValidShare(_tokenId) returns (uint256) {
+        uint256 voteCount = this.votesAvailable(_wallet, _tokenId);
         require(voteCount > 0, "Not owner");
         return _weight * voteCount;
     }
 
     /// @notice return voting weight of each confirmed share
+    /// @return uint256 weight applied to one share
     function weight() external view returns (uint256) {
         return _weight;
     }
 
+    /// @notice see ERC-165
     function supportsInterface(bytes4 interfaceId) public view virtual override(ERC165) returns (bool) {
         return interfaceId == type(VoterClass).interfaceId || super.supportsInterface(interfaceId);
     }
 
+    /// @notice return the name of this implementation
+    /// @return string memory representation of name
     function name() external pure virtual returns (string memory) {
         return NAME;
     }
 
+    /// @notice return the version of this implementation
+    /// @return uint32 version number
     function version() external pure returns (uint32) {
         return VERSION_1;
     }

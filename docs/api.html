@@ -1,0 +1,2667 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Contract Specification &mdash; Collective Governance  documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="_static/doctools.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Elector Supervisor" href="supervisor.html" />
+    <link rel="prev" title="JavaScript Examples" href="javascript_example.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="index.html" class="icon icon-home"> Collective Governance
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="gettingstarted.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="javascript_example.html">JavaScript Examples</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Contract Specification</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#builder">Builder</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#collectivegovernance">CollectiveGovernance</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#governance">Governance</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#governancebuilder">GovernanceBuilder</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#governancestorage">GovernanceStorage</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#storage">Storage</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#votestrategy">VoteStrategy</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#voterclass">VoterClass</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#voterclasserc721">VoterClassERC721</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#voterclassfactory">VoterClassFactory</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#voterclassnullobject">VoterClassNullObject</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#voterclassopenvote">VoterClassOpenVote</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#voterclassvoterpool">VoterClassVoterPool</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#voterpool">VoterPool</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="supervisor.html">Elector Supervisor</a></li>
+<li class="toctree-l1"><a class="reference internal" href="license.html">BSD 3-Clause License</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Collective Governance</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>Contract Specification</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/api.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="contract-specification">
+<h1>Contract Specification<a class="headerlink" href="#contract-specification" title="Permalink to this heading"></a></h1>
+<section id="builder">
+<h2>Builder<a class="headerlink" href="#builder" title="Permalink to this heading"></a></h2>
+<div class="line-block" id="id1">
+<div class="line"><strong>Governance Builder interface</strong></div>
+<div class="line">Requirements for Governance Builder implementation</div>
+</div>
+<dl class="object">
+<dt class="sig sig-object">
+<span class="sig-name descname"><span class="pre">interface</span> <span class="pre">Builder</span></span></dt>
+<dd><dl class="py method">
+<dt class="sig sig-object py" id="aGovernance">
+<span class="sig-name descname"><span class="pre">aGovernance</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#aGovernance" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>Builder this contract</p>
+</dd>
+</dl>
+<p>initialize and create a new builder context for this sender</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="build">
+<span class="sig-name descname"><span class="pre">build</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#build" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>the address of the new Governance contract</p>
+</dd>
+<dt class="field-even">Notice</dt>
+<dd class="field-even"><p>contructs a new contract and may require a large gas fee, does not reinitialize context</p>
+</dd>
+</dl>
+<p>build the specified contract</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="name">
+<span class="sig-name descname"><span class="pre">name</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#name" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>string memory representation of name</p>
+</dd>
+</dl>
+<p>return the name of this implementation</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="version">
+<span class="sig-name descname"><span class="pre">version</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#version" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>uint32 version number</p>
+</dd>
+</dl>
+<p>return the version of this implementation</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="withSupervisor">
+<span class="sig-name descname"><span class="pre">withSupervisor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">address</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#withSupervisor" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>_supervisor</strong> – the address of the wallet representing a supervisor for the project</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Builder this contract</p>
+</dd>
+<dt class="field-odd">Notice</dt>
+<dd class="field-odd"><p>maintains an internal list which increases with every call</p>
+</dd>
+</dl>
+<p>add a supervisor to the supervisor list for the next constructed contract contract</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="withVoterClass">
+<span class="sig-name descname"><span class="pre">withVoterClass</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">address</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#withVoterClass" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>_class</strong> – the address of the VoterClass contract</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Builder this contract</p>
+</dd>
+<dt class="field-odd">Notice</dt>
+<dd class="field-odd"><p>the type safe VoterClass for use within Solidity code</p>
+</dd>
+</dl>
+<p>set the VoterClass to be used for the next constructed contract</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="withVoterClassAddress">
+<span class="sig-name descname"><span class="pre">withVoterClassAddress</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">address</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#withVoterClassAddress" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>_classAddress</strong> – the address of the VoterClass contract</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Builder this contract</p>
+</dd>
+</dl>
+<p>set the VoterClass to be used for the next constructed contract</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="collectivegovernance">
+<h2>CollectiveGovernance<a class="headerlink" href="#collectivegovernance" title="Permalink to this heading"></a></h2>
+<div class="line-block" id="id2">
+<div class="line"><strong>Collective Governance implementation</strong></div>
+<div class="line">Governance contract implementation for Collective.   This contract implements voting by groups of pooled voters, open voting or based on membership, such as class members who hold a specific ERC-721 token in their wallet. Creating a Vote is a three step process First, propose the vote.  Next, Configure the vote.  Finally, open the vote. Voting may proceed according to the conditions established during configuration.</div>
+</div>
+<dl class="object">
+<dt class="sig sig-object">
+<span class="sig-name descname"><span class="pre">contract</span> <span class="pre">CollectiveGovernance</span></span></dt>
+<dd><dl class="py method">
+<dt class="sig sig-object py" id="NAME">
+<span class="sig-name descname"><span class="pre">NAME</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#NAME" title="Permalink to this definition"></a></dt>
+<dd><p>contract name</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="abstainFrom">
+<span class="sig-name descname"><span class="pre">abstainFrom</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">uint256</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#abstainFrom" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>_proposalId</strong> – The numeric id of the proposed vote</p>
+</dd>
+<dt class="field-even">Notice</dt>
+<dd class="field-even"><p>auto discovery is attempted and if possible the method will proceed using the discovered shares</p>
+</dd>
+</dl>
+<p>abstain from vote by id</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">abstainFrom(uint256,uint256)</span></span></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>_proposalId</strong> – The numeric id of the proposed vote</p></li>
+<li><p><strong>_tokenId</strong> – The id of a token or share representing the right to vote</p></li>
+</ul>
+</dd>
+</dl>
+<p>abstain from vote by id</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id0">
+<span class="sig-name descname"><span class="pre">abstainFrom</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">uint256</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">uint256[]</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#id0" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>_proposalId</strong> – The numeric id of the proposed vote</p></li>
+<li><p><strong>_tokenIdList</strong> – A array of tokens or shares that confer the right to vote</p></li>
+</ul>
+</dd>
+</dl>
+<p>abstain from vote by id</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">configure(uint256,uint256,uint256)</span></span></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>_proposalId</strong> – The numeric id of the proposed vote</p></li>
+<li><p><strong>_quorumThreshold</strong> – The threshold of participation that is required for a successful conclusion of voting</p></li>
+<li><p><strong>_requiredDuration</strong> – The minimum time for voting to proceed before ending the vote is allowed</p></li>
+</ul>
+</dd>
+</dl>
+<p>configure an existing proposal by id</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="endVote">
+<span class="sig-name descname"><span class="pre">endVote</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">uint256</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#endVote" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>_proposalId</strong> – The numeric id of the proposed vote</p>
+</dd>
+<dt class="field-even">Notice</dt>
+<dd class="field-even"><p>it is not possible to end voting until the required duration has elapsed</p>
+</dd>
+</dl>
+<p>end voting on an existing proposal by id</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="getStorageAddress">
+<span class="sig-name descname"><span class="pre">getStorageAddress</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#getStorageAddress" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>address The address of the store</p>
+</dd>
+</dl>
+<p>return the address of the internal vote data store</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="getVoteSucceeded">
+<span class="sig-name descname"><span class="pre">getVoteSucceeded</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">uint256</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#getVoteSucceeded" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>bool True if the vote is closed and passed</p>
+</dd>
+<dt class="field-even">Notice</dt>
+<dd class="field-even"><p>This method will fail if the vote was vetoed</p>
+</dd>
+</dl>
+<p>get the result of the vote</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="isOpen">
+<span class="sig-name descname"><span class="pre">isOpen</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">uint256</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#isOpen" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>_proposalId</strong> – The numeric id of the proposed vote</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>bool True if the proposal is open</p>
+</dd>
+</dl>
+<p>test if an existing proposal is open</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id3">
+<span class="sig-name descname"><span class="pre">name</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#id3" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>string memory representation of name</p>
+</dd>
+</dl>
+<p>return the name of this implementation</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="openVote">
+<span class="sig-name descname"><span class="pre">openVote</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">uint256</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#openVote" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>_proposalId</strong> – The numeric id of the proposed vote</p>
+</dd>
+</dl>
+<p>open an existing proposal by id</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="propose">
+<span class="sig-name descname"><span class="pre">propose</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#propose" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>uint256 The id of the new proposal</p>
+</dd>
+<dt class="field-even">Notice</dt>
+<dd class="field-even"><p>Only one new proposal is allowed per msg.sender</p>
+</dd>
+</dl>
+<p>propose a vote for the community</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="supportsInterface">
+<span class="sig-name descname"><span class="pre">supportsInterface</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bytes4</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#supportsInterface" title="Permalink to this definition"></a></dt>
+<dd><p>see ERC-165</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="undoVote">
+<span class="sig-name descname"><span class="pre">undoVote</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">uint256</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#undoVote" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>_proposalId</strong> – The numeric id of the proposed vote</p>
+</dd>
+<dt class="field-even">Notice</dt>
+<dd class="field-even"><p>Only applies to affirmative vote. auto discovery is attempted and if possible the method will proceed using the discovered shares</p>
+</dd>
+</dl>
+<p>undo any previous vote if any</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">undoVote(uint256,uint256)</span></span></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>_proposalId</strong> – The numeric id of the proposed vote</p></li>
+<li><p><strong>_tokenId</strong> – The id of a token or share representing the right to vote</p></li>
+</ul>
+</dd>
+<dt class="field-even">Notice</dt>
+<dd class="field-even"><p>only applies to affirmative vote</p>
+</dd>
+</dl>
+<p>undo any previous vote if any</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id4">
+<span class="sig-name descname"><span class="pre">version</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#id4" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>uint32 version number</p>
+</dd>
+</dl>
+<p>return the version of this implementation</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="veto">
+<span class="sig-name descname"><span class="pre">veto</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">uint256</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#veto" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>_proposalId</strong> – The numeric id of the proposed vote</p>
+</dd>
+<dt class="field-even">Notice</dt>
+<dd class="field-even"><p>transaction must be signed by a supervisor wallet</p>
+</dd>
+</dl>
+<p>veto proposal by id</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="voteAgainst">
+<span class="sig-name descname"><span class="pre">voteAgainst</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">uint256</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#voteAgainst" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>_proposalId</strong> – The numeric id of the proposed vote</p>
+</dd>
+<dt class="field-even">Notice</dt>
+<dd class="field-even"><p>auto discovery is attempted and if possible the method will proceed using the discovered shares</p>
+</dd>
+</dl>
+<p>cast an against vote by id</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">voteAgainst(uint256,uint256)</span></span></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>_proposalId</strong> – The numeric id of the proposed vote</p></li>
+<li><p><strong>_tokenId</strong> – The id of a token or share representing the right to vote</p></li>
+</ul>
+</dd>
+</dl>
+<p>cast an against vote by id</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id5">
+<span class="sig-name descname"><span class="pre">voteAgainst</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">uint256</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">uint256[]</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#id5" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>_proposalId</strong> – The numeric id of the proposed vote</p></li>
+<li><p><strong>_tokenIdList</strong> – A array of tokens or shares that confer the right to vote</p></li>
+</ul>
+</dd>
+</dl>
+<p>cast an against vote by id</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="voteFor">
+<span class="sig-name descname"><span class="pre">voteFor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">uint256</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#voteFor" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>_proposalId</strong> – The numeric id of the proposed vote</p>
+</dd>
+<dt class="field-even">Notice</dt>
+<dd class="field-even"><p>Auto discovery is attempted and if possible the method will proceed using the discovered shares</p>
+</dd>
+</dl>
+<p>cast an affirmative vote for the measure by id</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">voteFor(uint256,uint256)</span></span></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>_proposalId</strong> – The numeric id of the proposed vote</p></li>
+<li><p><strong>_tokenId</strong> – The id of a token or share representing the right to vote</p></li>
+</ul>
+</dd>
+</dl>
+<p>cast an affirmative vote for the measure by id</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id6">
+<span class="sig-name descname"><span class="pre">voteFor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">uint256</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">uint256[]</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#id6" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>_proposalId</strong> – The numeric id of the proposed vote</p></li>
+<li><p><strong>_tokenIdList</strong> – A array of tokens or shares that confer the right to vote</p></li>
+</ul>
+</dd>
+</dl>
+<p>cast an affirmative vote for the measure by id</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="governance">
+<h2>Governance<a class="headerlink" href="#governance" title="Permalink to this heading"></a></h2>
+<div class="line-block" id="id7">
+<div class="line"><strong>Governance interface</strong></div>
+<div class="line">Requirements for Governance implementation</div>
+</div>
+<dl class="object">
+<dt class="sig sig-object">
+<span class="sig-name descname"><span class="pre">contract</span> <span class="pre">Governance</span></span></dt>
+<dd><dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">configure(uint256,uint256,uint256)</span></span></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>_proposalId</strong> – The numeric id of the proposed vote</p></li>
+<li><p><strong>_quorumThreshold</strong> – The threshold of participation that is required for a successful conclusion of voting</p></li>
+<li><p><strong>_requiredDuration</strong> – The minimum time for voting to proceed before ending the vote is allowed</p></li>
+</ul>
+</dd>
+</dl>
+<p>configure an existing proposal by id</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id8">
+<span class="sig-name descname"><span class="pre">getStorageAddress</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#id8" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>address The address of the store</p>
+</dd>
+</dl>
+<p>return the address of the internal vote data store</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id9">
+<span class="sig-name descname"><span class="pre">name</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#id9" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>string memory representation of name</p>
+</dd>
+</dl>
+<p>return the name of this implementation</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id10">
+<span class="sig-name descname"><span class="pre">propose</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#id10" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>uint256 The id of the new proposal</p>
+</dd>
+</dl>
+<p>propose a vote for the community</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id11">
+<span class="sig-name descname"><span class="pre">version</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#id11" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>uint32 version number</p>
+</dd>
+</dl>
+<p>return the version of this implementation</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="governancebuilder">
+<h2>GovernanceBuilder<a class="headerlink" href="#governancebuilder" title="Permalink to this heading"></a></h2>
+<div class="line-block" id="id12">
+<div class="line"><strong>Governance Builder implementation</strong></div>
+<div class="line">This builder supports creating new instances of the Collective Governance Contract</div>
+</div>
+<dl class="object">
+<dt class="sig sig-object">
+<span class="sig-name descname"><span class="pre">contract</span> <span class="pre">GovernanceBuilder</span></span></dt>
+<dd><dl class="py method">
+<dt class="sig sig-object py" id="id13">
+<span class="sig-name descname"><span class="pre">aGovernance</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#id13" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>Builder this contract</p>
+</dd>
+</dl>
+<p>initialize and create a new builder context for this sender</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id14">
+<span class="sig-name descname"><span class="pre">build</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#id14" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>the address of the new Governance contract</p>
+</dd>
+<dt class="field-even">Notice</dt>
+<dd class="field-even"><p>contructs a new contract and may require a large gas fee, does not reinitialize context</p>
+</dd>
+</dl>
+<p>build the specified contract</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id15">
+<span class="sig-name descname"><span class="pre">name</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#id15" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>string memory representation of name</p>
+</dd>
+</dl>
+<p>return the name of this implementation</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id16">
+<span class="sig-name descname"><span class="pre">version</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#id16" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>uint32 version number</p>
+</dd>
+</dl>
+<p>return the version of this implementation</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id17">
+<span class="sig-name descname"><span class="pre">withSupervisor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">address</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#id17" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>_supervisor</strong> – the address of the wallet representing a supervisor for the project</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Builder this contract</p>
+</dd>
+<dt class="field-odd">Notice</dt>
+<dd class="field-odd"><p>maintains an internal list which increases with every call</p>
+</dd>
+</dl>
+<p>add a supervisor to the supervisor list for the next constructed contract contract</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id18">
+<span class="sig-name descname"><span class="pre">withVoterClass</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">address</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#id18" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>_class</strong> – the address of the VoterClass contract</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Builder this contract</p>
+</dd>
+<dt class="field-odd">Notice</dt>
+<dd class="field-odd"><p>the type safe VoterClass for use within Solidity code</p>
+</dd>
+</dl>
+<p>set the VoterClass to be used for the next constructed contract</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id19">
+<span class="sig-name descname"><span class="pre">withVoterClassAddress</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">address</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#id19" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>_classAddress</strong> – the address of the VoterClass contract</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Builder this contract</p>
+</dd>
+</dl>
+<p>set the VoterClass to be used for the next constructed contract</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="governancestorage">
+<h2>GovernanceStorage<a class="headerlink" href="#governancestorage" title="Permalink to this heading"></a></h2>
+<div class="line-block" id="id20">
+<div class="line"><strong>GovernanceStorage implementation</strong></div>
+<div class="line">GovernanceStorage implements the necesscary infrastructure for governance and voting with safety controls</div>
+</div>
+<dl class="object">
+<dt class="sig sig-object">
+<span class="sig-name descname"><span class="pre">contract</span> <span class="pre">GovernanceStorage</span></span></dt>
+<dd><dl class="py method">
+<dt class="sig sig-object py" id="id21">
+<span class="sig-name descname"><span class="pre">NAME</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#id21" title="Permalink to this definition"></a></dt>
+<dd><p>contract name</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">abstainForShare(uint256,address,uint256)</span></span></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>_proposalId</strong> – the id of the proposal</p></li>
+<li><p><strong>_shareId</strong> – the id of the share</p></li>
+<li><p><strong>_wallet</strong> – the wallet represented for the vote</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>uint256 the number of votes cast</p>
+</dd>
+</dl>
+<p>cast an abstention for the specified share</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="abstentionCount">
+<span class="sig-name descname"><span class="pre">abstentionCount</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">uint256</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#abstentionCount" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>_proposalId</strong> – the id of the proposal</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>uint256 the number abstentions</p>
+</dd>
+</dl>
+<p>get the number of abstentions</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="againstVotes">
+<span class="sig-name descname"><span class="pre">againstVotes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">uint256</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#againstVotes" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>_proposalId</strong> – the id of the proposal</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>uint256 the number of against votes</p>
+</dd>
+</dl>
+<p>get the against vote count</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">burnSupervisor(uint256,address,address)</span></span></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>_proposalId</strong> – the id of the proposal</p></li>
+<li><p><strong>_sender</strong> – original wallet for this request</p></li>
+<li><p><strong>_supervisor</strong> – the supervisor address</p></li>
+</ul>
+</dd>
+<dt class="field-even">Notice</dt>
+<dd class="field-even"><p>requires proposal creator</p>
+</dd>
+</dl>
+<p>remove a supervisor from the proposal along with its ability to change or veto</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="constructor">
+<span class="sig-name descname"><span class="pre">constructor</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#constructor" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>_class</strong> – the contract that defines the popluation</p>
+</dd>
+</dl>
+<p>create a new storage object with VoterClass as the voting population</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="enableUndoVote">
+<span class="sig-name descname"><span class="pre">enableUndoVote</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">uint256</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">address</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#enableUndoVote" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>_proposalId</strong> – the id of the proposal</p></li>
+<li><p><strong>_sender</strong> – original wallet for this request</p></li>
+</ul>
+</dd>
+<dt class="field-even">Notice</dt>
+<dd class="field-even"><p>requires supervisor</p>
+</dd>
+</dl>
+<p>enable the undo feature for this vote</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="endBlock">
+<span class="sig-name descname"><span class="pre">endBlock</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">uint256</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#endBlock" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>_proposalId</strong> – the id of the proposal</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>uint256 the end block</p>
+</dd>
+</dl>
+<p>get the end block</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="forVotes">
+<span class="sig-name descname"><span class="pre">forVotes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">uint256</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#forVotes" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>_proposalId</strong> – the id of the proposal</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>uint256 the number of votes in favor</p>
+</dd>
+</dl>
+<p>get the for vote count</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="getSender">
+<span class="sig-name descname"><span class="pre">getSender</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">uint256</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#getSender" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>_proposalId</strong> – the id of the proposal</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>address the address of the sender</p>
+</dd>
+</dl>
+<p>get the address of the proposal sender</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="initializeProposal">
+<span class="sig-name descname"><span class="pre">initializeProposal</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">address</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#initializeProposal" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>uint256 the id of the proposal</p>
+</dd>
+</dl>
+<p>initialize a new proposal and return the id</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="isReady">
+<span class="sig-name descname"><span class="pre">isReady</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">uint256</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#isReady" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>_proposalId</strong> – the id of the proposal</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>bool true if the proposal is marked ready</p>
+</dd>
+</dl>
+<p>test if proposal is ready or in the setup phase</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="isSupervisor">
+<span class="sig-name descname"><span class="pre">isSupervisor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">uint256</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">address</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#isSupervisor" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>_proposalId</strong> – the id of the proposal</p></li>
+<li><p><strong>_supervisor</strong> – the address to check</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>bool true if the address is a supervisor</p>
+</dd>
+</dl>
+<p>test if the address is a supervisor on the specified proposal</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="isVeto">
+<span class="sig-name descname"><span class="pre">isVeto</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">uint256</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#isVeto" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>_proposalId</strong> – the id of the proposal</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>bool true if the proposal is marked veto</p>
+</dd>
+</dl>
+<p>test if proposal is veto</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="isVoter">
+<span class="sig-name descname"><span class="pre">isVoter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">uint256</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">address</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#isVoter" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>_proposalId</strong> – the id of the proposal</p></li>
+<li><p><strong>_voter</strong> – the address to check</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>bool true if the address is a voter</p>
+</dd>
+</dl>
+<p>test if address is a voter on the specified proposal</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="latestProposal">
+<span class="sig-name descname"><span class="pre">latestProposal</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">address</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#latestProposal" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>uint256 the id of the most recent proposal for sender</p>
+</dd>
+</dl>
+<p>get the id of the last proposal for sender</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="makeReady">
+<span class="sig-name descname"><span class="pre">makeReady</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">uint256</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">address</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#makeReady" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>_proposalId</strong> – the id of the proposal</p></li>
+<li><p><strong>_sender</strong> – original wallet for this request</p></li>
+</ul>
+</dd>
+<dt class="field-even">Notice</dt>
+<dd class="field-even"><p>requires supervisor</p>
+</dd>
+</dl>
+<p>indicate the proposal is ready for voting and should be frozen</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="maxPassThreshold">
+<span class="sig-name descname"><span class="pre">maxPassThreshold</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#maxPassThreshold" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>uint256 the maximum value</p>
+</dd>
+</dl>
+<p>get the maxiumum possible for the pass threshold</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id22">
+<span class="sig-name descname"><span class="pre">name</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#id22" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>string memory representation of name</p>
+</dd>
+</dl>
+<p>return the name of this implementation</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="proposalMap">
+<span class="sig-name descname"><span class="pre">proposalMap</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">uint256</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#proposalMap" title="Permalink to this definition"></a></dt>
+<dd><p>global list of proposed issues by id</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="quorum">
+<span class="sig-name descname"><span class="pre">quorum</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">uint256</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#quorum" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>_proposalId</strong> – the id of the proposal</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>uint256 the amount of participation</p>
+</dd>
+</dl>
+<p>get the current number counting towards quorum</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="quorumRequired">
+<span class="sig-name descname"><span class="pre">quorumRequired</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">uint256</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#quorumRequired" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>_proposalId</strong> – the id of the proposal</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>uint256 the number required for quorum</p>
+</dd>
+</dl>
+<p>get the quorum required</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">registerSupervisor(uint256,address,address)</span></span></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>_proposalId</strong> – the id of the proposal</p></li>
+<li><p><strong>_sender</strong> – original wallet for this request</p></li>
+<li><p><strong>_supervisor</strong> – the supervisor address</p></li>
+</ul>
+</dd>
+<dt class="field-even">Notice</dt>
+<dd class="field-even"><p>requires proposal creator</p>
+</dd>
+</dl>
+<p>Register a new supervisor on the specified proposal. The supervisor has rights to add or remove voters prior to start of voting in a Voter Pool. The supervisor also has the right to veto the outcome of the vote.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">setQuorumThreshold(uint256,uint256,address)</span></span></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>_proposalId</strong> – the id of the proposal</p></li>
+<li><p><strong>_sender</strong> – original wallet for this request</p></li>
+<li><p><strong>_threshold</strong> – the quorum number</p></li>
+</ul>
+</dd>
+<dt class="field-even">Notice</dt>
+<dd class="field-even"><p>requires supervisor</p>
+</dd>
+</dl>
+<p>set the minimum number of participants for a successful outcome</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">setRequiredVoteDuration(uint256,uint256,address)</span></span></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>_proposalId</strong> – the id of the proposal</p></li>
+<li><p><strong>_sender</strong> – original wallet for this request</p></li>
+<li><p><strong>_voteDuration</strong> – the quorum number</p></li>
+</ul>
+</dd>
+<dt class="field-even">Notice</dt>
+<dd class="field-even"><p>requires supervisor</p>
+</dd>
+</dl>
+<p>set the required duration for the vote</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">setVoteDelay(uint256,uint256,address)</span></span></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>_proposalId</strong> – the id of the proposal</p></li>
+<li><p><strong>_sender</strong> – original wallet for this request</p></li>
+<li><p><strong>_voteDelay</strong> – the quorum number</p></li>
+</ul>
+</dd>
+<dt class="field-even">Notice</dt>
+<dd class="field-even"><p>requires supervisor</p>
+</dd>
+</dl>
+<p>set the delay period required to preceed the vote</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="startBlock">
+<span class="sig-name descname"><span class="pre">startBlock</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">uint256</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#startBlock" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>_proposalId</strong> – the id of the proposal</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>uint256 the start block</p>
+</dd>
+</dl>
+<p>get the start block</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">undoVoteById(uint256,address,uint256)</span></span></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>_proposalId</strong> – the id of the proposal</p></li>
+<li><p><strong>_receiptId</strong> – the id of the share to undo</p></li>
+<li><p><strong>_wallet</strong> – the wallet represented for the vote</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>uint256 the number of votes cast</p>
+</dd>
+</dl>
+<p>undo vote for the specified receipt</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="validOrRevert">
+<span class="sig-name descname"><span class="pre">validOrRevert</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">uint256</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#validOrRevert" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>_proposalId</strong> – the id of the proposal</p>
+</dd>
+</dl>
+<p>do nothing or revert if the proposal is not valid</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id23">
+<span class="sig-name descname"><span class="pre">version</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#id23" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>uint32 version number</p>
+</dd>
+</dl>
+<p>return the version of this implementation</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id24">
+<span class="sig-name descname"><span class="pre">veto</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">uint256</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">address</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#id24" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>_proposalId</strong> – the id of the proposal</p></li>
+<li><p><strong>_sender</strong> – the address of the veto sender</p></li>
+</ul>
+</dd>
+<dt class="field-even">Notice</dt>
+<dd class="field-even"><p>supervisor is required</p>
+</dd>
+</dl>
+<p>veto the specified proposal</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">voteAgainstByShare(uint256,address,uint256)</span></span></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>_proposalId</strong> – the id of the proposal</p></li>
+<li><p><strong>_shareId</strong> – the id of the share</p></li>
+<li><p><strong>_wallet</strong> – the wallet represented for the vote</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>uint256 the number of votes cast</p>
+</dd>
+</dl>
+<p>cast an against vote for the specified share</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="voteDelay">
+<span class="sig-name descname"><span class="pre">voteDelay</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">uint256</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#voteDelay" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>_proposalId</strong> – the id of the proposal</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>uint256 the delay</p>
+</dd>
+</dl>
+<p>get the vote delay</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="voteDuration">
+<span class="sig-name descname"><span class="pre">voteDuration</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">uint256</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#voteDuration" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>_proposalId</strong> – the id of the proposal</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>uint256 the duration</p>
+</dd>
+</dl>
+<p>get the vote duration</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">voteForByShare(uint256,address,uint256)</span></span></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>_proposalId</strong> – the id of the proposal</p></li>
+<li><p><strong>_shareId</strong> – the id of the share</p></li>
+<li><p><strong>_wallet</strong> – the wallet represented for the vote</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>uint256 the number of votes cast</p>
+</dd>
+</dl>
+<p>cast an affirmative vote for the specified share</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">voteReceipt(uint256,uint256)</span></span></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>_shareId the share id for the vote</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>_shareFor the shares cast in favor</p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>_votesCast the number of votes cast</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>_isAbstention true if vote was an abstention</p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>_isUndo true if the vote was reversed</p>
+</dd>
+</dl>
+<p>get the vote receipt</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="voterClass">
+<span class="sig-name descname"><span class="pre">voterClass</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#voterClass" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>VoterClass the voter class for this store</p>
+</dd>
+</dl>
+<p>get the VoterClass used for this voting store</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="storage">
+<h2>Storage<a class="headerlink" href="#storage" title="Permalink to this heading"></a></h2>
+<div class="line-block" id="id25">
+<div class="line"><strong>Storage interface</strong></div>
+<div class="line">provides the requirements for Storage contract implementation</div>
+</div>
+<dl class="object">
+<dt class="sig sig-object">
+<span class="sig-name descname"><span class="pre">interface</span> <span class="pre">Storage</span></span></dt>
+<dd><dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">abstainForShare(uint256,address,uint256)</span></span></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>_proposalId</strong> – the id of the proposal</p></li>
+<li><p><strong>_shareId</strong> – the id of the share</p></li>
+<li><p><strong>_wallet</strong> – the wallet represented for the vote</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>uint256 the number of votes cast</p>
+</dd>
+</dl>
+<p>cast an abstention for the specified share</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id26">
+<span class="sig-name descname"><span class="pre">abstentionCount</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">uint256</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#id26" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>_proposalId</strong> – the id of the proposal</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>uint256 the number abstentions</p>
+</dd>
+</dl>
+<p>get the number of abstentions</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id27">
+<span class="sig-name descname"><span class="pre">againstVotes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">uint256</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#id27" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>_proposalId</strong> – the id of the proposal</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>uint256 the number of against votes</p>
+</dd>
+</dl>
+<p>get the against vote count</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">burnSupervisor(uint256,address,address)</span></span></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>_proposalId</strong> – the id of the proposal</p></li>
+<li><p><strong>_sender</strong> – original wallet for this request</p></li>
+<li><p><strong>_supervisor</strong> – the supervisor address</p></li>
+</ul>
+</dd>
+<dt class="field-even">Notice</dt>
+<dd class="field-even"><p>requires proposal creator</p>
+</dd>
+</dl>
+<p>remove a supervisor from the proposal along with its ability to change or veto</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id28">
+<span class="sig-name descname"><span class="pre">enableUndoVote</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">uint256</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">address</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#id28" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>_proposalId</strong> – the id of the proposal</p></li>
+<li><p><strong>_sender</strong> – original wallet for this request</p></li>
+</ul>
+</dd>
+<dt class="field-even">Notice</dt>
+<dd class="field-even"><p>requires supervisor</p>
+</dd>
+</dl>
+<p>enable the undo feature for this vote</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id29">
+<span class="sig-name descname"><span class="pre">endBlock</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">uint256</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#id29" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>_proposalId</strong> – the id of the proposal</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>uint256 the end block</p>
+</dd>
+</dl>
+<p>get the end block</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id30">
+<span class="sig-name descname"><span class="pre">forVotes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">uint256</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#id30" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>_proposalId</strong> – the id of the proposal</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>uint256 the number of votes in favor</p>
+</dd>
+</dl>
+<p>get the for vote count</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id31">
+<span class="sig-name descname"><span class="pre">getSender</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">uint256</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#id31" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>_proposalId</strong> – the id of the proposal</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>address the address of the sender</p>
+</dd>
+</dl>
+<p>get the address of the proposal sender</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id32">
+<span class="sig-name descname"><span class="pre">initializeProposal</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">address</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#id32" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>uint256 the id of the proposal</p>
+</dd>
+</dl>
+<p>initialize a new proposal and return the id</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id33">
+<span class="sig-name descname"><span class="pre">isReady</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">uint256</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#id33" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>_proposalId</strong> – the id of the proposal</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>bool true if the proposal is marked ready</p>
+</dd>
+</dl>
+<p>test if proposal is ready or in the setup phase</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id34">
+<span class="sig-name descname"><span class="pre">isSupervisor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">uint256</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">address</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#id34" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>_proposalId</strong> – the id of the proposal</p></li>
+<li><p><strong>_supervisor</strong> – the address to check</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>bool true if the address is a supervisor</p>
+</dd>
+</dl>
+<p>test if the address is a supervisor on the specified proposal</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id35">
+<span class="sig-name descname"><span class="pre">isVeto</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">uint256</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#id35" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>_proposalId</strong> – the id of the proposal</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>bool true if the proposal is marked veto</p>
+</dd>
+</dl>
+<p>test if proposal is veto</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id36">
+<span class="sig-name descname"><span class="pre">isVoter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">uint256</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">address</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#id36" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>_proposalId</strong> – the id of the proposal</p></li>
+<li><p><strong>_voter</strong> – the address to check</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>bool true if the address is a voter</p>
+</dd>
+</dl>
+<p>test if address is a voter on the specified proposal</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id37">
+<span class="sig-name descname"><span class="pre">latestProposal</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">address</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#id37" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>uint256 the id of the most recent proposal for sender</p>
+</dd>
+</dl>
+<p>get the id of the last proposal for sender</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id38">
+<span class="sig-name descname"><span class="pre">makeReady</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">uint256</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">address</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#id38" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>_proposalId</strong> – the id of the proposal</p></li>
+<li><p><strong>_sender</strong> – original wallet for this request</p></li>
+</ul>
+</dd>
+<dt class="field-even">Notice</dt>
+<dd class="field-even"><p>requires supervisor</p>
+</dd>
+</dl>
+<p>indicate the proposal is ready for voting and should be frozen</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id39">
+<span class="sig-name descname"><span class="pre">maxPassThreshold</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#id39" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>uint256 the maximum value</p>
+</dd>
+</dl>
+<p>get the maxiumum possible for the pass threshold</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id40">
+<span class="sig-name descname"><span class="pre">name</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#id40" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>string memory representation of name</p>
+</dd>
+</dl>
+<p>return the name of this implementation</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id41">
+<span class="sig-name descname"><span class="pre">quorum</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">uint256</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#id41" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>_proposalId</strong> – the id of the proposal</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>uint256 the amount of participation</p>
+</dd>
+</dl>
+<p>get the current number counting towards quorum</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id42">
+<span class="sig-name descname"><span class="pre">quorumRequired</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">uint256</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#id42" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>_proposalId</strong> – the id of the proposal</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>uint256 the number required for quorum</p>
+</dd>
+</dl>
+<p>get the quorum required</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">registerSupervisor(uint256,address,address)</span></span></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>_proposalId</strong> – the id of the proposal</p></li>
+<li><p><strong>_sender</strong> – original wallet for this request</p></li>
+<li><p><strong>_supervisor</strong> – the supervisor address</p></li>
+</ul>
+</dd>
+<dt class="field-even">Notice</dt>
+<dd class="field-even"><p>requires proposal creator</p>
+</dd>
+</dl>
+<p>Register a new supervisor on the specified proposal. The supervisor has rights to add or remove voters prior to start of voting in a Voter Pool. The supervisor also has the right to veto the outcome of the vote.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">setQuorumThreshold(uint256,uint256,address)</span></span></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>_proposalId</strong> – the id of the proposal</p></li>
+<li><p><strong>_sender</strong> – original wallet for this request</p></li>
+<li><p><strong>_threshold</strong> – the quorum number</p></li>
+</ul>
+</dd>
+<dt class="field-even">Notice</dt>
+<dd class="field-even"><p>requires supervisor</p>
+</dd>
+</dl>
+<p>set the minimum number of participants for a successful outcome</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">setRequiredVoteDuration(uint256,uint256,address)</span></span></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>_proposalId</strong> – the id of the proposal</p></li>
+<li><p><strong>_sender</strong> – original wallet for this request</p></li>
+<li><p><strong>_voteDuration</strong> – the quorum number</p></li>
+</ul>
+</dd>
+<dt class="field-even">Notice</dt>
+<dd class="field-even"><p>requires supervisor</p>
+</dd>
+</dl>
+<p>set the required duration for the vote</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">setVoteDelay(uint256,uint256,address)</span></span></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>_proposalId</strong> – the id of the proposal</p></li>
+<li><p><strong>_sender</strong> – original wallet for this request</p></li>
+<li><p><strong>_voteDelay</strong> – the quorum number</p></li>
+</ul>
+</dd>
+<dt class="field-even">Notice</dt>
+<dd class="field-even"><p>requires supervisor</p>
+</dd>
+</dl>
+<p>set the delay period required to preceed the vote</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id43">
+<span class="sig-name descname"><span class="pre">startBlock</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">uint256</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#id43" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>_proposalId</strong> – the id of the proposal</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>uint256 the start block</p>
+</dd>
+</dl>
+<p>get the start block</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">undoVoteById(uint256,address,uint256)</span></span></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>_proposalId</strong> – the id of the proposal</p></li>
+<li><p><strong>_receiptId</strong> – the id of the share to undo</p></li>
+<li><p><strong>_wallet</strong> – the wallet represented for the vote</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>uint256 the number of votes cast</p>
+</dd>
+</dl>
+<p>undo vote for the specified receipt</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id44">
+<span class="sig-name descname"><span class="pre">validOrRevert</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">uint256</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#id44" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>_proposalId</strong> – the id of the proposal</p>
+</dd>
+</dl>
+<p>do nothing or revert if the proposal is not valid</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id45">
+<span class="sig-name descname"><span class="pre">version</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#id45" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>uint32 version number</p>
+</dd>
+</dl>
+<p>return the version of this implementation</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id46">
+<span class="sig-name descname"><span class="pre">veto</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">uint256</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">address</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#id46" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>_proposalId</strong> – the id of the proposal</p></li>
+<li><p><strong>_sender</strong> – the address of the veto sender</p></li>
+</ul>
+</dd>
+<dt class="field-even">Notice</dt>
+<dd class="field-even"><p>supervisor is required</p>
+</dd>
+</dl>
+<p>veto the specified proposal</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">voteAgainstByShare(uint256,address,uint256)</span></span></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>_proposalId</strong> – the id of the proposal</p></li>
+<li><p><strong>_shareId</strong> – the id of the share</p></li>
+<li><p><strong>_wallet</strong> – the wallet represented for the vote</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>uint256 the number of votes cast</p>
+</dd>
+</dl>
+<p>cast an against vote for the specified share</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id47">
+<span class="sig-name descname"><span class="pre">voteDelay</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">uint256</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#id47" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>_proposalId</strong> – the id of the proposal</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>uint256 the delay</p>
+</dd>
+</dl>
+<p>get the vote delay</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id48">
+<span class="sig-name descname"><span class="pre">voteDuration</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">uint256</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#id48" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>_proposalId</strong> – the id of the proposal</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>uint256 the duration</p>
+</dd>
+</dl>
+<p>get the vote duration</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">voteForByShare(uint256,address,uint256)</span></span></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>_proposalId</strong> – the id of the proposal</p></li>
+<li><p><strong>_shareId</strong> – the id of the share</p></li>
+<li><p><strong>_wallet</strong> – the wallet represented for the vote</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>uint256 the number of votes cast</p>
+</dd>
+</dl>
+<p>cast an affirmative vote for the specified share</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">voteReceipt(uint256,uint256)</span></span></dt>
+<dd><p>get the vote receipt</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id49">
+<span class="sig-name descname"><span class="pre">voterClass</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#id49" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>VoterClass the voter class for this store</p>
+</dd>
+</dl>
+<p>get the VoterClass used for this voting store</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="votestrategy">
+<h2>VoteStrategy<a class="headerlink" href="#votestrategy" title="Permalink to this heading"></a></h2>
+<div class="line-block" id="id50">
+<div class="line"><strong>VoteStrategy interface Requirements for voting implementations in Collective Governance</strong></div>
+<div class="line"><br /></div>
+</div>
+<dl class="object">
+<dt class="sig sig-object">
+<span class="sig-name descname"><span class="pre">interface</span> <span class="pre">VoteStrategy</span></span></dt>
+<dd><dl class="py method">
+<dt class="sig sig-object py" id="id51">
+<span class="sig-name descname"><span class="pre">abstainFrom</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">uint256</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#id51" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>_proposalId</strong> – The numeric id of the proposed vote</p>
+</dd>
+</dl>
+<p>abstain from vote by id</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">abstainFrom(uint256,uint256)</span></span></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>_proposalId</strong> – The numeric id of the proposed vote</p></li>
+<li><p><strong>_tokenId</strong> – The id of a token or share representing the right to vote</p></li>
+</ul>
+</dd>
+</dl>
+<p>abstain from vote by id</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id52">
+<span class="sig-name descname"><span class="pre">abstainFrom</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">uint256</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">uint256[]</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#id52" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>_proposalId</strong> – The numeric id of the proposed vote</p></li>
+<li><p><strong>_tokenIdList</strong> – A array of tokens or shares that confer the right to vote</p></li>
+</ul>
+</dd>
+</dl>
+<p>abstain from vote by id</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id53">
+<span class="sig-name descname"><span class="pre">endVote</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">uint256</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#id53" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>_proposalId</strong> – The numeric id of the proposed vote</p>
+</dd>
+</dl>
+<p>end voting on an existing proposal by id</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id54">
+<span class="sig-name descname"><span class="pre">getVoteSucceeded</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">uint256</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#id54" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>bool True if the vote is closed and passed</p>
+</dd>
+<dt class="field-even">Notice</dt>
+<dd class="field-even"><p>This method will fail if the vote was vetoed</p>
+</dd>
+</dl>
+<p>get the result of the vote</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id55">
+<span class="sig-name descname"><span class="pre">isOpen</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">uint256</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#id55" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>_proposalId</strong> – The numeric id of the proposed vote</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>bool True if the proposal is open</p>
+</dd>
+</dl>
+<p>test if an existing proposal is open</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id56">
+<span class="sig-name descname"><span class="pre">openVote</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">uint256</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#id56" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>_proposalId</strong> – The numeric id of the proposed vote</p>
+</dd>
+</dl>
+<p>open an existing proposal by id</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id57">
+<span class="sig-name descname"><span class="pre">undoVote</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">uint256</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#id57" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>_proposalId</strong> – The numeric id of the proposed vote</p>
+</dd>
+<dt class="field-even">Notice</dt>
+<dd class="field-even"><p>Only applies to affirmative vote.</p>
+</dd>
+</dl>
+<p>undo any previous vote if any</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">undoVote(uint256,uint256)</span></span></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>_proposalId</strong> – The numeric id of the proposed vote</p></li>
+<li><p><strong>_tokenId</strong> – The id of a token or share representing the right to vote</p></li>
+</ul>
+</dd>
+<dt class="field-even">Notice</dt>
+<dd class="field-even"><p>only applies to affirmative vote</p>
+</dd>
+</dl>
+<p>undo any previous vote if any</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id58">
+<span class="sig-name descname"><span class="pre">veto</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">uint256</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#id58" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>_proposalId</strong> – The numeric id of the proposed vote</p>
+</dd>
+<dt class="field-even">Notice</dt>
+<dd class="field-even"><p>transaction must be signed by a supervisor wallet</p>
+</dd>
+</dl>
+<p>veto proposal by id</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id59">
+<span class="sig-name descname"><span class="pre">voteAgainst</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">uint256</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#id59" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>_proposalId</strong> – The numeric id of the proposed vote</p>
+</dd>
+</dl>
+<p>cast an against vote by id</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">voteAgainst(uint256,uint256)</span></span></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>_proposalId</strong> – The numeric id of the proposed vote</p></li>
+<li><p><strong>_tokenId</strong> – The id of a token or share representing the right to vote</p></li>
+</ul>
+</dd>
+</dl>
+<p>cast an against vote by id</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id60">
+<span class="sig-name descname"><span class="pre">voteAgainst</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">uint256</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">uint256[]</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#id60" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>_proposalId</strong> – The numeric id of the proposed vote</p></li>
+<li><p><strong>_tokenIdList</strong> – A array of tokens or shares that confer the right to vote</p></li>
+</ul>
+</dd>
+</dl>
+<p>cast an against vote by id</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id61">
+<span class="sig-name descname"><span class="pre">voteFor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">uint256</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#id61" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>_proposalId</strong> – The numeric id of the proposed vote</p>
+</dd>
+</dl>
+<p>cast an affirmative vote for the measure by id</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">voteFor(uint256,uint256)</span></span></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>_proposalId</strong> – The numeric id of the proposed vote</p></li>
+<li><p><strong>_tokenId</strong> – The id of a token or share representing the right to vote</p></li>
+</ul>
+</dd>
+</dl>
+<p>cast an affirmative vote for the measure by id</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id62">
+<span class="sig-name descname"><span class="pre">voteFor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">uint256</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">uint256[]</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#id62" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>_proposalId</strong> – The numeric id of the proposed vote</p></li>
+<li><p><strong>_tokenIdList</strong> – A array of tokens or shares that confer the right to vote</p></li>
+</ul>
+</dd>
+</dl>
+<p>cast an affirmative vote for the measure by id</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="voterclass">
+<h2>VoterClass<a class="headerlink" href="#voterclass" title="Permalink to this heading"></a></h2>
+<div class="line-block" id="id63">
+<div class="line"><strong>VoterClass interface</strong></div>
+<div class="line">The VoterClass interface defines the requirements for specifying a population or grouping of acceptable voting wallets</div>
+</div>
+<dl class="object">
+<dt class="sig sig-object">
+<span class="sig-name descname"><span class="pre">interface</span> <span class="pre">VoterClass</span></span></dt>
+<dd><dl class="py method">
+<dt class="sig sig-object py" id="confirm">
+<span class="sig-name descname"><span class="pre">confirm</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">address</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">uint256</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#confirm" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>uint256 The number of weighted votes confirmed</p>
+</dd>
+</dl>
+<p>confirm shareid is associated with wallet for voting</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="discover">
+<span class="sig-name descname"><span class="pre">discover</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">address</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#discover" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>uint256[] array in memory of share ids</p>
+</dd>
+</dl>
+<p>discover an array of shareIds associated with the specified wallet</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="isFinal">
+<span class="sig-name descname"><span class="pre">isFinal</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#isFinal" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>bool true if class is final</p>
+</dd>
+<dt class="field-even">Notice</dt>
+<dd class="field-even"><p>class must be final to be used in a Governance contract</p>
+</dd>
+</dl>
+<p>test if voterclass is modifiable such as to add or remove voters from a pool</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id64">
+<span class="sig-name descname"><span class="pre">isVoter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">address</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#id64" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>bool true if wallet is a voter</p>
+</dd>
+</dl>
+<p>test if wallet represents an allowed voter for this class</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id65">
+<span class="sig-name descname"><span class="pre">name</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#id65" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>string memory representation of name</p>
+</dd>
+</dl>
+<p>return the name of this implementation</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id66">
+<span class="sig-name descname"><span class="pre">version</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#id66" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>uint32 version number</p>
+</dd>
+</dl>
+<p>return the version of this implementation</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="weight">
+<span class="sig-name descname"><span class="pre">weight</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#weight" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>uint256 weight applied to one share</p>
+</dd>
+</dl>
+<p>return voting weight of each confirmed share</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="voterclasserc721">
+<h2>VoterClassERC721<a class="headerlink" href="#voterclasserc721" title="Permalink to this heading"></a></h2>
+<div class="line-block" id="id67">
+<div class="line"><strong>ERC721 Implementation of VoterClass</strong></div>
+<div class="line">This contract implements a voter pool based on ownership of an ERC-721 token. A class member is considered a voter if they have signing access to a wallet that is marked ownerOf a token of the specified address</div>
+</div>
+<dl class="object">
+<dt class="sig sig-object">
+<span class="sig-name descname"><span class="pre">contract</span> <span class="pre">VoterClassERC721</span></span></dt>
+<dd><dl class="py method">
+<dt class="sig sig-object py" id="id68">
+<span class="sig-name descname"><span class="pre">confirm</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">address</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">uint256</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#id68" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>uint256 The number of weighted votes confirmed</p>
+</dd>
+<dt class="field-even">Notice</dt>
+<dd class="field-even"><p>does not require IERC721Enumerable, tokenId ownership is checked directly using ERC-721</p>
+</dd>
+</dl>
+<p>confirm tokenId is associated with wallet for voting</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id69">
+<span class="sig-name descname"><span class="pre">constructor</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#id69" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>_contract</strong> – Address of the token contract</p></li>
+<li><p><strong>_voteWeight</strong> – The integral weight to apply to each token held by the wallet</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id70">
+<span class="sig-name descname"><span class="pre">discover</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">address</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#id70" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>uint256[] array in memory of share ids</p>
+</dd>
+<dt class="field-even">Notice</dt>
+<dd class="field-even"><p>discovery requires support for ERC721Enumerable, otherwise execution will revert</p>
+</dd>
+</dl>
+<p>discover an array of tokenIds associated with the specified wallet</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id71">
+<span class="sig-name descname"><span class="pre">isFinal</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#id71" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>bool true if final</p>
+</dd>
+<dt class="field-even">Notice</dt>
+<dd class="field-even"><p>always returns true</p>
+</dd>
+</dl>
+<p>ERC-721 VoterClass is always final</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id72">
+<span class="sig-name descname"><span class="pre">isVoter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">address</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#id72" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>bool true if wallet can sign for votes on this class</p>
+</dd>
+</dl>
+<p>determine if wallet holds at least one token from the ERC-721 contract</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id73">
+<span class="sig-name descname"><span class="pre">name</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#id73" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>string memory representation of name</p>
+</dd>
+</dl>
+<p>return the name of this implementation</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id74">
+<span class="sig-name descname"><span class="pre">supportsInterface</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bytes4</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#id74" title="Permalink to this definition"></a></dt>
+<dd><p>see ERC-165</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id75">
+<span class="sig-name descname"><span class="pre">version</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#id75" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>uint32 version number</p>
+</dd>
+</dl>
+<p>return the version of this implementation</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="votesAvailable">
+<span class="sig-name descname"><span class="pre">votesAvailable</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">address</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">uint256</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#votesAvailable" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>_tokenId</strong> – The id of the token associated with the ERC-721 contract</p></li>
+<li><p><strong>_wallet</strong> – The wallet to test for ownership</p></li>
+</ul>
+</dd>
+</dl>
+<p>tabulate the number of votes available for the specific wallet and tokenId</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id76">
+<span class="sig-name descname"><span class="pre">weight</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#id76" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>uint256 weight applied to one share</p>
+</dd>
+</dl>
+<p>return voting weight of each confirmed share</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="voterclassfactory">
+<h2>VoterClassFactory<a class="headerlink" href="#voterclassfactory" title="Permalink to this heading"></a></h2>
+<div class="line-block" id="id77">
+<div class="line"><strong>Creator for VoterClass implementations</strong></div>
+<div class="line">A simple factory for VoterClass instances.</div>
+</div>
+<dl class="object">
+<dt class="sig sig-object">
+<span class="sig-name descname"><span class="pre">contract</span> <span class="pre">VoterClassFactory</span></span></dt>
+<dd><dl class="py method">
+<dt class="sig sig-object py" id="createERC721">
+<span class="sig-name descname"><span class="pre">createERC721</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">address</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">uint256</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#createERC721" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>_erc721</strong> – The address of the ERC-721 contract for voting</p></li>
+<li><p><strong>_weight</strong> – The weight associated with each vote</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>address The address of the resulting voter class</p>
+</dd>
+</dl>
+<p>create a VoterClass for token holding members</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="createOpenVote">
+<span class="sig-name descname"><span class="pre">createOpenVote</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">uint256</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#createOpenVote" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>_weight</strong> – The weight associated with each vote</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>address The address of the resulting voter class</p>
+</dd>
+</dl>
+<p>create a VoterClass for open voting</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="createVoterPool">
+<span class="sig-name descname"><span class="pre">createVoterPool</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">uint256</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#createVoterPool" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>_weight</strong> – The weight associated with each vote</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>address The address of the resulting voter class</p>
+</dd>
+</dl>
+<p>create a VoterClass for pooled voting</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="voterclassnullobject">
+<h2>VoterClassNullObject<a class="headerlink" href="#voterclassnullobject" title="Permalink to this heading"></a></h2>
+<div class="line-block" id="id78">
+<div class="line"><a href="#id79"><span class="problematic" id="id80">**</span></a><a href="#id81"><span class="problematic" id="id82">**</span></a></div>
+<div class="line">Null Object Pattern for VoterClass</div>
+</div>
+<dl class="object">
+<dt class="sig sig-object">
+<span class="sig-name descname"><span class="pre">contract</span> <span class="pre">VoterClassNullObject</span></span></dt>
+<dd><dl class="py method">
+<dt class="sig sig-object py" id="id83">
+<span class="sig-name descname"><span class="pre">confirm</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">address</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">uint256</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#id83" title="Permalink to this definition"></a></dt>
+<dd><p>always returns 0</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id84">
+<span class="sig-name descname"><span class="pre">discover</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">address</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#id84" title="Permalink to this definition"></a></dt>
+<dd><p>always reverts</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id85">
+<span class="sig-name descname"><span class="pre">isFinal</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#id85" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>bool always returns true</p>
+</dd>
+</dl>
+<p>always final</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id86">
+<span class="sig-name descname"><span class="pre">isVoter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">address</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#id86" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>bool always returns false</p>
+</dd>
+</dl>
+<p>no voter is allowed</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id87">
+<span class="sig-name descname"><span class="pre">name</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#id87" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>string memory representation of name</p>
+</dd>
+</dl>
+<p>return the name of this implementation</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id88">
+<span class="sig-name descname"><span class="pre">supportsInterface</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bytes4</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#id88" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Notice</dt>
+<dd class="field-odd"><p>See {IERC165-supportsInterface}.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id89">
+<span class="sig-name descname"><span class="pre">version</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#id89" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>uint32 version number</p>
+</dd>
+</dl>
+<p>return the version of this implementation</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id90">
+<span class="sig-name descname"><span class="pre">weight</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#id90" title="Permalink to this definition"></a></dt>
+<dd><p>always returns 0</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="voterclassopenvote">
+<h2>VoterClassOpenVote<a class="headerlink" href="#voterclassopenvote" title="Permalink to this heading"></a></h2>
+<div class="line-block" id="id91">
+<div class="line"><a href="#id92"><span class="problematic" id="id93">**</span></a><a href="#id94"><span class="problematic" id="id95">**</span></a></div>
+<div class="line">OpenVote VoterClass allows every wallet to participate in an open vote</div>
+</div>
+<dl class="object">
+<dt class="sig sig-object">
+<span class="sig-name descname"><span class="pre">contract</span> <span class="pre">VoterClassOpenVote</span></span></dt>
+<dd><dl class="py method">
+<dt class="sig sig-object py" id="id96">
+<span class="sig-name descname"><span class="pre">confirm</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">address</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">uint256</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#id96" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>uint256 The number of weighted votes confirmed</p>
+</dd>
+</dl>
+<p>confirm shareid is associated with wallet for voting</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id97">
+<span class="sig-name descname"><span class="pre">constructor</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#id97" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>_voteWeight</strong> – The integral weight to apply to each token held by the wallet</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id98">
+<span class="sig-name descname"><span class="pre">discover</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">address</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#id98" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>uint256[] array in memory of share ids</p>
+</dd>
+<dt class="field-even">Notice</dt>
+<dd class="field-even"><p>the shareId of the open vote is the numeric value of the wallet address itself</p>
+</dd>
+</dl>
+<p>discover an array of shareIds associated with the specified wallet</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id99">
+<span class="sig-name descname"><span class="pre">isFinal</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#id99" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>bool true if final</p>
+</dd>
+<dt class="field-even">Notice</dt>
+<dd class="field-even"><p>always returns true</p>
+</dd>
+</dl>
+<p>OpenVote VoterClass is always final</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id100">
+<span class="sig-name descname"><span class="pre">isVoter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">address</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#id100" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>bool true if voter</p>
+</dd>
+<dt class="field-even">Notice</dt>
+<dd class="field-even"><p>always returns true</p>
+</dd>
+</dl>
+<p>return true for all wallets</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id101">
+<span class="sig-name descname"><span class="pre">name</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#id101" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>string memory representation of name</p>
+</dd>
+</dl>
+<p>return the name of this implementation</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id102">
+<span class="sig-name descname"><span class="pre">supportsInterface</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bytes4</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#id102" title="Permalink to this definition"></a></dt>
+<dd><p>see ERC-165</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id103">
+<span class="sig-name descname"><span class="pre">version</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#id103" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>uint32 version number</p>
+</dd>
+</dl>
+<p>return the version of this implementation</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id104">
+<span class="sig-name descname"><span class="pre">weight</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#id104" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>uint256 weight applied to one share</p>
+</dd>
+</dl>
+<p>return voting weight of each confirmed share</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="voterclassvoterpool">
+<h2>VoterClassVoterPool<a class="headerlink" href="#voterclassvoterpool" title="Permalink to this heading"></a></h2>
+<div class="line-block" id="id105">
+<div class="line"><strong>VoterClassVoterPool contract</strong></div>
+<div class="line">This contract supports voting for a specific list of wallet addresses.   Each address must be added to the contract prior to voting at which time the pool must be marked as final so that it becomes impossible to modify</div>
+</div>
+<dl class="object">
+<dt class="sig sig-object">
+<span class="sig-name descname"><span class="pre">contract</span> <span class="pre">VoterClassVoterPool</span></span></dt>
+<dd><dl class="py method">
+<dt class="sig sig-object py" id="addVoter">
+<span class="sig-name descname"><span class="pre">addVoter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">address</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#addVoter" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>_wallet</strong> – the address to add</p>
+</dd>
+<dt class="field-even">Notice</dt>
+<dd class="field-even"><p>only possible if not final</p>
+</dd>
+</dl>
+<p>add a voter to the voter pool</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id106">
+<span class="sig-name descname"><span class="pre">confirm</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">address</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">uint256</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#id106" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>uint256 The number of weighted votes confirmed</p>
+</dd>
+</dl>
+<p>confirm shareid is associated with wallet for voting</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id107">
+<span class="sig-name descname"><span class="pre">constructor</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#id107" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>_voteWeight</strong> – The integral weight to apply to each token held by the wallet</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id108">
+<span class="sig-name descname"><span class="pre">discover</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">address</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#id108" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>uint256[] array in memory of share ids</p>
+</dd>
+</dl>
+<p>discover an array of shareIds associated with the specified wallet</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id109">
+<span class="sig-name descname"><span class="pre">isFinal</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#id109" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>bool true if class is final</p>
+</dd>
+</dl>
+<p>test if voterclass is modifiable such as to add or remove voters from a pool</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id110">
+<span class="sig-name descname"><span class="pre">isVoter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">address</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#id110" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>bool true if wallet is a voter</p>
+</dd>
+</dl>
+<p>test if wallet represents an allowed voter for this class</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="makeFinal">
+<span class="sig-name descname"><span class="pre">makeFinal</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#makeFinal" title="Permalink to this definition"></a></dt>
+<dd><p>set the voterpool final.   No further changes may be made to the voting pool.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id111">
+<span class="sig-name descname"><span class="pre">name</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#id111" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>string memory representation of name</p>
+</dd>
+</dl>
+<p>return the name of this implementation</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="removeVoter">
+<span class="sig-name descname"><span class="pre">removeVoter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">address</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#removeVoter" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>_wallet</strong> – the address to add</p>
+</dd>
+<dt class="field-even">Notice</dt>
+<dd class="field-even"><p>only possible if not final</p>
+</dd>
+</dl>
+<p>remove a voter from the voter pool</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id112">
+<span class="sig-name descname"><span class="pre">supportsInterface</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bytes4</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#id112" title="Permalink to this definition"></a></dt>
+<dd><p>see ERC-165</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id113">
+<span class="sig-name descname"><span class="pre">version</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#id113" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>uint32 version number</p>
+</dd>
+</dl>
+<p>return the version of this implementation</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id114">
+<span class="sig-name descname"><span class="pre">weight</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#id114" title="Permalink to this definition"></a></dt>
+<dd><p>return voting weight of each confirmed share</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="voterpool">
+<h2>VoterPool<a class="headerlink" href="#voterpool" title="Permalink to this heading"></a></h2>
+<div class="line-block" id="id115">
+<div class="line"><strong>interface for VoterPool</strong></div>
+<div class="line">sets the requirements for contracts implementing a VoterPool</div>
+</div>
+<dl class="object">
+<dt class="sig sig-object">
+<span class="sig-name descname"><span class="pre">interface</span> <span class="pre">VoterPool</span></span></dt>
+<dd><dl class="py method">
+<dt class="sig sig-object py" id="id116">
+<span class="sig-name descname"><span class="pre">addVoter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">address</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#id116" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>_wallet</strong> – the address of the wallet</p>
+</dd>
+</dl>
+<p>add voter to pool</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id117">
+<span class="sig-name descname"><span class="pre">isFinal</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#id117" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>bool true if pool if final</p>
+</dd>
+</dl>
+<p>test if the pool if final</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id118">
+<span class="sig-name descname"><span class="pre">makeFinal</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#id118" title="Permalink to this definition"></a></dt>
+<dd><p>mark the VoterPool as final</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id119">
+<span class="sig-name descname"><span class="pre">removeVoter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">address</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#id119" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>_wallet</strong> – the address of the wallet</p>
+</dd>
+</dl>
+<p>remove voter from the pool</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="javascript_example.html" class="btn btn-neutral float-left" title="JavaScript Examples" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="supervisor.html" class="btn btn-neutral float-right" title="Elector Supervisor" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Collective.XYZ.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

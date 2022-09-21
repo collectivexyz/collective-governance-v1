@@ -35,6 +35,12 @@ pragma solidity ^0.8.15;
 import "../contracts/Storage.sol";
 import "../contracts/VoterClass.sol";
 
+/// @title GovernanceStorage implementation
+/// @notice GovernanceStorage implements the necesscary infrastructure for
+/// governance and voting with safety controls
+/// @dev The creator of the contract, typically the Governance contract itself,
+/// privledged with respect to write opperations in this contract.   The creator
+/// is required for nearly all change operations
 contract GovernanceStorage is Storage {
     /// @notice contract name
     string public constant NAME = "collective.xyz governance storage";
@@ -58,6 +64,8 @@ contract GovernanceStorage is Storage {
     /// @notice The latest proposal for each proposer
     mapping(address => uint256) private _latestProposalId;
 
+    /// @notice create a new storage object with VoterClass as the voting population
+    /// @param _class the contract that defines the popluation
     constructor(VoterClass _class) {
         _cognate = msg.sender;
         _voterClass = _class;
@@ -152,7 +160,299 @@ contract GovernanceStorage is Storage {
         _;
     }
 
-    /// @notice initialize a proposal and return the id
+    /// @notice Register a new supervisor on the specified proposal.
+    /// The supervisor has rights to add or remove voters prior to start of voting
+    /// in a Voter Pool. The supervisor also has the right to veto the outcome of the vote.
+    /// @dev requires proposal creator
+    /// @param _proposalId the id of the proposal
+    /// @param _supervisor the supervisor address
+    /// @param _sender original wallet for this request
+    function registerSupervisor(
+        uint256 _proposalId,
+        address _supervisor,
+        address _sender
+    )
+        external
+        requireCognate
+        requireValidAddress(_supervisor)
+        requireValidProposal(_proposalId)
+        requireProposalSender(_proposalId, _sender)
+        requireVotingNotReady(_proposalId)
+    {
+        Proposal storage proposal = proposalMap[_proposalId];
+        if (!proposal.supervisorPool[_supervisor]) {
+            proposal.supervisorPool[_supervisor] = true;
+            emit AddSupervisor(_proposalId, _supervisor);
+        }
+    }
+
+    /// @notice remove a supervisor from the proposal along with its ability to change or veto
+    /// @dev requires proposal creator
+    /// @param _proposalId the id of the proposal
+    /// @param _supervisor the supervisor address
+    /// @param _sender original wallet for this request
+    function burnSupervisor(
+        uint256 _proposalId,
+        address _supervisor,
+        address _sender
+    )
+        external
+        requireCognate
+        requireValidAddress(_supervisor)
+        requireValidProposal(_proposalId)
+        requireProposalSender(_proposalId, _sender)
+        requireVotingNotReady(_proposalId)
+    {
+        Proposal storage proposal = proposalMap[_proposalId];
+        if (proposal.supervisorPool[_supervisor]) {
+            proposal.supervisorPool[_supervisor] = false;
+            emit BurnSupervisor(_proposalId, _supervisor);
+        }
+    }
+
+    /// @notice set the minimum number of participants for a successful outcome
+    /// @dev requires supervisor
+    /// @param _proposalId the id of the proposal
+    /// @param _threshold the quorum number
+    /// @param _sender original wallet for this request
+    function setQuorumThreshold(
+        uint256 _proposalId,
+        uint256 _threshold,
+        address _sender
+    )
+        external
+        requireCognate
+        requireValidProposal(_proposalId)
+        requireElectorSupervisor(_proposalId, _sender)
+        requireVotingNotReady(_proposalId)
+    {
+        Proposal storage proposal = proposalMap[_proposalId];
+        proposal.quorumRequired = _threshold;
+        emit SetQuorumThreshold(_proposalId, _threshold);
+    }
+
+    /// @notice enable the undo feature for this vote
+    /// @dev requires supervisor
+    /// @param _proposalId the id of the proposal
+    /// @param _sender original wallet for this request
+    function enableUndoVote(uint256 _proposalId, address _sender)
+        external
+        requireCognate
+        requireValidProposal(_proposalId)
+        requireElectorSupervisor(_proposalId, _sender)
+        requireVotingNotReady(_proposalId)
+    {
+        Proposal storage proposal = proposalMap[_proposalId];
+        proposal.isUndoEnabled = true;
+        emit UndoVoteEnabled(_proposalId);
+    }
+
+    /// @notice set the delay period required to preceed the vote
+    /// @dev requires supervisor
+    /// @param _proposalId the id of the proposal
+    /// @param _voteDelay the quorum number
+    /// @param _sender original wallet for this request
+    function setVoteDelay(
+        uint256 _proposalId,
+        uint256 _voteDelay,
+        address _sender
+    )
+        external
+        requireCognate
+        requireValidProposal(_proposalId)
+        requireElectorSupervisor(_proposalId, _sender)
+        requireVotingNotReady(_proposalId)
+    {
+        Proposal storage proposal = proposalMap[_proposalId];
+        proposal.voteDelay = _voteDelay;
+    }
+
+    /// @notice set the required duration for the vote
+    /// @dev requires supervisor
+    /// @param _proposalId the id of the proposal
+    /// @param _voteDuration the quorum number
+    /// @param _sender original wallet for this request
+    function setRequiredVoteDuration(
+        uint256 _proposalId,
+        uint256 _voteDuration,
+        address _sender
+    )
+        external
+        requireCognate
+        requireValidProposal(_proposalId)
+        requireElectorSupervisor(_proposalId, _sender)
+        requireVotingNotReady(_proposalId)
+    {
+        require(_voteDuration >= MINIMUM_VOTE_DURATION, "Voting duration is not valid");
+        Proposal storage proposal = proposalMap[_proposalId];
+        proposal.voteDuration = _voteDuration;
+    }
+
+    /// @notice get the address of the proposal sender
+    /// @param _proposalId the id of the proposal
+    /// @return address the address of the sender
+    function getSender(uint256 _proposalId) external view requireValidProposal(_proposalId) returns (address) {
+        Proposal storage proposal = proposalMap[_proposalId];
+        return proposal.proposalSender;
+    }
+
+    /// @notice get the quorum required
+    /// @param _proposalId the id of the proposal
+    /// @return uint256 the number required for quorum
+    function quorumRequired(uint256 _proposalId) external view requireValidProposal(_proposalId) returns (uint256) {
+        Proposal storage proposal = proposalMap[_proposalId];
+        return proposal.quorumRequired;
+    }
+
+    /// @notice get the vote delay
+    /// @param _proposalId the id of the proposal
+    /// @return uint256 the delay
+    function voteDelay(uint256 _proposalId) external view requireValidProposal(_proposalId) returns (uint256) {
+        Proposal storage proposal = proposalMap[_proposalId];
+        return proposal.voteDelay;
+    }
+
+    /// @notice get the vote duration
+    /// @param _proposalId the id of the proposal
+    /// @return uint256 the duration
+    function voteDuration(uint256 _proposalId) external view requireValidProposal(_proposalId) returns (uint256) {
+        Proposal storage proposal = proposalMap[_proposalId];
+        return proposal.voteDuration;
+    }
+
+    /// @notice get the start block
+    /// @param _proposalId the id of the proposal
+    /// @return uint256 the start block
+    function startBlock(uint256 _proposalId) external view requireValidProposal(_proposalId) returns (uint256) {
+        Proposal storage proposal = proposalMap[_proposalId];
+        return proposal.startBlock;
+    }
+
+    /// @notice get the end block
+    /// @param _proposalId the id of the proposal
+    /// @return uint256 the end block
+    function endBlock(uint256 _proposalId) external view requireValidProposal(_proposalId) returns (uint256) {
+        Proposal storage proposal = proposalMap[_proposalId];
+        return proposal.endBlock;
+    }
+
+    /// @notice get the for vote count
+    /// @param _proposalId the id of the proposal
+    /// @return uint256 the number of votes in favor
+    function forVotes(uint256 _proposalId) public view requireValidProposal(_proposalId) returns (uint256) {
+        Proposal storage proposal = proposalMap[_proposalId];
+        return proposal.forVotes;
+    }
+
+    /// @notice get the against vote count
+    /// @param _proposalId the id of the proposal
+    /// @return uint256 the number of against votes
+    function againstVotes(uint256 _proposalId) public view requireValidProposal(_proposalId) returns (uint256) {
+        Proposal storage proposal = proposalMap[_proposalId];
+        return proposal.againstVotes;
+    }
+
+    /// @notice get the number of abstentions
+    /// @param _proposalId the id of the proposal
+    /// @return uint256 the number abstentions
+    function abstentionCount(uint256 _proposalId) public view requireValidProposal(_proposalId) returns (uint256) {
+        Proposal storage proposal = proposalMap[_proposalId];
+        return proposal.abstentionCount;
+    }
+
+    /// @notice get the current number counting towards quorum
+    /// @param _proposalId the id of the proposal
+    /// @return uint256 the amount of participation
+    function quorum(uint256 _proposalId) external view requireValidProposal(_proposalId) returns (uint256) {
+        return forVotes(_proposalId) + againstVotes(_proposalId) + abstentionCount(_proposalId);
+    }
+
+    /// @notice test if the address is a supervisor on the specified proposal
+    /// @param _proposalId the id of the proposal
+    /// @param _supervisor the address to check
+    /// @return bool true if the address is a supervisor
+    function isSupervisor(uint256 _proposalId, address _supervisor)
+        external
+        view
+        requireValidAddress(_supervisor)
+        requireValidProposal(_proposalId)
+        returns (bool)
+    {
+        Proposal storage proposal = proposalMap[_proposalId];
+        return proposal.supervisorPool[_supervisor];
+    }
+
+    /// @notice test if address is a voter on the specified proposal
+    /// @param _proposalId the id of the proposal
+    /// @param _voter the address to check
+    /// @return bool true if the address is a voter
+    function isVoter(uint256 _proposalId, address _voter)
+        external
+        view
+        requireValidAddress(_voter)
+        requireValidProposal(_proposalId)
+        returns (bool)
+    {
+        return _voterClass.isVoter(_voter);
+    }
+
+    /// @notice test if proposal is ready or in the setup phase
+    /// @param _proposalId the id of the proposal
+    /// @return bool true if the proposal is marked ready
+    function isReady(uint256 _proposalId) external view requireValidProposal(_proposalId) returns (bool) {
+        Proposal storage proposal = proposalMap[_proposalId];
+        return proposal.isReady;
+    }
+
+    /// @notice test if proposal is veto
+    /// @param _proposalId the id of the proposal
+    /// @return bool true if the proposal is marked veto
+    function isVeto(uint256 _proposalId) external view returns (bool) {
+        Proposal storage proposal = proposalMap[_proposalId];
+        require(_proposalId > 0 && _proposalId <= _proposalCount, "Unknown proposal");
+        return proposal.isVeto;
+    }
+
+    /// @notice get the id of the last proposal for sender
+    /// @return uint256 the id of the most recent proposal for sender
+    function latestProposal(address _sender) external view returns (uint256) {
+        uint256 latestProposalId = _latestProposalId[_sender];
+        require(latestProposalId > 0, "No current proposal");
+        return latestProposalId;
+    }
+
+    /// @notice get the vote receipt
+    /// @return _shareId the share id for the vote
+    /// @return _shareFor the shares cast in favor
+    /// @return _votesCast the number of votes cast
+    /// @return _isAbstention true if vote was an abstention
+    /// @return _isUndo true if the vote was reversed
+    function voteReceipt(uint256 _proposalId, uint256 _shareId)
+        external
+        view
+        requireValidProposal(_proposalId)
+        requireValidReceipt(_proposalId, _shareId)
+        returns (
+            uint256,
+            uint256,
+            uint256,
+            bool,
+            bool
+        )
+    {
+        Proposal storage proposal = proposalMap[_proposalId];
+        Receipt storage receipt = proposal.voteReceipt[_shareId];
+        return (receipt.shareId, receipt.shareFor, receipt.votesCast, receipt.abstention, receipt.undoCast);
+    }
+
+    /// @notice get the VoterClass used for this voting store
+    /// @return VoterClass the voter class for this store
+    function voterClass() external view returns (VoterClass) {
+        return _voterClass;
+    }
+
+    /// @notice initialize a new proposal and return the id
+    /// @return uint256 the id of the proposal
     function initializeProposal(address _sender) external requireCognate returns (uint256) {
         uint256 latestProposalId = _latestProposalId[_sender];
         if (latestProposalId != 0) {
@@ -183,168 +483,10 @@ contract GovernanceStorage is Storage {
         return proposalId;
     }
 
-    /// @notice add a vote superviser to the supervisor pool with rights to add or
-    /// remove voters prior to start of voting, also right to veto the outcome after voting is closed
-    function registerSupervisor(
-        uint256 _proposalId,
-        address _supervisor,
-        address _sender
-    )
-        external
-        requireCognate
-        requireValidAddress(_supervisor)
-        requireValidProposal(_proposalId)
-        requireProposalSender(_proposalId, _sender)
-        requireVotingNotReady(_proposalId)
-    {
-        Proposal storage proposal = proposalMap[_proposalId];
-        if (!proposal.supervisorPool[_supervisor]) {
-            proposal.supervisorPool[_supervisor] = true;
-            emit AddSupervisor(_proposalId, _supervisor);
-        }
-    }
-
-    /// @notice remove the supervisor from the supervisor pool suspending their rights to modify the election
-    function burnSupervisor(
-        uint256 _proposalId,
-        address _supervisor,
-        address _sender
-    )
-        external
-        requireCognate
-        requireValidAddress(_supervisor)
-        requireValidProposal(_proposalId)
-        requireProposalSender(_proposalId, _sender)
-        requireVotingNotReady(_proposalId)
-    {
-        Proposal storage proposal = proposalMap[_proposalId];
-        if (proposal.supervisorPool[_supervisor]) {
-            proposal.supervisorPool[_supervisor] = false;
-            emit BurnSupervisor(_proposalId, _supervisor);
-        }
-    }
-
-    /// @notice enable vote undo feature
-    function enableUndoVote(uint256 _proposalId, address _sender)
-        external
-        requireCognate
-        requireValidProposal(_proposalId)
-        requireElectorSupervisor(_proposalId, _sender)
-        requireVotingNotReady(_proposalId)
-    {
-        Proposal storage proposal = proposalMap[_proposalId];
-        proposal.isUndoEnabled = true;
-        emit UndoVoteEnabled(_proposalId);
-    }
-
-    /// @notice establish the pass threshold for this measure
-    function setQuorumThreshold(
-        uint256 _proposalId,
-        uint256 _passThreshold,
-        address _sender
-    )
-        external
-        requireCognate
-        requireValidProposal(_proposalId)
-        requireElectorSupervisor(_proposalId, _sender)
-        requireVotingNotReady(_proposalId)
-    {
-        Proposal storage proposal = proposalMap[_proposalId];
-        proposal.quorumRequired = _passThreshold;
-        emit SetQuorumThreshold(_proposalId, _passThreshold);
-    }
-
-    function setVoteDelay(
-        uint256 _proposalId,
-        uint256 _voteDelay,
-        address _sender
-    )
-        external
-        requireCognate
-        requireValidProposal(_proposalId)
-        requireElectorSupervisor(_proposalId, _sender)
-        requireVotingNotReady(_proposalId)
-    {
-        Proposal storage proposal = proposalMap[_proposalId];
-        proposal.voteDelay = _voteDelay;
-    }
-
-    function setRequiredVoteDuration(
-        uint256 _proposalId,
-        uint256 _voteDuration,
-        address _sender
-    )
-        external
-        requireCognate
-        requireValidProposal(_proposalId)
-        requireElectorSupervisor(_proposalId, _sender)
-        requireVotingNotReady(_proposalId)
-    {
-        require(_voteDuration >= MINIMUM_VOTE_DURATION, "Voting duration is not valid");
-        Proposal storage proposal = proposalMap[_proposalId];
-        proposal.voteDuration = _voteDuration;
-    }
-
-    function getSender(uint256 _proposalId) external view requireValidProposal(_proposalId) returns (address) {
-        Proposal storage proposal = proposalMap[_proposalId];
-        return proposal.proposalSender;
-    }
-
-    function quorumRequired(uint256 _proposalId) external view requireValidProposal(_proposalId) returns (uint256) {
-        Proposal storage proposal = proposalMap[_proposalId];
-        return proposal.quorumRequired;
-    }
-
-    function forVotes(uint256 _proposalId) public view requireValidProposal(_proposalId) returns (uint256) {
-        Proposal storage proposal = proposalMap[_proposalId];
-        return proposal.forVotes;
-    }
-
-    function againstVotes(uint256 _proposalId) public view requireValidProposal(_proposalId) returns (uint256) {
-        Proposal storage proposal = proposalMap[_proposalId];
-        return proposal.againstVotes;
-    }
-
-    function abstentionCount(uint256 _proposalId) public view requireValidProposal(_proposalId) returns (uint256) {
-        Proposal storage proposal = proposalMap[_proposalId];
-        return proposal.abstentionCount;
-    }
-
-    function quorum(uint256 _proposalId) external view requireValidProposal(_proposalId) returns (uint256) {
-        return forVotes(_proposalId) + againstVotes(_proposalId) + abstentionCount(_proposalId);
-    }
-
-    function voterClass() external view returns (VoterClass) {
-        return _voterClass;
-    }
-
-    function isSupervisor(uint256 _proposalId, address _supervisor)
-        external
-        view
-        requireValidAddress(_supervisor)
-        requireValidProposal(_proposalId)
-        returns (bool)
-    {
-        Proposal storage proposal = proposalMap[_proposalId];
-        return proposal.supervisorPool[_supervisor];
-    }
-
-    function isVoter(uint256 _proposalId, address _voter)
-        external
-        view
-        requireValidAddress(_voter)
-        requireValidProposal(_proposalId)
-        returns (bool)
-    {
-        return _voterClass.isVoter(_voter);
-    }
-
-    function isVeto(uint256 _proposalId) external view returns (bool) {
-        Proposal storage proposal = proposalMap[_proposalId];
-        require(_proposalId > 0 && _proposalId <= _proposalCount, "Unknown proposal");
-        return proposal.isVeto;
-    }
-
+    /// @notice indicate the proposal is ready for voting and should be frozen
+    /// @dev requires supervisor
+    /// @param _proposalId the id of the proposal
+    /// @param _sender original wallet for this request
     function makeReady(uint256 _proposalId, address _sender)
         external
         requireCognate
@@ -358,71 +500,10 @@ contract GovernanceStorage is Storage {
         emit VoteReady(_proposalId, proposal.startBlock, proposal.endBlock);
     }
 
-    /// @notice true if proposal is in setup phase
-    function isReady(uint256 _proposalId) external view requireValidProposal(_proposalId) returns (bool) {
-        Proposal storage proposal = proposalMap[_proposalId];
-        return proposal.isReady;
-    }
-
-    function voteDelay(uint256 _proposalId) external view requireValidProposal(_proposalId) returns (uint256) {
-        Proposal storage proposal = proposalMap[_proposalId];
-        return proposal.voteDelay;
-    }
-
-    function voteDuration(uint256 _proposalId) external view requireValidProposal(_proposalId) returns (uint256) {
-        Proposal storage proposal = proposalMap[_proposalId];
-        return proposal.voteDuration;
-    }
-
-    function startBlock(uint256 _proposalId) external view requireValidProposal(_proposalId) returns (uint256) {
-        Proposal storage proposal = proposalMap[_proposalId];
-        return proposal.startBlock;
-    }
-
-    function endBlock(uint256 _proposalId) external view requireValidProposal(_proposalId) returns (uint256) {
-        Proposal storage proposal = proposalMap[_proposalId];
-        return proposal.endBlock;
-    }
-
-    function latestProposal(address _sender) external view returns (uint256) {
-        uint256 latestProposalId = _latestProposalId[_sender];
-        require(latestProposalId > 0, "No current proposal");
-        return latestProposalId;
-    }
-
-    function voteReceipt(uint256 _proposalId, uint256 _shareId)
-        external
-        view
-        requireValidProposal(_proposalId)
-        requireValidReceipt(_proposalId, _shareId)
-        returns (
-            uint256,
-            uint256,
-            uint256,
-            bool,
-            bool
-        )
-    {
-        Proposal storage proposal = proposalMap[_proposalId];
-        Receipt storage receipt = proposal.voteReceipt[_shareId];
-        return (receipt.shareId, receipt.shareFor, receipt.votesCast, receipt.abstention, receipt.undoCast);
-    }
-
-    function validOrRevert(uint256 _proposalId)
-        external
-        view
-        requireCognate
-        requireValidProposal(_proposalId)
-    // solhint-disable-next-line no-empty-blocks
-    {
-
-    }
-
-    function maxPassThreshold() external pure returns (uint256) {
-        return MAXIMUM_QUORUM;
-    }
-
-    /// @notice veto the current measure
+    /// @notice veto the specified proposal
+    /// @dev supervisor is required
+    /// @param _proposalId the id of the proposal
+    /// @param _sender the address of the veto sender
     function veto(uint256 _proposalId, address _sender)
         external
         requireCognate
@@ -438,6 +519,11 @@ contract GovernanceStorage is Storage {
         }
     }
 
+    /// @notice cast an affirmative vote for the specified share
+    /// @param _proposalId the id of the proposal
+    /// @param _wallet the wallet represented for the vote
+    /// @param _shareId the id of the share
+    /// @return uint256 the number of votes cast
     function voteForByShare(
         uint256 _proposalId,
         address _wallet,
@@ -463,6 +549,11 @@ contract GovernanceStorage is Storage {
         return _shareCount;
     }
 
+    /// @notice cast an against vote for the specified share
+    /// @param _proposalId the id of the proposal
+    /// @param _wallet the wallet represented for the vote
+    /// @param _shareId the id of the share
+    /// @return uint256 the number of votes cast
     function voteAgainstByShare(
         uint256 _proposalId,
         address _wallet,
@@ -488,6 +579,11 @@ contract GovernanceStorage is Storage {
         return _shareCount;
     }
 
+    /// @notice cast an abstention for the specified share
+    /// @param _proposalId the id of the proposal
+    /// @param _wallet the wallet represented for the vote
+    /// @param _shareId the id of the share
+    /// @return uint256 the number of votes cast
     function abstainForShare(
         uint256 _proposalId,
         address _wallet,
@@ -507,6 +603,11 @@ contract GovernanceStorage is Storage {
         return _shareCount;
     }
 
+    /// @notice undo vote for the specified receipt
+    /// @param _proposalId the id of the proposal
+    /// @param _wallet the wallet represented for the vote
+    /// @param _receiptId the id of the share to undo
+    /// @return uint256 the number of votes cast
     function undoVoteById(
         uint256 _proposalId,
         address _wallet,
@@ -531,10 +632,32 @@ contract GovernanceStorage is Storage {
         return undoVotes;
     }
 
+    /// @notice do nothing or revert if the proposal is not valid
+    /// @param _proposalId the id of the proposal
+    function validOrRevert(uint256 _proposalId)
+        external
+        view
+        requireCognate
+        requireValidProposal(_proposalId)
+    // solhint-disable-next-line no-empty-blocks
+    {
+
+    }
+
+    /// @notice get the maxiumum possible for the pass threshold
+    /// @return uint256 the maximum value
+    function maxPassThreshold() external pure returns (uint256) {
+        return MAXIMUM_QUORUM;
+    }
+
+    /// @notice return the name of this implementation
+    /// @return string memory representation of name
     function name() external pure virtual returns (string memory) {
         return NAME;
     }
 
+    /// @notice return the version of this implementation
+    /// @return uint32 version number
     function version() public pure virtual returns (uint32) {
         return VERSION_1;
     }

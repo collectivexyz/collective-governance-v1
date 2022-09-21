@@ -32,25 +32,39 @@
  */
 pragma solidity ^0.8.15;
 
-/// @title Governance
-/// contract enables proposing a measure to be voted upon
+/// @title Governance interface
+/// @notice Requirements for Governance implementation
 interface Governance {
+    /// @notice A new proposal was created
     event ProposalCreated(address sender, uint256 proposalId);
+    /// @notice The proposal is now open for voting
     event ProposalOpen(uint256 proposalId);
+    /// @notice Voting is now closed for voting
     event ProposalClosed(uint256 proposalId);
 
-    /// @notice propose a measurement of a vote class @returns proposal id
+    /// @notice propose a vote for the community
+    /// @return uint256 The id of the new proposal
     function propose() external returns (uint256);
 
+    /// @notice configure an existing proposal by id
+    /// @param _proposalId The numeric id of the proposed vote
+    /// @param _quorumThreshold The threshold of participation that is required for a successful conclusion of voting
+    /// @param _requiredDuration The minimum time for voting to proceed before ending the vote is allowed
     function configure(
-        uint256 proposalId,
-        uint256 quorumThreshold,
-        uint256 requiredDuration
+        uint256 _proposalId,
+        uint256 _quorumThreshold,
+        uint256 _requiredDuration
     ) external;
 
+    /// @notice return the address of the internal vote data store
+    /// @return address The address of the store
     function getStorageAddress() external view returns (address);
 
+    /// @notice return the name of this implementation
+    /// @return string memory representation of name
     function name() external pure returns (string memory);
 
+    /// @notice return the version of this implementation
+    /// @return uint32 version number
     function version() external pure returns (uint32);
 }

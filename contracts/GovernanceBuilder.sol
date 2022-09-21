@@ -39,21 +39,26 @@ import "../contracts/CollectiveGovernance.sol";
 import "../contracts/VoterClass.sol";
 import "../contracts/Builder.sol";
 
+/// @title Governance Builder implementation
+/// @notice This builder supports creating new instances of the Collective Governance Contract
 contract GovernanceBuilder is Builder {
     string public constant NAME = "collective.xyz governance contract builder";
     uint32 public constant VERSION_1 = 1;
 
     mapping(address => GovernanceProperties) private _buildMap;
 
-    // solhint-disable-next-line no-empty-blocks
-    constructor() {}
-
-    function aGovernance() external returns (GovernanceBuilder) {
+    /// @notice initialize and create a new builder context for this sender
+    /// @return Builder this contract
+    function aGovernance() external returns (Builder) {
         delete _buildMap[msg.sender];
         emit BuilderContractInitialized(msg.sender);
         return this;
     }
 
+    /// @notice add a supervisor to the supervisor list for the next constructed contract contract
+    /// @dev maintains an internal list which increases with every call
+    /// @param _supervisor the address of the wallet representing a supervisor for the project
+    /// @return Builder this contract
     function withSupervisor(address _supervisor) external returns (Builder) {
         GovernanceProperties storage _properties = _buildMap[msg.sender];
         _properties._supervisorList.push(_supervisor);
@@ -61,12 +66,19 @@ contract GovernanceBuilder is Builder {
         return this;
     }
 
+    /// @notice set the VoterClass to be used for the next constructed contract
+    /// @param _classAddress the address of the VoterClass contract
+    /// @return Builder this contract
     function withVoterClassAddress(address _classAddress) external returns (Builder) {
         IERC165 erc165 = IERC165(_classAddress);
         require(erc165.supportsInterface(type(VoterClass).interfaceId), "VoterClass required");
         return withVoterClass(VoterClass(_classAddress));
     }
 
+    /// @notice set the VoterClass to be used for the next constructed contract
+    /// @dev the type safe VoterClass for use within Solidity code
+    /// @param _class the address of the VoterClass contract
+    /// @return Builder this contract
     function withVoterClass(VoterClass _class) public returns (Builder) {
         GovernanceProperties storage _properties = _buildMap[msg.sender];
         _properties._class = _class;
@@ -74,6 +86,9 @@ contract GovernanceBuilder is Builder {
         return this;
     }
 
+    /// @notice build the specified contract
+    /// @dev contructs a new contract and may require a large gas fee, does not reinitialize context
+    /// @return the address of the new Governance contract
     function build() external returns (address) {
         address _creator = msg.sender;
         GovernanceProperties storage _properties = _buildMap[_creator];
@@ -85,10 +100,14 @@ contract GovernanceBuilder is Builder {
         return _governanceAddress;
     }
 
+    /// @notice return the name of this implementation
+    /// @return string memory representation of name
     function name() external pure virtual returns (string memory) {
         return NAME;
     }
 
+    /// @notice return the version of this implementation
+    /// @return uint32 version number
     function version() external pure virtual returns (uint32) {
         return VERSION_1;
     }

@@ -36,31 +36,34 @@ import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
 
 import "./VoterClass.sol";
 
-/// @notice voting class for ERC-721 contract
+/// @notice Null Object Pattern for VoterClass
+/// @dev No voter is allowed.
 contract VoterClassNullObject is VoterClass, ERC165 {
     string public constant NAME = "collective.xyz VoterClassNullObject";
-
-    // solhint-disable-next-line no-empty-blocks
-    constructor() {}
 
     modifier requireValidAddress(address _wallet) {
         require(_wallet != address(0), "Not a valid wallet");
         _;
     }
 
+    /// @notice always final
+    /// @return bool always returns true
     function isFinal() external pure returns (bool) {
         return true;
     }
 
+    /// @notice no voter is allowed
+    /// @return bool always returns false
     function isVoter(address _wallet) external pure requireValidAddress(_wallet) returns (bool) {
         return false;
     }
 
+    /// @notice always reverts
     function discover(address _wallet) external pure requireValidAddress(_wallet) returns (uint256[] memory) {
         revert("Not a voter");
     }
 
-    /// @notice commit votes for shareId return number voted
+    /// @notice always returns 0
     function confirm(
         address, /* _wallet */
         uint256 /* shareId */
@@ -68,20 +71,24 @@ contract VoterClassNullObject is VoterClass, ERC165 {
         return 0;
     }
 
-    /// @notice return voting weight of each confirmed share
+    /// @notice always returns 0
     function weight() external pure returns (uint256) {
         return 0;
     }
 
-    function supportsInterface(bytes4) public view virtual override(ERC165) returns (bool) {
-        return false;
+    function supportsInterface(bytes4 interfaceId) public view virtual override(ERC165) returns (bool) {
+        return interfaceId == type(VoterClass).interfaceId || super.supportsInterface(interfaceId);
     }
 
+    /// @notice return the name of this implementation
+    /// @return string memory representation of name
     function name() external pure virtual returns (string memory) {
         return NAME;
     }
 
+    /// @notice return the version of this implementation
+    /// @return uint32 version number
     function version() external pure returns (uint32) {
-        return 0;
+        return 1;
     }
 }

@@ -35,8 +35,9 @@ pragma solidity ^0.8.15;
 import "./VoterClass.sol";
 import "./VoterClassNullObject.sol";
 
-/// @title VoteStrategy
-/// upgradable implementation of voting for Collective Governance
+/// @title VoteStrategy interface
+/// Requirements for voting implementations in Collective Governance
+/// @custom:type interface
 interface VoteStrategy {
     // event section
     event VoteOpen(uint256 proposalId);
@@ -45,35 +46,79 @@ interface VoteStrategy {
     event AbstentionTally(uint256 proposalId, address wallet, uint256 count);
     event VoteUndo(uint256 proposalId, address wallet, uint256 count);
 
+    /// @notice open an existing proposal by id
+    /// @param _proposalId The numeric id of the proposed vote
     function openVote(uint256 _proposalId) external;
 
+    /// @notice test if an existing proposal is open
+    /// @param _proposalId The numeric id of the proposed vote
+    /// @return bool True if the proposal is open
+    function isOpen(uint256 _proposalId) external view returns (bool);
+
+    /// @notice end voting on an existing proposal by id
+    /// @param _proposalId The numeric id of the proposed vote
     function endVote(uint256 _proposalId) external;
 
+    /// @notice cast an affirmative vote for the measure by id
+    /// @param _proposalId The numeric id of the proposed vote
     function voteFor(uint256 _proposalId) external;
 
+    /// @notice cast an affirmative vote for the measure by id
+    /// @param _proposalId The numeric id of the proposed vote
+    /// @param _tokenId The id of a token or share representing the right to vote
     function voteFor(uint256 _proposalId, uint256 _tokenId) external;
 
+    /// @notice cast an affirmative vote for the measure by id
+    /// @param _proposalId The numeric id of the proposed vote
+    /// @param _tokenIdList A array of tokens or shares that confer the right to vote
     function voteFor(uint256 _proposalId, uint256[] memory _tokenIdList) external;
 
+    /// @notice cast an against vote by id
+    /// @param _proposalId The numeric id of the proposed vote
     function voteAgainst(uint256 _proposalId) external;
 
+    /// @notice cast an against vote by id
+    /// @param _proposalId The numeric id of the proposed vote
+    /// @param _tokenId The id of a token or share representing the right to vote
     function voteAgainst(uint256 _proposalId, uint256 _tokenId) external;
 
+    /// @notice cast an against vote by id
+    /// @param _proposalId The numeric id of the proposed vote
+    /// @param _tokenIdList A array of tokens or shares that confer the right to vote
     function voteAgainst(uint256 _proposalId, uint256[] memory _tokenIdList) external;
 
+    /// @notice abstain from vote by id
+    /// @param _proposalId The numeric id of the proposed vote
     function abstainFrom(uint256 _proposalId) external;
 
+    /// @notice abstain from vote by id
+    /// @param _proposalId The numeric id of the proposed vote
+    /// @param _tokenId The id of a token or share representing the right to vote
     function abstainFrom(uint256 _proposalId, uint256 _tokenId) external;
 
+    /// @notice abstain from vote by id
+    /// @param _proposalId The numeric id of the proposed vote
+    /// @param _tokenIdList A array of tokens or shares that confer the right to vote
     function abstainFrom(uint256 _proposalId, uint256[] memory _tokenIdList) external;
 
+    /// @notice undo any previous vote if any
+    /// @dev Only applies to affirmative vote.
+    /// @param _proposalId The numeric id of the proposed vote
     function undoVote(uint256 _proposalId) external;
 
+    /// @notice undo any previous vote if any
+    /// @dev only applies to affirmative vote
+    /// @param _proposalId The numeric id of the proposed vote
+    /// @param _tokenId The id of a token or share representing the right to vote
     function undoVote(uint256 _proposalId, uint256 _tokenId) external;
 
+    /// @notice veto proposal by id
+    /// @param _proposalId The numeric id of the proposed vote
+    /// @dev transaction must be signed by a supervisor wallet
     function veto(uint256 _proposalId) external;
 
+    /// @notice get the result of the vote
+    /// @return bool True if the vote is closed and passed
+    /// @dev This method will fail if the vote was vetoed
     function getVoteSucceeded(uint256 _proposalId) external view returns (bool);
-
-    function isOpen(uint256 _proposalId) external view returns (bool);
 }

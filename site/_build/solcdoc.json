@@ -1,0 +1,3425 @@
+{
+  "contracts/Builder.sol:Builder": {
+    "custom:type": "interface",
+    "devdoc": {
+      "custom:type": "interface",
+      "kind": "dev",
+      "methods": {
+        "aGovernance()": {
+          "returns": {
+            "_0": "Builder this contract"
+          }
+        },
+        "build()": {
+          "details": "contructs a new contract and may require a large gas fee, does not reinitialize context",
+          "returns": {
+            "_0": "the address of the new Governance contract"
+          }
+        },
+        "name()": {
+          "returns": {
+            "_0": "string memory representation of name"
+          }
+        },
+        "version()": {
+          "returns": {
+            "_0": "uint32 version number"
+          }
+        },
+        "withSupervisor(address)": {
+          "details": "maintains an internal list which increases with every call",
+          "params": {
+            "_supervisor": "the address of the wallet representing a supervisor for the project"
+          },
+          "returns": {
+            "_0": "Builder this contract"
+          }
+        },
+        "withVoterClass(address)": {
+          "details": "the type safe VoterClass for use within Solidity code",
+          "params": {
+            "_class": "the address of the VoterClass contract"
+          },
+          "returns": {
+            "_0": "Builder this contract"
+          }
+        },
+        "withVoterClassAddress(address)": {
+          "params": {
+            "_classAddress": "the address of the VoterClass contract"
+          },
+          "returns": {
+            "_0": "Builder this contract"
+          }
+        }
+      },
+      "title": "Governance Builder interface",
+      "version": 1
+    },
+    "mergedoc": {
+      "custom:type": "interface",
+      "kind": "merged",
+      "methods": {
+        "aGovernance()": {
+          "notice": "initialize and create a new builder context for this sender",
+          "returns": {
+            "_0": "Builder this contract"
+          }
+        },
+        "build()": {
+          "details": "contructs a new contract and may require a large gas fee, does not reinitialize context",
+          "notice": "build the specified contract",
+          "returns": {
+            "_0": "the address of the new Governance contract"
+          }
+        },
+        "name()": {
+          "notice": "return the name of this implementation",
+          "returns": {
+            "_0": "string memory representation of name"
+          }
+        },
+        "version()": {
+          "notice": "return the version of this implementation",
+          "returns": {
+            "_0": "uint32 version number"
+          }
+        },
+        "withSupervisor(address)": {
+          "details": "maintains an internal list which increases with every call",
+          "notice": "add a supervisor to the supervisor list for the next constructed contract contract",
+          "params": {
+            "_supervisor": "the address of the wallet representing a supervisor for the project"
+          },
+          "returns": {
+            "_0": "Builder this contract"
+          }
+        },
+        "withVoterClass(address)": {
+          "details": "the type safe VoterClass for use within Solidity code",
+          "notice": "set the VoterClass to be used for the next constructed contract",
+          "params": {
+            "_class": "the address of the VoterClass contract"
+          },
+          "returns": {
+            "_0": "Builder this contract"
+          }
+        },
+        "withVoterClassAddress(address)": {
+          "notice": "set the VoterClass to be used for the next constructed contract",
+          "params": {
+            "_classAddress": "the address of the VoterClass contract"
+          },
+          "returns": {
+            "_0": "Builder this contract"
+          }
+        }
+      },
+      "notice": "Requirements for Governance Builder implementation",
+      "title": "Governance Builder interface",
+      "version": 1
+    },
+    "name": "Builder",
+    "notice": "Requirements for Governance Builder implementation",
+    "title": "Governance Builder interface",
+    "userdoc": {
+      "kind": "user",
+      "methods": {
+        "aGovernance()": {
+          "notice": "initialize and create a new builder context for this sender"
+        },
+        "build()": {
+          "notice": "build the specified contract"
+        },
+        "name()": {
+          "notice": "return the name of this implementation"
+        },
+        "version()": {
+          "notice": "return the version of this implementation"
+        },
+        "withSupervisor(address)": {
+          "notice": "add a supervisor to the supervisor list for the next constructed contract contract"
+        },
+        "withVoterClass(address)": {
+          "notice": "set the VoterClass to be used for the next constructed contract"
+        },
+        "withVoterClassAddress(address)": {
+          "notice": "set the VoterClass to be used for the next constructed contract"
+        }
+      },
+      "notice": "Requirements for Governance Builder implementation",
+      "version": 1
+    },
+    "version": 1
+  },
+  "contracts/CollectiveGovernance.sol:CollectiveGovernance": {
+    "details": "The VoterClass is common to all proposed votes as are the project supervisors.   Individual supervisors may be configured as part of the proposal creation workflow but project supervisors are always included.",
+    "devdoc": {
+      "details": "The VoterClass is common to all proposed votes as are the project supervisors.   Individual supervisors may be configured as part of the proposal creation workflow but project supervisors are always included.",
+      "kind": "dev",
+      "methods": {
+        "abstainFrom(uint256)": {
+          "details": "auto discovery is attempted and if possible the method will proceed using the discovered shares",
+          "params": {
+            "_proposalId": "The numeric id of the proposed vote"
+          }
+        },
+        "abstainFrom(uint256,uint256)": {
+          "params": {
+            "_proposalId": "The numeric id of the proposed vote",
+            "_tokenId": "The id of a token or share representing the right to vote"
+          }
+        },
+        "abstainFrom(uint256,uint256[])": {
+          "params": {
+            "_proposalId": "The numeric id of the proposed vote",
+            "_tokenIdList": "A array of tokens or shares that confer the right to vote"
+          }
+        },
+        "configure(uint256,uint256,uint256)": {
+          "params": {
+            "_proposalId": "The numeric id of the proposed vote",
+            "_quorumThreshold": "The threshold of participation that is required for a successful conclusion of voting",
+            "_requiredDuration": "The minimum time for voting to proceed before ending the vote is allowed"
+          }
+        },
+        "endVote(uint256)": {
+          "details": "it is not possible to end voting until the required duration has elapsed",
+          "params": {
+            "_proposalId": "The numeric id of the proposed vote"
+          }
+        },
+        "getStorageAddress()": {
+          "returns": {
+            "_0": "address The address of the store"
+          }
+        },
+        "getVoteSucceeded(uint256)": {
+          "details": "This method will fail if the vote was vetoed",
+          "returns": {
+            "_0": "bool True if the vote is closed and passed"
+          }
+        },
+        "isOpen(uint256)": {
+          "params": {
+            "_proposalId": "The numeric id of the proposed vote"
+          },
+          "returns": {
+            "_0": "bool True if the proposal is open"
+          }
+        },
+        "name()": {
+          "returns": {
+            "_0": "string memory representation of name"
+          }
+        },
+        "openVote(uint256)": {
+          "params": {
+            "_proposalId": "The numeric id of the proposed vote"
+          }
+        },
+        "propose()": {
+          "details": "Only one new proposal is allowed per msg.sender",
+          "returns": {
+            "_0": "uint256 The id of the new proposal"
+          }
+        },
+        "undoVote(uint256)": {
+          "details": "Only applies to affirmative vote. auto discovery is attempted and if possible the method will proceed using the discovered shares",
+          "params": {
+            "_proposalId": "The numeric id of the proposed vote"
+          }
+        },
+        "undoVote(uint256,uint256)": {
+          "details": "only applies to affirmative vote",
+          "params": {
+            "_proposalId": "The numeric id of the proposed vote",
+            "_tokenId": "The id of a token or share representing the right to vote"
+          }
+        },
+        "version()": {
+          "returns": {
+            "_0": "uint32 version number"
+          }
+        },
+        "veto(uint256)": {
+          "details": "transaction must be signed by a supervisor wallet",
+          "params": {
+            "_proposalId": "The numeric id of the proposed vote"
+          }
+        },
+        "voteAgainst(uint256)": {
+          "details": "auto discovery is attempted and if possible the method will proceed using the discovered shares",
+          "params": {
+            "_proposalId": "The numeric id of the proposed vote"
+          }
+        },
+        "voteAgainst(uint256,uint256)": {
+          "params": {
+            "_proposalId": "The numeric id of the proposed vote",
+            "_tokenId": "The id of a token or share representing the right to vote"
+          }
+        },
+        "voteAgainst(uint256,uint256[])": {
+          "params": {
+            "_proposalId": "The numeric id of the proposed vote",
+            "_tokenIdList": "A array of tokens or shares that confer the right to vote"
+          }
+        },
+        "voteFor(uint256)": {
+          "details": "Auto discovery is attempted and if possible the method will proceed using the discovered shares",
+          "params": {
+            "_proposalId": "The numeric id of the proposed vote"
+          }
+        },
+        "voteFor(uint256,uint256)": {
+          "params": {
+            "_proposalId": "The numeric id of the proposed vote",
+            "_tokenId": "The id of a token or share representing the right to vote"
+          }
+        },
+        "voteFor(uint256,uint256[])": {
+          "params": {
+            "_proposalId": "The numeric id of the proposed vote",
+            "_tokenIdList": "A array of tokens or shares that confer the right to vote"
+          }
+        }
+      },
+      "title": "Collective Governance implementation",
+      "version": 1
+    },
+    "events": {
+      "ProposalClosed(uint256)": {
+        "notice": "Voting is now closed for voting"
+      },
+      "ProposalCreated(address,uint256)": {
+        "notice": "A new proposal was created"
+      },
+      "ProposalOpen(uint256)": {
+        "notice": "The proposal is now open for voting"
+      }
+    },
+    "mergedoc": {
+      "details": "The VoterClass is common to all proposed votes as are the project supervisors.   Individual supervisors may be configured as part of the proposal creation workflow but project supervisors are always included.",
+      "events": {
+        "ProposalClosed(uint256)": {
+          "notice": "Voting is now closed for voting"
+        },
+        "ProposalCreated(address,uint256)": {
+          "notice": "A new proposal was created"
+        },
+        "ProposalOpen(uint256)": {
+          "notice": "The proposal is now open for voting"
+        }
+      },
+      "kind": "merged",
+      "methods": {
+        "NAME()": {
+          "notice": "contract name"
+        },
+        "abstainFrom(uint256)": {
+          "details": "auto discovery is attempted and if possible the method will proceed using the discovered shares",
+          "notice": "abstain from vote by id",
+          "params": {
+            "_proposalId": "The numeric id of the proposed vote"
+          }
+        },
+        "abstainFrom(uint256,uint256)": {
+          "notice": "abstain from vote by id",
+          "params": {
+            "_proposalId": "The numeric id of the proposed vote",
+            "_tokenId": "The id of a token or share representing the right to vote"
+          }
+        },
+        "abstainFrom(uint256,uint256[])": {
+          "notice": "abstain from vote by id",
+          "params": {
+            "_proposalId": "The numeric id of the proposed vote",
+            "_tokenIdList": "A array of tokens or shares that confer the right to vote"
+          }
+        },
+        "configure(uint256,uint256,uint256)": {
+          "notice": "configure an existing proposal by id",
+          "params": {
+            "_proposalId": "The numeric id of the proposed vote",
+            "_quorumThreshold": "The threshold of participation that is required for a successful conclusion of voting",
+            "_requiredDuration": "The minimum time for voting to proceed before ending the vote is allowed"
+          }
+        },
+        "endVote(uint256)": {
+          "details": "it is not possible to end voting until the required duration has elapsed",
+          "notice": "end voting on an existing proposal by id",
+          "params": {
+            "_proposalId": "The numeric id of the proposed vote"
+          }
+        },
+        "getStorageAddress()": {
+          "notice": "return the address of the internal vote data store",
+          "returns": {
+            "_0": "address The address of the store"
+          }
+        },
+        "getVoteSucceeded(uint256)": {
+          "details": "This method will fail if the vote was vetoed",
+          "notice": "get the result of the vote",
+          "returns": {
+            "_0": "bool True if the vote is closed and passed"
+          }
+        },
+        "isOpen(uint256)": {
+          "notice": "test if an existing proposal is open",
+          "params": {
+            "_proposalId": "The numeric id of the proposed vote"
+          },
+          "returns": {
+            "_0": "bool True if the proposal is open"
+          }
+        },
+        "name()": {
+          "notice": "return the name of this implementation",
+          "returns": {
+            "_0": "string memory representation of name"
+          }
+        },
+        "openVote(uint256)": {
+          "notice": "open an existing proposal by id",
+          "params": {
+            "_proposalId": "The numeric id of the proposed vote"
+          }
+        },
+        "propose()": {
+          "details": "Only one new proposal is allowed per msg.sender",
+          "notice": "propose a vote for the community",
+          "returns": {
+            "_0": "uint256 The id of the new proposal"
+          }
+        },
+        "supportsInterface(bytes4)": {
+          "notice": "see ERC-165"
+        },
+        "undoVote(uint256)": {
+          "details": "Only applies to affirmative vote. auto discovery is attempted and if possible the method will proceed using the discovered shares",
+          "notice": "undo any previous vote if any",
+          "params": {
+            "_proposalId": "The numeric id of the proposed vote"
+          }
+        },
+        "undoVote(uint256,uint256)": {
+          "details": "only applies to affirmative vote",
+          "notice": "undo any previous vote if any",
+          "params": {
+            "_proposalId": "The numeric id of the proposed vote",
+            "_tokenId": "The id of a token or share representing the right to vote"
+          }
+        },
+        "version()": {
+          "notice": "return the version of this implementation",
+          "returns": {
+            "_0": "uint32 version number"
+          }
+        },
+        "veto(uint256)": {
+          "details": "transaction must be signed by a supervisor wallet",
+          "notice": "veto proposal by id",
+          "params": {
+            "_proposalId": "The numeric id of the proposed vote"
+          }
+        },
+        "voteAgainst(uint256)": {
+          "details": "auto discovery is attempted and if possible the method will proceed using the discovered shares",
+          "notice": "cast an against vote by id",
+          "params": {
+            "_proposalId": "The numeric id of the proposed vote"
+          }
+        },
+        "voteAgainst(uint256,uint256)": {
+          "notice": "cast an against vote by id",
+          "params": {
+            "_proposalId": "The numeric id of the proposed vote",
+            "_tokenId": "The id of a token or share representing the right to vote"
+          }
+        },
+        "voteAgainst(uint256,uint256[])": {
+          "notice": "cast an against vote by id",
+          "params": {
+            "_proposalId": "The numeric id of the proposed vote",
+            "_tokenIdList": "A array of tokens or shares that confer the right to vote"
+          }
+        },
+        "voteFor(uint256)": {
+          "details": "Auto discovery is attempted and if possible the method will proceed using the discovered shares",
+          "notice": "cast an affirmative vote for the measure by id",
+          "params": {
+            "_proposalId": "The numeric id of the proposed vote"
+          }
+        },
+        "voteFor(uint256,uint256)": {
+          "notice": "cast an affirmative vote for the measure by id",
+          "params": {
+            "_proposalId": "The numeric id of the proposed vote",
+            "_tokenId": "The id of a token or share representing the right to vote"
+          }
+        },
+        "voteFor(uint256,uint256[])": {
+          "notice": "cast an affirmative vote for the measure by id",
+          "params": {
+            "_proposalId": "The numeric id of the proposed vote",
+            "_tokenIdList": "A array of tokens or shares that confer the right to vote"
+          }
+        }
+      },
+      "notice": "Governance contract implementation for Collective.   This contract implements voting by groups of pooled voters, open voting or based on membership, such as class members who hold a specific ERC-721 token in their wallet. Creating a Vote is a three step process First, propose the vote.  Next, Configure the vote.  Finally, open the vote. Voting may proceed according to the conditions established during configuration.",
+      "title": "Collective Governance implementation",
+      "version": 1
+    },
+    "name": "CollectiveGovernance",
+    "notice": "Governance contract implementation for Collective.   This contract implements voting by groups of pooled voters, open voting or based on membership, such as class members who hold a specific ERC-721 token in their wallet. Creating a Vote is a three step process First, propose the vote.  Next, Configure the vote.  Finally, open the vote. Voting may proceed according to the conditions established during configuration.",
+    "title": "Collective Governance implementation",
+    "userdoc": {
+      "events": {
+        "ProposalClosed(uint256)": {
+          "notice": "Voting is now closed for voting"
+        },
+        "ProposalCreated(address,uint256)": {
+          "notice": "A new proposal was created"
+        },
+        "ProposalOpen(uint256)": {
+          "notice": "The proposal is now open for voting"
+        }
+      },
+      "kind": "user",
+      "methods": {
+        "NAME()": {
+          "notice": "contract name"
+        },
+        "abstainFrom(uint256)": {
+          "notice": "abstain from vote by id"
+        },
+        "abstainFrom(uint256,uint256)": {
+          "notice": "abstain from vote by id"
+        },
+        "abstainFrom(uint256,uint256[])": {
+          "notice": "abstain from vote by id"
+        },
+        "configure(uint256,uint256,uint256)": {
+          "notice": "configure an existing proposal by id"
+        },
+        "endVote(uint256)": {
+          "notice": "end voting on an existing proposal by id"
+        },
+        "getStorageAddress()": {
+          "notice": "return the address of the internal vote data store"
+        },
+        "getVoteSucceeded(uint256)": {
+          "notice": "get the result of the vote"
+        },
+        "isOpen(uint256)": {
+          "notice": "test if an existing proposal is open"
+        },
+        "name()": {
+          "notice": "return the name of this implementation"
+        },
+        "openVote(uint256)": {
+          "notice": "open an existing proposal by id"
+        },
+        "propose()": {
+          "notice": "propose a vote for the community"
+        },
+        "supportsInterface(bytes4)": {
+          "notice": "see ERC-165"
+        },
+        "undoVote(uint256)": {
+          "notice": "undo any previous vote if any"
+        },
+        "undoVote(uint256,uint256)": {
+          "notice": "undo any previous vote if any"
+        },
+        "version()": {
+          "notice": "return the version of this implementation"
+        },
+        "veto(uint256)": {
+          "notice": "veto proposal by id"
+        },
+        "voteAgainst(uint256)": {
+          "notice": "cast an against vote by id"
+        },
+        "voteAgainst(uint256,uint256)": {
+          "notice": "cast an against vote by id"
+        },
+        "voteAgainst(uint256,uint256[])": {
+          "notice": "cast an against vote by id"
+        },
+        "voteFor(uint256)": {
+          "notice": "cast an affirmative vote for the measure by id"
+        },
+        "voteFor(uint256,uint256)": {
+          "notice": "cast an affirmative vote for the measure by id"
+        },
+        "voteFor(uint256,uint256[])": {
+          "notice": "cast an affirmative vote for the measure by id"
+        }
+      },
+      "notice": "Governance contract implementation for Collective.   This contract implements voting by groups of pooled voters, open voting or based on membership, such as class members who hold a specific ERC-721 token in their wallet. Creating a Vote is a three step process First, propose the vote.  Next, Configure the vote.  Finally, open the vote. Voting may proceed according to the conditions established during configuration.",
+      "version": 1
+    },
+    "version": 1
+  },
+  "contracts/Governance.sol:Governance": {
+    "devdoc": {
+      "kind": "dev",
+      "methods": {
+        "configure(uint256,uint256,uint256)": {
+          "params": {
+            "_proposalId": "The numeric id of the proposed vote",
+            "_quorumThreshold": "The threshold of participation that is required for a successful conclusion of voting",
+            "_requiredDuration": "The minimum time for voting to proceed before ending the vote is allowed"
+          }
+        },
+        "getStorageAddress()": {
+          "returns": {
+            "_0": "address The address of the store"
+          }
+        },
+        "name()": {
+          "returns": {
+            "_0": "string memory representation of name"
+          }
+        },
+        "propose()": {
+          "returns": {
+            "_0": "uint256 The id of the new proposal"
+          }
+        },
+        "version()": {
+          "returns": {
+            "_0": "uint32 version number"
+          }
+        }
+      },
+      "title": "Governance interface",
+      "version": 1
+    },
+    "events": {
+      "ProposalClosed(uint256)": {
+        "notice": "Voting is now closed for voting"
+      },
+      "ProposalCreated(address,uint256)": {
+        "notice": "A new proposal was created"
+      },
+      "ProposalOpen(uint256)": {
+        "notice": "The proposal is now open for voting"
+      }
+    },
+    "mergedoc": {
+      "events": {
+        "ProposalClosed(uint256)": {
+          "notice": "Voting is now closed for voting"
+        },
+        "ProposalCreated(address,uint256)": {
+          "notice": "A new proposal was created"
+        },
+        "ProposalOpen(uint256)": {
+          "notice": "The proposal is now open for voting"
+        }
+      },
+      "kind": "merged",
+      "methods": {
+        "configure(uint256,uint256,uint256)": {
+          "notice": "configure an existing proposal by id",
+          "params": {
+            "_proposalId": "The numeric id of the proposed vote",
+            "_quorumThreshold": "The threshold of participation that is required for a successful conclusion of voting",
+            "_requiredDuration": "The minimum time for voting to proceed before ending the vote is allowed"
+          }
+        },
+        "getStorageAddress()": {
+          "notice": "return the address of the internal vote data store",
+          "returns": {
+            "_0": "address The address of the store"
+          }
+        },
+        "name()": {
+          "notice": "return the name of this implementation",
+          "returns": {
+            "_0": "string memory representation of name"
+          }
+        },
+        "propose()": {
+          "notice": "propose a vote for the community",
+          "returns": {
+            "_0": "uint256 The id of the new proposal"
+          }
+        },
+        "version()": {
+          "notice": "return the version of this implementation",
+          "returns": {
+            "_0": "uint32 version number"
+          }
+        }
+      },
+      "notice": "Requirements for Governance implementation",
+      "title": "Governance interface",
+      "version": 1
+    },
+    "name": "Governance",
+    "notice": "Requirements for Governance implementation",
+    "title": "Governance interface",
+    "userdoc": {
+      "events": {
+        "ProposalClosed(uint256)": {
+          "notice": "Voting is now closed for voting"
+        },
+        "ProposalCreated(address,uint256)": {
+          "notice": "A new proposal was created"
+        },
+        "ProposalOpen(uint256)": {
+          "notice": "The proposal is now open for voting"
+        }
+      },
+      "kind": "user",
+      "methods": {
+        "configure(uint256,uint256,uint256)": {
+          "notice": "configure an existing proposal by id"
+        },
+        "getStorageAddress()": {
+          "notice": "return the address of the internal vote data store"
+        },
+        "name()": {
+          "notice": "return the name of this implementation"
+        },
+        "propose()": {
+          "notice": "propose a vote for the community"
+        },
+        "version()": {
+          "notice": "return the version of this implementation"
+        }
+      },
+      "notice": "Requirements for Governance implementation",
+      "version": 1
+    },
+    "version": 1
+  },
+  "contracts/GovernanceBuilder.sol:GovernanceBuilder": {
+    "devdoc": {
+      "kind": "dev",
+      "methods": {
+        "aGovernance()": {
+          "returns": {
+            "_0": "Builder this contract"
+          }
+        },
+        "build()": {
+          "details": "contructs a new contract and may require a large gas fee, does not reinitialize context",
+          "returns": {
+            "_0": "the address of the new Governance contract"
+          }
+        },
+        "name()": {
+          "returns": {
+            "_0": "string memory representation of name"
+          }
+        },
+        "version()": {
+          "returns": {
+            "_0": "uint32 version number"
+          }
+        },
+        "withSupervisor(address)": {
+          "details": "maintains an internal list which increases with every call",
+          "params": {
+            "_supervisor": "the address of the wallet representing a supervisor for the project"
+          },
+          "returns": {
+            "_0": "Builder this contract"
+          }
+        },
+        "withVoterClass(address)": {
+          "details": "the type safe VoterClass for use within Solidity code",
+          "params": {
+            "_class": "the address of the VoterClass contract"
+          },
+          "returns": {
+            "_0": "Builder this contract"
+          }
+        },
+        "withVoterClassAddress(address)": {
+          "params": {
+            "_classAddress": "the address of the VoterClass contract"
+          },
+          "returns": {
+            "_0": "Builder this contract"
+          }
+        }
+      },
+      "title": "Governance Builder implementation",
+      "version": 1
+    },
+    "mergedoc": {
+      "kind": "merged",
+      "methods": {
+        "aGovernance()": {
+          "notice": "initialize and create a new builder context for this sender",
+          "returns": {
+            "_0": "Builder this contract"
+          }
+        },
+        "build()": {
+          "details": "contructs a new contract and may require a large gas fee, does not reinitialize context",
+          "notice": "build the specified contract",
+          "returns": {
+            "_0": "the address of the new Governance contract"
+          }
+        },
+        "name()": {
+          "notice": "return the name of this implementation",
+          "returns": {
+            "_0": "string memory representation of name"
+          }
+        },
+        "version()": {
+          "notice": "return the version of this implementation",
+          "returns": {
+            "_0": "uint32 version number"
+          }
+        },
+        "withSupervisor(address)": {
+          "details": "maintains an internal list which increases with every call",
+          "notice": "add a supervisor to the supervisor list for the next constructed contract contract",
+          "params": {
+            "_supervisor": "the address of the wallet representing a supervisor for the project"
+          },
+          "returns": {
+            "_0": "Builder this contract"
+          }
+        },
+        "withVoterClass(address)": {
+          "details": "the type safe VoterClass for use within Solidity code",
+          "notice": "set the VoterClass to be used for the next constructed contract",
+          "params": {
+            "_class": "the address of the VoterClass contract"
+          },
+          "returns": {
+            "_0": "Builder this contract"
+          }
+        },
+        "withVoterClassAddress(address)": {
+          "notice": "set the VoterClass to be used for the next constructed contract",
+          "params": {
+            "_classAddress": "the address of the VoterClass contract"
+          },
+          "returns": {
+            "_0": "Builder this contract"
+          }
+        }
+      },
+      "notice": "This builder supports creating new instances of the Collective Governance Contract",
+      "title": "Governance Builder implementation",
+      "version": 1
+    },
+    "name": "GovernanceBuilder",
+    "notice": "This builder supports creating new instances of the Collective Governance Contract",
+    "title": "Governance Builder implementation",
+    "userdoc": {
+      "kind": "user",
+      "methods": {
+        "aGovernance()": {
+          "notice": "initialize and create a new builder context for this sender"
+        },
+        "build()": {
+          "notice": "build the specified contract"
+        },
+        "name()": {
+          "notice": "return the name of this implementation"
+        },
+        "version()": {
+          "notice": "return the version of this implementation"
+        },
+        "withSupervisor(address)": {
+          "notice": "add a supervisor to the supervisor list for the next constructed contract contract"
+        },
+        "withVoterClass(address)": {
+          "notice": "set the VoterClass to be used for the next constructed contract"
+        },
+        "withVoterClassAddress(address)": {
+          "notice": "set the VoterClass to be used for the next constructed contract"
+        }
+      },
+      "notice": "This builder supports creating new instances of the Collective Governance Contract",
+      "version": 1
+    },
+    "version": 1
+  },
+  "contracts/GovernanceStorage.sol:GovernanceStorage": {
+    "details": "The creator of the contract, typically the Governance contract itself, privledged with respect to write opperations in this contract.   The creator is required for nearly all change operations",
+    "devdoc": {
+      "details": "The creator of the contract, typically the Governance contract itself, privledged with respect to write opperations in this contract.   The creator is required for nearly all change operations",
+      "kind": "dev",
+      "methods": {
+        "abstainForShare(uint256,address,uint256)": {
+          "params": {
+            "_proposalId": "the id of the proposal",
+            "_shareId": "the id of the share",
+            "_wallet": "the wallet represented for the vote"
+          },
+          "returns": {
+            "_0": "uint256 the number of votes cast"
+          }
+        },
+        "abstentionCount(uint256)": {
+          "params": {
+            "_proposalId": "the id of the proposal"
+          },
+          "returns": {
+            "_0": "uint256 the number abstentions"
+          }
+        },
+        "againstVotes(uint256)": {
+          "params": {
+            "_proposalId": "the id of the proposal"
+          },
+          "returns": {
+            "_0": "uint256 the number of against votes"
+          }
+        },
+        "burnSupervisor(uint256,address,address)": {
+          "details": "requires proposal creator",
+          "params": {
+            "_proposalId": "the id of the proposal",
+            "_sender": "original wallet for this request",
+            "_supervisor": "the supervisor address"
+          }
+        },
+        "constructor": {
+          "params": {
+            "_class": "the contract that defines the popluation"
+          }
+        },
+        "enableUndoVote(uint256,address)": {
+          "details": "requires supervisor",
+          "params": {
+            "_proposalId": "the id of the proposal",
+            "_sender": "original wallet for this request"
+          }
+        },
+        "endBlock(uint256)": {
+          "params": {
+            "_proposalId": "the id of the proposal"
+          },
+          "returns": {
+            "_0": "uint256 the end block"
+          }
+        },
+        "forVotes(uint256)": {
+          "params": {
+            "_proposalId": "the id of the proposal"
+          },
+          "returns": {
+            "_0": "uint256 the number of votes in favor"
+          }
+        },
+        "getSender(uint256)": {
+          "params": {
+            "_proposalId": "the id of the proposal"
+          },
+          "returns": {
+            "_0": "address the address of the sender"
+          }
+        },
+        "initializeProposal(address)": {
+          "returns": {
+            "_0": "uint256 the id of the proposal"
+          }
+        },
+        "isReady(uint256)": {
+          "params": {
+            "_proposalId": "the id of the proposal"
+          },
+          "returns": {
+            "_0": "bool true if the proposal is marked ready"
+          }
+        },
+        "isSupervisor(uint256,address)": {
+          "params": {
+            "_proposalId": "the id of the proposal",
+            "_supervisor": "the address to check"
+          },
+          "returns": {
+            "_0": "bool true if the address is a supervisor"
+          }
+        },
+        "isVeto(uint256)": {
+          "params": {
+            "_proposalId": "the id of the proposal"
+          },
+          "returns": {
+            "_0": "bool true if the proposal is marked veto"
+          }
+        },
+        "isVoter(uint256,address)": {
+          "params": {
+            "_proposalId": "the id of the proposal",
+            "_voter": "the address to check"
+          },
+          "returns": {
+            "_0": "bool true if the address is a voter"
+          }
+        },
+        "latestProposal(address)": {
+          "returns": {
+            "_0": "uint256 the id of the most recent proposal for sender"
+          }
+        },
+        "makeReady(uint256,address)": {
+          "details": "requires supervisor",
+          "params": {
+            "_proposalId": "the id of the proposal",
+            "_sender": "original wallet for this request"
+          }
+        },
+        "maxPassThreshold()": {
+          "returns": {
+            "_0": "uint256 the maximum value"
+          }
+        },
+        "name()": {
+          "returns": {
+            "_0": "string memory representation of name"
+          }
+        },
+        "quorum(uint256)": {
+          "params": {
+            "_proposalId": "the id of the proposal"
+          },
+          "returns": {
+            "_0": "uint256 the amount of participation"
+          }
+        },
+        "quorumRequired(uint256)": {
+          "params": {
+            "_proposalId": "the id of the proposal"
+          },
+          "returns": {
+            "_0": "uint256 the number required for quorum"
+          }
+        },
+        "registerSupervisor(uint256,address,address)": {
+          "details": "requires proposal creator",
+          "params": {
+            "_proposalId": "the id of the proposal",
+            "_sender": "original wallet for this request",
+            "_supervisor": "the supervisor address"
+          }
+        },
+        "setQuorumThreshold(uint256,uint256,address)": {
+          "details": "requires supervisor",
+          "params": {
+            "_proposalId": "the id of the proposal",
+            "_sender": "original wallet for this request",
+            "_threshold": "the quorum number"
+          }
+        },
+        "setRequiredVoteDuration(uint256,uint256,address)": {
+          "details": "requires supervisor",
+          "params": {
+            "_proposalId": "the id of the proposal",
+            "_sender": "original wallet for this request",
+            "_voteDuration": "the quorum number"
+          }
+        },
+        "setVoteDelay(uint256,uint256,address)": {
+          "details": "requires supervisor",
+          "params": {
+            "_proposalId": "the id of the proposal",
+            "_sender": "original wallet for this request",
+            "_voteDelay": "the quorum number"
+          }
+        },
+        "startBlock(uint256)": {
+          "params": {
+            "_proposalId": "the id of the proposal"
+          },
+          "returns": {
+            "_0": "uint256 the start block"
+          }
+        },
+        "undoVoteById(uint256,address,uint256)": {
+          "params": {
+            "_proposalId": "the id of the proposal",
+            "_receiptId": "the id of the share to undo",
+            "_wallet": "the wallet represented for the vote"
+          },
+          "returns": {
+            "_0": "uint256 the number of votes cast"
+          }
+        },
+        "validOrRevert(uint256)": {
+          "params": {
+            "_proposalId": "the id of the proposal"
+          }
+        },
+        "version()": {
+          "returns": {
+            "_0": "uint32 version number"
+          }
+        },
+        "veto(uint256,address)": {
+          "details": "supervisor is required",
+          "params": {
+            "_proposalId": "the id of the proposal",
+            "_sender": "the address of the veto sender"
+          }
+        },
+        "voteAgainstByShare(uint256,address,uint256)": {
+          "params": {
+            "_proposalId": "the id of the proposal",
+            "_shareId": "the id of the share",
+            "_wallet": "the wallet represented for the vote"
+          },
+          "returns": {
+            "_0": "uint256 the number of votes cast"
+          }
+        },
+        "voteDelay(uint256)": {
+          "params": {
+            "_proposalId": "the id of the proposal"
+          },
+          "returns": {
+            "_0": "uint256 the delay"
+          }
+        },
+        "voteDuration(uint256)": {
+          "params": {
+            "_proposalId": "the id of the proposal"
+          },
+          "returns": {
+            "_0": "uint256 the duration"
+          }
+        },
+        "voteForByShare(uint256,address,uint256)": {
+          "params": {
+            "_proposalId": "the id of the proposal",
+            "_shareId": "the id of the share",
+            "_wallet": "the wallet represented for the vote"
+          },
+          "returns": {
+            "_0": "uint256 the number of votes cast"
+          }
+        },
+        "voteReceipt(uint256,uint256)": {
+          "returns": {
+            "_0": "_shareId the share id for the vote",
+            "_1": "_shareFor the shares cast in favor",
+            "_2": "_votesCast the number of votes cast",
+            "_3": "_isAbstention true if vote was an abstention",
+            "_4": "_isUndo true if the vote was reversed"
+          }
+        },
+        "voterClass()": {
+          "returns": {
+            "_0": "VoterClass the voter class for this store"
+          }
+        }
+      },
+      "title": "GovernanceStorage implementation",
+      "version": 1
+    },
+    "mergedoc": {
+      "details": "The creator of the contract, typically the Governance contract itself, privledged with respect to write opperations in this contract.   The creator is required for nearly all change operations",
+      "kind": "merged",
+      "methods": {
+        "NAME()": {
+          "notice": "contract name"
+        },
+        "abstainForShare(uint256,address,uint256)": {
+          "notice": "cast an abstention for the specified share",
+          "params": {
+            "_proposalId": "the id of the proposal",
+            "_shareId": "the id of the share",
+            "_wallet": "the wallet represented for the vote"
+          },
+          "returns": {
+            "_0": "uint256 the number of votes cast"
+          }
+        },
+        "abstentionCount(uint256)": {
+          "notice": "get the number of abstentions",
+          "params": {
+            "_proposalId": "the id of the proposal"
+          },
+          "returns": {
+            "_0": "uint256 the number abstentions"
+          }
+        },
+        "againstVotes(uint256)": {
+          "notice": "get the against vote count",
+          "params": {
+            "_proposalId": "the id of the proposal"
+          },
+          "returns": {
+            "_0": "uint256 the number of against votes"
+          }
+        },
+        "burnSupervisor(uint256,address,address)": {
+          "details": "requires proposal creator",
+          "notice": "remove a supervisor from the proposal along with its ability to change or veto",
+          "params": {
+            "_proposalId": "the id of the proposal",
+            "_sender": "original wallet for this request",
+            "_supervisor": "the supervisor address"
+          }
+        },
+        "constructor": {
+          "notice": "create a new storage object with VoterClass as the voting population",
+          "params": {
+            "_class": "the contract that defines the popluation"
+          }
+        },
+        "enableUndoVote(uint256,address)": {
+          "details": "requires supervisor",
+          "notice": "enable the undo feature for this vote",
+          "params": {
+            "_proposalId": "the id of the proposal",
+            "_sender": "original wallet for this request"
+          }
+        },
+        "endBlock(uint256)": {
+          "notice": "get the end block",
+          "params": {
+            "_proposalId": "the id of the proposal"
+          },
+          "returns": {
+            "_0": "uint256 the end block"
+          }
+        },
+        "forVotes(uint256)": {
+          "notice": "get the for vote count",
+          "params": {
+            "_proposalId": "the id of the proposal"
+          },
+          "returns": {
+            "_0": "uint256 the number of votes in favor"
+          }
+        },
+        "getSender(uint256)": {
+          "notice": "get the address of the proposal sender",
+          "params": {
+            "_proposalId": "the id of the proposal"
+          },
+          "returns": {
+            "_0": "address the address of the sender"
+          }
+        },
+        "initializeProposal(address)": {
+          "notice": "initialize a new proposal and return the id",
+          "returns": {
+            "_0": "uint256 the id of the proposal"
+          }
+        },
+        "isReady(uint256)": {
+          "notice": "test if proposal is ready or in the setup phase",
+          "params": {
+            "_proposalId": "the id of the proposal"
+          },
+          "returns": {
+            "_0": "bool true if the proposal is marked ready"
+          }
+        },
+        "isSupervisor(uint256,address)": {
+          "notice": "test if the address is a supervisor on the specified proposal",
+          "params": {
+            "_proposalId": "the id of the proposal",
+            "_supervisor": "the address to check"
+          },
+          "returns": {
+            "_0": "bool true if the address is a supervisor"
+          }
+        },
+        "isVeto(uint256)": {
+          "notice": "test if proposal is veto",
+          "params": {
+            "_proposalId": "the id of the proposal"
+          },
+          "returns": {
+            "_0": "bool true if the proposal is marked veto"
+          }
+        },
+        "isVoter(uint256,address)": {
+          "notice": "test if address is a voter on the specified proposal",
+          "params": {
+            "_proposalId": "the id of the proposal",
+            "_voter": "the address to check"
+          },
+          "returns": {
+            "_0": "bool true if the address is a voter"
+          }
+        },
+        "latestProposal(address)": {
+          "notice": "get the id of the last proposal for sender",
+          "returns": {
+            "_0": "uint256 the id of the most recent proposal for sender"
+          }
+        },
+        "makeReady(uint256,address)": {
+          "details": "requires supervisor",
+          "notice": "indicate the proposal is ready for voting and should be frozen",
+          "params": {
+            "_proposalId": "the id of the proposal",
+            "_sender": "original wallet for this request"
+          }
+        },
+        "maxPassThreshold()": {
+          "notice": "get the maxiumum possible for the pass threshold",
+          "returns": {
+            "_0": "uint256 the maximum value"
+          }
+        },
+        "name()": {
+          "notice": "return the name of this implementation",
+          "returns": {
+            "_0": "string memory representation of name"
+          }
+        },
+        "proposalMap(uint256)": {
+          "notice": "global list of proposed issues by id"
+        },
+        "quorum(uint256)": {
+          "notice": "get the current number counting towards quorum",
+          "params": {
+            "_proposalId": "the id of the proposal"
+          },
+          "returns": {
+            "_0": "uint256 the amount of participation"
+          }
+        },
+        "quorumRequired(uint256)": {
+          "notice": "get the quorum required",
+          "params": {
+            "_proposalId": "the id of the proposal"
+          },
+          "returns": {
+            "_0": "uint256 the number required for quorum"
+          }
+        },
+        "registerSupervisor(uint256,address,address)": {
+          "details": "requires proposal creator",
+          "notice": "Register a new supervisor on the specified proposal. The supervisor has rights to add or remove voters prior to start of voting in a Voter Pool. The supervisor also has the right to veto the outcome of the vote.",
+          "params": {
+            "_proposalId": "the id of the proposal",
+            "_sender": "original wallet for this request",
+            "_supervisor": "the supervisor address"
+          }
+        },
+        "setQuorumThreshold(uint256,uint256,address)": {
+          "details": "requires supervisor",
+          "notice": "set the minimum number of participants for a successful outcome",
+          "params": {
+            "_proposalId": "the id of the proposal",
+            "_sender": "original wallet for this request",
+            "_threshold": "the quorum number"
+          }
+        },
+        "setRequiredVoteDuration(uint256,uint256,address)": {
+          "details": "requires supervisor",
+          "notice": "set the required duration for the vote",
+          "params": {
+            "_proposalId": "the id of the proposal",
+            "_sender": "original wallet for this request",
+            "_voteDuration": "the quorum number"
+          }
+        },
+        "setVoteDelay(uint256,uint256,address)": {
+          "details": "requires supervisor",
+          "notice": "set the delay period required to preceed the vote",
+          "params": {
+            "_proposalId": "the id of the proposal",
+            "_sender": "original wallet for this request",
+            "_voteDelay": "the quorum number"
+          }
+        },
+        "startBlock(uint256)": {
+          "notice": "get the start block",
+          "params": {
+            "_proposalId": "the id of the proposal"
+          },
+          "returns": {
+            "_0": "uint256 the start block"
+          }
+        },
+        "undoVoteById(uint256,address,uint256)": {
+          "notice": "undo vote for the specified receipt",
+          "params": {
+            "_proposalId": "the id of the proposal",
+            "_receiptId": "the id of the share to undo",
+            "_wallet": "the wallet represented for the vote"
+          },
+          "returns": {
+            "_0": "uint256 the number of votes cast"
+          }
+        },
+        "validOrRevert(uint256)": {
+          "notice": "do nothing or revert if the proposal is not valid",
+          "params": {
+            "_proposalId": "the id of the proposal"
+          }
+        },
+        "version()": {
+          "notice": "return the version of this implementation",
+          "returns": {
+            "_0": "uint32 version number"
+          }
+        },
+        "veto(uint256,address)": {
+          "details": "supervisor is required",
+          "notice": "veto the specified proposal",
+          "params": {
+            "_proposalId": "the id of the proposal",
+            "_sender": "the address of the veto sender"
+          }
+        },
+        "voteAgainstByShare(uint256,address,uint256)": {
+          "notice": "cast an against vote for the specified share",
+          "params": {
+            "_proposalId": "the id of the proposal",
+            "_shareId": "the id of the share",
+            "_wallet": "the wallet represented for the vote"
+          },
+          "returns": {
+            "_0": "uint256 the number of votes cast"
+          }
+        },
+        "voteDelay(uint256)": {
+          "notice": "get the vote delay",
+          "params": {
+            "_proposalId": "the id of the proposal"
+          },
+          "returns": {
+            "_0": "uint256 the delay"
+          }
+        },
+        "voteDuration(uint256)": {
+          "notice": "get the vote duration",
+          "params": {
+            "_proposalId": "the id of the proposal"
+          },
+          "returns": {
+            "_0": "uint256 the duration"
+          }
+        },
+        "voteForByShare(uint256,address,uint256)": {
+          "notice": "cast an affirmative vote for the specified share",
+          "params": {
+            "_proposalId": "the id of the proposal",
+            "_shareId": "the id of the share",
+            "_wallet": "the wallet represented for the vote"
+          },
+          "returns": {
+            "_0": "uint256 the number of votes cast"
+          }
+        },
+        "voteReceipt(uint256,uint256)": {
+          "notice": "get the vote receipt",
+          "returns": {
+            "_0": "_shareId the share id for the vote",
+            "_1": "_shareFor the shares cast in favor",
+            "_2": "_votesCast the number of votes cast",
+            "_3": "_isAbstention true if vote was an abstention",
+            "_4": "_isUndo true if the vote was reversed"
+          }
+        },
+        "voterClass()": {
+          "notice": "get the VoterClass used for this voting store",
+          "returns": {
+            "_0": "VoterClass the voter class for this store"
+          }
+        }
+      },
+      "notice": "GovernanceStorage implements the necesscary infrastructure for governance and voting with safety controls",
+      "title": "GovernanceStorage implementation",
+      "version": 1
+    },
+    "name": "GovernanceStorage",
+    "notice": "GovernanceStorage implements the necesscary infrastructure for governance and voting with safety controls",
+    "title": "GovernanceStorage implementation",
+    "userdoc": {
+      "kind": "user",
+      "methods": {
+        "NAME()": {
+          "notice": "contract name"
+        },
+        "abstainForShare(uint256,address,uint256)": {
+          "notice": "cast an abstention for the specified share"
+        },
+        "abstentionCount(uint256)": {
+          "notice": "get the number of abstentions"
+        },
+        "againstVotes(uint256)": {
+          "notice": "get the against vote count"
+        },
+        "burnSupervisor(uint256,address,address)": {
+          "notice": "remove a supervisor from the proposal along with its ability to change or veto"
+        },
+        "constructor": {
+          "notice": "create a new storage object with VoterClass as the voting population"
+        },
+        "enableUndoVote(uint256,address)": {
+          "notice": "enable the undo feature for this vote"
+        },
+        "endBlock(uint256)": {
+          "notice": "get the end block"
+        },
+        "forVotes(uint256)": {
+          "notice": "get the for vote count"
+        },
+        "getSender(uint256)": {
+          "notice": "get the address of the proposal sender"
+        },
+        "initializeProposal(address)": {
+          "notice": "initialize a new proposal and return the id"
+        },
+        "isReady(uint256)": {
+          "notice": "test if proposal is ready or in the setup phase"
+        },
+        "isSupervisor(uint256,address)": {
+          "notice": "test if the address is a supervisor on the specified proposal"
+        },
+        "isVeto(uint256)": {
+          "notice": "test if proposal is veto"
+        },
+        "isVoter(uint256,address)": {
+          "notice": "test if address is a voter on the specified proposal"
+        },
+        "latestProposal(address)": {
+          "notice": "get the id of the last proposal for sender"
+        },
+        "makeReady(uint256,address)": {
+          "notice": "indicate the proposal is ready for voting and should be frozen"
+        },
+        "maxPassThreshold()": {
+          "notice": "get the maxiumum possible for the pass threshold"
+        },
+        "name()": {
+          "notice": "return the name of this implementation"
+        },
+        "proposalMap(uint256)": {
+          "notice": "global list of proposed issues by id"
+        },
+        "quorum(uint256)": {
+          "notice": "get the current number counting towards quorum"
+        },
+        "quorumRequired(uint256)": {
+          "notice": "get the quorum required"
+        },
+        "registerSupervisor(uint256,address,address)": {
+          "notice": "Register a new supervisor on the specified proposal. The supervisor has rights to add or remove voters prior to start of voting in a Voter Pool. The supervisor also has the right to veto the outcome of the vote."
+        },
+        "setQuorumThreshold(uint256,uint256,address)": {
+          "notice": "set the minimum number of participants for a successful outcome"
+        },
+        "setRequiredVoteDuration(uint256,uint256,address)": {
+          "notice": "set the required duration for the vote"
+        },
+        "setVoteDelay(uint256,uint256,address)": {
+          "notice": "set the delay period required to preceed the vote"
+        },
+        "startBlock(uint256)": {
+          "notice": "get the start block"
+        },
+        "undoVoteById(uint256,address,uint256)": {
+          "notice": "undo vote for the specified receipt"
+        },
+        "validOrRevert(uint256)": {
+          "notice": "do nothing or revert if the proposal is not valid"
+        },
+        "version()": {
+          "notice": "return the version of this implementation"
+        },
+        "veto(uint256,address)": {
+          "notice": "veto the specified proposal"
+        },
+        "voteAgainstByShare(uint256,address,uint256)": {
+          "notice": "cast an against vote for the specified share"
+        },
+        "voteDelay(uint256)": {
+          "notice": "get the vote delay"
+        },
+        "voteDuration(uint256)": {
+          "notice": "get the vote duration"
+        },
+        "voteForByShare(uint256,address,uint256)": {
+          "notice": "cast an affirmative vote for the specified share"
+        },
+        "voteReceipt(uint256,uint256)": {
+          "notice": "get the vote receipt"
+        },
+        "voterClass()": {
+          "notice": "get the VoterClass used for this voting store"
+        }
+      },
+      "notice": "GovernanceStorage implements the necesscary infrastructure for governance and voting with safety controls",
+      "version": 1
+    },
+    "version": 1
+  },
+  "contracts/Storage.sol:Storage": {
+    "custom:type": "interface",
+    "devdoc": {
+      "custom:type": "interface",
+      "kind": "dev",
+      "methods": {
+        "abstainForShare(uint256,address,uint256)": {
+          "params": {
+            "_proposalId": "the id of the proposal",
+            "_shareId": "the id of the share",
+            "_wallet": "the wallet represented for the vote"
+          },
+          "returns": {
+            "_0": "uint256 the number of votes cast"
+          }
+        },
+        "abstentionCount(uint256)": {
+          "params": {
+            "_proposalId": "the id of the proposal"
+          },
+          "returns": {
+            "_0": "uint256 the number abstentions"
+          }
+        },
+        "againstVotes(uint256)": {
+          "params": {
+            "_proposalId": "the id of the proposal"
+          },
+          "returns": {
+            "_0": "uint256 the number of against votes"
+          }
+        },
+        "burnSupervisor(uint256,address,address)": {
+          "details": "requires proposal creator",
+          "params": {
+            "_proposalId": "the id of the proposal",
+            "_sender": "original wallet for this request",
+            "_supervisor": "the supervisor address"
+          }
+        },
+        "enableUndoVote(uint256,address)": {
+          "details": "requires supervisor",
+          "params": {
+            "_proposalId": "the id of the proposal",
+            "_sender": "original wallet for this request"
+          }
+        },
+        "endBlock(uint256)": {
+          "params": {
+            "_proposalId": "the id of the proposal"
+          },
+          "returns": {
+            "_0": "uint256 the end block"
+          }
+        },
+        "forVotes(uint256)": {
+          "params": {
+            "_proposalId": "the id of the proposal"
+          },
+          "returns": {
+            "_0": "uint256 the number of votes in favor"
+          }
+        },
+        "getSender(uint256)": {
+          "params": {
+            "_proposalId": "the id of the proposal"
+          },
+          "returns": {
+            "_0": "address the address of the sender"
+          }
+        },
+        "initializeProposal(address)": {
+          "returns": {
+            "_0": "uint256 the id of the proposal"
+          }
+        },
+        "isReady(uint256)": {
+          "params": {
+            "_proposalId": "the id of the proposal"
+          },
+          "returns": {
+            "_0": "bool true if the proposal is marked ready"
+          }
+        },
+        "isSupervisor(uint256,address)": {
+          "params": {
+            "_proposalId": "the id of the proposal",
+            "_supervisor": "the address to check"
+          },
+          "returns": {
+            "_0": "bool true if the address is a supervisor"
+          }
+        },
+        "isVeto(uint256)": {
+          "params": {
+            "_proposalId": "the id of the proposal"
+          },
+          "returns": {
+            "_0": "bool true if the proposal is marked veto"
+          }
+        },
+        "isVoter(uint256,address)": {
+          "params": {
+            "_proposalId": "the id of the proposal",
+            "_voter": "the address to check"
+          },
+          "returns": {
+            "_0": "bool true if the address is a voter"
+          }
+        },
+        "latestProposal(address)": {
+          "returns": {
+            "_0": "uint256 the id of the most recent proposal for sender"
+          }
+        },
+        "makeReady(uint256,address)": {
+          "details": "requires supervisor",
+          "params": {
+            "_proposalId": "the id of the proposal",
+            "_sender": "original wallet for this request"
+          }
+        },
+        "maxPassThreshold()": {
+          "returns": {
+            "_0": "uint256 the maximum value"
+          }
+        },
+        "name()": {
+          "returns": {
+            "_0": "string memory representation of name"
+          }
+        },
+        "quorum(uint256)": {
+          "params": {
+            "_proposalId": "the id of the proposal"
+          },
+          "returns": {
+            "_0": "uint256 the amount of participation"
+          }
+        },
+        "quorumRequired(uint256)": {
+          "params": {
+            "_proposalId": "the id of the proposal"
+          },
+          "returns": {
+            "_0": "uint256 the number required for quorum"
+          }
+        },
+        "registerSupervisor(uint256,address,address)": {
+          "details": "requires proposal creator",
+          "params": {
+            "_proposalId": "the id of the proposal",
+            "_sender": "original wallet for this request",
+            "_supervisor": "the supervisor address"
+          }
+        },
+        "setQuorumThreshold(uint256,uint256,address)": {
+          "details": "requires supervisor",
+          "params": {
+            "_proposalId": "the id of the proposal",
+            "_sender": "original wallet for this request",
+            "_threshold": "the quorum number"
+          }
+        },
+        "setRequiredVoteDuration(uint256,uint256,address)": {
+          "details": "requires supervisor",
+          "params": {
+            "_proposalId": "the id of the proposal",
+            "_sender": "original wallet for this request",
+            "_voteDuration": "the quorum number"
+          }
+        },
+        "setVoteDelay(uint256,uint256,address)": {
+          "details": "requires supervisor",
+          "params": {
+            "_proposalId": "the id of the proposal",
+            "_sender": "original wallet for this request",
+            "_voteDelay": "the quorum number"
+          }
+        },
+        "startBlock(uint256)": {
+          "params": {
+            "_proposalId": "the id of the proposal"
+          },
+          "returns": {
+            "_0": "uint256 the start block"
+          }
+        },
+        "undoVoteById(uint256,address,uint256)": {
+          "params": {
+            "_proposalId": "the id of the proposal",
+            "_receiptId": "the id of the share to undo",
+            "_wallet": "the wallet represented for the vote"
+          },
+          "returns": {
+            "_0": "uint256 the number of votes cast"
+          }
+        },
+        "validOrRevert(uint256)": {
+          "params": {
+            "_proposalId": "the id of the proposal"
+          }
+        },
+        "version()": {
+          "returns": {
+            "_0": "uint32 version number"
+          }
+        },
+        "veto(uint256,address)": {
+          "details": "supervisor is required",
+          "params": {
+            "_proposalId": "the id of the proposal",
+            "_sender": "the address of the veto sender"
+          }
+        },
+        "voteAgainstByShare(uint256,address,uint256)": {
+          "params": {
+            "_proposalId": "the id of the proposal",
+            "_shareId": "the id of the share",
+            "_wallet": "the wallet represented for the vote"
+          },
+          "returns": {
+            "_0": "uint256 the number of votes cast"
+          }
+        },
+        "voteDelay(uint256)": {
+          "params": {
+            "_proposalId": "the id of the proposal"
+          },
+          "returns": {
+            "_0": "uint256 the delay"
+          }
+        },
+        "voteDuration(uint256)": {
+          "params": {
+            "_proposalId": "the id of the proposal"
+          },
+          "returns": {
+            "_0": "uint256 the duration"
+          }
+        },
+        "voteForByShare(uint256,address,uint256)": {
+          "params": {
+            "_proposalId": "the id of the proposal",
+            "_shareId": "the id of the share",
+            "_wallet": "the wallet represented for the vote"
+          },
+          "returns": {
+            "_0": "uint256 the number of votes cast"
+          }
+        },
+        "voteReceipt(uint256,uint256)": {
+          "returns": {
+            "_isAbstention": "true if vote was an abstention",
+            "_isUndo": "true if the vote was reversed",
+            "_shareFor": "the shares cast in favor",
+            "_shareId": "the share id for the vote",
+            "_votesCast": "the number of votes cast"
+          }
+        },
+        "voterClass()": {
+          "returns": {
+            "_0": "VoterClass the voter class for this store"
+          }
+        }
+      },
+      "title": "Storage interface",
+      "version": 1
+    },
+    "mergedoc": {
+      "custom:type": "interface",
+      "kind": "merged",
+      "methods": {
+        "abstainForShare(uint256,address,uint256)": {
+          "notice": "cast an abstention for the specified share",
+          "params": {
+            "_proposalId": "the id of the proposal",
+            "_shareId": "the id of the share",
+            "_wallet": "the wallet represented for the vote"
+          },
+          "returns": {
+            "_0": "uint256 the number of votes cast"
+          }
+        },
+        "abstentionCount(uint256)": {
+          "notice": "get the number of abstentions",
+          "params": {
+            "_proposalId": "the id of the proposal"
+          },
+          "returns": {
+            "_0": "uint256 the number abstentions"
+          }
+        },
+        "againstVotes(uint256)": {
+          "notice": "get the against vote count",
+          "params": {
+            "_proposalId": "the id of the proposal"
+          },
+          "returns": {
+            "_0": "uint256 the number of against votes"
+          }
+        },
+        "burnSupervisor(uint256,address,address)": {
+          "details": "requires proposal creator",
+          "notice": "remove a supervisor from the proposal along with its ability to change or veto",
+          "params": {
+            "_proposalId": "the id of the proposal",
+            "_sender": "original wallet for this request",
+            "_supervisor": "the supervisor address"
+          }
+        },
+        "enableUndoVote(uint256,address)": {
+          "details": "requires supervisor",
+          "notice": "enable the undo feature for this vote",
+          "params": {
+            "_proposalId": "the id of the proposal",
+            "_sender": "original wallet for this request"
+          }
+        },
+        "endBlock(uint256)": {
+          "notice": "get the end block",
+          "params": {
+            "_proposalId": "the id of the proposal"
+          },
+          "returns": {
+            "_0": "uint256 the end block"
+          }
+        },
+        "forVotes(uint256)": {
+          "notice": "get the for vote count",
+          "params": {
+            "_proposalId": "the id of the proposal"
+          },
+          "returns": {
+            "_0": "uint256 the number of votes in favor"
+          }
+        },
+        "getSender(uint256)": {
+          "notice": "get the address of the proposal sender",
+          "params": {
+            "_proposalId": "the id of the proposal"
+          },
+          "returns": {
+            "_0": "address the address of the sender"
+          }
+        },
+        "initializeProposal(address)": {
+          "notice": "initialize a new proposal and return the id",
+          "returns": {
+            "_0": "uint256 the id of the proposal"
+          }
+        },
+        "isReady(uint256)": {
+          "notice": "test if proposal is ready or in the setup phase",
+          "params": {
+            "_proposalId": "the id of the proposal"
+          },
+          "returns": {
+            "_0": "bool true if the proposal is marked ready"
+          }
+        },
+        "isSupervisor(uint256,address)": {
+          "notice": "test if the address is a supervisor on the specified proposal",
+          "params": {
+            "_proposalId": "the id of the proposal",
+            "_supervisor": "the address to check"
+          },
+          "returns": {
+            "_0": "bool true if the address is a supervisor"
+          }
+        },
+        "isVeto(uint256)": {
+          "notice": "test if proposal is veto",
+          "params": {
+            "_proposalId": "the id of the proposal"
+          },
+          "returns": {
+            "_0": "bool true if the proposal is marked veto"
+          }
+        },
+        "isVoter(uint256,address)": {
+          "notice": "test if address is a voter on the specified proposal",
+          "params": {
+            "_proposalId": "the id of the proposal",
+            "_voter": "the address to check"
+          },
+          "returns": {
+            "_0": "bool true if the address is a voter"
+          }
+        },
+        "latestProposal(address)": {
+          "notice": "get the id of the last proposal for sender",
+          "returns": {
+            "_0": "uint256 the id of the most recent proposal for sender"
+          }
+        },
+        "makeReady(uint256,address)": {
+          "details": "requires supervisor",
+          "notice": "indicate the proposal is ready for voting and should be frozen",
+          "params": {
+            "_proposalId": "the id of the proposal",
+            "_sender": "original wallet for this request"
+          }
+        },
+        "maxPassThreshold()": {
+          "notice": "get the maxiumum possible for the pass threshold",
+          "returns": {
+            "_0": "uint256 the maximum value"
+          }
+        },
+        "name()": {
+          "notice": "return the name of this implementation",
+          "returns": {
+            "_0": "string memory representation of name"
+          }
+        },
+        "quorum(uint256)": {
+          "notice": "get the current number counting towards quorum",
+          "params": {
+            "_proposalId": "the id of the proposal"
+          },
+          "returns": {
+            "_0": "uint256 the amount of participation"
+          }
+        },
+        "quorumRequired(uint256)": {
+          "notice": "get the quorum required",
+          "params": {
+            "_proposalId": "the id of the proposal"
+          },
+          "returns": {
+            "_0": "uint256 the number required for quorum"
+          }
+        },
+        "registerSupervisor(uint256,address,address)": {
+          "details": "requires proposal creator",
+          "notice": "Register a new supervisor on the specified proposal. The supervisor has rights to add or remove voters prior to start of voting in a Voter Pool. The supervisor also has the right to veto the outcome of the vote.",
+          "params": {
+            "_proposalId": "the id of the proposal",
+            "_sender": "original wallet for this request",
+            "_supervisor": "the supervisor address"
+          }
+        },
+        "setQuorumThreshold(uint256,uint256,address)": {
+          "details": "requires supervisor",
+          "notice": "set the minimum number of participants for a successful outcome",
+          "params": {
+            "_proposalId": "the id of the proposal",
+            "_sender": "original wallet for this request",
+            "_threshold": "the quorum number"
+          }
+        },
+        "setRequiredVoteDuration(uint256,uint256,address)": {
+          "details": "requires supervisor",
+          "notice": "set the required duration for the vote",
+          "params": {
+            "_proposalId": "the id of the proposal",
+            "_sender": "original wallet for this request",
+            "_voteDuration": "the quorum number"
+          }
+        },
+        "setVoteDelay(uint256,uint256,address)": {
+          "details": "requires supervisor",
+          "notice": "set the delay period required to preceed the vote",
+          "params": {
+            "_proposalId": "the id of the proposal",
+            "_sender": "original wallet for this request",
+            "_voteDelay": "the quorum number"
+          }
+        },
+        "startBlock(uint256)": {
+          "notice": "get the start block",
+          "params": {
+            "_proposalId": "the id of the proposal"
+          },
+          "returns": {
+            "_0": "uint256 the start block"
+          }
+        },
+        "undoVoteById(uint256,address,uint256)": {
+          "notice": "undo vote for the specified receipt",
+          "params": {
+            "_proposalId": "the id of the proposal",
+            "_receiptId": "the id of the share to undo",
+            "_wallet": "the wallet represented for the vote"
+          },
+          "returns": {
+            "_0": "uint256 the number of votes cast"
+          }
+        },
+        "validOrRevert(uint256)": {
+          "notice": "do nothing or revert if the proposal is not valid",
+          "params": {
+            "_proposalId": "the id of the proposal"
+          }
+        },
+        "version()": {
+          "notice": "return the version of this implementation",
+          "returns": {
+            "_0": "uint32 version number"
+          }
+        },
+        "veto(uint256,address)": {
+          "details": "supervisor is required",
+          "notice": "veto the specified proposal",
+          "params": {
+            "_proposalId": "the id of the proposal",
+            "_sender": "the address of the veto sender"
+          }
+        },
+        "voteAgainstByShare(uint256,address,uint256)": {
+          "notice": "cast an against vote for the specified share",
+          "params": {
+            "_proposalId": "the id of the proposal",
+            "_shareId": "the id of the share",
+            "_wallet": "the wallet represented for the vote"
+          },
+          "returns": {
+            "_0": "uint256 the number of votes cast"
+          }
+        },
+        "voteDelay(uint256)": {
+          "notice": "get the vote delay",
+          "params": {
+            "_proposalId": "the id of the proposal"
+          },
+          "returns": {
+            "_0": "uint256 the delay"
+          }
+        },
+        "voteDuration(uint256)": {
+          "notice": "get the vote duration",
+          "params": {
+            "_proposalId": "the id of the proposal"
+          },
+          "returns": {
+            "_0": "uint256 the duration"
+          }
+        },
+        "voteForByShare(uint256,address,uint256)": {
+          "notice": "cast an affirmative vote for the specified share",
+          "params": {
+            "_proposalId": "the id of the proposal",
+            "_shareId": "the id of the share",
+            "_wallet": "the wallet represented for the vote"
+          },
+          "returns": {
+            "_0": "uint256 the number of votes cast"
+          }
+        },
+        "voteReceipt(uint256,uint256)": {
+          "notice": "get the vote receipt",
+          "returns": {
+            "_isAbstention": "true if vote was an abstention",
+            "_isUndo": "true if the vote was reversed",
+            "_shareFor": "the shares cast in favor",
+            "_shareId": "the share id for the vote",
+            "_votesCast": "the number of votes cast"
+          }
+        },
+        "voterClass()": {
+          "notice": "get the VoterClass used for this voting store",
+          "returns": {
+            "_0": "VoterClass the voter class for this store"
+          }
+        }
+      },
+      "notice": "provides the requirements for Storage contract implementation",
+      "title": "Storage interface",
+      "version": 1
+    },
+    "name": "Storage",
+    "notice": "provides the requirements for Storage contract implementation",
+    "title": "Storage interface",
+    "userdoc": {
+      "kind": "user",
+      "methods": {
+        "abstainForShare(uint256,address,uint256)": {
+          "notice": "cast an abstention for the specified share"
+        },
+        "abstentionCount(uint256)": {
+          "notice": "get the number of abstentions"
+        },
+        "againstVotes(uint256)": {
+          "notice": "get the against vote count"
+        },
+        "burnSupervisor(uint256,address,address)": {
+          "notice": "remove a supervisor from the proposal along with its ability to change or veto"
+        },
+        "enableUndoVote(uint256,address)": {
+          "notice": "enable the undo feature for this vote"
+        },
+        "endBlock(uint256)": {
+          "notice": "get the end block"
+        },
+        "forVotes(uint256)": {
+          "notice": "get the for vote count"
+        },
+        "getSender(uint256)": {
+          "notice": "get the address of the proposal sender"
+        },
+        "initializeProposal(address)": {
+          "notice": "initialize a new proposal and return the id"
+        },
+        "isReady(uint256)": {
+          "notice": "test if proposal is ready or in the setup phase"
+        },
+        "isSupervisor(uint256,address)": {
+          "notice": "test if the address is a supervisor on the specified proposal"
+        },
+        "isVeto(uint256)": {
+          "notice": "test if proposal is veto"
+        },
+        "isVoter(uint256,address)": {
+          "notice": "test if address is a voter on the specified proposal"
+        },
+        "latestProposal(address)": {
+          "notice": "get the id of the last proposal for sender"
+        },
+        "makeReady(uint256,address)": {
+          "notice": "indicate the proposal is ready for voting and should be frozen"
+        },
+        "maxPassThreshold()": {
+          "notice": "get the maxiumum possible for the pass threshold"
+        },
+        "name()": {
+          "notice": "return the name of this implementation"
+        },
+        "quorum(uint256)": {
+          "notice": "get the current number counting towards quorum"
+        },
+        "quorumRequired(uint256)": {
+          "notice": "get the quorum required"
+        },
+        "registerSupervisor(uint256,address,address)": {
+          "notice": "Register a new supervisor on the specified proposal. The supervisor has rights to add or remove voters prior to start of voting in a Voter Pool. The supervisor also has the right to veto the outcome of the vote."
+        },
+        "setQuorumThreshold(uint256,uint256,address)": {
+          "notice": "set the minimum number of participants for a successful outcome"
+        },
+        "setRequiredVoteDuration(uint256,uint256,address)": {
+          "notice": "set the required duration for the vote"
+        },
+        "setVoteDelay(uint256,uint256,address)": {
+          "notice": "set the delay period required to preceed the vote"
+        },
+        "startBlock(uint256)": {
+          "notice": "get the start block"
+        },
+        "undoVoteById(uint256,address,uint256)": {
+          "notice": "undo vote for the specified receipt"
+        },
+        "validOrRevert(uint256)": {
+          "notice": "do nothing or revert if the proposal is not valid"
+        },
+        "version()": {
+          "notice": "return the version of this implementation"
+        },
+        "veto(uint256,address)": {
+          "notice": "veto the specified proposal"
+        },
+        "voteAgainstByShare(uint256,address,uint256)": {
+          "notice": "cast an against vote for the specified share"
+        },
+        "voteDelay(uint256)": {
+          "notice": "get the vote delay"
+        },
+        "voteDuration(uint256)": {
+          "notice": "get the vote duration"
+        },
+        "voteForByShare(uint256,address,uint256)": {
+          "notice": "cast an affirmative vote for the specified share"
+        },
+        "voteReceipt(uint256,uint256)": {
+          "notice": "get the vote receipt"
+        },
+        "voterClass()": {
+          "notice": "get the VoterClass used for this voting store"
+        }
+      },
+      "notice": "provides the requirements for Storage contract implementation",
+      "version": 1
+    },
+    "version": 1
+  },
+  "contracts/VoteStrategy.sol:VoteStrategy": {
+    "custom:type": "interface",
+    "devdoc": {
+      "custom:type": "interface",
+      "kind": "dev",
+      "methods": {
+        "abstainFrom(uint256)": {
+          "params": {
+            "_proposalId": "The numeric id of the proposed vote"
+          }
+        },
+        "abstainFrom(uint256,uint256)": {
+          "params": {
+            "_proposalId": "The numeric id of the proposed vote",
+            "_tokenId": "The id of a token or share representing the right to vote"
+          }
+        },
+        "abstainFrom(uint256,uint256[])": {
+          "params": {
+            "_proposalId": "The numeric id of the proposed vote",
+            "_tokenIdList": "A array of tokens or shares that confer the right to vote"
+          }
+        },
+        "endVote(uint256)": {
+          "params": {
+            "_proposalId": "The numeric id of the proposed vote"
+          }
+        },
+        "getVoteSucceeded(uint256)": {
+          "details": "This method will fail if the vote was vetoed",
+          "returns": {
+            "_0": "bool True if the vote is closed and passed"
+          }
+        },
+        "isOpen(uint256)": {
+          "params": {
+            "_proposalId": "The numeric id of the proposed vote"
+          },
+          "returns": {
+            "_0": "bool True if the proposal is open"
+          }
+        },
+        "openVote(uint256)": {
+          "params": {
+            "_proposalId": "The numeric id of the proposed vote"
+          }
+        },
+        "undoVote(uint256)": {
+          "details": "Only applies to affirmative vote.",
+          "params": {
+            "_proposalId": "The numeric id of the proposed vote"
+          }
+        },
+        "undoVote(uint256,uint256)": {
+          "details": "only applies to affirmative vote",
+          "params": {
+            "_proposalId": "The numeric id of the proposed vote",
+            "_tokenId": "The id of a token or share representing the right to vote"
+          }
+        },
+        "veto(uint256)": {
+          "details": "transaction must be signed by a supervisor wallet",
+          "params": {
+            "_proposalId": "The numeric id of the proposed vote"
+          }
+        },
+        "voteAgainst(uint256)": {
+          "params": {
+            "_proposalId": "The numeric id of the proposed vote"
+          }
+        },
+        "voteAgainst(uint256,uint256)": {
+          "params": {
+            "_proposalId": "The numeric id of the proposed vote",
+            "_tokenId": "The id of a token or share representing the right to vote"
+          }
+        },
+        "voteAgainst(uint256,uint256[])": {
+          "params": {
+            "_proposalId": "The numeric id of the proposed vote",
+            "_tokenIdList": "A array of tokens or shares that confer the right to vote"
+          }
+        },
+        "voteFor(uint256)": {
+          "params": {
+            "_proposalId": "The numeric id of the proposed vote"
+          }
+        },
+        "voteFor(uint256,uint256)": {
+          "params": {
+            "_proposalId": "The numeric id of the proposed vote",
+            "_tokenId": "The id of a token or share representing the right to vote"
+          }
+        },
+        "voteFor(uint256,uint256[])": {
+          "params": {
+            "_proposalId": "The numeric id of the proposed vote",
+            "_tokenIdList": "A array of tokens or shares that confer the right to vote"
+          }
+        }
+      },
+      "title": "VoteStrategy interface Requirements for voting implementations in Collective Governance",
+      "version": 1
+    },
+    "mergedoc": {
+      "custom:type": "interface",
+      "kind": "merged",
+      "methods": {
+        "abstainFrom(uint256)": {
+          "notice": "abstain from vote by id",
+          "params": {
+            "_proposalId": "The numeric id of the proposed vote"
+          }
+        },
+        "abstainFrom(uint256,uint256)": {
+          "notice": "abstain from vote by id",
+          "params": {
+            "_proposalId": "The numeric id of the proposed vote",
+            "_tokenId": "The id of a token or share representing the right to vote"
+          }
+        },
+        "abstainFrom(uint256,uint256[])": {
+          "notice": "abstain from vote by id",
+          "params": {
+            "_proposalId": "The numeric id of the proposed vote",
+            "_tokenIdList": "A array of tokens or shares that confer the right to vote"
+          }
+        },
+        "endVote(uint256)": {
+          "notice": "end voting on an existing proposal by id",
+          "params": {
+            "_proposalId": "The numeric id of the proposed vote"
+          }
+        },
+        "getVoteSucceeded(uint256)": {
+          "details": "This method will fail if the vote was vetoed",
+          "notice": "get the result of the vote",
+          "returns": {
+            "_0": "bool True if the vote is closed and passed"
+          }
+        },
+        "isOpen(uint256)": {
+          "notice": "test if an existing proposal is open",
+          "params": {
+            "_proposalId": "The numeric id of the proposed vote"
+          },
+          "returns": {
+            "_0": "bool True if the proposal is open"
+          }
+        },
+        "openVote(uint256)": {
+          "notice": "open an existing proposal by id",
+          "params": {
+            "_proposalId": "The numeric id of the proposed vote"
+          }
+        },
+        "undoVote(uint256)": {
+          "details": "Only applies to affirmative vote.",
+          "notice": "undo any previous vote if any",
+          "params": {
+            "_proposalId": "The numeric id of the proposed vote"
+          }
+        },
+        "undoVote(uint256,uint256)": {
+          "details": "only applies to affirmative vote",
+          "notice": "undo any previous vote if any",
+          "params": {
+            "_proposalId": "The numeric id of the proposed vote",
+            "_tokenId": "The id of a token or share representing the right to vote"
+          }
+        },
+        "veto(uint256)": {
+          "details": "transaction must be signed by a supervisor wallet",
+          "notice": "veto proposal by id",
+          "params": {
+            "_proposalId": "The numeric id of the proposed vote"
+          }
+        },
+        "voteAgainst(uint256)": {
+          "notice": "cast an against vote by id",
+          "params": {
+            "_proposalId": "The numeric id of the proposed vote"
+          }
+        },
+        "voteAgainst(uint256,uint256)": {
+          "notice": "cast an against vote by id",
+          "params": {
+            "_proposalId": "The numeric id of the proposed vote",
+            "_tokenId": "The id of a token or share representing the right to vote"
+          }
+        },
+        "voteAgainst(uint256,uint256[])": {
+          "notice": "cast an against vote by id",
+          "params": {
+            "_proposalId": "The numeric id of the proposed vote",
+            "_tokenIdList": "A array of tokens or shares that confer the right to vote"
+          }
+        },
+        "voteFor(uint256)": {
+          "notice": "cast an affirmative vote for the measure by id",
+          "params": {
+            "_proposalId": "The numeric id of the proposed vote"
+          }
+        },
+        "voteFor(uint256,uint256)": {
+          "notice": "cast an affirmative vote for the measure by id",
+          "params": {
+            "_proposalId": "The numeric id of the proposed vote",
+            "_tokenId": "The id of a token or share representing the right to vote"
+          }
+        },
+        "voteFor(uint256,uint256[])": {
+          "notice": "cast an affirmative vote for the measure by id",
+          "params": {
+            "_proposalId": "The numeric id of the proposed vote",
+            "_tokenIdList": "A array of tokens or shares that confer the right to vote"
+          }
+        }
+      },
+      "title": "VoteStrategy interface Requirements for voting implementations in Collective Governance",
+      "version": 1
+    },
+    "name": "VoteStrategy",
+    "title": "VoteStrategy interface Requirements for voting implementations in Collective Governance",
+    "userdoc": {
+      "kind": "user",
+      "methods": {
+        "abstainFrom(uint256)": {
+          "notice": "abstain from vote by id"
+        },
+        "abstainFrom(uint256,uint256)": {
+          "notice": "abstain from vote by id"
+        },
+        "abstainFrom(uint256,uint256[])": {
+          "notice": "abstain from vote by id"
+        },
+        "endVote(uint256)": {
+          "notice": "end voting on an existing proposal by id"
+        },
+        "getVoteSucceeded(uint256)": {
+          "notice": "get the result of the vote"
+        },
+        "isOpen(uint256)": {
+          "notice": "test if an existing proposal is open"
+        },
+        "openVote(uint256)": {
+          "notice": "open an existing proposal by id"
+        },
+        "undoVote(uint256)": {
+          "notice": "undo any previous vote if any"
+        },
+        "undoVote(uint256,uint256)": {
+          "notice": "undo any previous vote if any"
+        },
+        "veto(uint256)": {
+          "notice": "veto proposal by id"
+        },
+        "voteAgainst(uint256)": {
+          "notice": "cast an against vote by id"
+        },
+        "voteAgainst(uint256,uint256)": {
+          "notice": "cast an against vote by id"
+        },
+        "voteAgainst(uint256,uint256[])": {
+          "notice": "cast an against vote by id"
+        },
+        "voteFor(uint256)": {
+          "notice": "cast an affirmative vote for the measure by id"
+        },
+        "voteFor(uint256,uint256)": {
+          "notice": "cast an affirmative vote for the measure by id"
+        },
+        "voteFor(uint256,uint256[])": {
+          "notice": "cast an affirmative vote for the measure by id"
+        }
+      },
+      "version": 1
+    },
+    "version": 1
+  },
+  "contracts/VoterClass.sol:VoterClass": {
+    "custom:type": "interface",
+    "details": "The VoterClass is stateless and therefore does not require any special privledges.   It can be called by anyone.",
+    "devdoc": {
+      "custom:type": "interface",
+      "details": "The VoterClass is stateless and therefore does not require any special privledges.   It can be called by anyone.",
+      "kind": "dev",
+      "methods": {
+        "confirm(address,uint256)": {
+          "returns": {
+            "_0": "uint256 The number of weighted votes confirmed"
+          }
+        },
+        "discover(address)": {
+          "returns": {
+            "_0": "uint256[] array in memory of share ids"
+          }
+        },
+        "isFinal()": {
+          "details": "class must be final to be used in a Governance contract",
+          "returns": {
+            "_0": "bool true if class is final"
+          }
+        },
+        "isVoter(address)": {
+          "returns": {
+            "_0": "bool true if wallet is a voter"
+          }
+        },
+        "name()": {
+          "returns": {
+            "_0": "string memory representation of name"
+          }
+        },
+        "version()": {
+          "returns": {
+            "_0": "uint32 version number"
+          }
+        },
+        "weight()": {
+          "returns": {
+            "_0": "uint256 weight applied to one share"
+          }
+        }
+      },
+      "title": "VoterClass interface",
+      "version": 1
+    },
+    "mergedoc": {
+      "custom:type": "interface",
+      "details": "The VoterClass is stateless and therefore does not require any special privledges.   It can be called by anyone.",
+      "kind": "merged",
+      "methods": {
+        "confirm(address,uint256)": {
+          "notice": "confirm shareid is associated with wallet for voting",
+          "returns": {
+            "_0": "uint256 The number of weighted votes confirmed"
+          }
+        },
+        "discover(address)": {
+          "notice": "discover an array of shareIds associated with the specified wallet",
+          "returns": {
+            "_0": "uint256[] array in memory of share ids"
+          }
+        },
+        "isFinal()": {
+          "details": "class must be final to be used in a Governance contract",
+          "notice": "test if voterclass is modifiable such as to add or remove voters from a pool",
+          "returns": {
+            "_0": "bool true if class is final"
+          }
+        },
+        "isVoter(address)": {
+          "notice": "test if wallet represents an allowed voter for this class",
+          "returns": {
+            "_0": "bool true if wallet is a voter"
+          }
+        },
+        "name()": {
+          "notice": "return the name of this implementation",
+          "returns": {
+            "_0": "string memory representation of name"
+          }
+        },
+        "version()": {
+          "notice": "return the version of this implementation",
+          "returns": {
+            "_0": "uint32 version number"
+          }
+        },
+        "weight()": {
+          "notice": "return voting weight of each confirmed share",
+          "returns": {
+            "_0": "uint256 weight applied to one share"
+          }
+        }
+      },
+      "notice": "The VoterClass interface defines the requirements for specifying a population or grouping of acceptable voting wallets",
+      "title": "VoterClass interface",
+      "version": 1
+    },
+    "name": "VoterClass",
+    "notice": "The VoterClass interface defines the requirements for specifying a population or grouping of acceptable voting wallets",
+    "title": "VoterClass interface",
+    "userdoc": {
+      "kind": "user",
+      "methods": {
+        "confirm(address,uint256)": {
+          "notice": "confirm shareid is associated with wallet for voting"
+        },
+        "discover(address)": {
+          "notice": "discover an array of shareIds associated with the specified wallet"
+        },
+        "isFinal()": {
+          "notice": "test if voterclass is modifiable such as to add or remove voters from a pool"
+        },
+        "isVoter(address)": {
+          "notice": "test if wallet represents an allowed voter for this class"
+        },
+        "name()": {
+          "notice": "return the name of this implementation"
+        },
+        "version()": {
+          "notice": "return the version of this implementation"
+        },
+        "weight()": {
+          "notice": "return voting weight of each confirmed share"
+        }
+      },
+      "notice": "The VoterClass interface defines the requirements for specifying a population or grouping of acceptable voting wallets",
+      "version": 1
+    },
+    "version": 1
+  },
+  "contracts/VoterClassERC721.sol:VoterClassERC721": {
+    "details": "ERC721Enumerable is supported for discovery, however if the token contract does not support enumeration then vote by specific tokenId is still supported",
+    "devdoc": {
+      "details": "ERC721Enumerable is supported for discovery, however if the token contract does not support enumeration then vote by specific tokenId is still supported",
+      "kind": "dev",
+      "methods": {
+        "confirm(address,uint256)": {
+          "details": "does not require IERC721Enumerable, tokenId ownership is checked directly using ERC-721",
+          "returns": {
+            "_0": "uint256 The number of weighted votes confirmed"
+          }
+        },
+        "constructor": {
+          "params": {
+            "_contract": "Address of the token contract",
+            "_voteWeight": "The integral weight to apply to each token held by the wallet"
+          }
+        },
+        "discover(address)": {
+          "details": "discovery requires support for ERC721Enumerable, otherwise execution will revert",
+          "returns": {
+            "_0": "uint256[] array in memory of share ids"
+          }
+        },
+        "isFinal()": {
+          "details": "always returns true",
+          "returns": {
+            "_0": "bool true if final"
+          }
+        },
+        "isVoter(address)": {
+          "returns": {
+            "_0": "bool true if wallet can sign for votes on this class"
+          }
+        },
+        "name()": {
+          "returns": {
+            "_0": "string memory representation of name"
+          }
+        },
+        "version()": {
+          "returns": {
+            "_0": "uint32 version number"
+          }
+        },
+        "votesAvailable(address,uint256)": {
+          "params": {
+            "_tokenId": "The id of the token associated with the ERC-721 contract",
+            "_wallet": "The wallet to test for ownership"
+          }
+        },
+        "weight()": {
+          "returns": {
+            "_0": "uint256 weight applied to one share"
+          }
+        }
+      },
+      "title": "ERC721 Implementation of VoterClass",
+      "version": 1
+    },
+    "mergedoc": {
+      "details": "ERC721Enumerable is supported for discovery, however if the token contract does not support enumeration then vote by specific tokenId is still supported",
+      "kind": "merged",
+      "methods": {
+        "confirm(address,uint256)": {
+          "details": "does not require IERC721Enumerable, tokenId ownership is checked directly using ERC-721",
+          "notice": "confirm tokenId is associated with wallet for voting",
+          "returns": {
+            "_0": "uint256 The number of weighted votes confirmed"
+          }
+        },
+        "constructor": {
+          "params": {
+            "_contract": "Address of the token contract",
+            "_voteWeight": "The integral weight to apply to each token held by the wallet"
+          }
+        },
+        "discover(address)": {
+          "details": "discovery requires support for ERC721Enumerable, otherwise execution will revert",
+          "notice": "discover an array of tokenIds associated with the specified wallet",
+          "returns": {
+            "_0": "uint256[] array in memory of share ids"
+          }
+        },
+        "isFinal()": {
+          "details": "always returns true",
+          "notice": "ERC-721 VoterClass is always final",
+          "returns": {
+            "_0": "bool true if final"
+          }
+        },
+        "isVoter(address)": {
+          "notice": "determine if wallet holds at least one token from the ERC-721 contract",
+          "returns": {
+            "_0": "bool true if wallet can sign for votes on this class"
+          }
+        },
+        "name()": {
+          "notice": "return the name of this implementation",
+          "returns": {
+            "_0": "string memory representation of name"
+          }
+        },
+        "supportsInterface(bytes4)": {
+          "notice": "see ERC-165"
+        },
+        "version()": {
+          "notice": "return the version of this implementation",
+          "returns": {
+            "_0": "uint32 version number"
+          }
+        },
+        "votesAvailable(address,uint256)": {
+          "notice": "tabulate the number of votes available for the specific wallet and tokenId",
+          "params": {
+            "_tokenId": "The id of the token associated with the ERC-721 contract",
+            "_wallet": "The wallet to test for ownership"
+          }
+        },
+        "weight()": {
+          "notice": "return voting weight of each confirmed share",
+          "returns": {
+            "_0": "uint256 weight applied to one share"
+          }
+        }
+      },
+      "notice": "This contract implements a voter pool based on ownership of an ERC-721 token. A class member is considered a voter if they have signing access to a wallet that is marked ownerOf a token of the specified address",
+      "title": "ERC721 Implementation of VoterClass",
+      "version": 1
+    },
+    "name": "VoterClassERC721",
+    "notice": "This contract implements a voter pool based on ownership of an ERC-721 token. A class member is considered a voter if they have signing access to a wallet that is marked ownerOf a token of the specified address",
+    "title": "ERC721 Implementation of VoterClass",
+    "userdoc": {
+      "kind": "user",
+      "methods": {
+        "confirm(address,uint256)": {
+          "notice": "confirm tokenId is associated with wallet for voting"
+        },
+        "discover(address)": {
+          "notice": "discover an array of tokenIds associated with the specified wallet"
+        },
+        "isFinal()": {
+          "notice": "ERC-721 VoterClass is always final"
+        },
+        "isVoter(address)": {
+          "notice": "determine if wallet holds at least one token from the ERC-721 contract"
+        },
+        "name()": {
+          "notice": "return the name of this implementation"
+        },
+        "supportsInterface(bytes4)": {
+          "notice": "see ERC-165"
+        },
+        "version()": {
+          "notice": "return the version of this implementation"
+        },
+        "votesAvailable(address,uint256)": {
+          "notice": "tabulate the number of votes available for the specific wallet and tokenId"
+        },
+        "weight()": {
+          "notice": "return voting weight of each confirmed share"
+        }
+      },
+      "notice": "This contract implements a voter pool based on ownership of an ERC-721 token. A class member is considered a voter if they have signing access to a wallet that is marked ownerOf a token of the specified address",
+      "version": 1
+    },
+    "version": 1
+  },
+  "contracts/VoterClassFactory.sol:VoterClassFactory": {
+    "devdoc": {
+      "kind": "dev",
+      "methods": {
+        "createERC721(address,uint256)": {
+          "params": {
+            "_erc721": "The address of the ERC-721 contract for voting",
+            "_weight": "The weight associated with each vote"
+          },
+          "returns": {
+            "_0": "address The address of the resulting voter class"
+          }
+        },
+        "createOpenVote(uint256)": {
+          "params": {
+            "_weight": "The weight associated with each vote"
+          },
+          "returns": {
+            "_0": "address The address of the resulting voter class"
+          }
+        },
+        "createVoterPool(uint256)": {
+          "params": {
+            "_weight": "The weight associated with each vote"
+          },
+          "returns": {
+            "_0": "address The address of the resulting voter class"
+          }
+        }
+      },
+      "title": "Creator for VoterClass implementations",
+      "version": 1
+    },
+    "mergedoc": {
+      "kind": "merged",
+      "methods": {
+        "createERC721(address,uint256)": {
+          "notice": "create a VoterClass for token holding members",
+          "params": {
+            "_erc721": "The address of the ERC-721 contract for voting",
+            "_weight": "The weight associated with each vote"
+          },
+          "returns": {
+            "_0": "address The address of the resulting voter class"
+          }
+        },
+        "createOpenVote(uint256)": {
+          "notice": "create a VoterClass for open voting",
+          "params": {
+            "_weight": "The weight associated with each vote"
+          },
+          "returns": {
+            "_0": "address The address of the resulting voter class"
+          }
+        },
+        "createVoterPool(uint256)": {
+          "notice": "create a VoterClass for pooled voting",
+          "params": {
+            "_weight": "The weight associated with each vote"
+          },
+          "returns": {
+            "_0": "address The address of the resulting voter class"
+          }
+        }
+      },
+      "notice": "A simple factory for VoterClass instances.",
+      "title": "Creator for VoterClass implementations",
+      "version": 1
+    },
+    "name": "VoterClassFactory",
+    "notice": "A simple factory for VoterClass instances.",
+    "title": "Creator for VoterClass implementations",
+    "userdoc": {
+      "kind": "user",
+      "methods": {
+        "createERC721(address,uint256)": {
+          "notice": "create a VoterClass for token holding members"
+        },
+        "createOpenVote(uint256)": {
+          "notice": "create a VoterClass for open voting"
+        },
+        "createVoterPool(uint256)": {
+          "notice": "create a VoterClass for pooled voting"
+        }
+      },
+      "notice": "A simple factory for VoterClass instances.",
+      "version": 1
+    },
+    "version": 1
+  },
+  "contracts/VoterClassNullObject.sol:VoterClassNullObject": {
+    "details": "No voter is allowed.",
+    "devdoc": {
+      "details": "No voter is allowed.",
+      "kind": "dev",
+      "methods": {
+        "isFinal()": {
+          "returns": {
+            "_0": "bool always returns true"
+          }
+        },
+        "isVoter(address)": {
+          "returns": {
+            "_0": "bool always returns false"
+          }
+        },
+        "name()": {
+          "returns": {
+            "_0": "string memory representation of name"
+          }
+        },
+        "supportsInterface(bytes4)": {
+          "details": "See {IERC165-supportsInterface}."
+        },
+        "version()": {
+          "returns": {
+            "_0": "uint32 version number"
+          }
+        }
+      },
+      "version": 1
+    },
+    "mergedoc": {
+      "details": "No voter is allowed.",
+      "kind": "merged",
+      "methods": {
+        "confirm(address,uint256)": {
+          "notice": "always returns 0"
+        },
+        "discover(address)": {
+          "notice": "always reverts"
+        },
+        "isFinal()": {
+          "notice": "always final",
+          "returns": {
+            "_0": "bool always returns true"
+          }
+        },
+        "isVoter(address)": {
+          "notice": "no voter is allowed",
+          "returns": {
+            "_0": "bool always returns false"
+          }
+        },
+        "name()": {
+          "notice": "return the name of this implementation",
+          "returns": {
+            "_0": "string memory representation of name"
+          }
+        },
+        "supportsInterface(bytes4)": {
+          "details": "See {IERC165-supportsInterface}."
+        },
+        "version()": {
+          "notice": "return the version of this implementation",
+          "returns": {
+            "_0": "uint32 version number"
+          }
+        },
+        "weight()": {
+          "notice": "always returns 0"
+        }
+      },
+      "notice": "Null Object Pattern for VoterClass",
+      "version": 1
+    },
+    "name": "VoterClassNullObject",
+    "notice": "Null Object Pattern for VoterClass",
+    "userdoc": {
+      "kind": "user",
+      "methods": {
+        "confirm(address,uint256)": {
+          "notice": "always returns 0"
+        },
+        "discover(address)": {
+          "notice": "always reverts"
+        },
+        "isFinal()": {
+          "notice": "always final"
+        },
+        "isVoter(address)": {
+          "notice": "no voter is allowed"
+        },
+        "name()": {
+          "notice": "return the name of this implementation"
+        },
+        "version()": {
+          "notice": "return the version of this implementation"
+        },
+        "weight()": {
+          "notice": "always returns 0"
+        }
+      },
+      "notice": "Null Object Pattern for VoterClass",
+      "version": 1
+    },
+    "version": 1
+  },
+  "contracts/VoterClassOpenVote.sol:VoterClassOpenVote": {
+    "devdoc": {
+      "kind": "dev",
+      "methods": {
+        "confirm(address,uint256)": {
+          "returns": {
+            "_0": "uint256 The number of weighted votes confirmed"
+          }
+        },
+        "constructor": {
+          "params": {
+            "_voteWeight": "The integral weight to apply to each token held by the wallet"
+          }
+        },
+        "discover(address)": {
+          "details": "the shareId of the open vote is the numeric value of the wallet address itself",
+          "returns": {
+            "_0": "uint256[] array in memory of share ids"
+          }
+        },
+        "isFinal()": {
+          "details": "always returns true",
+          "returns": {
+            "_0": "bool true if final"
+          }
+        },
+        "isVoter(address)": {
+          "details": "always returns true",
+          "returns": {
+            "_0": "bool true if voter"
+          }
+        },
+        "name()": {
+          "returns": {
+            "_0": "string memory representation of name"
+          }
+        },
+        "version()": {
+          "returns": {
+            "_0": "uint32 version number"
+          }
+        },
+        "weight()": {
+          "returns": {
+            "_0": "uint256 weight applied to one share"
+          }
+        }
+      },
+      "version": 1
+    },
+    "mergedoc": {
+      "kind": "merged",
+      "methods": {
+        "confirm(address,uint256)": {
+          "notice": "confirm shareid is associated with wallet for voting",
+          "returns": {
+            "_0": "uint256 The number of weighted votes confirmed"
+          }
+        },
+        "constructor": {
+          "params": {
+            "_voteWeight": "The integral weight to apply to each token held by the wallet"
+          }
+        },
+        "discover(address)": {
+          "details": "the shareId of the open vote is the numeric value of the wallet address itself",
+          "notice": "discover an array of shareIds associated with the specified wallet",
+          "returns": {
+            "_0": "uint256[] array in memory of share ids"
+          }
+        },
+        "isFinal()": {
+          "details": "always returns true",
+          "notice": "OpenVote VoterClass is always final",
+          "returns": {
+            "_0": "bool true if final"
+          }
+        },
+        "isVoter(address)": {
+          "details": "always returns true",
+          "notice": "return true for all wallets",
+          "returns": {
+            "_0": "bool true if voter"
+          }
+        },
+        "name()": {
+          "notice": "return the name of this implementation",
+          "returns": {
+            "_0": "string memory representation of name"
+          }
+        },
+        "supportsInterface(bytes4)": {
+          "notice": "see ERC-165"
+        },
+        "version()": {
+          "notice": "return the version of this implementation",
+          "returns": {
+            "_0": "uint32 version number"
+          }
+        },
+        "weight()": {
+          "notice": "return voting weight of each confirmed share",
+          "returns": {
+            "_0": "uint256 weight applied to one share"
+          }
+        }
+      },
+      "notice": "OpenVote VoterClass allows every wallet to participate in an open vote",
+      "version": 1
+    },
+    "name": "VoterClassOpenVote",
+    "notice": "OpenVote VoterClass allows every wallet to participate in an open vote",
+    "userdoc": {
+      "kind": "user",
+      "methods": {
+        "confirm(address,uint256)": {
+          "notice": "confirm shareid is associated with wallet for voting"
+        },
+        "discover(address)": {
+          "notice": "discover an array of shareIds associated with the specified wallet"
+        },
+        "isFinal()": {
+          "notice": "OpenVote VoterClass is always final"
+        },
+        "isVoter(address)": {
+          "notice": "return true for all wallets"
+        },
+        "name()": {
+          "notice": "return the name of this implementation"
+        },
+        "supportsInterface(bytes4)": {
+          "notice": "see ERC-165"
+        },
+        "version()": {
+          "notice": "return the version of this implementation"
+        },
+        "weight()": {
+          "notice": "return voting weight of each confirmed share"
+        }
+      },
+      "notice": "OpenVote VoterClass allows every wallet to participate in an open vote",
+      "version": 1
+    },
+    "version": 1
+  },
+  "contracts/VoterClassVoterPool.sol:VoterClassVoterPool": {
+    "devdoc": {
+      "kind": "dev",
+      "methods": {
+        "addVoter(address)": {
+          "details": "only possible if not final",
+          "params": {
+            "_wallet": "the address to add"
+          }
+        },
+        "confirm(address,uint256)": {
+          "returns": {
+            "_0": "uint256 The number of weighted votes confirmed"
+          }
+        },
+        "constructor": {
+          "params": {
+            "_voteWeight": "The integral weight to apply to each token held by the wallet"
+          }
+        },
+        "discover(address)": {
+          "returns": {
+            "_0": "uint256[] array in memory of share ids"
+          }
+        },
+        "isFinal()": {
+          "returns": {
+            "_0": "bool true if class is final"
+          }
+        },
+        "isVoter(address)": {
+          "returns": {
+            "_0": "bool true if wallet is a voter"
+          }
+        },
+        "name()": {
+          "returns": {
+            "_0": "string memory representation of name"
+          }
+        },
+        "removeVoter(address)": {
+          "details": "only possible if not final",
+          "params": {
+            "_wallet": "the address to add"
+          }
+        },
+        "version()": {
+          "returns": {
+            "_0": "uint32 version number"
+          }
+        }
+      },
+      "title": "VoterClassVoterPool contract",
+      "version": 1
+    },
+    "mergedoc": {
+      "kind": "merged",
+      "methods": {
+        "addVoter(address)": {
+          "details": "only possible if not final",
+          "notice": "add a voter to the voter pool",
+          "params": {
+            "_wallet": "the address to add"
+          }
+        },
+        "confirm(address,uint256)": {
+          "notice": "confirm shareid is associated with wallet for voting",
+          "returns": {
+            "_0": "uint256 The number of weighted votes confirmed"
+          }
+        },
+        "constructor": {
+          "params": {
+            "_voteWeight": "The integral weight to apply to each token held by the wallet"
+          }
+        },
+        "discover(address)": {
+          "notice": "discover an array of shareIds associated with the specified wallet",
+          "returns": {
+            "_0": "uint256[] array in memory of share ids"
+          }
+        },
+        "isFinal()": {
+          "notice": "test if voterclass is modifiable such as to add or remove voters from a pool",
+          "returns": {
+            "_0": "bool true if class is final"
+          }
+        },
+        "isVoter(address)": {
+          "notice": "test if wallet represents an allowed voter for this class",
+          "returns": {
+            "_0": "bool true if wallet is a voter"
+          }
+        },
+        "makeFinal()": {
+          "notice": "set the voterpool final.   No further changes may be made to the voting pool."
+        },
+        "name()": {
+          "notice": "return the name of this implementation",
+          "returns": {
+            "_0": "string memory representation of name"
+          }
+        },
+        "removeVoter(address)": {
+          "details": "only possible if not final",
+          "notice": "remove a voter from the voter pool",
+          "params": {
+            "_wallet": "the address to add"
+          }
+        },
+        "supportsInterface(bytes4)": {
+          "notice": "see ERC-165"
+        },
+        "version()": {
+          "notice": "return the version of this implementation",
+          "returns": {
+            "_0": "uint32 version number"
+          }
+        },
+        "weight()": {
+          "notice": "return voting weight of each confirmed share"
+        }
+      },
+      "notice": "This contract supports voting for a specific list of wallet addresses.   Each address must be added to the contract prior to voting at which time the pool must be marked as final so that it becomes impossible to modify",
+      "title": "VoterClassVoterPool contract",
+      "version": 1
+    },
+    "name": "VoterClassVoterPool",
+    "notice": "This contract supports voting for a specific list of wallet addresses.   Each address must be added to the contract prior to voting at which time the pool must be marked as final so that it becomes impossible to modify",
+    "title": "VoterClassVoterPool contract",
+    "userdoc": {
+      "kind": "user",
+      "methods": {
+        "addVoter(address)": {
+          "notice": "add a voter to the voter pool"
+        },
+        "confirm(address,uint256)": {
+          "notice": "confirm shareid is associated with wallet for voting"
+        },
+        "discover(address)": {
+          "notice": "discover an array of shareIds associated with the specified wallet"
+        },
+        "isFinal()": {
+          "notice": "test if voterclass is modifiable such as to add or remove voters from a pool"
+        },
+        "isVoter(address)": {
+          "notice": "test if wallet represents an allowed voter for this class"
+        },
+        "makeFinal()": {
+          "notice": "set the voterpool final.   No further changes may be made to the voting pool."
+        },
+        "name()": {
+          "notice": "return the name of this implementation"
+        },
+        "removeVoter(address)": {
+          "notice": "remove a voter from the voter pool"
+        },
+        "supportsInterface(bytes4)": {
+          "notice": "see ERC-165"
+        },
+        "version()": {
+          "notice": "return the version of this implementation"
+        },
+        "weight()": {
+          "notice": "return voting weight of each confirmed share"
+        }
+      },
+      "notice": "This contract supports voting for a specific list of wallet addresses.   Each address must be added to the contract prior to voting at which time the pool must be marked as final so that it becomes impossible to modify",
+      "version": 1
+    },
+    "version": 1
+  },
+  "contracts/VoterClassVoterPool.sol:VoterPool": {
+    "custom:type": "interface",
+    "devdoc": {
+      "custom:type": "interface",
+      "kind": "dev",
+      "methods": {
+        "addVoter(address)": {
+          "params": {
+            "_wallet": "the address of the wallet"
+          }
+        },
+        "isFinal()": {
+          "returns": {
+            "_0": "bool true if pool if final"
+          }
+        },
+        "removeVoter(address)": {
+          "params": {
+            "_wallet": "the address of the wallet"
+          }
+        }
+      },
+      "title": "interface for VoterPool",
+      "version": 1
+    },
+    "mergedoc": {
+      "custom:type": "interface",
+      "kind": "merged",
+      "methods": {
+        "addVoter(address)": {
+          "notice": "add voter to pool",
+          "params": {
+            "_wallet": "the address of the wallet"
+          }
+        },
+        "isFinal()": {
+          "notice": "test if the pool if final",
+          "returns": {
+            "_0": "bool true if pool if final"
+          }
+        },
+        "makeFinal()": {
+          "notice": "mark the VoterPool as final"
+        },
+        "removeVoter(address)": {
+          "notice": "remove voter from the pool",
+          "params": {
+            "_wallet": "the address of the wallet"
+          }
+        }
+      },
+      "notice": "sets the requirements for contracts implementing a VoterPool",
+      "title": "interface for VoterPool",
+      "version": 1
+    },
+    "name": "VoterPool",
+    "notice": "sets the requirements for contracts implementing a VoterPool",
+    "title": "interface for VoterPool",
+    "userdoc": {
+      "kind": "user",
+      "methods": {
+        "addVoter(address)": {
+          "notice": "add voter to pool"
+        },
+        "isFinal()": {
+          "notice": "test if the pool if final"
+        },
+        "makeFinal()": {
+          "notice": "mark the VoterPool as final"
+        },
+        "removeVoter(address)": {
+          "notice": "remove voter from the pool"
+        }
+      },
+      "notice": "sets the requirements for contracts implementing a VoterPool",
+      "version": 1
+    },
+    "version": 1
+  }
+}

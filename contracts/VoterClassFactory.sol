@@ -37,13 +37,15 @@ import "../contracts/VoterClassOpenVote.sol";
 import "../contracts/VoterClassVoterPool.sol";
 import "../contracts/VoterClassERC721.sol";
 
+/// @title Creator for VoterClass implementations
+/// @notice A simple factory for VoterClass instances.
 contract VoterClassFactory {
     event VoterClassCreated(address voterClass);
     event VoterClassCreated(address voterClass, address project);
 
-    // solhint-disable-next-line no-empty-blocks
-    constructor() {}
-
+    /// @notice create a VoterClass for open voting
+    /// @param _weight The weight associated with each vote
+    /// @return address The address of the resulting voter class
     function createOpenVote(uint256 _weight) external returns (address) {
         VoterClass _class = new VoterClassOpenVote(_weight);
         address _classAddr = address(_class);
@@ -51,6 +53,9 @@ contract VoterClassFactory {
         return _classAddr;
     }
 
+    /// @notice create a VoterClass for pooled voting
+    /// @param _weight The weight associated with each vote
+    /// @return address The address of the resulting voter class
     function createVoterPool(uint256 _weight) external returns (address) {
         VoterClass _class = new VoterClassVoterPool(_weight);
         address _classAddr = address(_class);
@@ -58,6 +63,10 @@ contract VoterClassFactory {
         return _classAddr;
     }
 
+    /// @notice create a VoterClass for token holding members
+    /// @param _erc721 The address of the ERC-721 contract for voting
+    /// @param _weight The weight associated with each vote
+    /// @return address The address of the resulting voter class
     function createERC721(address _erc721, uint256 _weight) external returns (address) {
         VoterClass _class = new VoterClassERC721(_erc721, _weight);
         address _classAddr = address(_class);

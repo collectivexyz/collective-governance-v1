@@ -32,21 +32,39 @@
  */
 pragma solidity ^0.8.15;
 
-/// @notice Interface indicating membership in a voting class
+/// @title VoterClass interface
+/// @notice The VoterClass interface defines the requirements for specifying a
+/// population or grouping of acceptable voting wallets
+/// @dev The VoterClass is stateless and therefore does not require any special
+/// privledges.   It can be called by anyone.
+/// @custom:type interface
 interface VoterClass {
+    /// @notice test if voterclass is modifiable such as to add or remove voters from a pool
+    /// @dev class must be final to be used in a Governance contract
+    /// @return bool true if class is final
     function isFinal() external view returns (bool);
 
+    /// @notice test if wallet represents an allowed voter for this class
+    /// @return bool true if wallet is a voter
     function isVoter(address _wallet) external view returns (bool);
 
+    /// @notice discover an array of shareIds associated with the specified wallet
+    /// @return uint256[] array in memory of share ids
     function discover(address _wallet) external view returns (uint256[] memory);
 
-    /// @notice commit votes for shareId return number voted
+    /// @notice confirm shareid is associated with wallet for voting
+    /// @return uint256 The number of weighted votes confirmed
     function confirm(address _wallet, uint256 shareId) external returns (uint256);
 
     /// @notice return voting weight of each confirmed share
+    /// @return uint256 weight applied to one share
     function weight() external view returns (uint256);
 
+    /// @notice return the name of this implementation
+    /// @return string memory representation of name
     function name() external pure returns (string memory);
 
+    /// @notice return the version of this implementation
+    /// @return uint32 version number
     function version() external pure returns (uint32);
 }

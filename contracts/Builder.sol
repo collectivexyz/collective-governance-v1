@@ -34,6 +34,9 @@ pragma solidity ^0.8.15;
 
 import "../contracts/VoterClass.sol";
 
+/// @title Governance Builder interface
+/// @notice Requirements for Governance Builder implementation
+/// @custom:type interface
 interface Builder {
     event GovernanceContractCreated(address creator, address governance);
     event BuilderContractInitialized(address creator);
@@ -45,11 +48,37 @@ interface Builder {
         VoterClass _class;
     }
 
+    /// @notice return the name of this implementation
+    /// @return string memory representation of name
+    function name() external pure returns (string memory);
+
+    /// @notice return the version of this implementation
+    /// @return uint32 version number
+    function version() external pure returns (uint32);
+
+    /// @notice initialize and create a new builder context for this sender
+    /// @return Builder this contract
+    function aGovernance() external returns (Builder);
+
+    /// @notice add a supervisor to the supervisor list for the next constructed contract contract
+    /// @dev maintains an internal list which increases with every call
+    /// @param _supervisor the address of the wallet representing a supervisor for the project
+    /// @return Builder this contract
     function withSupervisor(address _supervisor) external returns (Builder);
 
+    /// @notice set the VoterClass to be used for the next constructed contract
+    /// @param _classAddress the address of the VoterClass contract
+    /// @return Builder this contract
     function withVoterClassAddress(address _classAddress) external returns (Builder);
 
+    /// @notice set the VoterClass to be used for the next constructed contract
+    /// @dev the type safe VoterClass for use within Solidity code
+    /// @param _class the address of the VoterClass contract
+    /// @return Builder this contract
     function withVoterClass(VoterClass _class) external returns (Builder);
 
+    /// @notice build the specified contract
+    /// @dev contructs a new contract and may require a large gas fee, does not reinitialize context
+    /// @return the address of the new Governance contract
     function build() external returns (address);
 }

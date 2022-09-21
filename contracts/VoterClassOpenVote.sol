@@ -36,13 +36,14 @@ import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
 
 import "./VoterClass.sol";
 
-/// @notice voting class to include every address
+/// @notice OpenVote VoterClass allows every wallet to participate in an open vote
 contract VoterClassOpenVote is VoterClass, ERC165 {
     string public constant NAME = "collective.xyz VoterClassOpenVote";
     uint32 public constant VERSION_1 = 1;
 
     uint256 private immutable _weight;
 
+    /// @param _voteWeight The integral weight to apply to each token held by the wallet
     constructor(uint256 _voteWeight) {
         _weight = _voteWeight;
     }
@@ -57,38 +58,54 @@ contract VoterClassOpenVote is VoterClass, ERC165 {
         _;
     }
 
+    /// @notice OpenVote VoterClass is always final
+    /// @dev always returns true
+    /// @return bool true if final
     function isFinal() external pure returns (bool) {
         return true;
     }
 
+    /// @notice return true for all wallets
+    /// @dev always returns true
+    /// @return bool true if voter
     function isVoter(address _wallet) external pure requireValidAddress(_wallet) returns (bool) {
         return true;
     }
 
+    /// @notice discover an array of shareIds associated with the specified wallet
+    /// @dev the shareId of the open vote is the numeric value of the wallet address itself
+    /// @return uint256[] array in memory of share ids
     function discover(address _wallet) external pure requireValidAddress(_wallet) returns (uint256[] memory) {
         uint256[] memory shareList = new uint256[](1);
         shareList[0] = uint160(_wallet);
         return shareList;
     }
 
-    /// @notice commit votes for shareId return number voted
+    /// @notice confirm shareid is associated with wallet for voting
+    /// @return uint256 The number of weighted votes confirmed
     function confirm(address _wallet, uint256 _shareId) external view requireValidShare(_wallet, _shareId) returns (uint256) {
         return _weight;
     }
 
     /// @notice return voting weight of each confirmed share
+    /// @return uint256 weight applied to one share
     function weight() external view returns (uint256) {
         return _weight;
     }
 
+    /// @notice see ERC-165
     function supportsInterface(bytes4 interfaceId) public view virtual override(ERC165) returns (bool) {
         return interfaceId == type(VoterClass).interfaceId || super.supportsInterface(interfaceId);
     }
 
+    /// @notice return the name of this implementation
+    /// @return string memory representation of name
     function name() external pure virtual returns (string memory) {
         return NAME;
     }
 
+    /// @notice return the version of this implementation
+    /// @return uint32 version number
     function version() external pure returns (uint32) {
         return VERSION_1;
     }

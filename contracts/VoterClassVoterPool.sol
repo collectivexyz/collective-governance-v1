@@ -36,17 +36,30 @@ import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
 
 import "./VoterClass.sol";
 
+/// @title interface for VoterPool
+/// @notice sets the requirements for contracts implementing a VoterPool
+/// @custom:type interface
 interface VoterPool {
+    /// @notice add voter to pool
+    /// @param _wallet the address of the wallet
     function addVoter(address _wallet) external;
 
+    /// @notice remove voter from the pool
+    /// @param _wallet the address of the wallet
     function removeVoter(address _wallet) external;
 
+    /// @notice test if the pool if final
+    /// @return bool true if pool if final
     function isFinal() external view returns (bool);
 
+    /// @notice mark the VoterPool as final
     function makeFinal() external;
 }
 
-/// @notice voting class for ERC-721 contract
+/// @title VoterClassVoterPool contract
+/// @notice This contract supports voting for a specific list of wallet addresses.   Each address must be added
+/// to the contract prior to voting at which time the pool must be marked as final so that it becomes impossible
+/// to modify
 contract VoterClassVoterPool is VoterClass, ERC165 {
     event RegisterVoter(address voter);
     event BurnVoter(address voter);
@@ -63,6 +76,7 @@ contract VoterClassVoterPool is VoterClass, ERC165 {
     // whitelisted voters
     mapping(address => bool) private _voterPool;
 
+    /// @param _voteWeight The integral weight to apply to each token held by the wallet
     constructor(uint256 _voteWeight) {
         _cognate = msg.sender;
         _weight = _voteWeight;
@@ -99,6 +113,9 @@ contract VoterClassVoterPool is VoterClass, ERC165 {
         _;
     }
 
+    /// @notice add a voter to the voter pool
+    /// @dev only possible if not final
+    /// @param _wallet the address to add
     function addVoter(address _wallet) external requireValidAddress(_wallet) requireCognate requireNotFinal {
         if (!_voterPool[_wallet]) {
             _voterPool[_wallet] = true;
@@ -108,6 +125,9 @@ contract VoterClassVoterPool is VoterClass, ERC165 {
         }
     }
 
+    /// @notice remove a voter from the voter pool
+    /// @dev only possible if not final
+    /// @param _wallet the address to add
     function removeVoter(address _wallet) external requireValidAddress(_wallet) requireCognate requireNotFinal {
         if (_voterPool[_wallet]) {
             _voterPool[_wallet] = false;
@@ -117,21 +137,28 @@ contract VoterClassVoterPool is VoterClass, ERC165 {
         }
     }
 
+    /// @notice test if voterclass is modifiable such as to add or remove voters from a pool
+    /// @return bool true if class is final
     function isFinal() external view returns (bool) {
         return _isPoolFinal;
     }
 
+    /// @notice test if wallet represents an allowed voter for this class
+    /// @return bool true if wallet is a voter
     function isVoter(address _wallet) external view requireValidAddress(_wallet) returns (bool) {
         return _voterPool[_wallet];
     }
 
+    /// @notice discover an array of shareIds associated with the specified wallet
+    /// @return uint256[] array in memory of share ids
     function discover(address _wallet) external view requireVoter(_wallet) requireFinal returns (uint256[] memory) {
         uint256[] memory shareList = new uint256[](1);
         shareList[0] = uint160(_wallet);
         return shareList;
     }
 
-    /// @notice commit votes for shareId return number voted
+    /// @notice confirm shareid is associated with wallet for voting
+    /// @return uint256 The number of weighted votes confirmed
     function confirm(address _wallet, uint256 _shareId)
         external
         view
@@ -148,10 +175,12 @@ contract VoterClassVoterPool is VoterClass, ERC165 {
         return _weight;
     }
 
+    /// @notice set the voterpool final.   No further changes may be made to the voting pool.
     function makeFinal() external requireNotFinal {
         _isPoolFinal = true;
     }
 
+    /// @notice see ERC-165
     function supportsInterface(bytes4 interfaceId) public view virtual override(ERC165) returns (bool) {
         return
             interfaceId == type(VoterPool).interfaceId ||
@@ -159,10 +188,14 @@ contract VoterClassVoterPool is VoterClass, ERC165 {
             super.supportsInterface(interfaceId);
     }
 
+    /// @notice return the name of this implementation
+    /// @return string memory representation of name
     function name() external pure virtual returns (string memory) {
         return NAME;
     }
 
+    /// @notice return the version of this implementation
+    /// @return uint32 version number
     function version() external pure returns (uint32) {
         return VERSION_1;
     }

@@ -35,6 +35,7 @@ jobs:
           pip install -r site/requirements.txt
       - name: Build Site with Sphinx
         run: |
+          bin/gendoc.sh
           sphinx-build -b html site ./_site
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v1

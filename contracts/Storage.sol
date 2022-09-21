@@ -35,8 +35,9 @@ pragma solidity ^0.8.15;
 import "../contracts/VoterClass.sol";
 import "../contracts/VoteStrategy.sol";
 
-/// @title Storage
-/// governance storage for the Proposal struct
+/// @title Storage interface
+/// @notice provides the requirements for Storage contract implementation
+/// @custom:type interface
 interface Storage {
     // event section
     event InitializeProposal(uint256 proposalId, address owner);
@@ -102,76 +103,151 @@ interface Storage {
         bool undoCast;
     }
 
-    function name() external pure returns (string memory);
-
-    function version() external pure returns (uint32);
-
+    /// @notice Register a new supervisor on the specified proposal.
+    /// The supervisor has rights to add or remove voters prior to start of voting
+    /// in a Voter Pool. The supervisor also has the right to veto the outcome of the vote.
+    /// @dev requires proposal creator
+    /// @param _proposalId the id of the proposal
+    /// @param _supervisor the supervisor address
+    /// @param _sender original wallet for this request
     function registerSupervisor(
         uint256 _proposalId,
         address _supervisor,
         address _sender
     ) external;
 
-    /*
-    -- should be disallowed to burn a project supervisor */
+    /// @notice remove a supervisor from the proposal along with its ability to change or veto
+    /// @dev requires proposal creator
+    /// @param _proposalId the id of the proposal
+    /// @param _supervisor the supervisor address
+    /// @param _sender original wallet for this request
     function burnSupervisor(
         uint256 _proposalId,
         address _supervisor,
         address _sender
     ) external;
 
+    /// @notice set the minimum number of participants for a successful outcome
+    /// @dev requires supervisor
+    /// @param _proposalId the id of the proposal
+    /// @param _threshold the quorum number
+    /// @param _sender original wallet for this request
     function setQuorumThreshold(
         uint256 _proposalId,
-        uint256 _passThreshold,
+        uint256 _threshold,
         address _sender
     ) external;
 
+    /// @notice enable the undo feature for this vote
+    /// @dev requires supervisor
+    /// @param _proposalId the id of the proposal
+    /// @param _sender original wallet for this request
+    function enableUndoVote(uint256 _proposalId, address _sender) external;
+
+    /// @notice set the delay period required to preceed the vote
+    /// @dev requires supervisor
+    /// @param _proposalId the id of the proposal
+    /// @param _voteDelay the quorum number
+    /// @param _sender original wallet for this request
     function setVoteDelay(
         uint256 _proposalId,
         uint256 _voteDelay,
         address _sender
     ) external;
 
+    /// @notice set the required duration for the vote
+    /// @dev requires supervisor
+    /// @param _proposalId the id of the proposal
+    /// @param _voteDuration the quorum number
+    /// @param _sender original wallet for this request
     function setRequiredVoteDuration(
         uint256 _proposalId,
         uint256 _voteDuration,
         address _sender
     ) external;
 
-    function enableUndoVote(uint256 _proposalId, address _sender) external;
-
-    function makeReady(uint256 _proposalId, address _sender) external;
-
-    function isSupervisor(uint256 _proposalId, address _supervisor) external returns (bool);
-
-    function isVoter(uint256 _proposalId, address _voter) external returns (bool);
-
-    function isReady(uint256 _proposalId) external view returns (bool);
-
-    function isVeto(uint256 _proposalId) external view returns (bool);
-
+    /// @notice get the address of the proposal sender
+    /// @param _proposalId the id of the proposal
+    /// @return address the address of the sender
     function getSender(uint256 _proposalId) external view returns (address);
 
+    /// @notice get the quorum required
+    /// @param _proposalId the id of the proposal
+    /// @return uint256 the number required for quorum
     function quorumRequired(uint256 _proposalId) external view returns (uint256);
 
+    /// @notice get the vote delay
+    /// @param _proposalId the id of the proposal
+    /// @return uint256 the delay
     function voteDelay(uint256 _proposalId) external view returns (uint256);
 
+    /// @notice get the vote duration
+    /// @param _proposalId the id of the proposal
+    /// @return uint256 the duration
     function voteDuration(uint256 _proposalId) external view returns (uint256);
 
+    /// @notice get the start block
+    /// @param _proposalId the id of the proposal
+    /// @return uint256 the start block
     function startBlock(uint256 _proposalId) external view returns (uint256);
 
+    /// @notice get the end block
+    /// @param _proposalId the id of the proposal
+    /// @return uint256 the end block
     function endBlock(uint256 _proposalId) external view returns (uint256);
 
+    /// @notice get the for vote count
+    /// @param _proposalId the id of the proposal
+    /// @return uint256 the number of votes in favor
     function forVotes(uint256 _proposalId) external view returns (uint256);
 
+    /// @notice get the against vote count
+    /// @param _proposalId the id of the proposal
+    /// @return uint256 the number of against votes
     function againstVotes(uint256 _proposalId) external view returns (uint256);
 
+    /// @notice get the number of abstentions
+    /// @param _proposalId the id of the proposal
+    /// @return uint256 the number abstentions
     function abstentionCount(uint256 _proposalId) external view returns (uint256);
 
+    /// @notice get the current number counting towards quorum
+    /// @param _proposalId the id of the proposal
+    /// @return uint256 the amount of participation
     function quorum(uint256 _proposalId) external view returns (uint256);
 
+    /// @notice test if the address is a supervisor on the specified proposal
+    /// @param _proposalId the id of the proposal
+    /// @param _supervisor the address to check
+    /// @return bool true if the address is a supervisor
+    function isSupervisor(uint256 _proposalId, address _supervisor) external returns (bool);
+
+    /// @notice test if address is a voter on the specified proposal
+    /// @param _proposalId the id of the proposal
+    /// @param _voter the address to check
+    /// @return bool true if the address is a voter
+    function isVoter(uint256 _proposalId, address _voter) external returns (bool);
+
+    /// @notice test if proposal is ready or in the setup phase
+    /// @param _proposalId the id of the proposal
+    /// @return bool true if the proposal is marked ready
+    function isReady(uint256 _proposalId) external view returns (bool);
+
+    /// @notice test if proposal is veto
+    /// @param _proposalId the id of the proposal
+    /// @return bool true if the proposal is marked veto
+    function isVeto(uint256 _proposalId) external view returns (bool);
+
+    /// @notice get the id of the last proposal for sender
+    /// @return uint256 the id of the most recent proposal for sender
     function latestProposal(address _sender) external view returns (uint256);
 
+    /// @notice get the vote receipt
+    /// @return _shareId the share id for the vote
+    /// @return _shareFor the shares cast in favor
+    /// @return _votesCast the number of votes cast
+    /// @return _isAbstention true if vote was an abstention
+    /// @return _isUndo true if the vote was reversed
     function voteReceipt(uint256 _proposalId, uint256 shareId)
         external
         view
@@ -183,37 +259,83 @@ interface Storage {
             bool _isUndo
         );
 
+    /// @notice get the VoterClass used for this voting store
+    /// @return VoterClass the voter class for this store
     function voterClass() external view returns (VoterClass);
 
+    /// @notice initialize a new proposal and return the id
+    /// @return uint256 the id of the proposal
     function initializeProposal(address _sender) external returns (uint256);
 
+    /// @notice indicate the proposal is ready for voting and should be frozen
+    /// @dev requires supervisor
+    /// @param _proposalId the id of the proposal
+    /// @param _sender original wallet for this request
+    function makeReady(uint256 _proposalId, address _sender) external;
+
+    /// @notice veto the specified proposal
+    /// @dev supervisor is required
+    /// @param _proposalId the id of the proposal
+    /// @param _sender the address of the veto sender
+    function veto(uint256 _proposalId, address _sender) external;
+
+    /// @notice cast an affirmative vote for the specified share
+    /// @param _proposalId the id of the proposal
+    /// @param _wallet the wallet represented for the vote
+    /// @param _shareId the id of the share
+    /// @return uint256 the number of votes cast
     function voteForByShare(
         uint256 _proposalId,
         address _wallet,
         uint256 _shareId
     ) external returns (uint256);
 
+    /// @notice cast an against vote for the specified share
+    /// @param _proposalId the id of the proposal
+    /// @param _wallet the wallet represented for the vote
+    /// @param _shareId the id of the share
+    /// @return uint256 the number of votes cast
     function voteAgainstByShare(
         uint256 _proposalId,
         address _wallet,
         uint256 _shareId
     ) external returns (uint256);
 
+    /// @notice cast an abstention for the specified share
+    /// @param _proposalId the id of the proposal
+    /// @param _wallet the wallet represented for the vote
+    /// @param _shareId the id of the share
+    /// @return uint256 the number of votes cast
     function abstainForShare(
         uint256 _proposalId,
         address _wallet,
         uint256 _shareId
     ) external returns (uint256);
 
+    /// @notice undo vote for the specified receipt
+    /// @param _proposalId the id of the proposal
+    /// @param _wallet the wallet represented for the vote
+    /// @param _receiptId the id of the share to undo
+    /// @return uint256 the number of votes cast
     function undoVoteById(
         uint256 _proposalId,
         address _wallet,
         uint256 _receiptId
     ) external returns (uint256);
 
-    function veto(uint256 _proposalId, address _sender) external;
-
+    /// @notice do nothing or revert if the proposal is not valid
+    /// @param _proposalId the id of the proposal
     function validOrRevert(uint256 _proposalId) external view;
 
+    /// @notice get the maxiumum possible for the pass threshold
+    /// @return uint256 the maximum value
     function maxPassThreshold() external pure returns (uint256);
+
+    /// @notice return the name of this implementation
+    /// @return string memory representation of name
+    function name() external pure returns (string memory);
+
+    /// @notice return the version of this implementation
+    /// @return uint32 version number
+    function version() external pure returns (uint32);
 }
