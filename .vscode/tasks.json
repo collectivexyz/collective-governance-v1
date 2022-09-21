@@ -106,7 +106,7 @@
     {
       "label": "test",
       "type": "shell",
-      "command": "forge test -vvv --gas-report",
+      "command": "forge test -vvv",
       "options": {
         "cwd": "${workspaceFolder}"
       },
