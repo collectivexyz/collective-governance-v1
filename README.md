@@ -1,6 +1,6 @@
 # collective-governance-v1
 
-Read the [Documentation](https://momentranks.github.io/collective-governance-v1/)
+Read the [Docs](https://momentranks.github.io/collective-governance-v1/)
 
 ## Open Smart Contract for Community Governance
 

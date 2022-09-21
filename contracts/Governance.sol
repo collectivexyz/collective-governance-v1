@@ -34,6 +34,7 @@ pragma solidity ^0.8.15;
 
 /// @title Governance interface
 /// @notice Requirements for Governance implementation
+/// @custom:type interface
 interface Governance {
     /// @notice A new proposal was created
     event ProposalCreated(address sender, uint256 proposalId);

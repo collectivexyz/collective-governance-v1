@@ -1,4 +1,8 @@
 #!/usr/bin/env python3
+"""
+Convert the 'output' from solc into a readable json format for conversion by the
+SPHINX template.
+"""
 
 import sys
 import json
