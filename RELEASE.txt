@@ -1,2 +1,4 @@
-0.8.1: Intial version simple voting works
+0.8.3: Documentation upgrade
 0.8.2: One token one vote
+0.8.1: Intial version simple voting works
+
