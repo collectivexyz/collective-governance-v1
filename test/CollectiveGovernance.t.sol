@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: BSD-3-Clause
+// solhint-disable not-rely-on-time
 pragma solidity ^0.8.15;
 
 import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
@@ -169,7 +170,7 @@ contract CollectiveGovernanceTest is Test {
         governance.openVote(PROPOSAL_ID);
         vm.stopPrank();
         vm.prank(_VOTER1);
-        vm.roll(block.number + 2);
+        vm.warp(block.timestamp + 2);
         governance.voteFor(PROPOSAL_ID, TOKEN_ID1);
         assertEq(_storage.forVotes(PROPOSAL_ID), 1);
     }
@@ -252,7 +253,7 @@ contract CollectiveGovernanceTest is Test {
     }
 
     function testOwnerEndVote() public {
-        uint256 blockNumber = block.number;
+        uint256 blockTimestamp = block.timestamp;
         vm.startPrank(_governanceAddress);
         _storage.setQuorumThreshold(PROPOSAL_ID, 2, _SUPERVISOR);
         _storage.makeFinal(PROPOSAL_ID, _SUPERVISOR);
@@ -260,7 +261,7 @@ contract CollectiveGovernanceTest is Test {
         vm.prank(_SUPERVISOR);
         governance.openVote(PROPOSAL_ID);
         assertTrue(governance.isOpen(PROPOSAL_ID));
-        vm.roll(blockNumber + 2);
+        vm.warp(blockTimestamp + 2);
         vm.prank(_OWNER);
         governance.endVote(PROPOSAL_ID);
         assertFalse(governance.isOpen(PROPOSAL_ID));
@@ -510,7 +511,7 @@ contract CollectiveGovernanceTest is Test {
     }
 
     function testVotePassed() public {
-        vm.roll(10);
+        vm.warp(10);
         bytes memory code = address(_storage).code;
 
         address storageMock = governance.getStorageAddress();
@@ -525,8 +526,8 @@ contract CollectiveGovernanceTest is Test {
         uint256 quorumRequired = 399;
         vm.mockCall(storageMock, abi.encodeWithSelector(Storage.quorumRequired.selector), abi.encode(quorumRequired));
         vm.mockCall(storageMock, abi.encodeWithSelector(Storage.maxPassThreshold.selector), abi.encode(0xffffffff));
-        vm.mockCall(storageMock, abi.encodeWithSelector(Storage.startBlock.selector), abi.encode(block.number - 2));
-        vm.mockCall(storageMock, abi.encodeWithSelector(Storage.endBlock.selector), abi.encode(block.number - 1));
+        vm.mockCall(storageMock, abi.encodeWithSelector(Storage.startTime.selector), abi.encode(block.timestamp - 2));
+        vm.mockCall(storageMock, abi.encodeWithSelector(Storage.endTime.selector), abi.encode(block.timestamp - 1));
         vm.mockCall(storageMock, abi.encodeWithSelector(Storage.isFinal.selector), abi.encode(true));
         vm.mockCall(storageMock, abi.encodeWithSelector(Storage.isVeto.selector), abi.encode(false));
         vm.mockCall(storageMock, abi.encodeWithSelector(Storage.isSupervisor.selector), abi.encode(true));
@@ -541,7 +542,7 @@ contract CollectiveGovernanceTest is Test {
     }
 
     function testVoteDidNotPass() public {
-        vm.roll(10);
+        vm.warp(10);
         bytes memory code = address(_storage).code;
 
         address storageMock = governance.getStorageAddress();
@@ -556,9 +557,15 @@ contract CollectiveGovernanceTest is Test {
         uint256 quorumRequired = 399;
         vm.mockCall(storageMock, abi.encodeWithSelector(Storage.quorumRequired.selector), abi.encode(quorumRequired));
         vm.mockCall(storageMock, abi.encodeWithSelector(Storage.maxPassThreshold.selector), abi.encode(0xffffffff));
+<<<<<<< HEAD
         vm.mockCall(storageMock, abi.encodeWithSelector(Storage.startBlock.selector), abi.encode(block.number - 2));
         vm.mockCall(storageMock, abi.encodeWithSelector(Storage.endBlock.selector), abi.encode(block.number - 1));
         vm.mockCall(storageMock, abi.encodeWithSelector(Storage.isFinal.selector), abi.encode(true));
+=======
+        vm.mockCall(storageMock, abi.encodeWithSelector(Storage.startTime.selector), abi.encode(block.timestamp - 2));
+        vm.mockCall(storageMock, abi.encodeWithSelector(Storage.endTime.selector), abi.encode(block.timestamp - 1));
+        vm.mockCall(storageMock, abi.encodeWithSelector(Storage.isReady.selector), abi.encode(true));
+>>>>>>> ed81d94 (13: use blocktime rather than block number start and end time)
         vm.mockCall(storageMock, abi.encodeWithSelector(Storage.isVeto.selector), abi.encode(false));
         vm.mockCall(storageMock, abi.encodeWithSelector(Storage.isSupervisor.selector), abi.encode(true));
         vm.mockCall(storageMock, abi.encodeWithSelector(Storage.validOrRevert.selector), abi.encode(PROPOSAL_ID));
@@ -572,7 +579,7 @@ contract CollectiveGovernanceTest is Test {
     }
 
     function testTieVoteDidNotPass() public {
-        vm.roll(10);
+        vm.warp(10);
         bytes memory code = address(_storage).code;
 
         address storageMock = governance.getStorageAddress();
@@ -587,9 +594,15 @@ contract CollectiveGovernanceTest is Test {
         uint256 quorumRequired = 399;
         vm.mockCall(storageMock, abi.encodeWithSelector(Storage.quorumRequired.selector), abi.encode(quorumRequired));
         vm.mockCall(storageMock, abi.encodeWithSelector(Storage.maxPassThreshold.selector), abi.encode(0xffffffff));
+<<<<<<< HEAD
         vm.mockCall(storageMock, abi.encodeWithSelector(Storage.startBlock.selector), abi.encode(block.number - 2));
         vm.mockCall(storageMock, abi.encodeWithSelector(Storage.endBlock.selector), abi.encode(block.number - 1));
         vm.mockCall(storageMock, abi.encodeWithSelector(Storage.isFinal.selector), abi.encode(true));
+=======
+        vm.mockCall(storageMock, abi.encodeWithSelector(Storage.startTime.selector), abi.encode(block.timestamp - 2));
+        vm.mockCall(storageMock, abi.encodeWithSelector(Storage.endTime.selector), abi.encode(block.timestamp - 1));
+        vm.mockCall(storageMock, abi.encodeWithSelector(Storage.isReady.selector), abi.encode(true));
+>>>>>>> ed81d94 (13: use blocktime rather than block number start and end time)
         vm.mockCall(storageMock, abi.encodeWithSelector(Storage.isVeto.selector), abi.encode(false));
         vm.mockCall(storageMock, abi.encodeWithSelector(Storage.isSupervisor.selector), abi.encode(true));
         vm.mockCall(storageMock, abi.encodeWithSelector(Storage.validOrRevert.selector), abi.encode(PROPOSAL_ID));
@@ -603,7 +616,7 @@ contract CollectiveGovernanceTest is Test {
     }
 
     function testMeasureNoQuorum() public {
-        vm.roll(10);
+        vm.warp(10);
         bytes memory code = address(_storage).code;
 
         address storageMock = governance.getStorageAddress();
@@ -616,8 +629,8 @@ contract CollectiveGovernanceTest is Test {
         vm.mockCall(storageMock, abi.encodeWithSelector(Storage.quorum.selector), abi.encode(quorum));
         uint256 quorumRequired = 203;
         vm.mockCall(storageMock, abi.encodeWithSelector(Storage.quorumRequired.selector), abi.encode(quorumRequired));
-        vm.mockCall(storageMock, abi.encodeWithSelector(Storage.startBlock.selector), abi.encode(block.number - 2));
-        vm.mockCall(storageMock, abi.encodeWithSelector(Storage.endBlock.selector), abi.encode(block.number - 1));
+        vm.mockCall(storageMock, abi.encodeWithSelector(Storage.startTime.selector), abi.encode(block.timestamp - 2));
+        vm.mockCall(storageMock, abi.encodeWithSelector(Storage.endTime.selector), abi.encode(block.timestamp - 1));
         vm.mockCall(storageMock, abi.encodeWithSelector(Storage.maxPassThreshold.selector), abi.encode(0xffffffff));
         vm.mockCall(storageMock, abi.encodeWithSelector(Storage.isFinal.selector), abi.encode(true));
         vm.mockCall(storageMock, abi.encodeWithSelector(Storage.isVeto.selector), abi.encode(false));
@@ -665,7 +678,7 @@ contract CollectiveGovernanceTest is Test {
         _storage.makeFinal(PROPOSAL_ID, _SUPERVISOR);
         vm.stopPrank();
         vm.prank(_SUPERVISOR);
-        uint256 blockNumber = block.number;
+        uint256 blockTimestamp = block.timestamp;
         governance.openVote(PROPOSAL_ID);
         vm.prank(_VOTER1);
         governance.voteFor(PROPOSAL_ID);
@@ -674,7 +687,7 @@ contract CollectiveGovernanceTest is Test {
         vm.prank(_SUPERVISOR);
         governance.veto(PROPOSAL_ID);
         assertTrue(_storage.isVeto(PROPOSAL_ID));
-        vm.roll(blockNumber + 2);
+        vm.warp(blockTimestamp + 2);
         vm.prank(_SUPERVISOR);
         governance.endVote(PROPOSAL_ID);
         vm.expectRevert("Vote cancelled");
@@ -682,7 +695,7 @@ contract CollectiveGovernanceTest is Test {
     }
 
     function testMeasureLateVeto() public {
-        uint256 blockNumber = block.number;
+        uint256 blockTimestamp = block.timestamp;
         _builder.aGovernance();
         VoterClassVoterPool voterPool = new VoterClassVoterPool(1);
         voterPool.addVoter(_VOTER1);
@@ -704,7 +717,7 @@ contract CollectiveGovernanceTest is Test {
         governance.voteFor(PROPOSAL_ID);
         vm.prank(_VOTER2);
         governance.voteFor(PROPOSAL_ID);
-        vm.roll(blockNumber + 2);
+        vm.warp(blockTimestamp + 2);
         vm.prank(_SUPERVISOR);
         governance.endVote(PROPOSAL_ID);
         vm.expectRevert("Voting is closed");
@@ -751,17 +764,17 @@ contract CollectiveGovernanceTest is Test {
         _storage.setVoteDelay(PROPOSAL_ID, 100, _SUPERVISOR);
         _storage.makeFinal(PROPOSAL_ID, _SUPERVISOR);
         vm.stopPrank();
-        uint256 startBlock = block.number;
+        uint256 startBlock = block.timestamp;
         vm.prank(_SUPERVISOR);
         governance.openVote(PROPOSAL_ID);
-        vm.roll(startBlock + blockStep);
+        vm.warp(startBlock + blockStep);
         vm.expectRevert("Vote not active");
         vm.prank(_VOTER1);
         governance.voteFor(PROPOSAL_ID);
     }
 
     function testVoteAfterDuration(uint256 blockStep) public {
-        vm.assume(blockStep > 10 && blockStep < UINT256MAX - block.number);
+        vm.assume(blockStep > 10 && blockStep < UINT256MAX - block.timestamp);
         _governanceAddress = buildVoterPool();
         governance = CollectiveGovernance(_governanceAddress);
         governance.propose();
@@ -772,10 +785,10 @@ contract CollectiveGovernanceTest is Test {
         _storage.setRequiredVoteDuration(PROPOSAL_ID, 10, _SUPERVISOR);
         _storage.makeFinal(PROPOSAL_ID, _SUPERVISOR);
         vm.stopPrank();
-        uint256 startBlock = block.number;
+        uint256 startBlock = block.timestamp;
         vm.prank(_SUPERVISOR);
         governance.openVote(PROPOSAL_ID);
-        vm.roll(startBlock + blockStep);
+        vm.warp(startBlock + blockStep);
         vm.expectRevert("Vote not active");
         vm.prank(_VOTER1);
         governance.voteFor(PROPOSAL_ID);
@@ -793,17 +806,17 @@ contract CollectiveGovernanceTest is Test {
         _storage.setRequiredVoteDuration(PROPOSAL_ID, 10, _SUPERVISOR);
         _storage.makeFinal(PROPOSAL_ID, _SUPERVISOR);
         vm.stopPrank();
-        uint256 startBlock = block.number;
+        uint256 startBlock = block.timestamp;
         vm.prank(_SUPERVISOR);
         governance.openVote(PROPOSAL_ID);
-        vm.roll(startBlock + blockStep);
+        vm.warp(startBlock + blockStep);
         vm.expectRevert("Vote open");
         vm.prank(_SUPERVISOR);
         governance.endVote(PROPOSAL_ID);
     }
 
     function testEndVoteWhenFinished(uint256 blockStep) public {
-        vm.assume(blockStep >= 16 && blockStep < UINT256MAX - block.number);
+        vm.assume(blockStep >= 16 && blockStep < UINT256MAX - block.timestamp);
         _governanceAddress = buildVoterPool();
         governance = CollectiveGovernance(_governanceAddress);
         governance.propose();
@@ -814,10 +827,10 @@ contract CollectiveGovernanceTest is Test {
         _storage.setRequiredVoteDuration(PROPOSAL_ID, 10, _SUPERVISOR);
         _storage.makeFinal(PROPOSAL_ID, _SUPERVISOR);
         vm.stopPrank();
-        uint256 startBlock = block.number;
+        uint256 startBlock = block.timestamp;
         vm.prank(_SUPERVISOR);
         governance.openVote(PROPOSAL_ID);
-        vm.roll(startBlock + blockStep);
+        vm.warp(startBlock + blockStep);
         vm.prank(_SUPERVISOR);
         governance.endVote(PROPOSAL_ID);
         assertFalse(governance.isOpen(PROPOSAL_ID));
@@ -949,10 +962,10 @@ contract CollectiveGovernanceTest is Test {
 
     function testCancelAfterEnd() public {
         vm.startPrank(_SUPERVISOR, _SUPERVISOR);
-        uint256 blockNumber = block.number;
+        uint256 blockTimestamp = block.timestamp;
         governance.configure(PROPOSAL_ID, 2, 2);
         governance.openVote(PROPOSAL_ID);
-        vm.roll(blockNumber + 2);
+        vm.warp(blockTimestamp + 2);
         governance.endVote(PROPOSAL_ID);
         vm.expectRevert("Not possible");
         governance.cancel(PROPOSAL_ID);

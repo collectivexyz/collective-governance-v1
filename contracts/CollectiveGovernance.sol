@@ -154,9 +154,10 @@ contract CollectiveGovernance is Governance, VoteStrategy, ERC165 {
     /// @return bool True if the proposal is open
     function isOpen(uint256 _proposalId) external view returns (bool) {
         _storage.validOrRevert(_proposalId);
-        uint256 endBlock = _storage.endBlock(_proposalId);
+        uint256 endTime = _storage.endTime(_proposalId);
         bool voteProceeding = !_storage.isCancel(_proposalId) && !_storage.isVeto(_proposalId);
-        return isVoteOpenByProposalId[_proposalId] && block.number < endBlock && voteProceeding;
+        // solhint-disable-next-line not-rely-on-time
+        return isVoteOpenByProposalId[_proposalId] && block.timestamp < endTime && voteProceeding;
     }
 
     /// @notice end voting on an existing proposal by id
@@ -164,8 +165,9 @@ contract CollectiveGovernance is Governance, VoteStrategy, ERC165 {
     /// @dev it is not possible to end voting until the required duration has elapsed
     function endVote(uint256 _proposalId) public requireElectorSupervisor(_proposalId) requireVoteOpen(_proposalId) {
         _storage.validOrRevert(_proposalId);
-        uint256 _endBlock = _storage.endBlock(_proposalId);
-        require(_endBlock <= block.number || _storage.isVeto(_proposalId) || _storage.isCancel(_proposalId), "Vote open");
+        uint256 _endTime = _storage.endTime(_proposalId);
+        // solhint-disable-next-line not-rely-on-time
+        require(_endTime <= block.timestamp || _storage.isVeto(_proposalId) || _storage.isCancel(_proposalId), "Vote open");
         isVoteOpenByProposalId[_proposalId] = false;
         emit VoteClosed(_proposalId);
         emit ProposalClosed(_proposalId);
@@ -409,8 +411,13 @@ contract CollectiveGovernance is Governance, VoteStrategy, ERC165 {
     /// @param _proposalId The numeric id of the proposed vote
     function cancel(uint256 _proposalId) public requireElectorSupervisor(_proposalId) {
         _storage.validOrRevert(_proposalId);
-        uint256 _startBlock = _storage.startBlock(_proposalId);
-        require(!isVoteOpenByProposalId[_proposalId] && (_startBlock == 0 || block.number <= _startBlock), "Not possible");
+        uint256 _startTime = _storage.startTime(_proposalId);
+        // solhint-disable-next-line not-rely-on-time
+        require(!isVoteOpenByProposalId[_proposalId] && block.timestamp <= _startTime, "Not possible");
+        if (!_storage.isReady(_proposalId)) {
+            _storage.makeReady(_proposalId, msg.sender);
+            emit ProposalOpen(_proposalId);
+        }
         _storage.cancel(_proposalId, msg.sender);
         emit ProposalClosed(_proposalId);
     }

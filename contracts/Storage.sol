@@ -51,7 +51,7 @@ interface Storage is IERC165 {
     event VoteCast(uint256 proposalId, address voter, uint256 shareId, uint256 totalVotesCast);
     event UndoVote(uint256 proposalId, address voter, uint256 shareId, uint256 votesUndone);
     event VoteVeto(uint256 proposalId, address supervisor);
-    event VoteReady(uint256 proposalId, uint256 startBlock, uint256 endBlock);
+    event VoteReady(uint256 proposalId, uint256 startTime, uint256 endTime);
     event VoteCancel(uint256 proposalId, address supervisor);
 
     enum Status {
@@ -72,10 +72,10 @@ interface Storage is IERC165 {
         uint256 voteDelay;
         /// @notice The number of blocks duration for the vote, last vote must be cast prior
         uint256 voteDuration;
-        /// @notice The block at which voting begins
-        uint256 startBlock;
-        /// @notice The block at which voting ends
-        uint256 endBlock;
+        /// @notice The time when voting begins
+        uint256 startTime;
+        /// @notice The time when voting ends
+        uint256 endTime;
         /// @notice Current number of votes in favor of this proposal
         uint256 forVotes;
         /// @notice Current number of votes in opposition to this proposal
@@ -195,15 +195,17 @@ interface Storage is IERC165 {
     /// @return uint256 the duration
     function voteDuration(uint256 _proposalId) external view returns (uint256);
 
-    /// @notice get the start block
+    /// @notice get the start time
+    /// @dev timestamp in epoch seconds since January 1, 1970
     /// @param _proposalId the id of the proposal
-    /// @return uint256 the start block
-    function startBlock(uint256 _proposalId) external view returns (uint256);
+    /// @return uint256 the start time
+    function startTime(uint256 _proposalId) external view returns (uint256);
 
-    /// @notice get the end block
+    /// @notice get the end time
+    /// @dev timestamp in epoch seconds since January 1, 1970
     /// @param _proposalId the id of the proposal
-    /// @return uint256 the end block
-    function endBlock(uint256 _proposalId) external view returns (uint256);
+    /// @return uint256 the end time
+    function endTime(uint256 _proposalId) external view returns (uint256);
 
     /// @notice get the for vote count
     /// @param _proposalId the id of the proposal

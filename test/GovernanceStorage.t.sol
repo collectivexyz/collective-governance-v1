@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: BSD-3-Clause
+// solhint-disable not-rely-on-time
 pragma solidity ^0.8.15;
 
 import "@openzeppelin/contracts/interfaces/IERC721.sol";
@@ -133,8 +134,13 @@ contract GovernanceStorageTest is Test {
         _storage.registerSupervisor(PROPOSAL_ID, _SUPERVISOR, _OWNER);
         _storage.setVoteDelay(PROPOSAL_ID, 100, _SUPERVISOR);
         assertEq(_storage.voteDelay(PROPOSAL_ID), 100);
+<<<<<<< HEAD
         _storage.makeFinal(PROPOSAL_ID, _SUPERVISOR);
         assertEq(_storage.startBlock(PROPOSAL_ID), block.number + 100);
+=======
+        _storage.makeReady(PROPOSAL_ID, _SUPERVISOR);
+        assertEq(_storage.startTime(PROPOSAL_ID), block.timestamp + 100);
+>>>>>>> ed81d94 (13: use blocktime rather than block number start and end time)
     }
 
     function testSetVoteDelayDirect() public {
@@ -162,8 +168,13 @@ contract GovernanceStorageTest is Test {
         _storage.registerSupervisor(PROPOSAL_ID, _SUPERVISOR, _OWNER);
         _storage.setRequiredVoteDuration(PROPOSAL_ID, 10, _SUPERVISOR);
         assertEq(_storage.voteDuration(PROPOSAL_ID), 10);
+<<<<<<< HEAD
         _storage.makeFinal(PROPOSAL_ID, _SUPERVISOR);
         assertEq(_storage.endBlock(PROPOSAL_ID), block.number + 10);
+=======
+        _storage.makeReady(PROPOSAL_ID, _SUPERVISOR);
+        assertEq(_storage.endTime(PROPOSAL_ID), block.timestamp + 10);
+>>>>>>> ed81d94 (13: use blocktime rather than block number start and end time)
     }
 
     function testSetMinimumVoteDurationDirect() public {
@@ -445,9 +456,15 @@ contract GovernanceStorageTest is Test {
         _storage.registerSupervisor(PROPOSAL_ID, _SUPERVISOR, _OWNER);
         _storage.setQuorumThreshold(PROPOSAL_ID, 1, _SUPERVISOR);
         _storage.setVoteDelay(PROPOSAL_ID, 100, _SUPERVISOR);
+<<<<<<< HEAD
         _storage.makeFinal(PROPOSAL_ID, _SUPERVISOR);
         uint256 startBlock = block.number;
         vm.roll(startBlock + 100);
+=======
+        _storage.makeReady(PROPOSAL_ID, _SUPERVISOR);
+        uint256 startTime = block.timestamp;
+        vm.warp(startTime + 100);
+>>>>>>> ed81d94 (13: use blocktime rather than block number start and end time)
         _storage.voteForByShare(PROPOSAL_ID, _VOTER1, uint160(_VOTER1));
         assertEq(1, _storage.forVotes(PROPOSAL_ID));
     }
@@ -487,8 +504,8 @@ contract GovernanceStorageTest is Test {
         assertEq(PROPOSAL_ID, latestProposalId);
         _storage.registerSupervisor(latestProposalId, _SUPERVISOR, _OWNER);
         _storage.makeFinal(latestProposalId, _SUPERVISOR);
-        uint256 endBlock = _storage.endBlock(latestProposalId);
-        vm.roll(endBlock);
+        uint256 endTime = _storage.endTime(latestProposalId);
+        vm.warp(endTime);
         uint256 nextId = _storage.initializeProposal(_OWNER);
         latestProposalId = _storage.latestProposal(_OWNER);
         assertEq(latestProposalId, nextId);

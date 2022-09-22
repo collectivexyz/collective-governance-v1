@@ -51,7 +51,7 @@ contract GovernanceStorage is Storage, ERC165 {
 
     uint256 public constant UINT_MAX = 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF;
     uint256 public constant MAXIMUM_QUORUM = UINT_MAX;
-    uint256 public constant MAXIMUM_BLOCK = UINT_MAX;
+    uint256 public constant MAXIMUM_TIME = UINT_MAX;
     uint256 public constant MINIMUM_VOTE_DURATION = 1;
 
     /// @notice only the peer contract may modify the vote
@@ -150,7 +150,8 @@ contract GovernanceStorage is Storage, ERC165 {
 
     modifier requireVotingActive(uint256 _proposalId) {
         Proposal storage proposal = proposalMap[_proposalId];
-        require(proposal.startBlock <= block.number && proposal.endBlock > block.number, "Vote not active");
+        // solhint-disable-next-line not-rely-on-time
+        require(proposal.startTime <= block.timestamp && proposal.endTime > block.timestamp, "Vote not active");
         _;
     }
 
@@ -325,20 +326,22 @@ contract GovernanceStorage is Storage, ERC165 {
         return proposal.voteDuration;
     }
 
-    /// @notice get the start block
+    /// @notice get the start time
+    /// @dev timestamp in epoch seconds since January 1, 1970
     /// @param _proposalId the id of the proposal
-    /// @return uint256 the start block
-    function startBlock(uint256 _proposalId) external view requireValidProposal(_proposalId) returns (uint256) {
+    /// @return uint256 the start time
+    function startTime(uint256 _proposalId) external view requireValidProposal(_proposalId) returns (uint256) {
         Proposal storage proposal = proposalMap[_proposalId];
-        return proposal.startBlock;
+        return proposal.startTime;
     }
 
-    /// @notice get the end block
+    /// @notice get the end time
+    /// @dev timestamp in epoch seconds since January 1, 1970
     /// @param _proposalId the id of the proposal
-    /// @return uint256 the end block
-    function endBlock(uint256 _proposalId) external view requireValidProposal(_proposalId) returns (uint256) {
+    /// @return uint256 the end time
+    function endTime(uint256 _proposalId) external view requireValidProposal(_proposalId) returns (uint256) {
         Proposal storage proposal = proposalMap[_proposalId];
-        return proposal.endBlock;
+        return proposal.endTime;
     }
 
     /// @notice get the for vote count
@@ -470,7 +473,8 @@ contract GovernanceStorage is Storage, ERC165 {
         uint256 latestProposalId = _latestProposalId[_sender];
         if (latestProposalId != 0) {
             Proposal storage lastProposal = proposalMap[latestProposalId];
-            require(isFinal(latestProposalId) && block.number >= lastProposal.endBlock, "Too many proposals");
+            // solhint-disable-next-line not-rely-on-time
+            require(isFinal(latestProposalId) && block.timestamp >= lastProposal.endTime, "Too many proposals");
         }
         _proposalCount++;
         uint256 proposalId = _proposalCount;
@@ -483,8 +487,8 @@ contract GovernanceStorage is Storage, ERC165 {
         proposal.quorumRequired = MAXIMUM_QUORUM;
         proposal.voteDelay = 0;
         proposal.voteDuration = MINIMUM_VOTE_DURATION;
-        proposal.startBlock = MAXIMUM_BLOCK;
-        proposal.endBlock = MAXIMUM_BLOCK;
+        proposal.startTime = MAXIMUM_TIME;
+        proposal.endTime = MAXIMUM_TIME;
         proposal.forVotes = 0;
         proposal.againstVotes = 0;
         proposal.abstentionCount = 0;
@@ -508,9 +512,10 @@ contract GovernanceStorage is Storage, ERC165 {
     {
         Proposal storage proposal = proposalMap[_proposalId];
         proposal.status = Status.FINAL;
-        proposal.startBlock = block.number + proposal.voteDelay;
-        proposal.endBlock = proposal.startBlock + proposal.voteDuration;
-        emit VoteReady(_proposalId, proposal.startBlock, proposal.endBlock);
+        // solhint-disable-next-line not-rely-on-time
+        proposal.startTime = block.timestamp + proposal.voteDelay;
+        proposal.endTime = proposal.startTime + proposal.voteDuration;
+        emit VoteReady(_proposalId, proposal.startTime, proposal.endTime);
     }
 
     /// @notice cancel the proposal if it is not yet started
