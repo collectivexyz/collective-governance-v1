@@ -32,13 +32,15 @@
  */
 pragma solidity ^0.8.15;
 
+import "@openzeppelin/contracts/interfaces/IERC165.sol";
+
 import "../contracts/VoterClass.sol";
 import "../contracts/VoteStrategy.sol";
 
 /// @title Storage interface
 /// @notice provides the requirements for Storage contract implementation
 /// @custom:type interface
-interface Storage {
+interface Storage is IERC165 {
     // event section
     event InitializeProposal(uint256 proposalId, address owner);
     event AddSupervisor(uint256 proposalId, address supervisor);

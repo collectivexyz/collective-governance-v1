@@ -125,7 +125,7 @@ contract VoterClassERC721 is VoterClass, ERC165 {
     }
 
     /// @notice see ERC-165
-    function supportsInterface(bytes4 interfaceId) public view virtual override(ERC165) returns (bool) {
+    function supportsInterface(bytes4 interfaceId) public view virtual override(IERC165, ERC165) returns (bool) {
         return interfaceId == type(VoterClass).interfaceId || super.supportsInterface(interfaceId);
     }
 

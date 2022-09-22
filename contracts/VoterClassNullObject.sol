@@ -76,7 +76,7 @@ contract VoterClassNullObject is VoterClass, ERC165 {
         return 0;
     }
 
-    function supportsInterface(bytes4 interfaceId) public view virtual override(ERC165) returns (bool) {
+    function supportsInterface(bytes4 interfaceId) public view virtual override(IERC165, ERC165) returns (bool) {
         return interfaceId == type(VoterClass).interfaceId || super.supportsInterface(interfaceId);
     }
 

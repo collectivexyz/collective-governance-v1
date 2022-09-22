@@ -32,6 +32,7 @@
  */
 pragma solidity ^0.8.15;
 
+import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
 import "@openzeppelin/contracts/interfaces/IERC165.sol";
 
 import "../contracts/Governance.sol";
@@ -41,7 +42,7 @@ import "../contracts/Builder.sol";
 
 /// @title Governance Builder implementation
 /// @notice This builder supports creating new instances of the Collective Governance Contract
-contract GovernanceBuilder is Builder {
+contract GovernanceBuilder is Builder, ERC165 {
     string public constant NAME = "collective.xyz governance contract builder";
     uint32 public constant VERSION_1 = 1;
 
@@ -98,6 +99,11 @@ contract GovernanceBuilder is Builder {
         address _governanceAddress = address(_governance);
         emit GovernanceContractCreated(_creator, _governanceAddress);
         return _governanceAddress;
+    }
+
+    /// @notice see ERC-165
+    function supportsInterface(bytes4 interfaceId) public view virtual override(IERC165, ERC165) returns (bool) {
+        return interfaceId == type(Builder).interfaceId || super.supportsInterface(interfaceId);
     }
 
     /// @notice return the name of this implementation

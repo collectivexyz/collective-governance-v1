@@ -32,10 +32,12 @@
  */
 pragma solidity ^0.8.15;
 
+import "@openzeppelin/contracts/interfaces/IERC165.sol";
+
 /// @title Governance interface
 /// @notice Requirements for Governance implementation
 /// @custom:type interface
-interface Governance {
+interface Governance is IERC165 {
     /// @notice A new proposal was created
     event ProposalCreated(address sender, uint256 proposalId);
     /// @notice The proposal is now open for voting

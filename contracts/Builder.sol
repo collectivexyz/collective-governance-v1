@@ -32,12 +32,14 @@
  */
 pragma solidity ^0.8.15;
 
+import "@openzeppelin/contracts/interfaces/IERC165.sol";
+
 import "../contracts/VoterClass.sol";
 
 /// @title Governance Builder interface
 /// @notice Requirements for Governance Builder implementation
 /// @custom:type interface
-interface Builder {
+interface Builder is IERC165 {
     event GovernanceContractCreated(address creator, address governance);
     event BuilderContractInitialized(address creator);
     event BuilderSupervisorAdded(address creator, address supervisor);
