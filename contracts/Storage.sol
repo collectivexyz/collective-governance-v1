@@ -52,6 +52,7 @@ interface Storage is IERC165 {
     event UndoVote(uint256 proposalId, address voter, uint256 shareId, uint256 votesUndone);
     event VoteVeto(uint256 proposalId, address supervisor);
     event VoteReady(uint256 proposalId, uint256 startBlock, uint256 endBlock);
+    event VoteCancel(uint256 proposalId, address supervisor);
 
     struct Proposal {
         /// @notice Unique id for looking up a proposal
@@ -81,6 +82,8 @@ interface Storage is IERC165 {
         bool isExecuted;
         /// @notice construction phase, voting is not yet open or closed
         bool isReady;
+        /// @notice proposal is cancelled, no successful vote
+        bool isCancel;
         /// @notice this proposal allows undo votes
         bool isUndoEnabled;
         /// @notice Receipts of ballots for the entire set of voters
@@ -235,6 +238,11 @@ interface Storage is IERC165 {
     /// @return bool true if the proposal is marked ready
     function isReady(uint256 _proposalId) external view returns (bool);
 
+    /// @notice test if proposal is cancelled
+    /// @param _proposalId the id of the proposal
+    /// @return bool true if the proposal is marked cancelled
+    function isCancel(uint256 _proposalId) external view returns (bool);
+
     /// @notice test if proposal is veto
     /// @param _proposalId the id of the proposal
     /// @return bool true if the proposal is marked veto
@@ -274,6 +282,12 @@ interface Storage is IERC165 {
     /// @param _proposalId the id of the proposal
     /// @param _sender original wallet for this request
     function makeReady(uint256 _proposalId, address _sender) external;
+
+    /// @notice cancel the proposal if it is not yet started
+    /// @dev requires supervisor
+    /// @param _proposalId the id of the proposal
+    /// @param _sender original wallet for this request
+    function cancel(uint256 _proposalId, address _sender) external;
 
     /// @notice veto the specified proposal
     /// @dev supervisor is required

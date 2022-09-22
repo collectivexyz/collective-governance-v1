@@ -259,8 +259,23 @@ contract CollectiveGovernanceTest is Test {
         vm.stopPrank();
         vm.prank(_SUPERVISOR);
         governance.openVote(PROPOSAL_ID);
+        assertTrue(governance.isOpen(PROPOSAL_ID));
         vm.roll(blockNumber + 2);
         vm.prank(_OWNER);
+        governance.endVote(PROPOSAL_ID);
+        assertFalse(governance.isOpen(PROPOSAL_ID));
+    }
+
+    function testEarlyEndVote() public {
+        vm.startPrank(_governanceAddress);
+        _storage.setQuorumThreshold(PROPOSAL_ID, 2, _SUPERVISOR);
+        _storage.makeReady(PROPOSAL_ID, _SUPERVISOR);
+        vm.stopPrank();
+        vm.prank(_SUPERVISOR);
+        governance.openVote(PROPOSAL_ID);
+        assertTrue(governance.isOpen(PROPOSAL_ID));
+        vm.prank(_OWNER);
+        vm.expectRevert("Vote open");
         governance.endVote(PROPOSAL_ID);
     }
 
@@ -629,7 +644,7 @@ contract CollectiveGovernanceTest is Test {
         vm.stopPrank();
         vm.prank(_SUPERVISOR);
         governance.openVote(PROPOSAL_ID);
-        vm.expectRevert("Voting is not closed");
+        vm.expectRevert("Vote is not closed");
         governance.getVoteSucceeded(PROPOSAL_ID);
     }
 
@@ -662,7 +677,7 @@ contract CollectiveGovernanceTest is Test {
         vm.roll(blockNumber + 2);
         vm.prank(_SUPERVISOR);
         governance.endVote(PROPOSAL_ID);
-        vm.expectRevert("Voting is not closed");
+        vm.expectRevert("Vote cancelled");
         governance.getVoteSucceeded(PROPOSAL_ID);
     }
 
@@ -767,7 +782,7 @@ contract CollectiveGovernanceTest is Test {
     }
 
     function testEndVoteWhileActive(uint256 blockStep) public {
-        vm.assume(blockStep > 0 && blockStep < 16);
+        vm.assume(blockStep > 0 && blockStep < 15);
         _governanceAddress = buildVoterPool();
         governance = CollectiveGovernance(_governanceAddress);
         governance.propose();
@@ -782,7 +797,7 @@ contract CollectiveGovernanceTest is Test {
         vm.prank(_SUPERVISOR);
         governance.openVote(PROPOSAL_ID);
         vm.roll(startBlock + blockStep);
-        vm.expectRevert("Voting remains active");
+        vm.expectRevert("Vote open");
         vm.prank(_SUPERVISOR);
         governance.endVote(PROPOSAL_ID);
     }
@@ -887,6 +902,70 @@ contract CollectiveGovernanceTest is Test {
     function testSupportsInterfaceERC165() public {
         bytes4 esId = type(IERC165).interfaceId;
         assertTrue(governance.supportsInterface(esId));
+    }
+
+    function testCancelConfigured() public {
+        vm.startPrank(_SUPERVISOR, _SUPERVISOR);
+        governance.configure(PROPOSAL_ID, 2, 2);
+        governance.cancel(PROPOSAL_ID);
+        vm.stopPrank();
+        assertFalse(governance.isOpen(PROPOSAL_ID));
+        assertTrue(_storage.isCancel(PROPOSAL_ID));
+    }
+
+    function testCancelNotConfigured() public {
+        vm.startPrank(_SUPERVISOR, _SUPERVISOR);
+        governance.cancel(PROPOSAL_ID);
+        vm.stopPrank();
+        assertFalse(governance.isOpen(PROPOSAL_ID));
+        assertTrue(_storage.isCancel(PROPOSAL_ID));
+    }
+
+    function testConfigureAfterCancel() public {
+        vm.startPrank(_SUPERVISOR, _SUPERVISOR);
+        governance.cancel(PROPOSAL_ID);
+        vm.expectRevert("Vote not modifiable");
+        governance.configure(PROPOSAL_ID, 2, 2);
+        vm.stopPrank();
+    }
+
+    function testOpenAfterCancel() public {
+        vm.startPrank(_SUPERVISOR, _SUPERVISOR);
+        governance.configure(PROPOSAL_ID, 2, 2);
+        governance.cancel(PROPOSAL_ID);
+        vm.expectRevert("Vote cancelled");
+        governance.openVote(PROPOSAL_ID);
+        vm.stopPrank();
+    }
+
+    function testCancelAfterOpen() public {
+        vm.startPrank(_SUPERVISOR, _SUPERVISOR);
+        governance.configure(PROPOSAL_ID, 2, 2);
+        governance.openVote(PROPOSAL_ID);
+        vm.expectRevert("Not possible");
+        governance.cancel(PROPOSAL_ID);
+        vm.stopPrank();
+    }
+
+    function testCancelAfterEnd() public {
+        vm.startPrank(_SUPERVISOR, _SUPERVISOR);
+        uint256 blockNumber = block.number;
+        governance.configure(PROPOSAL_ID, 2, 2);
+        governance.openVote(PROPOSAL_ID);
+        vm.roll(blockNumber + 2);
+        governance.endVote(PROPOSAL_ID);
+        vm.expectRevert("Not possible");
+        governance.cancel(PROPOSAL_ID);
+        vm.stopPrank();
+    }
+
+    function testEndNowIfVeto() public {
+        vm.startPrank(_SUPERVISOR, _SUPERVISOR);
+        governance.configure(PROPOSAL_ID, 2, 2);
+        governance.openVote(PROPOSAL_ID);
+        governance.veto(PROPOSAL_ID);
+        governance.endVote(PROPOSAL_ID);
+        vm.stopPrank();
     }
 
     function mintTokens() private returns (IERC721) {

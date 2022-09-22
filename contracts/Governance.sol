@@ -49,6 +49,10 @@ interface Governance is IERC165 {
     /// @return uint256 The id of the new proposal
     function propose() external returns (uint256);
 
+    /// @notice cancel a proposal if it is not yet open
+    /// @param _proposalId The numeric id of the proposed vote
+    function cancel(uint256 _proposalId) external;
+
     /// @notice configure an existing proposal by id
     /// @param _proposalId The numeric id of the proposed vote
     /// @param _quorumThreshold The threshold of participation that is required for a successful conclusion of voting

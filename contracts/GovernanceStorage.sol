@@ -32,6 +32,9 @@
  */
 pragma solidity ^0.8.15;
 
+import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
+import "@openzeppelin/contracts/interfaces/IERC165.sol";
+
 import "../contracts/Storage.sol";
 import "../contracts/VoterClass.sol";
 
@@ -41,12 +44,14 @@ import "../contracts/VoterClass.sol";
 /// @dev The creator of the contract, typically the Governance contract itself,
 /// privledged with respect to write opperations in this contract.   The creator
 /// is required for nearly all change operations
-contract GovernanceStorage is Storage {
+contract GovernanceStorage is Storage, ERC165 {
     /// @notice contract name
     string public constant NAME = "collective.xyz governance storage";
     uint32 public constant VERSION_1 = 1;
 
-    uint256 public constant MAXIMUM_QUORUM = 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF;
+    uint256 public constant UINT_MAX = 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF;
+    uint256 public constant MAXIMUM_QUORUM = UINT_MAX;
+    uint256 public constant MAXIMUM_BLOCK = UINT_MAX;
     uint256 public constant MINIMUM_VOTE_DURATION = 1;
 
     /// @notice only the peer contract may modify the vote
@@ -139,7 +144,7 @@ contract GovernanceStorage is Storage {
 
     modifier requireVotingReady(uint256 _proposalId) {
         Proposal storage proposal = proposalMap[_proposalId];
-        require(proposal.isReady, "Vote not ready");
+        require(proposal.isReady, "Not ready");
         _;
     }
 
@@ -404,6 +409,14 @@ contract GovernanceStorage is Storage {
         return proposal.isReady;
     }
 
+    /// @notice test if proposal is cancelled
+    /// @param _proposalId the id of the proposal
+    /// @return bool true if the proposal is marked cancelled
+    function isCancel(uint256 _proposalId) external view returns (bool) {
+        Proposal storage proposal = proposalMap[_proposalId];
+        return proposal.isCancel;
+    }
+
     /// @notice test if proposal is veto
     /// @param _proposalId the id of the proposal
     /// @return bool true if the proposal is marked veto
@@ -470,8 +483,8 @@ contract GovernanceStorage is Storage {
         proposal.quorumRequired = MAXIMUM_QUORUM;
         proposal.voteDelay = 0;
         proposal.voteDuration = MINIMUM_VOTE_DURATION;
-        proposal.startBlock = 0;
-        proposal.endBlock = 0;
+        proposal.startBlock = MAXIMUM_BLOCK;
+        proposal.endBlock = MAXIMUM_BLOCK;
         proposal.forVotes = 0;
         proposal.againstVotes = 0;
         proposal.abstentionCount = 0;
@@ -498,6 +511,21 @@ contract GovernanceStorage is Storage {
         proposal.startBlock = block.number + proposal.voteDelay;
         proposal.endBlock = proposal.startBlock + proposal.voteDuration;
         emit VoteReady(_proposalId, proposal.startBlock, proposal.endBlock);
+    }
+
+    /// @notice cancel the proposal if it is not yet started
+    /// @dev requires supervisor
+    /// @param _proposalId the id of the proposal
+    /// @param _sender original wallet for this request
+    function cancel(uint256 _proposalId, address _sender)
+        external
+        requireCognate
+        requireElectorSupervisor(_proposalId, _sender)
+        requireVotingReady(_proposalId)
+    {
+        Proposal storage proposal = proposalMap[_proposalId];
+        proposal.isCancel = true;
+        emit VoteCancel(_proposalId, _sender);
     }
 
     /// @notice veto the specified proposal
@@ -642,6 +670,11 @@ contract GovernanceStorage is Storage {
     // solhint-disable-next-line no-empty-blocks
     {
 
+    }
+
+    /// @notice see ERC-165
+    function supportsInterface(bytes4 interfaceId) public view virtual override(IERC165, ERC165) returns (bool) {
+        return interfaceId == type(Storage).interfaceId || super.supportsInterface(interfaceId);
     }
 
     /// @notice get the maxiumum possible for the pass threshold

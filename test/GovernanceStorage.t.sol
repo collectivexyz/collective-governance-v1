@@ -513,4 +513,25 @@ contract GovernanceStorageTest is Test {
         vm.expectRevert("Too many proposals");
         _storage.initializeProposal(_OWNER);
     }
+
+    function testCancelProposalNotReady() public {
+        _storage.registerSupervisor(PROPOSAL_ID, _SUPERVISOR, _OWNER);
+        vm.expectRevert("Not ready");
+        _storage.cancel(PROPOSAL_ID, _SUPERVISOR);
+    }
+
+    function testCancelProposal() public {
+        _storage.registerSupervisor(PROPOSAL_ID, _SUPERVISOR, _OWNER);
+        _storage.makeReady(PROPOSAL_ID, _SUPERVISOR);
+        assertFalse(_storage.isCancel(PROPOSAL_ID));
+        _storage.cancel(PROPOSAL_ID, _SUPERVISOR);
+        assertTrue(_storage.isCancel(PROPOSAL_ID));
+    }
+
+    function testCancelFailIfNotSupervisor() public {
+        _storage.registerSupervisor(PROPOSAL_ID, _SUPERVISOR, _OWNER);
+        _storage.makeReady(PROPOSAL_ID, _SUPERVISOR);
+        vm.expectRevert("Requires supervisor");
+        _storage.cancel(PROPOSAL_ID, _NOTSUPERVISOR);
+    }
 }

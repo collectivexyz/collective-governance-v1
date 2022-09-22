@@ -81,21 +81,18 @@ contract CollectiveGovernance is Governance, VoteStrategy, ERC165 {
         _;
     }
 
-    modifier requireNoVeto(uint256 _proposalId) {
-        require(!_storage.isVeto(_proposalId), "Vote is veto");
+    modifier requireVoteReady(uint256 _proposalId) {
+        require(_storage.isReady(_proposalId), "Voting is not ready");
         _;
     }
 
-    modifier requireVoteReady(uint256 _proposalId) {
-        require(_storage.isReady(_proposalId) && !_storage.isVeto(_proposalId), "Voting is not ready");
+    modifier requireVoteAllowed(uint256 _proposalId) {
+        require(!_storage.isCancel(_proposalId) && !_storage.isVeto(_proposalId), "Vote cancelled");
         _;
     }
 
     modifier requireVoteClosed(uint256 _proposalId) {
-        require(
-            _storage.isReady(_proposalId) && !isVoteOpenByProposalId[_proposalId] && !_storage.isVeto(_proposalId),
-            "Voting is not closed"
-        );
+        require(_storage.isReady(_proposalId) && !isVoteOpenByProposalId[_proposalId], "Vote is not closed");
         _;
     }
 
@@ -136,7 +133,12 @@ contract CollectiveGovernance is Governance, VoteStrategy, ERC165 {
 
     /// @notice open an existing proposal by id
     /// @param _proposalId The numeric id of the proposed vote
-    function openVote(uint256 _proposalId) external requireElectorSupervisor(_proposalId) requireVoteReady(_proposalId) {
+    function openVote(uint256 _proposalId)
+        external
+        requireElectorSupervisor(_proposalId)
+        requireVoteReady(_proposalId)
+        requireVoteAllowed(_proposalId)
+    {
         _storage.validOrRevert(_proposalId);
         require(_storage.quorumRequired(_proposalId) < _storage.maxPassThreshold(), "Quorum required");
         if (!isVoteOpenByProposalId[_proposalId]) {
@@ -153,7 +155,8 @@ contract CollectiveGovernance is Governance, VoteStrategy, ERC165 {
     function isOpen(uint256 _proposalId) external view returns (bool) {
         _storage.validOrRevert(_proposalId);
         uint256 endBlock = _storage.endBlock(_proposalId);
-        return isVoteOpenByProposalId[_proposalId] && block.number < endBlock;
+        bool voteProceeding = !_storage.isCancel(_proposalId) && !_storage.isVeto(_proposalId);
+        return isVoteOpenByProposalId[_proposalId] && block.number < endBlock && voteProceeding;
     }
 
     /// @notice end voting on an existing proposal by id
@@ -161,11 +164,8 @@ contract CollectiveGovernance is Governance, VoteStrategy, ERC165 {
     /// @dev it is not possible to end voting until the required duration has elapsed
     function endVote(uint256 _proposalId) public requireElectorSupervisor(_proposalId) requireVoteOpen(_proposalId) {
         _storage.validOrRevert(_proposalId);
-        if (!_storage.isReady(_proposalId)) {
-            _storage.makeReady(_proposalId, msg.sender);
-        }
         uint256 _endBlock = _storage.endBlock(_proposalId);
-        require(_endBlock < block.number, "Voting remains active");
+        require(_endBlock <= block.number || _storage.isVeto(_proposalId) || _storage.isCancel(_proposalId), "Vote open");
         isVoteOpenByProposalId[_proposalId] = false;
         emit VoteClosed(_proposalId);
         emit ProposalClosed(_proposalId);
@@ -174,7 +174,7 @@ contract CollectiveGovernance is Governance, VoteStrategy, ERC165 {
     /// @notice cast an affirmative vote for the measure by id
     /// @param _proposalId The numeric id of the proposed vote
     /// @dev Auto discovery is attempted and if possible the method will proceed using the discovered shares
-    function voteFor(uint256 _proposalId) external requireVoteOpen(_proposalId) requireNoVeto(_proposalId) {
+    function voteFor(uint256 _proposalId) external requireVoteOpen(_proposalId) requireVoteAllowed(_proposalId) {
         uint256[] memory _shareList = _voterClass.discover(msg.sender);
         uint256 count = 0;
         for (uint256 i = 0; i < _shareList.length; i++) {
@@ -191,7 +191,11 @@ contract CollectiveGovernance is Governance, VoteStrategy, ERC165 {
     /// @notice cast an affirmative vote for the measure by id
     /// @param _proposalId The numeric id of the proposed vote
     /// @param _tokenId The id of a token or share representing the right to vote
-    function voteFor(uint256 _proposalId, uint256 _tokenId) external requireVoteOpen(_proposalId) requireNoVeto(_proposalId) {
+    function voteFor(uint256 _proposalId, uint256 _tokenId)
+        external
+        requireVoteOpen(_proposalId)
+        requireVoteAllowed(_proposalId)
+    {
         uint256 count = _storage.voteForByShare(_proposalId, msg.sender, _tokenId);
         if (count > 0) {
             emit VoteTally(_proposalId, msg.sender, count);
@@ -206,7 +210,7 @@ contract CollectiveGovernance is Governance, VoteStrategy, ERC165 {
     function voteFor(uint256 _proposalId, uint256[] memory _tokenIdList)
         external
         requireVoteOpen(_proposalId)
-        requireNoVeto(_proposalId)
+        requireVoteAllowed(_proposalId)
     {
         uint256 count = 0;
         for (uint256 i = 0; i < _tokenIdList.length; i++) {
@@ -222,7 +226,7 @@ contract CollectiveGovernance is Governance, VoteStrategy, ERC165 {
     /// @notice cast an against vote by id
     /// @dev auto discovery is attempted and if possible the method will proceed using the discovered shares
     /// @param _proposalId The numeric id of the proposed vote
-    function voteAgainst(uint256 _proposalId) public requireVoteOpen(_proposalId) requireNoVeto(_proposalId) {
+    function voteAgainst(uint256 _proposalId) public requireVoteOpen(_proposalId) requireVoteAllowed(_proposalId) {
         uint256[] memory _shareList = _voterClass.discover(msg.sender);
         uint256 count = 0;
         for (uint256 i = 0; i < _shareList.length; i++) {
@@ -239,7 +243,11 @@ contract CollectiveGovernance is Governance, VoteStrategy, ERC165 {
     /// @notice cast an against vote by id
     /// @param _proposalId The numeric id of the proposed vote
     /// @param _tokenId The id of a token or share representing the right to vote
-    function voteAgainst(uint256 _proposalId, uint256 _tokenId) external requireVoteOpen(_proposalId) requireNoVeto(_proposalId) {
+    function voteAgainst(uint256 _proposalId, uint256 _tokenId)
+        external
+        requireVoteOpen(_proposalId)
+        requireVoteAllowed(_proposalId)
+    {
         uint256 count = _storage.voteAgainstByShare(_proposalId, msg.sender, _tokenId);
         if (count > 0) {
             emit VoteTally(_proposalId, msg.sender, count);
@@ -254,7 +262,7 @@ contract CollectiveGovernance is Governance, VoteStrategy, ERC165 {
     function voteAgainst(uint256 _proposalId, uint256[] memory _tokenIdList)
         external
         requireVoteOpen(_proposalId)
-        requireNoVeto(_proposalId)
+        requireVoteAllowed(_proposalId)
     {
         uint256 count = 0;
         for (uint256 i = 0; i < _tokenIdList.length; i++) {
@@ -270,7 +278,7 @@ contract CollectiveGovernance is Governance, VoteStrategy, ERC165 {
     /// @notice abstain from vote by id
     /// @dev auto discovery is attempted and if possible the method will proceed using the discovered shares
     /// @param _proposalId The numeric id of the proposed vote
-    function abstainFrom(uint256 _proposalId) external requireVoteOpen(_proposalId) requireNoVeto(_proposalId) {
+    function abstainFrom(uint256 _proposalId) external requireVoteOpen(_proposalId) requireVoteAllowed(_proposalId) {
         uint256[] memory _shareList = _voterClass.discover(msg.sender);
         uint256 count = 0;
         for (uint256 i = 0; i < _shareList.length; i++) {
@@ -287,7 +295,11 @@ contract CollectiveGovernance is Governance, VoteStrategy, ERC165 {
     /// @notice abstain from vote by id
     /// @param _proposalId The numeric id of the proposed vote
     /// @param _tokenId The id of a token or share representing the right to vote
-    function abstainFrom(uint256 _proposalId, uint256 _tokenId) external requireVoteOpen(_proposalId) requireNoVeto(_proposalId) {
+    function abstainFrom(uint256 _proposalId, uint256 _tokenId)
+        external
+        requireVoteOpen(_proposalId)
+        requireVoteAllowed(_proposalId)
+    {
         uint256 count = _storage.abstainForShare(_proposalId, msg.sender, _tokenId);
         if (count > 0) {
             emit AbstentionTally(_proposalId, msg.sender, count);
@@ -302,7 +314,7 @@ contract CollectiveGovernance is Governance, VoteStrategy, ERC165 {
     function abstainFrom(uint256 _proposalId, uint256[] memory _tokenIdList)
         external
         requireVoteOpen(_proposalId)
-        requireNoVeto(_proposalId)
+        requireVoteAllowed(_proposalId)
     {
         uint256 count = 0;
         for (uint256 i = 0; i < _tokenIdList.length; i++) {
@@ -319,7 +331,7 @@ contract CollectiveGovernance is Governance, VoteStrategy, ERC165 {
     /// @dev Only applies to affirmative vote.
     /// auto discovery is attempted and if possible the method will proceed using the discovered shares
     /// @param _proposalId The numeric id of the proposed vote
-    function undoVote(uint256 _proposalId) external requireVoteOpen(_proposalId) requireNoVeto(_proposalId) {
+    function undoVote(uint256 _proposalId) external requireVoteOpen(_proposalId) requireVoteAllowed(_proposalId) {
         uint256[] memory _shareList = _voterClass.discover(msg.sender);
         uint256 count = 0;
         for (uint256 i = 0; i < _shareList.length; i++) {
@@ -337,7 +349,11 @@ contract CollectiveGovernance is Governance, VoteStrategy, ERC165 {
     /// @dev only applies to affirmative vote
     /// @param _proposalId The numeric id of the proposed vote
     /// @param _tokenId The id of a token or share representing the right to vote
-    function undoVote(uint256 _proposalId, uint256 _tokenId) external requireVoteOpen(_proposalId) requireNoVeto(_proposalId) {
+    function undoVote(uint256 _proposalId, uint256 _tokenId)
+        external
+        requireVoteOpen(_proposalId)
+        requireVoteAllowed(_proposalId)
+    {
         uint256 count = _storage.undoVoteById(_proposalId, msg.sender, _tokenId);
         if (count > 0) {
             emit VoteUndo(_proposalId, msg.sender, count);
@@ -353,7 +369,7 @@ contract CollectiveGovernance is Governance, VoteStrategy, ERC165 {
         external
         requireElectorSupervisor(_proposalId)
         requireVoteOpen(_proposalId)
-        requireNoVeto(_proposalId)
+        requireVoteAllowed(_proposalId)
     {
         _storage.veto(_proposalId, msg.sender);
     }
@@ -364,8 +380,8 @@ contract CollectiveGovernance is Governance, VoteStrategy, ERC165 {
     function getVoteSucceeded(uint256 _proposalId)
         external
         view
+        requireVoteAllowed(_proposalId)
         requireVoteClosed(_proposalId)
-        requireNoVeto(_proposalId)
         returns (bool)
     {
         _storage.validOrRevert(_proposalId);
@@ -386,6 +402,21 @@ contract CollectiveGovernance is Governance, VoteStrategy, ERC165 {
     /// @return address The address of the store
     function getStorageAddress() external view returns (address) {
         return address(_storage);
+    }
+
+    /// @notice cancel a proposal if it is not yet open
+    /// @dev proposal must be finalized and ready but voting must not yet be open
+    /// @param _proposalId The numeric id of the proposed vote
+    function cancel(uint256 _proposalId) public requireElectorSupervisor(_proposalId) {
+        _storage.validOrRevert(_proposalId);
+        uint256 _startBlock = _storage.startBlock(_proposalId);
+        require(!isVoteOpenByProposalId[_proposalId] && (_startBlock == 0 || block.number <= _startBlock), "Not possible");
+        if (!_storage.isReady(_proposalId)) {
+            _storage.makeReady(_proposalId, msg.sender);
+            emit ProposalOpen(_proposalId);
+        }
+        _storage.cancel(_proposalId, msg.sender);
+        emit ProposalClosed(_proposalId);
     }
 
     /// @notice return the name of this implementation
