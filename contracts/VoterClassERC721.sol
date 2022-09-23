@@ -35,7 +35,9 @@ pragma solidity ^0.8.15;
 import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
 import "@openzeppelin/contracts/interfaces/IERC721.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/IERC721Enumerable.sol";
-import "./VoterClass.sol";
+
+import "../contracts/Constant.sol";
+import "../contracts/VoterClass.sol";
 
 /// @title ERC721 Implementation of VoterClass
 /// @notice This contract implements a voter pool based on ownership of an ERC-721 token.
@@ -45,7 +47,6 @@ import "./VoterClass.sol";
 /// then vote by specific tokenId is still supported
 contract VoterClassERC721 is VoterClass, ERC165 {
     string public constant NAME = "collective.xyz VoterClassERC721";
-    uint32 public constant VERSION_1 = 1;
 
     address private immutable _contractAddress;
 
@@ -138,6 +139,6 @@ contract VoterClassERC721 is VoterClass, ERC165 {
     /// @notice return the version of this implementation
     /// @return uint32 version number
     function version() external pure returns (uint32) {
-        return VERSION_1;
+        return Constant.VERSION_1;
     }
 }

@@ -46,8 +46,9 @@ interface Builder is IERC165 {
     event BuilderVoterClassAdded(address creator, string name, uint32 version);
 
     struct GovernanceProperties {
-        address[] _supervisorList;
-        VoterClass _class;
+        uint256 minimumVoteDuration;
+        address[] supervisorList;
+        VoterClass class;
     }
 
     /// @notice return the name of this implementation
@@ -78,6 +79,12 @@ interface Builder is IERC165 {
     /// @param _class the address of the VoterClass contract
     /// @return Builder this contract
     function withVoterClass(VoterClass _class) external returns (Builder);
+
+    /// @notice set the minimum duration to the specified value
+    /// @dev at least one day is required
+    /// @param _minimumDuration the duration in seconds
+    /// @return Builder this contract
+    function withMinimumDuration(uint256 _minimumDuration) external returns (Builder);
 
     /// @notice build the specified contract
     /// @dev contructs a new contract and may require a large gas fee, does not reinitialize context

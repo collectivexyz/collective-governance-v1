@@ -34,7 +34,8 @@ pragma solidity ^0.8.15;
 
 import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
 
-import "./VoterClass.sol";
+import "../contracts/Constant.sol";
+import "../contracts/VoterClass.sol";
 
 /// @title interface for VoterPool
 /// @notice sets the requirements for contracts implementing a VoterPool
@@ -65,7 +66,6 @@ contract VoterClassVoterPool is VoterClass, ERC165 {
     event BurnVoter(address voter);
 
     string public constant NAME = "collective.xyz VoterClassVoterPool";
-    uint32 public constant VERSION_1 = 1;
 
     address private immutable _cognate;
 
@@ -197,6 +197,6 @@ contract VoterClassVoterPool is VoterClass, ERC165 {
     /// @notice return the version of this implementation
     /// @return uint32 version number
     function version() external pure returns (uint32) {
-        return VERSION_1;
+        return Constant.VERSION_1;
     }
 }

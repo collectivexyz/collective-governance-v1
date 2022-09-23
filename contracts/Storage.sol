@@ -45,7 +45,7 @@ interface Storage is IERC165 {
     event InitializeProposal(uint256 proposalId, address owner);
     event AddSupervisor(uint256 proposalId, address supervisor);
     event BurnSupervisor(uint256 proposalId, address supervisor);
-    event SetQuorumThreshold(uint256 proposalId, uint256 passThreshold);
+    event SetQuorumRequired(uint256 proposalId, uint256 passThreshold);
     event UndoVoteEnabled(uint256 proposalId);
 
     event VoteCast(uint256 proposalId, address voter, uint256 shareId, uint256 totalVotesCast);
@@ -139,11 +139,11 @@ interface Storage is IERC165 {
     /// @notice set the minimum number of participants for a successful outcome
     /// @dev requires supervisor
     /// @param _proposalId the id of the proposal
-    /// @param _threshold the quorum number
+    /// @param _quorum the number required for quorum
     /// @param _sender original wallet for this request
-    function setQuorumThreshold(
+    function setQuorumRequired(
         uint256 _proposalId,
-        uint256 _threshold,
+        uint256 _quorum,
         address _sender
     ) external;
 
@@ -169,7 +169,7 @@ interface Storage is IERC165 {
     /// @param _proposalId the id of the proposal
     /// @param _voteDuration the quorum number
     /// @param _sender original wallet for this request
-    function setRequiredVoteDuration(
+    function setVoteDuration(
         uint256 _proposalId,
         uint256 _voteDuration,
         address _sender
@@ -352,6 +352,10 @@ interface Storage is IERC165 {
     /// @notice get the maxiumum possible for the pass threshold
     /// @return uint256 the maximum value
     function maxPassThreshold() external pure returns (uint256);
+
+    /// @notice get the vote duration in seconds
+    /// @return uint256 the least duration of a vote in seconds
+    function minimumVoteDuration() external view returns (uint256);
 
     /// @notice return the name of this implementation
     /// @return string memory representation of name

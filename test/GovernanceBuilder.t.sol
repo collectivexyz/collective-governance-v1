@@ -32,6 +32,34 @@ contract GovernanceBuilderTest is Test {
         assertTrue(Storage(_storage).isSupervisor(1, _SUPERVISOR));
     }
 
+    function testWithVoteDuration() public {
+        VoterClass _class = new VoterClassNullObject();
+        address _governance = _builder
+            .aGovernance()
+            .withMinimumDuration(2 * Constant.MINIMUM_VOTE_DURATION)
+            .withSupervisor(_SUPERVISOR)
+            .withVoterClass(_class)
+            .build();
+        Governance _gov = Governance(_governance);
+        _gov.propose();
+        address _storage = _gov.getStorageAddress();
+        assertEq(Storage(_storage).minimumVoteDuration(), 2 * Constant.MINIMUM_VOTE_DURATION);
+    }
+
+    function testWithoutVoteDuration() public {
+        VoterClass _class = new VoterClassNullObject();
+        address _governance = _builder.aGovernance().withSupervisor(_SUPERVISOR).withVoterClass(_class).build();
+        Governance _gov = Governance(_governance);
+        _gov.propose();
+        address _storage = _gov.getStorageAddress();
+        assertEq(Storage(_storage).minimumVoteDuration(), 86400);
+    }
+
+    function testFailWithVoteDurationThatIsTooShort() public {
+        VoterClass _class = new VoterClassNullObject();
+        _builder.aGovernance().withMinimumDuration(86399).withSupervisor(_SUPERVISOR).withVoterClass(_class).build();
+    }
+
     function testWithOpenVote() public {
         VoterClass _class = new VoterClassOpenVote(1);
         address _governance = _builder.aGovernance().withSupervisor(_SUPERVISOR).withVoterClass(_class).build();
@@ -70,5 +98,12 @@ contract GovernanceBuilderTest is Test {
 
     function testFailVoterClassIsRequired() public {
         _builder.aGovernance().withSupervisor(_SUPERVISOR).build();
+    }
+
+    function testFailResetBuilder() public {
+        VoterClass _class = new VoterClassNullObject();
+        _builder.aGovernance().withSupervisor(_SUPERVISOR).withVoterClass(_class).build();
+        _builder.reset();
+        _builder.build();
     }
 }

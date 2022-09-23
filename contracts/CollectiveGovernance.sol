@@ -69,11 +69,15 @@ contract CollectiveGovernance is Governance, VoteStrategy, ERC165 {
     /// @notice voting is open or not
     mapping(uint256 => bool) private isVoteOpenByProposalId;
 
-    constructor(address[] memory _supervisorList, VoterClass _class) {
+    constructor(
+        address[] memory _supervisorList,
+        VoterClass _class,
+        uint256 minimumDuration
+    ) {
         _voterClass = _class;
         _projectSupervisorList = _supervisorList;
         require(_class.isFinal(), "Voter Class is modifiable");
-        _storage = new GovernanceStorage(_voterClass);
+        _storage = new GovernanceStorage(_voterClass, minimumDuration);
     }
 
     modifier requireVoteOpen(uint256 _proposalId) {
@@ -117,6 +121,16 @@ contract CollectiveGovernance is Governance, VoteStrategy, ERC165 {
 
     /// @notice configure an existing proposal by id
     /// @param _proposalId The numeric id of the proposed vote
+    /// @param _quorumRequired The threshold of participation that is required for a successful conclusion of voting
+    function configure(uint256 _proposalId, uint256 _quorumRequired) external requireElectorSupervisor(_proposalId) {
+        address _sender = msg.sender;
+        _storage.setQuorumRequired(_proposalId, _quorumRequired, _sender);
+        _storage.makeFinal(_proposalId, _sender);
+        emit ProposalOpen(_proposalId);
+    }
+
+    /// @notice configure an existing proposal by id
+    /// @param _proposalId The numeric id of the proposed vote
     /// @param _quorumThreshold The threshold of participation that is required for a successful conclusion of voting
     /// @param _requiredDuration The minimum time for voting to proceed before ending the vote is allowed
     function configure(
@@ -125,8 +139,8 @@ contract CollectiveGovernance is Governance, VoteStrategy, ERC165 {
         uint256 _requiredDuration
     ) external requireElectorSupervisor(_proposalId) {
         address _sender = msg.sender;
-        _storage.setQuorumThreshold(_proposalId, _quorumThreshold, _sender);
-        _storage.setRequiredVoteDuration(_proposalId, _requiredDuration, _sender);
+        _storage.setQuorumRequired(_proposalId, _quorumThreshold, _sender);
+        _storage.setVoteDuration(_proposalId, _requiredDuration, _sender);
         _storage.makeFinal(_proposalId, _sender);
         emit ProposalOpen(_proposalId);
     }
@@ -414,10 +428,6 @@ contract CollectiveGovernance is Governance, VoteStrategy, ERC165 {
         uint256 _startTime = _storage.startTime(_proposalId);
         // solhint-disable-next-line not-rely-on-time
         require(!isVoteOpenByProposalId[_proposalId] && block.timestamp <= _startTime, "Not possible");
-        if (!_storage.isReady(_proposalId)) {
-            _storage.makeReady(_proposalId, msg.sender);
-            emit ProposalOpen(_proposalId);
-        }
         _storage.cancel(_proposalId, msg.sender);
         emit ProposalClosed(_proposalId);
     }

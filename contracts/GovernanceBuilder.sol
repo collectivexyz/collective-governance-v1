@@ -35,6 +35,7 @@ pragma solidity ^0.8.15;
 import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
 import "@openzeppelin/contracts/interfaces/IERC165.sol";
 
+import "../contracts/Constant.sol";
 import "../contracts/Governance.sol";
 import "../contracts/CollectiveGovernance.sol";
 import "../contracts/VoterClass.sol";
@@ -44,14 +45,20 @@ import "../contracts/Builder.sol";
 /// @notice This builder supports creating new instances of the Collective Governance Contract
 contract GovernanceBuilder is Builder, ERC165 {
     string public constant NAME = "collective.xyz governance contract builder";
-    uint32 public constant VERSION_1 = 1;
 
     mapping(address => GovernanceProperties) private _buildMap;
+
+    /// @dev implement the null object pattern requring voter class to be valid
+    VoterClass private immutable _voterClassNull;
+
+    constructor() {
+        _voterClassNull = new VoterClassNullObject();
+    }
 
     /// @notice initialize and create a new builder context for this sender
     /// @return Builder this contract
     function aGovernance() external returns (Builder) {
-        delete _buildMap[msg.sender];
+        clear(msg.sender);
         emit BuilderContractInitialized(msg.sender);
         return this;
     }
@@ -62,7 +69,7 @@ contract GovernanceBuilder is Builder, ERC165 {
     /// @return Builder this contract
     function withSupervisor(address _supervisor) external returns (Builder) {
         GovernanceProperties storage _properties = _buildMap[msg.sender];
-        _properties._supervisorList.push(_supervisor);
+        _properties.supervisorList.push(_supervisor);
         emit BuilderSupervisorAdded(msg.sender, _supervisor);
         return this;
     }
@@ -82,8 +89,18 @@ contract GovernanceBuilder is Builder, ERC165 {
     /// @return Builder this contract
     function withVoterClass(VoterClass _class) public returns (Builder) {
         GovernanceProperties storage _properties = _buildMap[msg.sender];
-        _properties._class = _class;
+        _properties.class = _class;
         emit BuilderVoterClassAdded(msg.sender, _class.name(), _class.version());
+        return this;
+    }
+
+    /// @notice set the minimum duration to the specified value
+    /// @dev at least one day is required
+    /// @param _minimumDuration the duration in seconds
+    /// @return Builder this contract
+    function withMinimumDuration(uint256 _minimumDuration) external returns (Builder) {
+        GovernanceProperties storage _properties = _buildMap[msg.sender];
+        _properties.minimumVoteDuration = _minimumDuration;
         return this;
     }
 
@@ -93,12 +110,31 @@ contract GovernanceBuilder is Builder, ERC165 {
     function build() external returns (address) {
         address _creator = msg.sender;
         GovernanceProperties storage _properties = _buildMap[_creator];
-        require(_properties._supervisorList.length > 0, "Supervisor is required");
-        require(address(_properties._class) != address(0x0), "Voter class is required");
-        Governance _governance = new CollectiveGovernance(_properties._supervisorList, _properties._class);
+        require(_properties.supervisorList.length > 0, "Supervisor required");
+        require(_properties.minimumVoteDuration >= Constant.MINIMUM_VOTE_DURATION, "Longer minimum duration required");
+        require(address(_properties.class) != address(_voterClassNull), "Voter class required");
+        Governance _governance = new CollectiveGovernance(
+            _properties.supervisorList,
+            _properties.class,
+            _properties.minimumVoteDuration
+        );
         address _governanceAddress = address(_governance);
         emit GovernanceContractCreated(_creator, _governanceAddress);
         return _governanceAddress;
+    }
+
+    /// @notice clear and reset resources associated with sender build requests
+    function reset() external {
+        // overwrite to truncate data lifetime
+        clear(msg.sender);
+        delete _buildMap[msg.sender];
+    }
+
+    function clear(address sender) internal {
+        GovernanceProperties storage _properties = _buildMap[sender];
+        _properties.class = _voterClassNull;
+        _properties.supervisorList = new address[](0);
+        _properties.minimumVoteDuration = Constant.MINIMUM_VOTE_DURATION;
     }
 
     /// @notice see ERC-165
@@ -115,6 +151,6 @@ contract GovernanceBuilder is Builder, ERC165 {
     /// @notice return the version of this implementation
     /// @return uint32 version number
     function version() external pure virtual returns (uint32) {
-        return VERSION_1;
+        return Constant.VERSION_1;
     }
 }

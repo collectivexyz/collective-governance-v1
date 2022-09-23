@@ -72,7 +72,7 @@
         "type": "uint256"
       }
     ],
-    "name": "SetQuorumThreshold",
+    "name": "SetQuorumRequired",
     "type": "event"
   },
   {
@@ -181,7 +181,7 @@
       {
         "indexed": false,
         "internalType": "uint256",
-        "name": "startBlock",
+        "name": "startTime",
         "type": "uint256"
       },
       {
@@ -662,7 +662,7 @@
         "type": "address"
       }
     ],
-    "name": "setQuorumThreshold",
+    "name": "setQuorumRequired",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -685,7 +685,7 @@
         "type": "address"
       }
     ],
-    "name": "setRequiredVoteDuration",
+    "name": "setVoteDuration",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -721,7 +721,7 @@
         "type": "uint256"
       }
     ],
-    "name": "startBlock",
+    "name": "startTime",
     "outputs": [
       {
         "internalType": "uint256",

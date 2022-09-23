@@ -35,6 +35,7 @@ pragma solidity ^0.8.15;
 import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
 import "@openzeppelin/contracts/interfaces/IERC165.sol";
 
+import "../contracts/Constant.sol";
 import "../contracts/Storage.sol";
 import "../contracts/VoterClass.sol";
 
@@ -47,12 +48,11 @@ import "../contracts/VoterClass.sol";
 contract GovernanceStorage is Storage, ERC165 {
     /// @notice contract name
     string public constant NAME = "collective.xyz governance storage";
-    uint32 public constant VERSION_1 = 1;
 
-    uint256 public constant UINT_MAX = 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF;
-    uint256 public constant MAXIMUM_QUORUM = UINT_MAX;
-    uint256 public constant MAXIMUM_TIME = UINT_MAX;
-    uint256 public constant MINIMUM_VOTE_DURATION = 1;
+    uint256 public constant MAXIMUM_QUORUM = Constant.UINT_MAX;
+    uint256 public constant MAXIMUM_TIME = Constant.UINT_MAX;
+
+    uint256 private immutable _minimumVoteDuration;
 
     /// @notice only the peer contract may modify the vote
     address private immutable _cognate;
@@ -71,7 +71,9 @@ contract GovernanceStorage is Storage, ERC165 {
 
     /// @notice create a new storage object with VoterClass as the voting population
     /// @param _class the contract that defines the popluation
-    constructor(VoterClass _class) {
+    constructor(VoterClass _class, uint256 minimumDuration) {
+        require(minimumDuration >= Constant.MINIMUM_VOTE_DURATION, "Short vote");
+        _minimumVoteDuration = minimumDuration;
         _cognate = msg.sender;
         _voterClass = _class;
         _proposalCount = 0;
@@ -219,11 +221,11 @@ contract GovernanceStorage is Storage, ERC165 {
     /// @notice set the minimum number of participants for a successful outcome
     /// @dev requires supervisor
     /// @param _proposalId the id of the proposal
-    /// @param _threshold the quorum number
+    /// @param _quorum the number required for quorum
     /// @param _sender original wallet for this request
-    function setQuorumThreshold(
+    function setQuorumRequired(
         uint256 _proposalId,
-        uint256 _threshold,
+        uint256 _quorum,
         address _sender
     )
         external
@@ -233,8 +235,8 @@ contract GovernanceStorage is Storage, ERC165 {
         requireVotingNotReady(_proposalId)
     {
         Proposal storage proposal = proposalMap[_proposalId];
-        proposal.quorumRequired = _threshold;
-        emit SetQuorumThreshold(_proposalId, _threshold);
+        proposal.quorumRequired = _quorum;
+        emit SetQuorumRequired(_proposalId, _quorum);
     }
 
     /// @notice enable the undo feature for this vote
@@ -278,7 +280,7 @@ contract GovernanceStorage is Storage, ERC165 {
     /// @param _proposalId the id of the proposal
     /// @param _voteDuration the quorum number
     /// @param _sender original wallet for this request
-    function setRequiredVoteDuration(
+    function setVoteDuration(
         uint256 _proposalId,
         uint256 _voteDuration,
         address _sender
@@ -289,7 +291,7 @@ contract GovernanceStorage is Storage, ERC165 {
         requireElectorSupervisor(_proposalId, _sender)
         requireVotingNotReady(_proposalId)
     {
-        require(_voteDuration >= MINIMUM_VOTE_DURATION, "Voting duration is not valid");
+        require(_voteDuration >= Constant.MINIMUM_VOTE_DURATION, "Short vote");
         Proposal storage proposal = proposalMap[_proposalId];
         proposal.voteDuration = _voteDuration;
     }
@@ -486,7 +488,7 @@ contract GovernanceStorage is Storage, ERC165 {
         proposal.proposalSender = _sender;
         proposal.quorumRequired = MAXIMUM_QUORUM;
         proposal.voteDelay = 0;
-        proposal.voteDuration = MINIMUM_VOTE_DURATION;
+        proposal.voteDuration = Constant.MINIMUM_VOTE_DURATION;
         proposal.startTime = MAXIMUM_TIME;
         proposal.endTime = MAXIMUM_TIME;
         proposal.forVotes = 0;
@@ -677,6 +679,12 @@ contract GovernanceStorage is Storage, ERC165 {
         return interfaceId == type(Storage).interfaceId || super.supportsInterface(interfaceId);
     }
 
+    /// @notice get the vote duration in seconds
+    /// @return uint256 the least duration of a vote in seconds
+    function minimumVoteDuration() external view returns (uint256) {
+        return _minimumVoteDuration;
+    }
+
     /// @notice get the maxiumum possible for the pass threshold
     /// @return uint256 the maximum value
     function maxPassThreshold() external pure returns (uint256) {
@@ -692,6 +700,6 @@ contract GovernanceStorage is Storage, ERC165 {
     /// @notice return the version of this implementation
     /// @return uint32 version number
     function version() public pure virtual returns (uint32) {
-        return VERSION_1;
+        return Constant.VERSION_1;
     }
 }

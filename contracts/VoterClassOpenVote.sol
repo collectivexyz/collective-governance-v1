@@ -34,7 +34,8 @@ pragma solidity ^0.8.15;
 
 import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
 
-import "./VoterClass.sol";
+import "../contracts/Constant.sol";
+import "../contracts/VoterClass.sol";
 
 /// @notice OpenVote VoterClass allows every wallet to participate in an open vote
 contract VoterClassOpenVote is VoterClass, ERC165 {
@@ -107,6 +108,6 @@ contract VoterClassOpenVote is VoterClass, ERC165 {
     /// @notice return the version of this implementation
     /// @return uint32 version number
     function version() external pure returns (uint32) {
-        return VERSION_1;
+        return Constant.VERSION_1;
     }
 }

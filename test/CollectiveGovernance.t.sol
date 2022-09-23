@@ -8,6 +8,7 @@ import "@openzeppelin/contracts/token/ERC721/extensions/IERC721Enumerable.sol";
 
 import "forge-std/Test.sol";
 
+import "../contracts/Constant.sol";
 import "../contracts/VoterClass.sol";
 import "../contracts/VoterClassVoterPool.sol";
 import "../contracts/VoterClassERC721.sol";
@@ -20,7 +21,7 @@ import "../contracts/GovernanceBuilder.sol";
 import "./MockERC721.sol";
 
 contract CollectiveGovernanceTest is Test {
-    uint256 private constant UINT256MAX = 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF;
+    uint256 private constant UINT256MAX = Constant.UINT_MAX;
 
     address private constant _OWNER = address(0x1);
     address private constant _SUPERVISOR = address(0x123);
@@ -64,7 +65,7 @@ contract CollectiveGovernanceTest is Test {
         VoterClass _class = new VoterClassVoterPool(1);
         address[] memory superList = new address[](1);
         superList[0] = _SUPERVISOR;
-        new CollectiveGovernance(superList, _class);
+        new CollectiveGovernance(superList, _class, Constant.MINIMUM_VOTE_DURATION);
     }
 
     function testGetStorageAddress() public {
@@ -86,7 +87,7 @@ contract CollectiveGovernanceTest is Test {
 
     function testConfigure721() public {
         vm.startPrank(_SUPERVISOR, _SUPERVISOR);
-        governance.configure(PROPOSAL_ID, 2, 2);
+        governance.configure(PROPOSAL_ID, 2);
         governance.openVote(PROPOSAL_ID);
         vm.stopPrank();
         assertTrue(governance.isOpen(PROPOSAL_ID));
@@ -96,7 +97,7 @@ contract CollectiveGovernanceTest is Test {
 
     function testCastSimpleVote721() public {
         vm.startPrank(_SUPERVISOR, _SUPERVISOR);
-        governance.configure(PROPOSAL_ID, 2, 2);
+        governance.configure(PROPOSAL_ID, 2);
         governance.openVote(PROPOSAL_ID);
         vm.stopPrank();
         vm.prank(_VOTER1);
@@ -106,7 +107,7 @@ contract CollectiveGovernanceTest is Test {
 
     function testCastSimpleVote721BadShare() public {
         vm.startPrank(_SUPERVISOR, _SUPERVISOR);
-        governance.configure(PROPOSAL_ID, 2, 2);
+        governance.configure(PROPOSAL_ID, 2);
         governance.openVote(PROPOSAL_ID);
         vm.stopPrank();
         vm.prank(_VOTER1);
@@ -116,7 +117,7 @@ contract CollectiveGovernanceTest is Test {
 
     function testCastSimpleVote721NoShare() public {
         vm.startPrank(_SUPERVISOR, _SUPERVISOR);
-        governance.configure(PROPOSAL_ID, 2, 2);
+        governance.configure(PROPOSAL_ID, 2);
         governance.openVote(PROPOSAL_ID);
         vm.stopPrank();
         vm.expectRevert("No such token");
@@ -126,7 +127,7 @@ contract CollectiveGovernanceTest is Test {
 
     function testCastSimpleVoteOpen() public {
         vm.startPrank(_SUPERVISOR, _SUPERVISOR);
-        governance.configure(PROPOSAL_ID, 2, 2);
+        governance.configure(PROPOSAL_ID, 2);
         governance.openVote(PROPOSAL_ID);
         vm.stopPrank();
         vm.prank(_VOTER1);
@@ -136,7 +137,7 @@ contract CollectiveGovernanceTest is Test {
 
     function testCastMultipleVote() public {
         vm.startPrank(_SUPERVISOR, _SUPERVISOR);
-        governance.configure(PROPOSAL_ID, 5, 2);
+        governance.configure(PROPOSAL_ID, 5);
         governance.openVote(PROPOSAL_ID);
         vm.stopPrank();
         vm.prank(_VOTER1);
@@ -146,7 +147,7 @@ contract CollectiveGovernanceTest is Test {
 
     function testCastMultipleVoteAgainst() public {
         vm.startPrank(_SUPERVISOR, _SUPERVISOR);
-        governance.configure(PROPOSAL_ID, 5, 2);
+        governance.configure(PROPOSAL_ID, 5);
         governance.openVote(PROPOSAL_ID);
         vm.stopPrank();
         vm.prank(_VOTER1);
@@ -156,7 +157,7 @@ contract CollectiveGovernanceTest is Test {
 
     function testCastMultipleVoteAbstain() public {
         vm.startPrank(_SUPERVISOR, _SUPERVISOR);
-        governance.configure(PROPOSAL_ID, 5, 2);
+        governance.configure(PROPOSAL_ID, 5);
         governance.openVote(PROPOSAL_ID);
         vm.stopPrank();
         vm.prank(_VOTER1);
@@ -166,18 +167,18 @@ contract CollectiveGovernanceTest is Test {
 
     function testCastSimpleVoteWhileActive() public {
         vm.startPrank(_SUPERVISOR, _SUPERVISOR);
-        governance.configure(PROPOSAL_ID, 2, 10);
+        governance.configure(PROPOSAL_ID, 2);
         governance.openVote(PROPOSAL_ID);
         vm.stopPrank();
         vm.prank(_VOTER1);
-        vm.warp(block.timestamp + 2);
+        vm.warp(block.timestamp + 3);
         governance.voteFor(PROPOSAL_ID, TOKEN_ID1);
         assertEq(_storage.forVotes(PROPOSAL_ID), 1);
     }
 
     function testNonVoter() public {
         vm.startPrank(_SUPERVISOR, _SUPERVISOR);
-        governance.configure(PROPOSAL_ID, 2, 2);
+        governance.configure(PROPOSAL_ID, 2);
         governance.openVote(PROPOSAL_ID);
         vm.stopPrank();
         vm.expectRevert("Not owner");
@@ -187,7 +188,7 @@ contract CollectiveGovernanceTest is Test {
 
     function testVoteAgainst() public {
         vm.startPrank(_SUPERVISOR, _SUPERVISOR);
-        governance.configure(PROPOSAL_ID, 2, 2);
+        governance.configure(PROPOSAL_ID, 2);
         governance.openVote(PROPOSAL_ID);
         vm.stopPrank();
         vm.prank(_VOTER1);
@@ -197,7 +198,7 @@ contract CollectiveGovernanceTest is Test {
 
     function testVoteAgainstNonVoter() public {
         vm.startPrank(_SUPERVISOR, _SUPERVISOR);
-        governance.configure(PROPOSAL_ID, 2, 2);
+        governance.configure(PROPOSAL_ID, 2);
         governance.openVote(PROPOSAL_ID);
         vm.stopPrank();
         vm.expectRevert("Not owner");
@@ -207,7 +208,7 @@ contract CollectiveGovernanceTest is Test {
 
     function testAbstain() public {
         vm.startPrank(_SUPERVISOR, _SUPERVISOR);
-        governance.configure(PROPOSAL_ID, 2, 2);
+        governance.configure(PROPOSAL_ID, 2);
         governance.openVote(PROPOSAL_ID);
         vm.stopPrank();
         vm.prank(_VOTER1);
@@ -217,7 +218,7 @@ contract CollectiveGovernanceTest is Test {
 
     function testAbstentionNonVoter() public {
         vm.startPrank(_SUPERVISOR, _SUPERVISOR);
-        governance.configure(PROPOSAL_ID, 2, 2);
+        governance.configure(PROPOSAL_ID, 2);
         governance.openVote(PROPOSAL_ID);
         vm.stopPrank();
         vm.prank(_NOT_VOTER);
@@ -227,8 +228,13 @@ contract CollectiveGovernanceTest is Test {
 
     function testOpenVote() public {
         vm.startPrank(_governanceAddress);
+<<<<<<< HEAD
         _storage.setQuorumThreshold(PROPOSAL_ID, 75, _SUPERVISOR);
         _storage.makeFinal(PROPOSAL_ID, _SUPERVISOR);
+=======
+        _storage.setQuorumRequired(PROPOSAL_ID, 75, _SUPERVISOR);
+        _storage.makeReady(PROPOSAL_ID, _SUPERVISOR);
+>>>>>>> 75a81cf (13: minimum vote duration is one day)
         vm.stopPrank();
         vm.prank(_SUPERVISOR);
         governance.openVote(PROPOSAL_ID);
@@ -237,7 +243,7 @@ contract CollectiveGovernanceTest is Test {
 
     function testOpenVoteRequiresReady() public {
         vm.prank(_governanceAddress);
-        _storage.setQuorumThreshold(PROPOSAL_ID, 2, _SUPERVISOR);
+        _storage.setQuorumRequired(PROPOSAL_ID, 2, _SUPERVISOR);
         vm.expectRevert("Voting is not ready");
         vm.prank(_SUPERVISOR);
         governance.openVote(PROPOSAL_ID);
@@ -245,8 +251,13 @@ contract CollectiveGovernanceTest is Test {
 
     function testOwnerOpenVote() public {
         vm.startPrank(_governanceAddress);
+<<<<<<< HEAD
         _storage.setQuorumThreshold(PROPOSAL_ID, 2, _SUPERVISOR);
         _storage.makeFinal(PROPOSAL_ID, _SUPERVISOR);
+=======
+        _storage.setQuorumRequired(PROPOSAL_ID, 2, _SUPERVISOR);
+        _storage.makeReady(PROPOSAL_ID, _SUPERVISOR);
+>>>>>>> 75a81cf (13: minimum vote duration is one day)
         vm.stopPrank();
         vm.prank(_OWNER);
         governance.openVote(PROPOSAL_ID);
@@ -255,13 +266,19 @@ contract CollectiveGovernanceTest is Test {
     function testOwnerEndVote() public {
         uint256 blockTimestamp = block.timestamp;
         vm.startPrank(_governanceAddress);
+<<<<<<< HEAD
         _storage.setQuorumThreshold(PROPOSAL_ID, 2, _SUPERVISOR);
         _storage.makeFinal(PROPOSAL_ID, _SUPERVISOR);
+=======
+        _storage.setQuorumRequired(PROPOSAL_ID, 2, _SUPERVISOR);
+        _storage.setVoteDuration(PROPOSAL_ID, Constant.MINIMUM_VOTE_DURATION, _SUPERVISOR);
+        _storage.makeReady(PROPOSAL_ID, _SUPERVISOR);
+>>>>>>> 75a81cf (13: minimum vote duration is one day)
         vm.stopPrank();
         vm.prank(_SUPERVISOR);
         governance.openVote(PROPOSAL_ID);
         assertTrue(governance.isOpen(PROPOSAL_ID));
-        vm.warp(blockTimestamp + 2);
+        vm.warp(blockTimestamp + Constant.MINIMUM_VOTE_DURATION);
         vm.prank(_OWNER);
         governance.endVote(PROPOSAL_ID);
         assertFalse(governance.isOpen(PROPOSAL_ID));
@@ -269,8 +286,13 @@ contract CollectiveGovernanceTest is Test {
 
     function testEarlyEndVote() public {
         vm.startPrank(_governanceAddress);
+<<<<<<< HEAD
         _storage.setQuorumThreshold(PROPOSAL_ID, 2, _SUPERVISOR);
         _storage.makeFinal(PROPOSAL_ID, _SUPERVISOR);
+=======
+        _storage.setQuorumRequired(PROPOSAL_ID, 2, _SUPERVISOR);
+        _storage.makeReady(PROPOSAL_ID, _SUPERVISOR);
+>>>>>>> 75a81cf (13: minimum vote duration is one day)
         vm.stopPrank();
         vm.prank(_SUPERVISOR);
         governance.openVote(PROPOSAL_ID);
@@ -282,8 +304,13 @@ contract CollectiveGovernanceTest is Test {
 
     function testDoubleOpenVote() public {
         vm.startPrank(_governanceAddress);
+<<<<<<< HEAD
         _storage.setQuorumThreshold(PROPOSAL_ID, 2, _SUPERVISOR);
         _storage.makeFinal(PROPOSAL_ID, _SUPERVISOR);
+=======
+        _storage.setQuorumRequired(PROPOSAL_ID, 2, _SUPERVISOR);
+        _storage.makeReady(PROPOSAL_ID, _SUPERVISOR);
+>>>>>>> 75a81cf (13: minimum vote duration is one day)
         vm.stopPrank();
         vm.prank(_SUPERVISOR);
         governance.openVote(PROPOSAL_ID);
@@ -294,8 +321,13 @@ contract CollectiveGovernanceTest is Test {
 
     function testEndVoteWhenNotOpen() public {
         vm.startPrank(_governanceAddress);
+<<<<<<< HEAD
         _storage.setQuorumThreshold(PROPOSAL_ID, 2, _SUPERVISOR);
         _storage.makeFinal(PROPOSAL_ID, _SUPERVISOR);
+=======
+        _storage.setQuorumRequired(PROPOSAL_ID, 2, _SUPERVISOR);
+        _storage.makeReady(PROPOSAL_ID, _SUPERVISOR);
+>>>>>>> 75a81cf (13: minimum vote duration is one day)
         vm.stopPrank();
         vm.expectRevert("Voting is closed");
         vm.prank(_SUPERVISOR);
@@ -308,7 +340,7 @@ contract CollectiveGovernanceTest is Test {
         _governanceAddress = buildVoterPool();
         governance = CollectiveGovernance(_governanceAddress);
         governance.propose();
-        governance.configure(PROPOSAL_ID, 2, 2);
+        governance.configure(PROPOSAL_ID, 2);
         vm.prank(_SUPERVISOR);
         governance.openVote(PROPOSAL_ID);
         vm.expectRevert("Not voter");
@@ -324,8 +356,13 @@ contract CollectiveGovernanceTest is Test {
         governance.propose();
         _storage = Storage(governance.getStorageAddress());
         vm.startPrank(_governanceAddress);
+<<<<<<< HEAD
         _storage.setQuorumThreshold(PROPOSAL_ID, 2, _SUPERVISOR);
         _storage.makeFinal(PROPOSAL_ID, _SUPERVISOR);
+=======
+        _storage.setQuorumRequired(PROPOSAL_ID, 2, _SUPERVISOR);
+        _storage.makeReady(PROPOSAL_ID, _SUPERVISOR);
+>>>>>>> 75a81cf (13: minimum vote duration is one day)
         vm.stopPrank();
         vm.prank(_SUPERVISOR);
         governance.openVote(PROPOSAL_ID);
@@ -340,8 +377,13 @@ contract CollectiveGovernanceTest is Test {
         governance.propose();
         vm.startPrank(_governanceAddress);
         _storage = Storage(governance.getStorageAddress());
+<<<<<<< HEAD
         _storage.setQuorumThreshold(PROPOSAL_ID, 2, _SUPERVISOR);
         _storage.makeFinal(PROPOSAL_ID, _SUPERVISOR);
+=======
+        _storage.setQuorumRequired(PROPOSAL_ID, 2, _SUPERVISOR);
+        _storage.makeReady(PROPOSAL_ID, _SUPERVISOR);
+>>>>>>> 75a81cf (13: minimum vote duration is one day)
         vm.stopPrank();
         vm.expectRevert("Voting is closed");
         vm.prank(_VOTER1);
@@ -354,8 +396,13 @@ contract CollectiveGovernanceTest is Test {
         governance.propose();
         vm.startPrank(_governanceAddress);
         _storage = Storage(governance.getStorageAddress());
+<<<<<<< HEAD
         _storage.setQuorumThreshold(PROPOSAL_ID, 2, _SUPERVISOR);
         _storage.makeFinal(PROPOSAL_ID, _SUPERVISOR);
+=======
+        _storage.setQuorumRequired(PROPOSAL_ID, 2, _SUPERVISOR);
+        _storage.makeReady(PROPOSAL_ID, _SUPERVISOR);
+>>>>>>> 75a81cf (13: minimum vote duration is one day)
         vm.stopPrank();
         vm.prank(_SUPERVISOR);
         governance.openVote(PROPOSAL_ID);
@@ -380,8 +427,13 @@ contract CollectiveGovernanceTest is Test {
         governance.propose();
         vm.startPrank(_governanceAddress);
         _storage = Storage(governance.getStorageAddress());
+<<<<<<< HEAD
         _storage.setQuorumThreshold(PROPOSAL_ID, 2, _SUPERVISOR);
         _storage.makeFinal(PROPOSAL_ID, _SUPERVISOR);
+=======
+        _storage.setQuorumRequired(PROPOSAL_ID, 2, _SUPERVISOR);
+        _storage.makeReady(PROPOSAL_ID, _SUPERVISOR);
+>>>>>>> 75a81cf (13: minimum vote duration is one day)
         vm.stopPrank();
         vm.prank(_SUPERVISOR);
         governance.openVote(PROPOSAL_ID);
@@ -394,7 +446,7 @@ contract CollectiveGovernanceTest is Test {
 
     function testCastDoubleVoteOnTransferToken() public {
         vm.startPrank(_SUPERVISOR, _SUPERVISOR);
-        governance.configure(PROPOSAL_ID, 2, 2);
+        governance.configure(PROPOSAL_ID, 2);
         governance.openVote(PROPOSAL_ID);
         vm.stopPrank();
         vm.prank(_VOTER1);
@@ -413,8 +465,13 @@ contract CollectiveGovernanceTest is Test {
         vm.startPrank(_governanceAddress);
         _storage = Storage(governance.getStorageAddress());
         _storage.enableUndoVote(PROPOSAL_ID, _SUPERVISOR);
+<<<<<<< HEAD
         _storage.setQuorumThreshold(PROPOSAL_ID, 2, _SUPERVISOR);
         _storage.makeFinal(PROPOSAL_ID, _SUPERVISOR);
+=======
+        _storage.setQuorumRequired(PROPOSAL_ID, 2, _SUPERVISOR);
+        _storage.makeReady(PROPOSAL_ID, _SUPERVISOR);
+>>>>>>> 75a81cf (13: minimum vote duration is one day)
         vm.stopPrank();
         vm.expectRevert("Voting is closed");
         vm.prank(_VOTER1);
@@ -428,8 +485,13 @@ contract CollectiveGovernanceTest is Test {
         vm.startPrank(_governanceAddress);
         _storage = Storage(governance.getStorageAddress());
         _storage.enableUndoVote(PROPOSAL_ID, _SUPERVISOR);
+<<<<<<< HEAD
         _storage.setQuorumThreshold(PROPOSAL_ID, 2, _SUPERVISOR);
         _storage.makeFinal(PROPOSAL_ID, _SUPERVISOR);
+=======
+        _storage.setQuorumRequired(PROPOSAL_ID, 2, _SUPERVISOR);
+        _storage.makeReady(PROPOSAL_ID, _SUPERVISOR);
+>>>>>>> 75a81cf (13: minimum vote duration is one day)
         vm.stopPrank();
         vm.prank(_SUPERVISOR);
         governance.openVote(PROPOSAL_ID);
@@ -441,7 +503,7 @@ contract CollectiveGovernanceTest is Test {
     function testUndoVoteOfPreviousOwner() public {
         vm.startPrank(_governanceAddress);
         _storage.enableUndoVote(PROPOSAL_ID, _SUPERVISOR);
-        _storage.setQuorumThreshold(PROPOSAL_ID, 2, _SUPERVISOR);
+        _storage.setQuorumRequired(PROPOSAL_ID, 2, _SUPERVISOR);
         _storage.makeFinal(PROPOSAL_ID, _SUPERVISOR);
         vm.stopPrank();
         vm.prank(_OWNER);
@@ -461,8 +523,13 @@ contract CollectiveGovernanceTest is Test {
         governance.propose();
         vm.startPrank(_governanceAddress);
         _storage = Storage(governance.getStorageAddress());
+<<<<<<< HEAD
         _storage.setQuorumThreshold(PROPOSAL_ID, 2, _SUPERVISOR);
         _storage.makeFinal(PROPOSAL_ID, _SUPERVISOR);
+=======
+        _storage.setQuorumRequired(PROPOSAL_ID, 2, _SUPERVISOR);
+        _storage.makeReady(PROPOSAL_ID, _SUPERVISOR);
+>>>>>>> 75a81cf (13: minimum vote duration is one day)
         vm.stopPrank();
         vm.prank(_SUPERVISOR);
         governance.openVote(PROPOSAL_ID);
@@ -479,8 +546,13 @@ contract CollectiveGovernanceTest is Test {
         governance.propose();
         vm.startPrank(_governanceAddress);
         _storage = Storage(governance.getStorageAddress());
+<<<<<<< HEAD
         _storage.setQuorumThreshold(PROPOSAL_ID, 2, _SUPERVISOR);
         _storage.makeFinal(PROPOSAL_ID, _SUPERVISOR);
+=======
+        _storage.setQuorumRequired(PROPOSAL_ID, 2, _SUPERVISOR);
+        _storage.makeReady(PROPOSAL_ID, _SUPERVISOR);
+>>>>>>> 75a81cf (13: minimum vote duration is one day)
         vm.stopPrank();
         vm.prank(_SUPERVISOR);
         governance.openVote(PROPOSAL_ID);
@@ -497,8 +569,13 @@ contract CollectiveGovernanceTest is Test {
         governance.propose();
         vm.startPrank(_governanceAddress);
         _storage = Storage(governance.getStorageAddress());
+<<<<<<< HEAD
         _storage.setQuorumThreshold(PROPOSAL_ID, 2, _SUPERVISOR);
         _storage.makeFinal(PROPOSAL_ID, _SUPERVISOR);
+=======
+        _storage.setQuorumRequired(PROPOSAL_ID, 2, _SUPERVISOR);
+        _storage.makeReady(PROPOSAL_ID, _SUPERVISOR);
+>>>>>>> 75a81cf (13: minimum vote duration is one day)
         vm.stopPrank();
         vm.prank(_SUPERVISOR);
         governance.openVote(PROPOSAL_ID);
@@ -652,8 +729,13 @@ contract CollectiveGovernanceTest is Test {
         governance.propose();
         vm.startPrank(_governanceAddress);
         _storage = Storage(governance.getStorageAddress());
+<<<<<<< HEAD
         _storage.setQuorumThreshold(PROPOSAL_ID, 2, _SUPERVISOR);
         _storage.makeFinal(PROPOSAL_ID, _SUPERVISOR);
+=======
+        _storage.setQuorumRequired(PROPOSAL_ID, 2, _SUPERVISOR);
+        _storage.makeReady(PROPOSAL_ID, _SUPERVISOR);
+>>>>>>> 75a81cf (13: minimum vote duration is one day)
         vm.stopPrank();
         vm.prank(_SUPERVISOR);
         governance.openVote(PROPOSAL_ID);
@@ -674,8 +756,13 @@ contract CollectiveGovernanceTest is Test {
         governance.propose();
         vm.startPrank(_governanceAddress);
         _storage = Storage(governance.getStorageAddress());
+<<<<<<< HEAD
         _storage.setQuorumThreshold(PROPOSAL_ID, 2, _SUPERVISOR);
         _storage.makeFinal(PROPOSAL_ID, _SUPERVISOR);
+=======
+        _storage.setQuorumRequired(PROPOSAL_ID, 2, _SUPERVISOR);
+        _storage.makeReady(PROPOSAL_ID, _SUPERVISOR);
+>>>>>>> 75a81cf (13: minimum vote duration is one day)
         vm.stopPrank();
         vm.prank(_SUPERVISOR);
         uint256 blockTimestamp = block.timestamp;
@@ -708,8 +795,14 @@ contract CollectiveGovernanceTest is Test {
         governance.propose();
         vm.startPrank(_governanceAddress);
         _storage = Storage(governance.getStorageAddress());
+<<<<<<< HEAD
         _storage.setQuorumThreshold(PROPOSAL_ID, 2, _SUPERVISOR);
         _storage.makeFinal(PROPOSAL_ID, _SUPERVISOR);
+=======
+        _storage.setQuorumRequired(PROPOSAL_ID, 2, _SUPERVISOR);
+        _storage.setVoteDuration(PROPOSAL_ID, Constant.MINIMUM_VOTE_DURATION, _SUPERVISOR);
+        _storage.makeReady(PROPOSAL_ID, _SUPERVISOR);
+>>>>>>> 75a81cf (13: minimum vote duration is one day)
         vm.stopPrank();
         vm.prank(_SUPERVISOR);
         governance.openVote(PROPOSAL_ID);
@@ -717,7 +810,7 @@ contract CollectiveGovernanceTest is Test {
         governance.voteFor(PROPOSAL_ID);
         vm.prank(_VOTER2);
         governance.voteFor(PROPOSAL_ID);
-        vm.warp(blockTimestamp + 2);
+        vm.warp(blockTimestamp + Constant.MINIMUM_VOTE_DURATION);
         vm.prank(_SUPERVISOR);
         governance.endVote(PROPOSAL_ID);
         vm.expectRevert("Voting is closed");
@@ -731,8 +824,13 @@ contract CollectiveGovernanceTest is Test {
         governance.propose();
         vm.startPrank(_governanceAddress);
         _storage = Storage(governance.getStorageAddress());
+<<<<<<< HEAD
         _storage.setQuorumThreshold(PROPOSAL_ID, 2, _SUPERVISOR);
         _storage.makeFinal(PROPOSAL_ID, _SUPERVISOR);
+=======
+        _storage.setQuorumRequired(PROPOSAL_ID, 2, _SUPERVISOR);
+        _storage.makeReady(PROPOSAL_ID, _SUPERVISOR);
+>>>>>>> 75a81cf (13: minimum vote duration is one day)
         vm.stopPrank();
         vm.expectRevert("Voting is closed");
         vm.prank(_VOTER1);
@@ -745,8 +843,13 @@ contract CollectiveGovernanceTest is Test {
         governance.propose();
         vm.startPrank(_governanceAddress);
         _storage = Storage(governance.getStorageAddress());
+<<<<<<< HEAD
         _storage.setQuorumThreshold(PROPOSAL_ID, 2, _SUPERVISOR);
         _storage.makeFinal(PROPOSAL_ID, _SUPERVISOR);
+=======
+        _storage.setQuorumRequired(PROPOSAL_ID, 2, _SUPERVISOR);
+        _storage.makeReady(PROPOSAL_ID, _SUPERVISOR);
+>>>>>>> 75a81cf (13: minimum vote duration is one day)
         vm.stopPrank();
         vm.expectRevert("Voting is closed");
         vm.prank(_VOTER1);
@@ -760,77 +863,100 @@ contract CollectiveGovernanceTest is Test {
         governance.propose();
         vm.startPrank(_governanceAddress);
         _storage = Storage(governance.getStorageAddress());
-        _storage.setQuorumThreshold(PROPOSAL_ID, 1, _SUPERVISOR);
+        _storage.setQuorumRequired(PROPOSAL_ID, 1, _SUPERVISOR);
         _storage.setVoteDelay(PROPOSAL_ID, 100, _SUPERVISOR);
         _storage.makeFinal(PROPOSAL_ID, _SUPERVISOR);
         vm.stopPrank();
-        uint256 startBlock = block.timestamp;
+        uint256 startTime = block.timestamp;
         vm.prank(_SUPERVISOR);
         governance.openVote(PROPOSAL_ID);
-        vm.warp(startBlock + blockStep);
+        vm.warp(startTime + blockStep);
         vm.expectRevert("Vote not active");
         vm.prank(_VOTER1);
         governance.voteFor(PROPOSAL_ID);
     }
 
     function testVoteAfterDuration(uint256 blockStep) public {
-        vm.assume(blockStep > 10 && blockStep < UINT256MAX - block.timestamp);
+        vm.assume(blockStep > Constant.MINIMUM_VOTE_DURATION && blockStep < UINT256MAX - block.timestamp);
         _governanceAddress = buildVoterPool();
         governance = CollectiveGovernance(_governanceAddress);
         governance.propose();
         _storage = Storage(governance.getStorageAddress());
         vm.startPrank(_governanceAddress);
         _storage = Storage(governance.getStorageAddress());
+<<<<<<< HEAD
         _storage.setQuorumThreshold(PROPOSAL_ID, 1, _SUPERVISOR);
         _storage.setRequiredVoteDuration(PROPOSAL_ID, 10, _SUPERVISOR);
         _storage.makeFinal(PROPOSAL_ID, _SUPERVISOR);
+=======
+        _storage.setQuorumRequired(PROPOSAL_ID, 1, _SUPERVISOR);
+        _storage.setVoteDuration(PROPOSAL_ID, Constant.MINIMUM_VOTE_DURATION, _SUPERVISOR);
+        _storage.makeReady(PROPOSAL_ID, _SUPERVISOR);
+>>>>>>> 75a81cf (13: minimum vote duration is one day)
         vm.stopPrank();
-        uint256 startBlock = block.timestamp;
+        uint256 startTime = block.timestamp;
         vm.prank(_SUPERVISOR);
         governance.openVote(PROPOSAL_ID);
-        vm.warp(startBlock + blockStep);
+        vm.warp(startTime + blockStep);
         vm.expectRevert("Vote not active");
         vm.prank(_VOTER1);
         governance.voteFor(PROPOSAL_ID);
     }
 
     function testEndVoteWhileActive(uint256 blockStep) public {
-        vm.assume(blockStep > 0 && blockStep < 15);
+        vm.assume(blockStep > 3600 && blockStep < Constant.MINIMUM_VOTE_DURATION + 3600);
         _governanceAddress = buildVoterPool();
         governance = CollectiveGovernance(_governanceAddress);
         governance.propose();
         vm.startPrank(_governanceAddress);
         _storage = Storage(governance.getStorageAddress());
+<<<<<<< HEAD
         _storage.setQuorumThreshold(PROPOSAL_ID, 1, _SUPERVISOR);
         _storage.setVoteDelay(PROPOSAL_ID, 5, _SUPERVISOR);
         _storage.setRequiredVoteDuration(PROPOSAL_ID, 10, _SUPERVISOR);
         _storage.makeFinal(PROPOSAL_ID, _SUPERVISOR);
+=======
+        _storage.setQuorumRequired(PROPOSAL_ID, 1, _SUPERVISOR);
+        _storage.setVoteDelay(PROPOSAL_ID, 3600, _SUPERVISOR);
+        _storage.setVoteDuration(PROPOSAL_ID, Constant.MINIMUM_VOTE_DURATION, _SUPERVISOR);
+        _storage.makeReady(PROPOSAL_ID, _SUPERVISOR);
+>>>>>>> 75a81cf (13: minimum vote duration is one day)
         vm.stopPrank();
-        uint256 startBlock = block.timestamp;
+        uint256 startTime = block.timestamp;
         vm.prank(_SUPERVISOR);
         governance.openVote(PROPOSAL_ID);
-        vm.warp(startBlock + blockStep);
+        vm.warp(startTime + blockStep);
         vm.expectRevert("Vote open");
         vm.prank(_SUPERVISOR);
         governance.endVote(PROPOSAL_ID);
     }
 
     function testEndVoteWhenFinished(uint256 blockStep) public {
-        vm.assume(blockStep >= 16 && blockStep < UINT256MAX - block.timestamp);
+        vm.assume(
+            blockStep >= 3600 + Constant.MINIMUM_VOTE_DURATION &&
+                blockStep < UINT256MAX - 3600 - block.timestamp - Constant.MINIMUM_VOTE_DURATION
+        );
         _governanceAddress = buildVoterPool();
         governance = CollectiveGovernance(_governanceAddress);
         governance.propose();
         vm.startPrank(_governanceAddress);
         _storage = Storage(governance.getStorageAddress());
+<<<<<<< HEAD
         _storage.setQuorumThreshold(PROPOSAL_ID, 1, _SUPERVISOR);
         _storage.setVoteDelay(PROPOSAL_ID, 5, _SUPERVISOR);
         _storage.setRequiredVoteDuration(PROPOSAL_ID, 10, _SUPERVISOR);
         _storage.makeFinal(PROPOSAL_ID, _SUPERVISOR);
+=======
+        _storage.setQuorumRequired(PROPOSAL_ID, 1, _SUPERVISOR);
+        _storage.setVoteDelay(PROPOSAL_ID, 3600, _SUPERVISOR);
+        _storage.setVoteDuration(PROPOSAL_ID, Constant.MINIMUM_VOTE_DURATION, _SUPERVISOR);
+        _storage.makeReady(PROPOSAL_ID, _SUPERVISOR);
+>>>>>>> 75a81cf (13: minimum vote duration is one day)
         vm.stopPrank();
-        uint256 startBlock = block.timestamp;
+        uint256 startTime = block.timestamp;
         vm.prank(_SUPERVISOR);
         governance.openVote(PROPOSAL_ID);
-        vm.warp(startBlock + blockStep);
+        vm.warp(startTime + blockStep);
         vm.prank(_SUPERVISOR);
         governance.endVote(PROPOSAL_ID);
         assertFalse(governance.isOpen(PROPOSAL_ID));
@@ -845,13 +971,13 @@ contract CollectiveGovernanceTest is Test {
     function testDirectStorageAccessToQuorum() public {
         vm.expectRevert("Not permitted");
         vm.prank(_SUPERVISOR);
-        _storage.setQuorumThreshold(PROPOSAL_ID, 0xffffffff, _SUPERVISOR);
+        _storage.setQuorumRequired(PROPOSAL_ID, 0xffffffff, _SUPERVISOR);
     }
 
     function testDirectStorageAccessToDuration() public {
         vm.expectRevert("Not permitted");
         vm.prank(_SUPERVISOR);
-        _storage.setRequiredVoteDuration(PROPOSAL_ID, 0xffffffff, _SUPERVISOR);
+        _storage.setVoteDuration(PROPOSAL_ID, 0xffffffff, _SUPERVISOR);
     }
 
     function testDirectStorageAccessToDelay() public {
@@ -919,7 +1045,7 @@ contract CollectiveGovernanceTest is Test {
 
     function testCancelConfigured() public {
         vm.startPrank(_SUPERVISOR, _SUPERVISOR);
-        governance.configure(PROPOSAL_ID, 2, 2);
+        governance.configure(PROPOSAL_ID, 2);
         governance.cancel(PROPOSAL_ID);
         vm.stopPrank();
         assertFalse(governance.isOpen(PROPOSAL_ID));
@@ -938,13 +1064,13 @@ contract CollectiveGovernanceTest is Test {
         vm.startPrank(_SUPERVISOR, _SUPERVISOR);
         governance.cancel(PROPOSAL_ID);
         vm.expectRevert("Vote not modifiable");
-        governance.configure(PROPOSAL_ID, 2, 2);
+        governance.configure(PROPOSAL_ID, 2);
         vm.stopPrank();
     }
 
     function testOpenAfterCancel() public {
         vm.startPrank(_SUPERVISOR, _SUPERVISOR);
-        governance.configure(PROPOSAL_ID, 2, 2);
+        governance.configure(PROPOSAL_ID, 2);
         governance.cancel(PROPOSAL_ID);
         vm.expectRevert("Vote cancelled");
         governance.openVote(PROPOSAL_ID);
@@ -953,8 +1079,10 @@ contract CollectiveGovernanceTest is Test {
 
     function testCancelAfterOpen() public {
         vm.startPrank(_SUPERVISOR, _SUPERVISOR);
-        governance.configure(PROPOSAL_ID, 2, 2);
+        uint256 blockTimestamp = block.timestamp;
+        governance.configure(PROPOSAL_ID, 2);
         governance.openVote(PROPOSAL_ID);
+        vm.warp(blockTimestamp + 2);
         vm.expectRevert("Not possible");
         governance.cancel(PROPOSAL_ID);
         vm.stopPrank();
@@ -963,9 +1091,9 @@ contract CollectiveGovernanceTest is Test {
     function testCancelAfterEnd() public {
         vm.startPrank(_SUPERVISOR, _SUPERVISOR);
         uint256 blockTimestamp = block.timestamp;
-        governance.configure(PROPOSAL_ID, 2, 2);
+        governance.configure(PROPOSAL_ID, 2);
         governance.openVote(PROPOSAL_ID);
-        vm.warp(blockTimestamp + 2);
+        vm.warp(blockTimestamp + Constant.MINIMUM_VOTE_DURATION);
         governance.endVote(PROPOSAL_ID);
         vm.expectRevert("Not possible");
         governance.cancel(PROPOSAL_ID);
@@ -974,7 +1102,7 @@ contract CollectiveGovernanceTest is Test {
 
     function testEndNowIfVeto() public {
         vm.startPrank(_SUPERVISOR, _SUPERVISOR);
-        governance.configure(PROPOSAL_ID, 2, 2);
+        governance.configure(PROPOSAL_ID, 2);
         governance.openVote(PROPOSAL_ID);
         governance.veto(PROPOSAL_ID);
         governance.endVote(PROPOSAL_ID);
