@@ -138,22 +138,10 @@ contract GovernanceStorageTest is Test {
 
     function testSetVoteDelay() public {
         _storage.registerSupervisor(PROPOSAL_ID, _SUPERVISOR, _OWNER);
-<<<<<<< HEAD
-        _storage.setVoteDelay(PROPOSAL_ID, 100, _SUPERVISOR);
-        assertEq(_storage.voteDelay(PROPOSAL_ID), 100);
-<<<<<<< HEAD
-        _storage.makeFinal(PROPOSAL_ID, _SUPERVISOR);
-        assertEq(_storage.startBlock(PROPOSAL_ID), block.number + 100);
-=======
-        _storage.makeReady(PROPOSAL_ID, _SUPERVISOR);
-        assertEq(_storage.startTime(PROPOSAL_ID), block.timestamp + 100);
->>>>>>> ed81d94 (13: use blocktime rather than block number start and end time)
-=======
         _storage.setVoteDelay(PROPOSAL_ID, 3600, _SUPERVISOR);
         assertEq(_storage.voteDelay(PROPOSAL_ID), 3600);
-        _storage.makeReady(PROPOSAL_ID, _SUPERVISOR);
+        _storage.makeFinal(PROPOSAL_ID, _SUPERVISOR);
         assertEq(_storage.startTime(PROPOSAL_ID), block.timestamp + 3600);
->>>>>>> 75a81cf (13: minimum vote duration is one day)
     }
 
     function testSetVoteDelayDirect() public {
@@ -179,22 +167,10 @@ contract GovernanceStorageTest is Test {
 
     function testSetMinimumVoteDuration() public {
         _storage.registerSupervisor(PROPOSAL_ID, _SUPERVISOR, _OWNER);
-<<<<<<< HEAD
-        _storage.setRequiredVoteDuration(PROPOSAL_ID, 10, _SUPERVISOR);
-        assertEq(_storage.voteDuration(PROPOSAL_ID), 10);
-<<<<<<< HEAD
-        _storage.makeFinal(PROPOSAL_ID, _SUPERVISOR);
-        assertEq(_storage.endBlock(PROPOSAL_ID), block.number + 10);
-=======
-        _storage.makeReady(PROPOSAL_ID, _SUPERVISOR);
-        assertEq(_storage.endTime(PROPOSAL_ID), block.timestamp + 10);
->>>>>>> ed81d94 (13: use blocktime rather than block number start and end time)
-=======
         _storage.setVoteDuration(PROPOSAL_ID, Constant.MINIMUM_VOTE_DURATION, _SUPERVISOR);
         assertEq(_storage.voteDuration(PROPOSAL_ID), Constant.MINIMUM_VOTE_DURATION);
-        _storage.makeReady(PROPOSAL_ID, _SUPERVISOR);
+        _storage.makeFinal(PROPOSAL_ID, _SUPERVISOR);
         assertEq(_storage.endTime(PROPOSAL_ID), block.timestamp + Constant.MINIMUM_VOTE_DURATION);
->>>>>>> 75a81cf (13: minimum vote duration is one day)
     }
 
     function testSetMinimumVoteDurationDirect() public {
@@ -289,13 +265,8 @@ contract GovernanceStorageTest is Test {
 
     function testAbstainFromVote() public {
         _storage.registerSupervisor(PROPOSAL_ID, _SUPERVISOR, _OWNER);
-<<<<<<< HEAD
-        _storage.setQuorumThreshold(PROPOSAL_ID, 2, _SUPERVISOR);
-        _storage.makeFinal(PROPOSAL_ID, _SUPERVISOR);
-=======
         _storage.setQuorumRequired(PROPOSAL_ID, 2, _SUPERVISOR);
-        _storage.makeReady(PROPOSAL_ID, _SUPERVISOR);
->>>>>>> 75a81cf (13: minimum vote duration is one day)
+        _storage.makeFinal(PROPOSAL_ID, _SUPERVISOR);
         _storage.abstainForShare(PROPOSAL_ID, _VOTER1, uint160(_VOTER1));
         assertEq(_storage.forVotes(PROPOSAL_ID), 0);
         assertEq(_storage.againstVotes(PROPOSAL_ID), 0);
@@ -305,13 +276,8 @@ contract GovernanceStorageTest is Test {
 
     function testVoterDirectAbstainFromVote() public {
         _storage.registerSupervisor(PROPOSAL_ID, _SUPERVISOR, _OWNER);
-<<<<<<< HEAD
-        _storage.setQuorumThreshold(PROPOSAL_ID, 2, _SUPERVISOR);
-        _storage.makeFinal(PROPOSAL_ID, _SUPERVISOR);
-=======
         _storage.setQuorumRequired(PROPOSAL_ID, 2, _SUPERVISOR);
-        _storage.makeReady(PROPOSAL_ID, _SUPERVISOR);
->>>>>>> 75a81cf (13: minimum vote duration is one day)
+        _storage.makeFinal(PROPOSAL_ID, _SUPERVISOR);
         vm.expectRevert("Not permitted");
         vm.prank(_VOTER1);
         _storage.abstainForShare(PROPOSAL_ID, _VOTER1, uint160(_VOTER1));
@@ -319,13 +285,8 @@ contract GovernanceStorageTest is Test {
 
     function testCastAgainstVote() public {
         _storage.registerSupervisor(PROPOSAL_ID, _SUPERVISOR, _OWNER);
-<<<<<<< HEAD
-        _storage.setQuorumThreshold(PROPOSAL_ID, 2, _SUPERVISOR);
-        _storage.makeFinal(PROPOSAL_ID, _SUPERVISOR);
-=======
         _storage.setQuorumRequired(PROPOSAL_ID, 2, _SUPERVISOR);
-        _storage.makeReady(PROPOSAL_ID, _SUPERVISOR);
->>>>>>> 75a81cf (13: minimum vote duration is one day)
+        _storage.makeFinal(PROPOSAL_ID, _SUPERVISOR);
         _storage.voteAgainstByShare(PROPOSAL_ID, _VOTER1, uint160(_VOTER1));
         assertEq(_storage.forVotes(PROPOSAL_ID), 0);
         assertEq(_storage.againstVotes(PROPOSAL_ID), 1);
@@ -335,13 +296,8 @@ contract GovernanceStorageTest is Test {
 
     function testVoterDirectCastAgainstVote() public {
         _storage.registerSupervisor(PROPOSAL_ID, _SUPERVISOR, _OWNER);
-<<<<<<< HEAD
-        _storage.setQuorumThreshold(PROPOSAL_ID, 2, _SUPERVISOR);
-        _storage.makeFinal(PROPOSAL_ID, _SUPERVISOR);
-=======
         _storage.setQuorumRequired(PROPOSAL_ID, 2, _SUPERVISOR);
-        _storage.makeReady(PROPOSAL_ID, _SUPERVISOR);
->>>>>>> 75a81cf (13: minimum vote duration is one day)
+        _storage.makeFinal(PROPOSAL_ID, _SUPERVISOR);
         vm.expectRevert("Not permitted");
         vm.prank(_VOTER1);
         _storage.voteAgainstByShare(PROPOSAL_ID, _VOTER1, uint160(_VOTER1));
@@ -349,13 +305,8 @@ contract GovernanceStorageTest is Test {
 
     function testCastOneVote() public {
         _storage.registerSupervisor(PROPOSAL_ID, _SUPERVISOR, _OWNER);
-<<<<<<< HEAD
-        _storage.setQuorumThreshold(PROPOSAL_ID, 2, _SUPERVISOR);
-        _storage.makeFinal(PROPOSAL_ID, _SUPERVISOR);
-=======
         _storage.setQuorumRequired(PROPOSAL_ID, 2, _SUPERVISOR);
-        _storage.makeReady(PROPOSAL_ID, _SUPERVISOR);
->>>>>>> 75a81cf (13: minimum vote duration is one day)
+        _storage.makeFinal(PROPOSAL_ID, _SUPERVISOR);
         _storage.voteForByShare(PROPOSAL_ID, _VOTER1, uint160(_VOTER1));
         assertEq(_storage.forVotes(PROPOSAL_ID), 1);
         assertEq(_storage.quorum(PROPOSAL_ID), 1);
@@ -363,13 +314,8 @@ contract GovernanceStorageTest is Test {
 
     function testVoterReceipt() public {
         _storage.registerSupervisor(PROPOSAL_ID, _SUPERVISOR, _OWNER);
-<<<<<<< HEAD
-        _storage.setQuorumThreshold(PROPOSAL_ID, 2, _SUPERVISOR);
-        _storage.makeFinal(PROPOSAL_ID, _SUPERVISOR);
-=======
         _storage.setQuorumRequired(PROPOSAL_ID, 2, _SUPERVISOR);
-        _storage.makeReady(PROPOSAL_ID, _SUPERVISOR);
->>>>>>> 75a81cf (13: minimum vote duration is one day)
+        _storage.makeFinal(PROPOSAL_ID, _SUPERVISOR);
         _storage.voteForByShare(PROPOSAL_ID, _VOTER1, uint160(_VOTER1));
 
         (uint256 shareId, uint256 shareFor, uint256 voteCast, bool abstention, bool isUndo) = _storage.voteReceipt(
@@ -387,13 +333,8 @@ contract GovernanceStorageTest is Test {
     function testVoterReceiptWithUndo() public {
         _storage.registerSupervisor(PROPOSAL_ID, _SUPERVISOR, _OWNER);
         _storage.enableUndoVote(PROPOSAL_ID, _SUPERVISOR);
-<<<<<<< HEAD
-        _storage.setQuorumThreshold(PROPOSAL_ID, 2, _SUPERVISOR);
-        _storage.makeFinal(PROPOSAL_ID, _SUPERVISOR);
-=======
         _storage.setQuorumRequired(PROPOSAL_ID, 2, _SUPERVISOR);
-        _storage.makeReady(PROPOSAL_ID, _SUPERVISOR);
->>>>>>> 75a81cf (13: minimum vote duration is one day)
+        _storage.makeFinal(PROPOSAL_ID, _SUPERVISOR);
         _storage.voteForByShare(PROPOSAL_ID, _VOTER1, uint160(_VOTER1));
         _storage.undoVoteById(PROPOSAL_ID, _VOTER1, uint160(_VOTER1));
 
@@ -412,13 +353,8 @@ contract GovernanceStorageTest is Test {
     function testAgainstWithUndo() public {
         _storage.registerSupervisor(PROPOSAL_ID, _SUPERVISOR, _OWNER);
         _storage.enableUndoVote(PROPOSAL_ID, _SUPERVISOR);
-<<<<<<< HEAD
-        _storage.setQuorumThreshold(PROPOSAL_ID, 2, _SUPERVISOR);
-        _storage.makeFinal(PROPOSAL_ID, _SUPERVISOR);
-=======
         _storage.setQuorumRequired(PROPOSAL_ID, 2, _SUPERVISOR);
-        _storage.makeReady(PROPOSAL_ID, _SUPERVISOR);
->>>>>>> 75a81cf (13: minimum vote duration is one day)
+        _storage.makeFinal(PROPOSAL_ID, _SUPERVISOR);
         _storage.voteAgainstByShare(PROPOSAL_ID, _VOTER1, uint160(_VOTER1));
         vm.expectRevert("Vote not affirmative");
         _storage.undoVoteById(PROPOSAL_ID, _VOTER1, uint160(_VOTER1));
@@ -427,13 +363,8 @@ contract GovernanceStorageTest is Test {
     function testAbstainWithUndo() public {
         _storage.registerSupervisor(PROPOSAL_ID, _SUPERVISOR, _OWNER);
         _storage.enableUndoVote(PROPOSAL_ID, _SUPERVISOR);
-<<<<<<< HEAD
-        _storage.setQuorumThreshold(PROPOSAL_ID, 2, _SUPERVISOR);
-        _storage.makeFinal(PROPOSAL_ID, _SUPERVISOR);
-=======
         _storage.setQuorumRequired(PROPOSAL_ID, 2, _SUPERVISOR);
-        _storage.makeReady(PROPOSAL_ID, _SUPERVISOR);
->>>>>>> 75a81cf (13: minimum vote duration is one day)
+        _storage.makeFinal(PROPOSAL_ID, _SUPERVISOR);
         _storage.abstainForShare(PROPOSAL_ID, _VOTER1, uint160(_VOTER1));
         vm.expectRevert("No affirmative vote");
         _storage.undoVoteById(PROPOSAL_ID, _VOTER1, uint160(_VOTER1));
@@ -441,13 +372,8 @@ contract GovernanceStorageTest is Test {
 
     function testVoteAgainstReceipt() public {
         _storage.registerSupervisor(PROPOSAL_ID, _SUPERVISOR, _OWNER);
-<<<<<<< HEAD
-        _storage.setQuorumThreshold(PROPOSAL_ID, 2, _SUPERVISOR);
-        _storage.makeFinal(PROPOSAL_ID, _SUPERVISOR);
-=======
         _storage.setQuorumRequired(PROPOSAL_ID, 2, _SUPERVISOR);
-        _storage.makeReady(PROPOSAL_ID, _SUPERVISOR);
->>>>>>> 75a81cf (13: minimum vote duration is one day)
+        _storage.makeFinal(PROPOSAL_ID, _SUPERVISOR);
         _storage.voteAgainstByShare(PROPOSAL_ID, _VOTER1, uint160(_VOTER1));
 
         (uint256 shareId, uint256 shareFor, uint256 voteCast, bool abstention, bool isUndo) = _storage.voteReceipt(
@@ -464,13 +390,8 @@ contract GovernanceStorageTest is Test {
 
     function testAbstentionReceipt() public {
         _storage.registerSupervisor(PROPOSAL_ID, _SUPERVISOR, _OWNER);
-<<<<<<< HEAD
-        _storage.setQuorumThreshold(PROPOSAL_ID, 2, _SUPERVISOR);
-        _storage.makeFinal(PROPOSAL_ID, _SUPERVISOR);
-=======
         _storage.setQuorumRequired(PROPOSAL_ID, 2, _SUPERVISOR);
-        _storage.makeReady(PROPOSAL_ID, _SUPERVISOR);
->>>>>>> 75a81cf (13: minimum vote duration is one day)
+        _storage.makeFinal(PROPOSAL_ID, _SUPERVISOR);
         _storage.abstainForShare(PROPOSAL_ID, _VOTER1, uint160(_VOTER1));
 
         (uint256 shareId, uint256 shareFor, uint256 voteCast, bool abstention, bool isUndo) = _storage.voteReceipt(
@@ -487,13 +408,8 @@ contract GovernanceStorageTest is Test {
 
     function testVoterDirectlyCastOneVote() public {
         _storage.registerSupervisor(PROPOSAL_ID, _SUPERVISOR, _OWNER);
-<<<<<<< HEAD
-        _storage.setQuorumThreshold(PROPOSAL_ID, 2, _SUPERVISOR);
-        _storage.makeFinal(PROPOSAL_ID, _SUPERVISOR);
-=======
         _storage.setQuorumRequired(PROPOSAL_ID, 2, _SUPERVISOR);
-        _storage.makeReady(PROPOSAL_ID, _SUPERVISOR);
->>>>>>> 75a81cf (13: minimum vote duration is one day)
+        _storage.makeFinal(PROPOSAL_ID, _SUPERVISOR);
         vm.expectRevert("Not permitted");
         vm.prank(_VOTER1);
         _storage.voteForByShare(PROPOSAL_ID, _VOTER1, uint160(_VOTER1));
@@ -516,13 +432,8 @@ contract GovernanceStorageTest is Test {
         _storage = new GovernanceStorage(new VoterClassOpenVote(1), Constant.MINIMUM_VOTE_DURATION);
         _storage.initializeProposal(_OWNER);
         _storage.registerSupervisor(PROPOSAL_ID, _SUPERVISOR, _OWNER);
-<<<<<<< HEAD
-        _storage.setQuorumThreshold(PROPOSAL_ID, 2, _SUPERVISOR);
-        _storage.makeFinal(PROPOSAL_ID, _SUPERVISOR);
-=======
         _storage.setQuorumRequired(PROPOSAL_ID, 2, _SUPERVISOR);
-        _storage.makeReady(PROPOSAL_ID, _SUPERVISOR);
->>>>>>> 75a81cf (13: minimum vote duration is one day)
+        _storage.makeFinal(PROPOSAL_ID, _SUPERVISOR);
         _storage.voteForByShare(PROPOSAL_ID, _VOTER1, uint160(_VOTER1));
         assertEq(_storage.quorum(PROPOSAL_ID), 1);
     }
@@ -534,13 +445,8 @@ contract GovernanceStorageTest is Test {
         _storage = new GovernanceStorage(new VoterClassERC721(address(token), 1), Constant.MINIMUM_VOTE_DURATION);
         _storage.initializeProposal(_OWNER);
         _storage.registerSupervisor(PROPOSAL_ID, _SUPERVISOR, _OWNER);
-<<<<<<< HEAD
-        _storage.setQuorumThreshold(PROPOSAL_ID, 1, _SUPERVISOR);
-        _storage.makeFinal(PROPOSAL_ID, _SUPERVISOR);
-=======
         _storage.setQuorumRequired(PROPOSAL_ID, 1, _SUPERVISOR);
-        _storage.makeReady(PROPOSAL_ID, _SUPERVISOR);
->>>>>>> 75a81cf (13: minimum vote duration is one day)
+        _storage.makeFinal(PROPOSAL_ID, _SUPERVISOR);
         _storage.voteForByShare(PROPOSAL_ID, _VOTER2, tokenId);
         assertEq(_storage.forVotes(PROPOSAL_ID), 1);
         assertEq(_storage.againstVotes(PROPOSAL_ID), 0);
@@ -550,25 +456,11 @@ contract GovernanceStorageTest is Test {
 
     function testPermittedAfterObservingVoteDelay() public {
         _storage.registerSupervisor(PROPOSAL_ID, _SUPERVISOR, _OWNER);
-<<<<<<< HEAD
-        _storage.setQuorumThreshold(PROPOSAL_ID, 1, _SUPERVISOR);
-        _storage.setVoteDelay(PROPOSAL_ID, 100, _SUPERVISOR);
-<<<<<<< HEAD
-        _storage.makeFinal(PROPOSAL_ID, _SUPERVISOR);
-        uint256 startBlock = block.number;
-        vm.roll(startBlock + 100);
-=======
-        _storage.makeReady(PROPOSAL_ID, _SUPERVISOR);
-        uint256 startTime = block.timestamp;
-        vm.warp(startTime + 100);
->>>>>>> ed81d94 (13: use blocktime rather than block number start and end time)
-=======
         _storage.setQuorumRequired(PROPOSAL_ID, 1, _SUPERVISOR);
         _storage.setVoteDelay(PROPOSAL_ID, 3600, _SUPERVISOR);
-        _storage.makeReady(PROPOSAL_ID, _SUPERVISOR);
+        _storage.makeFinal(PROPOSAL_ID, _SUPERVISOR);
         uint256 startTime = block.timestamp;
         vm.warp(startTime + 3600);
->>>>>>> 75a81cf (13: minimum vote duration is one day)
         _storage.voteForByShare(PROPOSAL_ID, _VOTER1, uint160(_VOTER1));
         assertEq(1, _storage.forVotes(PROPOSAL_ID));
     }
@@ -576,13 +468,8 @@ contract GovernanceStorageTest is Test {
     function testVoteWithUndo() public {
         _storage.registerSupervisor(PROPOSAL_ID, _SUPERVISOR, _OWNER);
         _storage.enableUndoVote(PROPOSAL_ID, _SUPERVISOR);
-<<<<<<< HEAD
-        _storage.setQuorumThreshold(PROPOSAL_ID, 2, _SUPERVISOR);
-        _storage.makeFinal(PROPOSAL_ID, _SUPERVISOR);
-=======
         _storage.setQuorumRequired(PROPOSAL_ID, 2, _SUPERVISOR);
-        _storage.makeReady(PROPOSAL_ID, _SUPERVISOR);
->>>>>>> 75a81cf (13: minimum vote duration is one day)
+        _storage.makeFinal(PROPOSAL_ID, _SUPERVISOR);
         _storage.voteForByShare(PROPOSAL_ID, _VOTER1, uint160(_VOTER1));
         assertEq(_storage.quorum(PROPOSAL_ID), 1);
         _storage.undoVoteById(PROPOSAL_ID, _VOTER1, uint160(_VOTER1));
@@ -592,13 +479,8 @@ contract GovernanceStorageTest is Test {
     function testVoteWithDoubleUndo() public {
         _storage.registerSupervisor(PROPOSAL_ID, _SUPERVISOR, _OWNER);
         _storage.enableUndoVote(PROPOSAL_ID, _SUPERVISOR);
-<<<<<<< HEAD
-        _storage.setQuorumThreshold(PROPOSAL_ID, 2, _SUPERVISOR);
-        _storage.makeFinal(PROPOSAL_ID, _SUPERVISOR);
-=======
         _storage.setQuorumRequired(PROPOSAL_ID, 2, _SUPERVISOR);
-        _storage.makeReady(PROPOSAL_ID, _SUPERVISOR);
->>>>>>> 75a81cf (13: minimum vote duration is one day)
+        _storage.makeFinal(PROPOSAL_ID, _SUPERVISOR);
         _storage.voteForByShare(PROPOSAL_ID, _VOTER1, uint160(_VOTER1));
         _storage.undoVoteById(PROPOSAL_ID, _VOTER1, uint160(_VOTER1));
         vm.expectRevert("No affirmative vote");
@@ -634,12 +516,7 @@ contract GovernanceStorageTest is Test {
         uint256 latestProposalId = _storage.latestProposal(_OWNER);
         assertEq(PROPOSAL_ID, latestProposalId);
         _storage.registerSupervisor(latestProposalId, _SUPERVISOR, _OWNER);
-<<<<<<< HEAD
         _storage.makeFinal(latestProposalId, _SUPERVISOR);
-        // vote requires minimum one block
-=======
-        _storage.makeReady(latestProposalId, _SUPERVISOR);
->>>>>>> 75a81cf (13: minimum vote duration is one day)
         vm.expectRevert("Too many proposals");
         _storage.initializeProposal(_OWNER);
     }
