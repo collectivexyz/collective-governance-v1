@@ -138,13 +138,13 @@ contract GovernanceStorage is Storage, ERC165 {
 
     modifier requireVotingNotReady(uint256 _proposalId) {
         Proposal storage proposal = proposalMap[_proposalId];
-        require(!proposal.isReady, "Vote not modifiable");
+        require(proposal.status == Status.CONFIG, "Vote not modifiable");
         _;
     }
 
     modifier requireVotingReady(uint256 _proposalId) {
         Proposal storage proposal = proposalMap[_proposalId];
-        require(proposal.isReady, "Not ready");
+        require(proposal.status == Status.FINAL, "Not final");
         _;
     }
 
@@ -404,9 +404,9 @@ contract GovernanceStorage is Storage, ERC165 {
     /// @notice test if proposal is ready or in the setup phase
     /// @param _proposalId the id of the proposal
     /// @return bool true if the proposal is marked ready
-    function isReady(uint256 _proposalId) external view requireValidProposal(_proposalId) returns (bool) {
+    function isFinal(uint256 _proposalId) public view requireValidProposal(_proposalId) returns (bool) {
         Proposal storage proposal = proposalMap[_proposalId];
-        return proposal.isReady;
+        return proposal.status == Status.FINAL || proposal.status == Status.CANCELLED;
     }
 
     /// @notice test if proposal is cancelled
@@ -414,7 +414,7 @@ contract GovernanceStorage is Storage, ERC165 {
     /// @return bool true if the proposal is marked cancelled
     function isCancel(uint256 _proposalId) external view returns (bool) {
         Proposal storage proposal = proposalMap[_proposalId];
-        return proposal.isCancel;
+        return proposal.status == Status.CANCELLED;
     }
 
     /// @notice test if proposal is veto
@@ -470,7 +470,7 @@ contract GovernanceStorage is Storage, ERC165 {
         uint256 latestProposalId = _latestProposalId[_sender];
         if (latestProposalId != 0) {
             Proposal storage lastProposal = proposalMap[latestProposalId];
-            require(lastProposal.isReady && block.number >= lastProposal.endBlock, "Too many proposals");
+            require(isFinal(latestProposalId) && block.number >= lastProposal.endBlock, "Too many proposals");
         }
         _proposalCount++;
         uint256 proposalId = _proposalCount;
@@ -489,7 +489,7 @@ contract GovernanceStorage is Storage, ERC165 {
         proposal.againstVotes = 0;
         proposal.abstentionCount = 0;
         proposal.isVeto = false;
-        proposal.isReady = false;
+        proposal.status = Status.CONFIG;
         proposal.isUndoEnabled = false;
 
         emit InitializeProposal(proposalId, _sender);
@@ -500,14 +500,14 @@ contract GovernanceStorage is Storage, ERC165 {
     /// @dev requires supervisor
     /// @param _proposalId the id of the proposal
     /// @param _sender original wallet for this request
-    function makeReady(uint256 _proposalId, address _sender)
+    function makeFinal(uint256 _proposalId, address _sender)
         external
         requireCognate
         requireElectorSupervisor(_proposalId, _sender)
         requireVotingNotReady(_proposalId)
     {
         Proposal storage proposal = proposalMap[_proposalId];
-        proposal.isReady = true;
+        proposal.status = Status.FINAL;
         proposal.startBlock = block.number + proposal.voteDelay;
         proposal.endBlock = proposal.startBlock + proposal.voteDuration;
         emit VoteReady(_proposalId, proposal.startBlock, proposal.endBlock);
@@ -517,14 +517,9 @@ contract GovernanceStorage is Storage, ERC165 {
     /// @dev requires supervisor
     /// @param _proposalId the id of the proposal
     /// @param _sender original wallet for this request
-    function cancel(uint256 _proposalId, address _sender)
-        external
-        requireCognate
-        requireElectorSupervisor(_proposalId, _sender)
-        requireVotingReady(_proposalId)
-    {
+    function cancel(uint256 _proposalId, address _sender) external requireCognate requireElectorSupervisor(_proposalId, _sender) {
         Proposal storage proposal = proposalMap[_proposalId];
-        proposal.isCancel = true;
+        proposal.status = Status.CANCELLED;
         emit VoteCancel(_proposalId, _sender);
     }
 

@@ -930,7 +930,7 @@
             "_0": "uint256 the id of the proposal"
           }
         },
-        "isReady(uint256)": {
+        "isFinal(uint256)": {
           "params": {
             "_proposalId": "the id of the proposal"
           },
@@ -969,7 +969,7 @@
             "_0": "uint256 the id of the most recent proposal for sender"
           }
         },
-        "makeReady(uint256,address)": {
+        "makeFinal(uint256,address)": {
           "details": "requires supervisor",
           "params": {
             "_proposalId": "the id of the proposal",
@@ -1215,7 +1215,7 @@
             "_0": "uint256 the id of the proposal"
           }
         },
-        "isReady(uint256)": {
+        "isFinal(uint256)": {
           "notice": "test if proposal is ready or in the setup phase",
           "params": {
             "_proposalId": "the id of the proposal"
@@ -1259,7 +1259,7 @@
             "_0": "uint256 the id of the most recent proposal for sender"
           }
         },
-        "makeReady(uint256,address)": {
+        "makeFinal(uint256,address)": {
           "details": "requires supervisor",
           "notice": "indicate the proposal is ready for voting and should be frozen",
           "params": {
@@ -1476,7 +1476,7 @@
         "initializeProposal(address)": {
           "notice": "initialize a new proposal and return the id"
         },
-        "isReady(uint256)": {
+        "isFinal(uint256)": {
           "notice": "test if proposal is ready or in the setup phase"
         },
         "isSupervisor(uint256,address)": {
@@ -1491,7 +1491,7 @@
         "latestProposal(address)": {
           "notice": "get the id of the last proposal for sender"
         },
-        "makeReady(uint256,address)": {
+        "makeFinal(uint256,address)": {
           "notice": "indicate the proposal is ready for voting and should be frozen"
         },
         "maxPassThreshold()": {
@@ -1636,7 +1636,7 @@
             "_0": "uint256 the id of the proposal"
           }
         },
-        "isReady(uint256)": {
+        "isFinal(uint256)": {
           "params": {
             "_proposalId": "the id of the proposal"
           },
@@ -1675,7 +1675,7 @@
             "_0": "uint256 the id of the most recent proposal for sender"
           }
         },
-        "makeReady(uint256,address)": {
+        "makeFinal(uint256,address)": {
           "details": "requires supervisor",
           "params": {
             "_proposalId": "the id of the proposal",
@@ -1912,7 +1912,7 @@
             "_0": "uint256 the id of the proposal"
           }
         },
-        "isReady(uint256)": {
+        "isFinal(uint256)": {
           "notice": "test if proposal is ready or in the setup phase",
           "params": {
             "_proposalId": "the id of the proposal"
@@ -1956,7 +1956,7 @@
             "_0": "uint256 the id of the most recent proposal for sender"
           }
         },
-        "makeReady(uint256,address)": {
+        "makeFinal(uint256,address)": {
           "details": "requires supervisor",
           "notice": "indicate the proposal is ready for voting and should be frozen",
           "params": {
@@ -2164,7 +2164,7 @@
         "initializeProposal(address)": {
           "notice": "initialize a new proposal and return the id"
         },
-        "isReady(uint256)": {
+        "isFinal(uint256)": {
           "notice": "test if proposal is ready or in the setup phase"
         },
         "isSupervisor(uint256,address)": {
@@ -2179,7 +2179,7 @@
         "latestProposal(address)": {
           "notice": "get the id of the last proposal for sender"
         },
-        "makeReady(uint256,address)": {
+        "makeFinal(uint256,address)": {
           "notice": "indicate the proposal is ready for voting and should be frozen"
         },
         "maxPassThreshold()": {

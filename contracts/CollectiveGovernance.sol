@@ -77,12 +77,12 @@ contract CollectiveGovernance is Governance, VoteStrategy, ERC165 {
     }
 
     modifier requireVoteOpen(uint256 _proposalId) {
-        require(_storage.isReady(_proposalId) && isVoteOpenByProposalId[_proposalId], "Voting is closed");
+        require(_storage.isFinal(_proposalId) && isVoteOpenByProposalId[_proposalId], "Voting is closed");
         _;
     }
 
     modifier requireVoteReady(uint256 _proposalId) {
-        require(_storage.isReady(_proposalId), "Voting is not ready");
+        require(_storage.isFinal(_proposalId), "Voting is not ready");
         _;
     }
 
@@ -92,7 +92,7 @@ contract CollectiveGovernance is Governance, VoteStrategy, ERC165 {
     }
 
     modifier requireVoteClosed(uint256 _proposalId) {
-        require(_storage.isReady(_proposalId) && !isVoteOpenByProposalId[_proposalId], "Vote is not closed");
+        require(_storage.isFinal(_proposalId) && !isVoteOpenByProposalId[_proposalId], "Vote is not closed");
         _;
     }
 
@@ -127,7 +127,7 @@ contract CollectiveGovernance is Governance, VoteStrategy, ERC165 {
         address _sender = msg.sender;
         _storage.setQuorumThreshold(_proposalId, _quorumThreshold, _sender);
         _storage.setRequiredVoteDuration(_proposalId, _requiredDuration, _sender);
-        _storage.makeReady(_proposalId, _sender);
+        _storage.makeFinal(_proposalId, _sender);
         emit ProposalOpen(_proposalId);
     }
 
@@ -411,10 +411,6 @@ contract CollectiveGovernance is Governance, VoteStrategy, ERC165 {
         _storage.validOrRevert(_proposalId);
         uint256 _startBlock = _storage.startBlock(_proposalId);
         require(!isVoteOpenByProposalId[_proposalId] && (_startBlock == 0 || block.number <= _startBlock), "Not possible");
-        if (!_storage.isReady(_proposalId)) {
-            _storage.makeReady(_proposalId, msg.sender);
-            emit ProposalOpen(_proposalId);
-        }
         _storage.cancel(_proposalId, msg.sender);
         emit ProposalClosed(_proposalId);
     }

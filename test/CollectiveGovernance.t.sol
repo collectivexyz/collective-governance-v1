@@ -227,7 +227,7 @@ contract CollectiveGovernanceTest is Test {
     function testOpenVote() public {
         vm.startPrank(_governanceAddress);
         _storage.setQuorumThreshold(PROPOSAL_ID, 75, _SUPERVISOR);
-        _storage.makeReady(PROPOSAL_ID, _SUPERVISOR);
+        _storage.makeFinal(PROPOSAL_ID, _SUPERVISOR);
         vm.stopPrank();
         vm.prank(_SUPERVISOR);
         governance.openVote(PROPOSAL_ID);
@@ -245,7 +245,7 @@ contract CollectiveGovernanceTest is Test {
     function testOwnerOpenVote() public {
         vm.startPrank(_governanceAddress);
         _storage.setQuorumThreshold(PROPOSAL_ID, 2, _SUPERVISOR);
-        _storage.makeReady(PROPOSAL_ID, _SUPERVISOR);
+        _storage.makeFinal(PROPOSAL_ID, _SUPERVISOR);
         vm.stopPrank();
         vm.prank(_OWNER);
         governance.openVote(PROPOSAL_ID);
@@ -255,7 +255,7 @@ contract CollectiveGovernanceTest is Test {
         uint256 blockNumber = block.number;
         vm.startPrank(_governanceAddress);
         _storage.setQuorumThreshold(PROPOSAL_ID, 2, _SUPERVISOR);
-        _storage.makeReady(PROPOSAL_ID, _SUPERVISOR);
+        _storage.makeFinal(PROPOSAL_ID, _SUPERVISOR);
         vm.stopPrank();
         vm.prank(_SUPERVISOR);
         governance.openVote(PROPOSAL_ID);
@@ -269,7 +269,7 @@ contract CollectiveGovernanceTest is Test {
     function testEarlyEndVote() public {
         vm.startPrank(_governanceAddress);
         _storage.setQuorumThreshold(PROPOSAL_ID, 2, _SUPERVISOR);
-        _storage.makeReady(PROPOSAL_ID, _SUPERVISOR);
+        _storage.makeFinal(PROPOSAL_ID, _SUPERVISOR);
         vm.stopPrank();
         vm.prank(_SUPERVISOR);
         governance.openVote(PROPOSAL_ID);
@@ -282,7 +282,7 @@ contract CollectiveGovernanceTest is Test {
     function testDoubleOpenVote() public {
         vm.startPrank(_governanceAddress);
         _storage.setQuorumThreshold(PROPOSAL_ID, 2, _SUPERVISOR);
-        _storage.makeReady(PROPOSAL_ID, _SUPERVISOR);
+        _storage.makeFinal(PROPOSAL_ID, _SUPERVISOR);
         vm.stopPrank();
         vm.prank(_SUPERVISOR);
         governance.openVote(PROPOSAL_ID);
@@ -294,7 +294,7 @@ contract CollectiveGovernanceTest is Test {
     function testEndVoteWhenNotOpen() public {
         vm.startPrank(_governanceAddress);
         _storage.setQuorumThreshold(PROPOSAL_ID, 2, _SUPERVISOR);
-        _storage.makeReady(PROPOSAL_ID, _SUPERVISOR);
+        _storage.makeFinal(PROPOSAL_ID, _SUPERVISOR);
         vm.stopPrank();
         vm.expectRevert("Voting is closed");
         vm.prank(_SUPERVISOR);
@@ -324,7 +324,7 @@ contract CollectiveGovernanceTest is Test {
         _storage = Storage(governance.getStorageAddress());
         vm.startPrank(_governanceAddress);
         _storage.setQuorumThreshold(PROPOSAL_ID, 2, _SUPERVISOR);
-        _storage.makeReady(PROPOSAL_ID, _SUPERVISOR);
+        _storage.makeFinal(PROPOSAL_ID, _SUPERVISOR);
         vm.stopPrank();
         vm.prank(_SUPERVISOR);
         governance.openVote(PROPOSAL_ID);
@@ -340,7 +340,7 @@ contract CollectiveGovernanceTest is Test {
         vm.startPrank(_governanceAddress);
         _storage = Storage(governance.getStorageAddress());
         _storage.setQuorumThreshold(PROPOSAL_ID, 2, _SUPERVISOR);
-        _storage.makeReady(PROPOSAL_ID, _SUPERVISOR);
+        _storage.makeFinal(PROPOSAL_ID, _SUPERVISOR);
         vm.stopPrank();
         vm.expectRevert("Voting is closed");
         vm.prank(_VOTER1);
@@ -354,7 +354,7 @@ contract CollectiveGovernanceTest is Test {
         vm.startPrank(_governanceAddress);
         _storage = Storage(governance.getStorageAddress());
         _storage.setQuorumThreshold(PROPOSAL_ID, 2, _SUPERVISOR);
-        _storage.makeReady(PROPOSAL_ID, _SUPERVISOR);
+        _storage.makeFinal(PROPOSAL_ID, _SUPERVISOR);
         vm.stopPrank();
         vm.prank(_SUPERVISOR);
         governance.openVote(PROPOSAL_ID);
@@ -380,7 +380,7 @@ contract CollectiveGovernanceTest is Test {
         vm.startPrank(_governanceAddress);
         _storage = Storage(governance.getStorageAddress());
         _storage.setQuorumThreshold(PROPOSAL_ID, 2, _SUPERVISOR);
-        _storage.makeReady(PROPOSAL_ID, _SUPERVISOR);
+        _storage.makeFinal(PROPOSAL_ID, _SUPERVISOR);
         vm.stopPrank();
         vm.prank(_SUPERVISOR);
         governance.openVote(PROPOSAL_ID);
@@ -413,7 +413,7 @@ contract CollectiveGovernanceTest is Test {
         _storage = Storage(governance.getStorageAddress());
         _storage.enableUndoVote(PROPOSAL_ID, _SUPERVISOR);
         _storage.setQuorumThreshold(PROPOSAL_ID, 2, _SUPERVISOR);
-        _storage.makeReady(PROPOSAL_ID, _SUPERVISOR);
+        _storage.makeFinal(PROPOSAL_ID, _SUPERVISOR);
         vm.stopPrank();
         vm.expectRevert("Voting is closed");
         vm.prank(_VOTER1);
@@ -428,7 +428,7 @@ contract CollectiveGovernanceTest is Test {
         _storage = Storage(governance.getStorageAddress());
         _storage.enableUndoVote(PROPOSAL_ID, _SUPERVISOR);
         _storage.setQuorumThreshold(PROPOSAL_ID, 2, _SUPERVISOR);
-        _storage.makeReady(PROPOSAL_ID, _SUPERVISOR);
+        _storage.makeFinal(PROPOSAL_ID, _SUPERVISOR);
         vm.stopPrank();
         vm.prank(_SUPERVISOR);
         governance.openVote(PROPOSAL_ID);
@@ -441,7 +441,7 @@ contract CollectiveGovernanceTest is Test {
         vm.startPrank(_governanceAddress);
         _storage.enableUndoVote(PROPOSAL_ID, _SUPERVISOR);
         _storage.setQuorumThreshold(PROPOSAL_ID, 2, _SUPERVISOR);
-        _storage.makeReady(PROPOSAL_ID, _SUPERVISOR);
+        _storage.makeFinal(PROPOSAL_ID, _SUPERVISOR);
         vm.stopPrank();
         vm.prank(_OWNER);
         governance.openVote(PROPOSAL_ID);
@@ -461,7 +461,7 @@ contract CollectiveGovernanceTest is Test {
         vm.startPrank(_governanceAddress);
         _storage = Storage(governance.getStorageAddress());
         _storage.setQuorumThreshold(PROPOSAL_ID, 2, _SUPERVISOR);
-        _storage.makeReady(PROPOSAL_ID, _SUPERVISOR);
+        _storage.makeFinal(PROPOSAL_ID, _SUPERVISOR);
         vm.stopPrank();
         vm.prank(_SUPERVISOR);
         governance.openVote(PROPOSAL_ID);
@@ -479,7 +479,7 @@ contract CollectiveGovernanceTest is Test {
         vm.startPrank(_governanceAddress);
         _storage = Storage(governance.getStorageAddress());
         _storage.setQuorumThreshold(PROPOSAL_ID, 2, _SUPERVISOR);
-        _storage.makeReady(PROPOSAL_ID, _SUPERVISOR);
+        _storage.makeFinal(PROPOSAL_ID, _SUPERVISOR);
         vm.stopPrank();
         vm.prank(_SUPERVISOR);
         governance.openVote(PROPOSAL_ID);
@@ -497,7 +497,7 @@ contract CollectiveGovernanceTest is Test {
         vm.startPrank(_governanceAddress);
         _storage = Storage(governance.getStorageAddress());
         _storage.setQuorumThreshold(PROPOSAL_ID, 2, _SUPERVISOR);
-        _storage.makeReady(PROPOSAL_ID, _SUPERVISOR);
+        _storage.makeFinal(PROPOSAL_ID, _SUPERVISOR);
         vm.stopPrank();
         vm.prank(_SUPERVISOR);
         governance.openVote(PROPOSAL_ID);
@@ -527,7 +527,7 @@ contract CollectiveGovernanceTest is Test {
         vm.mockCall(storageMock, abi.encodeWithSelector(Storage.maxPassThreshold.selector), abi.encode(0xffffffff));
         vm.mockCall(storageMock, abi.encodeWithSelector(Storage.startBlock.selector), abi.encode(block.number - 2));
         vm.mockCall(storageMock, abi.encodeWithSelector(Storage.endBlock.selector), abi.encode(block.number - 1));
-        vm.mockCall(storageMock, abi.encodeWithSelector(Storage.isReady.selector), abi.encode(true));
+        vm.mockCall(storageMock, abi.encodeWithSelector(Storage.isFinal.selector), abi.encode(true));
         vm.mockCall(storageMock, abi.encodeWithSelector(Storage.isVeto.selector), abi.encode(false));
         vm.mockCall(storageMock, abi.encodeWithSelector(Storage.isSupervisor.selector), abi.encode(true));
         vm.mockCall(storageMock, abi.encodeWithSelector(Storage.validOrRevert.selector), abi.encode(PROPOSAL_ID));
@@ -558,7 +558,7 @@ contract CollectiveGovernanceTest is Test {
         vm.mockCall(storageMock, abi.encodeWithSelector(Storage.maxPassThreshold.selector), abi.encode(0xffffffff));
         vm.mockCall(storageMock, abi.encodeWithSelector(Storage.startBlock.selector), abi.encode(block.number - 2));
         vm.mockCall(storageMock, abi.encodeWithSelector(Storage.endBlock.selector), abi.encode(block.number - 1));
-        vm.mockCall(storageMock, abi.encodeWithSelector(Storage.isReady.selector), abi.encode(true));
+        vm.mockCall(storageMock, abi.encodeWithSelector(Storage.isFinal.selector), abi.encode(true));
         vm.mockCall(storageMock, abi.encodeWithSelector(Storage.isVeto.selector), abi.encode(false));
         vm.mockCall(storageMock, abi.encodeWithSelector(Storage.isSupervisor.selector), abi.encode(true));
         vm.mockCall(storageMock, abi.encodeWithSelector(Storage.validOrRevert.selector), abi.encode(PROPOSAL_ID));
@@ -589,7 +589,7 @@ contract CollectiveGovernanceTest is Test {
         vm.mockCall(storageMock, abi.encodeWithSelector(Storage.maxPassThreshold.selector), abi.encode(0xffffffff));
         vm.mockCall(storageMock, abi.encodeWithSelector(Storage.startBlock.selector), abi.encode(block.number - 2));
         vm.mockCall(storageMock, abi.encodeWithSelector(Storage.endBlock.selector), abi.encode(block.number - 1));
-        vm.mockCall(storageMock, abi.encodeWithSelector(Storage.isReady.selector), abi.encode(true));
+        vm.mockCall(storageMock, abi.encodeWithSelector(Storage.isFinal.selector), abi.encode(true));
         vm.mockCall(storageMock, abi.encodeWithSelector(Storage.isVeto.selector), abi.encode(false));
         vm.mockCall(storageMock, abi.encodeWithSelector(Storage.isSupervisor.selector), abi.encode(true));
         vm.mockCall(storageMock, abi.encodeWithSelector(Storage.validOrRevert.selector), abi.encode(PROPOSAL_ID));
@@ -619,7 +619,7 @@ contract CollectiveGovernanceTest is Test {
         vm.mockCall(storageMock, abi.encodeWithSelector(Storage.startBlock.selector), abi.encode(block.number - 2));
         vm.mockCall(storageMock, abi.encodeWithSelector(Storage.endBlock.selector), abi.encode(block.number - 1));
         vm.mockCall(storageMock, abi.encodeWithSelector(Storage.maxPassThreshold.selector), abi.encode(0xffffffff));
-        vm.mockCall(storageMock, abi.encodeWithSelector(Storage.isReady.selector), abi.encode(true));
+        vm.mockCall(storageMock, abi.encodeWithSelector(Storage.isFinal.selector), abi.encode(true));
         vm.mockCall(storageMock, abi.encodeWithSelector(Storage.isVeto.selector), abi.encode(false));
         vm.mockCall(storageMock, abi.encodeWithSelector(Storage.isSupervisor.selector), abi.encode(true));
         vm.mockCall(storageMock, abi.encodeWithSelector(Storage.validOrRevert.selector), abi.encode(PROPOSAL_ID));
@@ -640,7 +640,7 @@ contract CollectiveGovernanceTest is Test {
         vm.startPrank(_governanceAddress);
         _storage = Storage(governance.getStorageAddress());
         _storage.setQuorumThreshold(PROPOSAL_ID, 2, _SUPERVISOR);
-        _storage.makeReady(PROPOSAL_ID, _SUPERVISOR);
+        _storage.makeFinal(PROPOSAL_ID, _SUPERVISOR);
         vm.stopPrank();
         vm.prank(_SUPERVISOR);
         governance.openVote(PROPOSAL_ID);
@@ -662,7 +662,7 @@ contract CollectiveGovernanceTest is Test {
         vm.startPrank(_governanceAddress);
         _storage = Storage(governance.getStorageAddress());
         _storage.setQuorumThreshold(PROPOSAL_ID, 2, _SUPERVISOR);
-        _storage.makeReady(PROPOSAL_ID, _SUPERVISOR);
+        _storage.makeFinal(PROPOSAL_ID, _SUPERVISOR);
         vm.stopPrank();
         vm.prank(_SUPERVISOR);
         uint256 blockNumber = block.number;
@@ -696,7 +696,7 @@ contract CollectiveGovernanceTest is Test {
         vm.startPrank(_governanceAddress);
         _storage = Storage(governance.getStorageAddress());
         _storage.setQuorumThreshold(PROPOSAL_ID, 2, _SUPERVISOR);
-        _storage.makeReady(PROPOSAL_ID, _SUPERVISOR);
+        _storage.makeFinal(PROPOSAL_ID, _SUPERVISOR);
         vm.stopPrank();
         vm.prank(_SUPERVISOR);
         governance.openVote(PROPOSAL_ID);
@@ -719,7 +719,7 @@ contract CollectiveGovernanceTest is Test {
         vm.startPrank(_governanceAddress);
         _storage = Storage(governance.getStorageAddress());
         _storage.setQuorumThreshold(PROPOSAL_ID, 2, _SUPERVISOR);
-        _storage.makeReady(PROPOSAL_ID, _SUPERVISOR);
+        _storage.makeFinal(PROPOSAL_ID, _SUPERVISOR);
         vm.stopPrank();
         vm.expectRevert("Voting is closed");
         vm.prank(_VOTER1);
@@ -733,7 +733,7 @@ contract CollectiveGovernanceTest is Test {
         vm.startPrank(_governanceAddress);
         _storage = Storage(governance.getStorageAddress());
         _storage.setQuorumThreshold(PROPOSAL_ID, 2, _SUPERVISOR);
-        _storage.makeReady(PROPOSAL_ID, _SUPERVISOR);
+        _storage.makeFinal(PROPOSAL_ID, _SUPERVISOR);
         vm.stopPrank();
         vm.expectRevert("Voting is closed");
         vm.prank(_VOTER1);
@@ -749,7 +749,7 @@ contract CollectiveGovernanceTest is Test {
         _storage = Storage(governance.getStorageAddress());
         _storage.setQuorumThreshold(PROPOSAL_ID, 1, _SUPERVISOR);
         _storage.setVoteDelay(PROPOSAL_ID, 100, _SUPERVISOR);
-        _storage.makeReady(PROPOSAL_ID, _SUPERVISOR);
+        _storage.makeFinal(PROPOSAL_ID, _SUPERVISOR);
         vm.stopPrank();
         uint256 startBlock = block.number;
         vm.prank(_SUPERVISOR);
@@ -770,7 +770,7 @@ contract CollectiveGovernanceTest is Test {
         _storage = Storage(governance.getStorageAddress());
         _storage.setQuorumThreshold(PROPOSAL_ID, 1, _SUPERVISOR);
         _storage.setRequiredVoteDuration(PROPOSAL_ID, 10, _SUPERVISOR);
-        _storage.makeReady(PROPOSAL_ID, _SUPERVISOR);
+        _storage.makeFinal(PROPOSAL_ID, _SUPERVISOR);
         vm.stopPrank();
         uint256 startBlock = block.number;
         vm.prank(_SUPERVISOR);
@@ -791,7 +791,7 @@ contract CollectiveGovernanceTest is Test {
         _storage.setQuorumThreshold(PROPOSAL_ID, 1, _SUPERVISOR);
         _storage.setVoteDelay(PROPOSAL_ID, 5, _SUPERVISOR);
         _storage.setRequiredVoteDuration(PROPOSAL_ID, 10, _SUPERVISOR);
-        _storage.makeReady(PROPOSAL_ID, _SUPERVISOR);
+        _storage.makeFinal(PROPOSAL_ID, _SUPERVISOR);
         vm.stopPrank();
         uint256 startBlock = block.number;
         vm.prank(_SUPERVISOR);
@@ -812,7 +812,7 @@ contract CollectiveGovernanceTest is Test {
         _storage.setQuorumThreshold(PROPOSAL_ID, 1, _SUPERVISOR);
         _storage.setVoteDelay(PROPOSAL_ID, 5, _SUPERVISOR);
         _storage.setRequiredVoteDuration(PROPOSAL_ID, 10, _SUPERVISOR);
-        _storage.makeReady(PROPOSAL_ID, _SUPERVISOR);
+        _storage.makeFinal(PROPOSAL_ID, _SUPERVISOR);
         vm.stopPrank();
         uint256 startBlock = block.number;
         vm.prank(_SUPERVISOR);
@@ -856,7 +856,7 @@ contract CollectiveGovernanceTest is Test {
     function testDirectStorageAccessToReady() public {
         vm.expectRevert("Not permitted");
         vm.prank(_SUPERVISOR);
-        _storage.makeReady(PROPOSAL_ID, _SUPERVISOR);
+        _storage.makeFinal(PROPOSAL_ID, _SUPERVISOR);
     }
 
     function testDirectStorageAccessToCastVote() public {

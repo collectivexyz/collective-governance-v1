@@ -126,7 +126,7 @@
       "dependsOn": "hint",
       "group": {
         "kind": "test",
-        "isDefault": true
+        "isDefault": false
       }
     }
   ]
