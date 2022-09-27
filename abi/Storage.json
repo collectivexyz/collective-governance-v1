@@ -187,7 +187,7 @@
       {
         "indexed": false,
         "internalType": "uint256",
-        "name": "endBlock",
+        "name": "endTime",
         "type": "uint256"
       }
     ],
@@ -347,7 +347,7 @@
         "type": "uint256"
       }
     ],
-    "name": "endBlock",
+    "name": "endTime",
     "outputs": [
       {
         "internalType": "uint256",
@@ -572,6 +572,19 @@
   },
   {
     "inputs": [],
+    "name": "minimumVoteDuration",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
     "name": "name",
     "outputs": [
       {
@@ -653,7 +666,7 @@
       },
       {
         "internalType": "uint256",
-        "name": "_threshold",
+        "name": "_quorum",
         "type": "uint256"
       },
       {
@@ -663,29 +676,6 @@
       }
     ],
     "name": "setQuorumRequired",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "_proposalId",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_voteDuration",
-        "type": "uint256"
-      },
-      {
-        "internalType": "address",
-        "name": "_sender",
-        "type": "address"
-      }
-    ],
-    "name": "setVoteDuration",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -709,6 +699,29 @@
       }
     ],
     "name": "setVoteDelay",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_proposalId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_voteDuration",
+        "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "_sender",
+        "type": "address"
+      }
+    ],
+    "name": "setVoteDuration",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
