@@ -3,7 +3,7 @@ ____________________
 
 .. _license: 
 
-Copyright (c) 2022, Collective.XYZ
+Copyright (c) 2022, collective
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without

@@ -7,8 +7,8 @@
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
 project = 'Collective Governance'
-copyright = '2022, Collective.XYZ'
-author = 'Collective.XYZ'
+copyright = '2022, collective'
+author = 'collective'
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
