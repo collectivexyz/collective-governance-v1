@@ -46,7 +46,7 @@ jobs:
 
       - name: Run Forge tests
         run: |
-          forge test -vvv
+          forge test -vvv --gas-report
         id: test
 
       - name: Deploy Görli Testnet
