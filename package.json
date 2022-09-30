@@ -10,8 +10,6 @@
   },
   "scripts": {
     "build": "~mr/.cargo/bin/forge build --sizes",
-    "lint": "solium -d contracts",
-    "lint:fix": "solium -d contracts --fix",
     "hint": "solhint contracts/**/*.sol test/**/*.sol",
     "test": "~mr/.cargo/bin/forge test -vvv",
     "clean": "~mr/.cargo/bin/forge clean"
@@ -21,7 +19,6 @@
     "url": "git+https://github.com/momentranks/collective-governance-v1.git"
   },
   "devDependencies": {
-    "ethlint": "1.2.5",
     "prettier": "2.7.1",
     "prettier-plugin-solidity": "1.0.0-beta.24",
     "solhint": "3.3.7",

@@ -393,7 +393,7 @@ contract GovernanceStorage is Storage, ERC165, Ownable {
     /// @notice test if proposal is cancelled
     /// @param _proposalId the id of the proposal
     /// @return bool true if the proposal is marked cancelled
-    function isCancel(uint256 _proposalId) external view returns (bool) {
+    function isCancel(uint256 _proposalId) public view returns (bool) {
         revertNotValid(_proposalId);
         Proposal storage proposal = proposalMap[_proposalId];
         return proposal.status == Status.CANCELLED;
@@ -453,8 +453,11 @@ contract GovernanceStorage is Storage, ERC165, Ownable {
         uint256 latestProposalId = _latestProposalId[_sender];
         if (latestProposalId != 0) {
             Proposal storage lastProposal = proposalMap[latestProposalId];
-            // solhint-disable-next-line not-rely-on-time
-            require(isFinal(latestProposalId) && block.timestamp >= lastProposal.endTime, "Too many proposals");
+            require(
+                // solhint-disable-next-line not-rely-on-time
+                isCancel(latestProposalId) || (isFinal(latestProposalId) && block.timestamp >= lastProposal.endTime),
+                "Too many proposals"
+            );
         }
         _proposalCount++;
         uint256 proposalId = _proposalCount;

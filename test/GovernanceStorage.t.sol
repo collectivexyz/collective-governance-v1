@@ -521,7 +521,15 @@ contract GovernanceStorageTest is Test {
         _storage.registerSupervisor(PROPOSAL_ID, _SUPERVISOR, _OWNER);
         _storage.makeFinal(PROPOSAL_ID, _SUPERVISOR);
         vm.warp(block.timestamp + Constant.MINIMUM_VOTE_DURATION + 1);
-        _storage.initializeProposal(_OWNER);
+        uint256 nextProposalId = _storage.initializeProposal(_OWNER);
+        assertTrue(nextProposalId > PROPOSAL_ID);
+    }
+
+    function testExemptFromDelayIfCancel() public {
+        _storage.registerSupervisor(PROPOSAL_ID, _SUPERVISOR, _OWNER);
+        _storage.cancel(PROPOSAL_ID, _SUPERVISOR);
+        uint256 nextProposalId = _storage.initializeProposal(_OWNER);
+        assertTrue(nextProposalId > PROPOSAL_ID);
     }
 
     function testRevertOnSecondProposal() public {
