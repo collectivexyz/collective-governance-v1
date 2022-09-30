@@ -44,6 +44,7 @@
 pragma solidity ^0.8.15;
 
 import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
 
 import "../contracts/Constant.sol";
 import "../contracts/VoterClass.sol";
@@ -72,13 +73,11 @@ interface VoterPool {
 /// @notice This contract supports voting for a specific list of wallet addresses.   Each address must be added
 /// to the contract prior to voting at which time the pool must be marked as final so that it becomes impossible
 /// to modify
-contract VoterClassVoterPool is VoterClass, ERC165 {
+contract VoterClassVoterPool is VoterClass, ERC165, Ownable {
     event RegisterVoter(address voter);
     event BurnVoter(address voter);
 
     string public constant NAME = "collective.xyz VoterClassVoterPool";
-
-    address private immutable _cognate;
 
     uint256 private immutable _weight;
 
@@ -89,7 +88,6 @@ contract VoterClassVoterPool is VoterClass, ERC165 {
 
     /// @param _voteWeight The integral weight to apply to each token held by the wallet
     constructor(uint256 _voteWeight) {
-        _cognate = msg.sender;
         _weight = _voteWeight;
         _isPoolFinal = false;
     }
@@ -119,15 +117,10 @@ contract VoterClassVoterPool is VoterClass, ERC165 {
         _;
     }
 
-    modifier requireCognate() {
-        require(_cognate == msg.sender, "Not permitted");
-        _;
-    }
-
     /// @notice add a voter to the voter pool
     /// @dev only possible if not final
     /// @param _wallet the address to add
-    function addVoter(address _wallet) external requireValidAddress(_wallet) requireCognate requireNotFinal {
+    function addVoter(address _wallet) external requireValidAddress(_wallet) onlyOwner requireNotFinal {
         if (!_voterPool[_wallet]) {
             _voterPool[_wallet] = true;
             emit RegisterVoter(_wallet);
@@ -139,7 +132,7 @@ contract VoterClassVoterPool is VoterClass, ERC165 {
     /// @notice remove a voter from the voter pool
     /// @dev only possible if not final
     /// @param _wallet the address to add
-    function removeVoter(address _wallet) external requireValidAddress(_wallet) requireCognate requireNotFinal {
+    function removeVoter(address _wallet) external requireValidAddress(_wallet) onlyOwner requireNotFinal {
         if (_voterPool[_wallet]) {
             _voterPool[_wallet] = false;
             emit BurnVoter(_wallet);
@@ -196,6 +189,7 @@ contract VoterClassVoterPool is VoterClass, ERC165 {
         return
             interfaceId == type(VoterPool).interfaceId ||
             interfaceId == type(VoterClass).interfaceId ||
+            interfaceId == type(Ownable).interfaceId ||
             super.supportsInterface(interfaceId);
     }
 

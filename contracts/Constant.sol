@@ -44,13 +44,13 @@
 pragma solidity ^0.8.15;
 
 /**
-  @notice extract global static manifest constants
+  @notice extract global manifest constants
  */
 library Constant {
     uint256 public constant UINT_MAX = 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF;
 
     /// @notice minimum vote duration
-    /// @dev must be a relatively long time compared to seconds
+    /// @dev For security reasons this must be a relatively long time compared to seconds
     uint256 public constant MINIMUM_VOTE_DURATION = 86400;
 
     uint32 public constant VERSION_1 = 1;

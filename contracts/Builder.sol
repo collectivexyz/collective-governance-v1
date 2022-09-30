@@ -46,6 +46,7 @@ pragma solidity ^0.8.15;
 import "@openzeppelin/contracts/interfaces/IERC165.sol";
 
 import "../contracts/VoterClass.sol";
+import "../contracts/Storage.sol";
 
 /// @title Governance Builder interface
 /// @notice Requirements for Governance Builder implementation
@@ -53,8 +54,10 @@ import "../contracts/VoterClass.sol";
 interface Builder is IERC165 {
     event GovernanceContractCreated(address creator, address governance);
     event BuilderContractInitialized(address creator);
-    event BuilderSupervisorAdded(address creator, address supervisor);
-    event BuilderVoterClassAdded(address creator, string name, uint32 version);
+    event BuilderWithSupervisor(address creator, address supervisor);
+    event BuilderWithVoterClass(address creator, address class, string name, uint32 version);
+    event BuilderWithMinimumDuration(address creator, uint256 duration);
+    event BuilderWithStorageAddress(address creator, address _storage);
 
     struct GovernanceProperties {
         uint256 minimumVoteDuration;

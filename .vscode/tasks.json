@@ -65,6 +65,19 @@
       }
     },
     {
+      "label": "clean",
+      "type": "shell",
+      "command": "forge clean && forge cache clean",
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "dependsOn": "build",
+      "group": {
+        "kind": "build",
+        "isDefault": false
+      }
+    },
+    {
       "label": "production",
       "type": "shell",
       "command": "yarn install --production",

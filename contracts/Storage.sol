@@ -242,13 +242,13 @@ interface Storage is IERC165 {
     /// @param _proposalId the id of the proposal
     /// @param _supervisor the address to check
     /// @return bool true if the address is a supervisor
-    function isSupervisor(uint256 _proposalId, address _supervisor) external returns (bool);
+    function isSupervisor(uint256 _proposalId, address _supervisor) external view returns (bool);
 
     /// @notice test if address is a voter on the specified proposal
     /// @param _proposalId the id of the proposal
     /// @param _voter the address to check
     /// @return bool true if the address is a voter
-    function isVoter(uint256 _proposalId, address _voter) external returns (bool);
+    function isVoter(uint256 _proposalId, address _voter) external view returns (bool);
 
     /// @notice test if proposal is ready or in the setup phase
     /// @param _proposalId the id of the proposal
@@ -358,7 +358,7 @@ interface Storage is IERC165 {
 
     /// @notice do nothing or revert if the proposal is not valid
     /// @param _proposalId the id of the proposal
-    function validOrRevert(uint256 _proposalId) external view;
+    function revertNotValid(uint256 _proposalId) external view;
 
     /// @notice get the maxiumum possible for the pass threshold
     /// @return uint256 the maximum value

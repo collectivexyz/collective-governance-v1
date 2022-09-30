@@ -52,12 +52,17 @@ contract GovernanceBuilderTest is Test {
         Governance _gov = Governance(_governance);
         _gov.propose();
         address _storage = _gov.getStorageAddress();
-        assertEq(Storage(_storage).minimumVoteDuration(), 86400);
+        assertEq(Storage(_storage).minimumVoteDuration(), Constant.MINIMUM_VOTE_DURATION);
     }
 
     function testFailWithVoteDurationThatIsTooShort() public {
         VoterClass _class = new VoterClassNullObject();
-        _builder.aGovernance().withMinimumDuration(86399).withSupervisor(_SUPERVISOR).withVoterClass(_class).build();
+        _builder
+            .aGovernance()
+            .withMinimumDuration(Constant.MINIMUM_VOTE_DURATION - 1)
+            .withSupervisor(_SUPERVISOR)
+            .withVoterClass(_class)
+            .build();
     }
 
     function testWithOpenVote() public {

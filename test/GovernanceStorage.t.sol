@@ -58,6 +58,11 @@ contract GovernanceStorageTest is Test {
         new GovernanceStorage(_voterClass, 1);
     }
 
+    function testFailVoterClassNotFinal() public {
+        VoterClass _class = new VoterClassVoterPool(1);
+        new GovernanceStorage(_class, Constant.MINIMUM_VOTE_DURATION);
+    }
+
     function testIsReady() public {
         assertFalse(_storage.isFinal(PROPOSAL_ID));
     }
@@ -69,7 +74,7 @@ contract GovernanceStorageTest is Test {
 
     function testOnlyOneOwnerCanRegisterSupervisor() public {
         vm.prank(_NOBODY);
-        vm.expectRevert("Not permitted");
+        vm.expectRevert("Ownable: caller is not the owner");
         _storage.registerSupervisor(PROPOSAL_ID, _SUPERVISOR, _NOBODY);
     }
 
@@ -79,7 +84,7 @@ contract GovernanceStorageTest is Test {
     }
 
     function testOwnerRegisterSupervisor() public {
-        vm.expectRevert("Not permitted");
+        vm.expectRevert("Ownable: caller is not the owner");
         vm.prank(_OWNER);
         _storage.registerSupervisor(PROPOSAL_ID, _SUPERVISOR, _OWNER);
     }
@@ -104,7 +109,7 @@ contract GovernanceStorageTest is Test {
 
     function testRegisterAndOwnerBurnSupervisor() public {
         _storage.registerSupervisor(PROPOSAL_ID, _SUPERVISOR, _OWNER);
-        vm.expectRevert("Not permitted");
+        vm.expectRevert("Ownable: caller is not the owner");
         vm.prank(_OWNER);
         _storage.burnSupervisor(PROPOSAL_ID, _SUPERVISOR, _OWNER);
     }
@@ -124,7 +129,7 @@ contract GovernanceStorageTest is Test {
 
     function testSetQuorumRequiredDirect() public {
         _storage.registerSupervisor(PROPOSAL_ID, _SUPERVISOR, _OWNER);
-        vm.expectRevert("Not permitted");
+        vm.expectRevert("Ownable: caller is not the owner");
         vm.prank(_SUPERVISOR);
         _storage.setQuorumRequired(PROPOSAL_ID, 100, _SUPERVISOR);
     }
@@ -146,14 +151,14 @@ contract GovernanceStorageTest is Test {
 
     function testSetVoteDelayDirect() public {
         _storage.registerSupervisor(PROPOSAL_ID, _SUPERVISOR, _OWNER);
-        vm.expectRevert("Not permitted");
+        vm.expectRevert("Ownable: caller is not the owner");
         vm.prank(_SUPERVISOR);
         _storage.setVoteDelay(PROPOSAL_ID, 100, _SUPERVISOR);
     }
 
     function testSetVoteDelayRequiresSupervisor() public {
         _storage.registerSupervisor(PROPOSAL_ID, _SUPERVISOR, _OWNER);
-        vm.expectRevert("Not permitted");
+        vm.expectRevert("Ownable: caller is not the owner");
         vm.prank(_OWNER);
         _storage.setVoteDelay(PROPOSAL_ID, 100, _OWNER);
     }
@@ -175,7 +180,7 @@ contract GovernanceStorageTest is Test {
 
     function testSetMinimumVoteDurationDirect() public {
         _storage.registerSupervisor(PROPOSAL_ID, _SUPERVISOR, _OWNER);
-        vm.expectRevert("Not permitted");
+        vm.expectRevert("Ownable: caller is not the owner");
         vm.prank(_SUPERVISOR);
         _storage.setVoteDuration(PROPOSAL_ID, 10, _SUPERVISOR);
     }
@@ -186,10 +191,10 @@ contract GovernanceStorageTest is Test {
         _storage.setVoteDuration(PROPOSAL_ID, 0, _SUPERVISOR);
     }
 
-    function testSetMinimumVoteDurationOneDay() public {
+    function testSetMinimumVoteDurationShort() public {
         _storage.registerSupervisor(PROPOSAL_ID, _SUPERVISOR, _OWNER);
         vm.expectRevert("Short vote");
-        _storage.setVoteDuration(PROPOSAL_ID, 86399, _SUPERVISOR);
+        _storage.setVoteDuration(PROPOSAL_ID, Constant.MINIMUM_VOTE_DURATION - 1, _SUPERVISOR);
     }
 
     function testSetMinimumVoteDurationIfReady() public {
@@ -202,7 +207,7 @@ contract GovernanceStorageTest is Test {
     function testSetMinimumVoteDurationRequiredSupervisor() public {
         _storage.registerSupervisor(PROPOSAL_ID, _SUPERVISOR, _OWNER);
         vm.expectRevert("Requires supervisor");
-        _storage.setVoteDuration(PROPOSAL_ID, 0, _cognate);
+        _storage.setVoteDuration(PROPOSAL_ID, Constant.MINIMUM_VOTE_DURATION, _cognate);
     }
 
     function testMakeReady() public {
@@ -213,7 +218,7 @@ contract GovernanceStorageTest is Test {
 
     function testMakeReadyDirect() public {
         _storage.registerSupervisor(PROPOSAL_ID, _SUPERVISOR, _OWNER);
-        vm.expectRevert("Not permitted");
+        vm.expectRevert("Ownable: caller is not the owner");
         vm.prank(_SUPERVISOR);
         _storage.makeFinal(PROPOSAL_ID, _SUPERVISOR);
     }
@@ -240,7 +245,7 @@ contract GovernanceStorageTest is Test {
 
     function testVetoDirect() public {
         _storage.registerSupervisor(PROPOSAL_ID, _SUPERVISOR, _OWNER);
-        vm.expectRevert("Not permitted");
+        vm.expectRevert("Ownable: caller is not the owner");
         vm.prank(_SUPERVISOR);
         _storage.veto(PROPOSAL_ID, _SUPERVISOR);
     }
@@ -260,7 +265,7 @@ contract GovernanceStorageTest is Test {
     function testRevertInvalidProposal(uint256 _proposalId) public {
         vm.assume(_proposalId > PROPOSAL_ID);
         vm.expectRevert("Invalid proposal");
-        _storage.validOrRevert(_proposalId);
+        _storage.revertNotValid(_proposalId);
     }
 
     function testAbstainFromVote() public {
@@ -278,7 +283,7 @@ contract GovernanceStorageTest is Test {
         _storage.registerSupervisor(PROPOSAL_ID, _SUPERVISOR, _OWNER);
         _storage.setQuorumRequired(PROPOSAL_ID, 2, _SUPERVISOR);
         _storage.makeFinal(PROPOSAL_ID, _SUPERVISOR);
-        vm.expectRevert("Not permitted");
+        vm.expectRevert("Ownable: caller is not the owner");
         vm.prank(_VOTER1);
         _storage.abstainForShare(PROPOSAL_ID, _VOTER1, uint160(_VOTER1));
     }
@@ -298,7 +303,7 @@ contract GovernanceStorageTest is Test {
         _storage.registerSupervisor(PROPOSAL_ID, _SUPERVISOR, _OWNER);
         _storage.setQuorumRequired(PROPOSAL_ID, 2, _SUPERVISOR);
         _storage.makeFinal(PROPOSAL_ID, _SUPERVISOR);
-        vm.expectRevert("Not permitted");
+        vm.expectRevert("Ownable: caller is not the owner");
         vm.prank(_VOTER1);
         _storage.voteAgainstByShare(PROPOSAL_ID, _VOTER1, uint160(_VOTER1));
     }
@@ -410,7 +415,7 @@ contract GovernanceStorageTest is Test {
         _storage.registerSupervisor(PROPOSAL_ID, _SUPERVISOR, _OWNER);
         _storage.setQuorumRequired(PROPOSAL_ID, 2, _SUPERVISOR);
         _storage.makeFinal(PROPOSAL_ID, _SUPERVISOR);
-        vm.expectRevert("Not permitted");
+        vm.expectRevert("Ownable: caller is not the owner");
         vm.prank(_VOTER1);
         _storage.voteForByShare(PROPOSAL_ID, _VOTER1, uint160(_VOTER1));
     }
@@ -512,12 +517,10 @@ contract GovernanceStorageTest is Test {
         _storage.latestProposal(_SUPERVISOR);
     }
 
-    function testLatestProposalRevertItsNotOverTillItsOver() public {
-        uint256 latestProposalId = _storage.latestProposal(_OWNER);
-        assertEq(PROPOSAL_ID, latestProposalId);
-        _storage.registerSupervisor(latestProposalId, _SUPERVISOR, _OWNER);
-        _storage.makeFinal(latestProposalId, _SUPERVISOR);
-        vm.expectRevert("Too many proposals");
+    function testAllowProposalIfFinal() public {
+        _storage.registerSupervisor(PROPOSAL_ID, _SUPERVISOR, _OWNER);
+        _storage.makeFinal(PROPOSAL_ID, _SUPERVISOR);
+        vm.warp(block.timestamp + Constant.MINIMUM_VOTE_DURATION + 1);
         _storage.initializeProposal(_OWNER);
     }
 
@@ -545,5 +548,11 @@ contract GovernanceStorageTest is Test {
         _storage.makeFinal(PROPOSAL_ID, _SUPERVISOR);
         vm.expectRevert("Requires supervisor");
         _storage.cancel(PROPOSAL_ID, _NOTSUPERVISOR);
+    }
+
+    function testFailTransferNotOwner() public {
+        GovernanceStorage _gStorage = new GovernanceStorage(_storage.voterClass(), Constant.MINIMUM_VOTE_DURATION);
+        vm.prank(_SUPERVISOR);
+        _gStorage.transferOwnership(_SUPERVISOR);
     }
 }

@@ -28,12 +28,12 @@
       },
       {
         "indexed": false,
-        "internalType": "address",
-        "name": "supervisor",
-        "type": "address"
+        "internalType": "uint256",
+        "name": "duration",
+        "type": "uint256"
       }
     ],
-    "name": "BuilderSupervisorAdded",
+    "name": "BuilderWithMinimumDuration",
     "type": "event"
   },
   {
@@ -43,6 +43,50 @@
         "indexed": false,
         "internalType": "address",
         "name": "creator",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "_storage",
+        "type": "address"
+      }
+    ],
+    "name": "BuilderWithStorageAddress",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "creator",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "supervisor",
+        "type": "address"
+      }
+    ],
+    "name": "BuilderWithSupervisor",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "creator",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "class",
         "type": "address"
       },
       {
@@ -58,7 +102,7 @@
         "type": "uint32"
       }
     ],
-    "name": "BuilderVoterClassAdded",
+    "name": "BuilderWithVoterClass",
     "type": "event"
   },
   {
