@@ -13,7 +13,7 @@ jumpdest_remover = true
 order_literals = true
 deduplicate = true
 cse = true
-constant_optimizer = false
+constant_optimizer = true
 yul = true
 
 [profile.default.optimizer_details.yulDetails]
