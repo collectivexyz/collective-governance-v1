@@ -2,7 +2,7 @@
 
 set -e
 
-BUILD=site/build
+BUILD=site/_build
 if [ ! -d ${BUILD} ]
 then
   mkdir -p ${BUILD}
