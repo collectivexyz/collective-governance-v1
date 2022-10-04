@@ -70,7 +70,7 @@ Next configure the proposal and open voting
     const quorum = await storage.quorumRequired(proposalId);
     const duration = await storage.voteDuration(proposalId);
     logger.info(`New Vote - ${proposalId}: quorum=${quorum}, duration=${duration}`);
-    await governance.openVote(proposalId);
+    await governance.startVote(proposalId);
     logger.info('Voting is open...');
 
 

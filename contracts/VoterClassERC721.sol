@@ -57,7 +57,7 @@ import "../contracts/VoterClass.sol";
 /// @dev ERC721Enumerable is supported for discovery, however if the token contract does not support enumeration
 /// then vote by specific tokenId is still supported
 contract VoterClassERC721 is VoterClass, ERC165 {
-    string public constant NAME = "collective.xyz VoterClassERC721";
+    string public constant NAME = "collective VoterClassERC721";
 
     address private immutable _contractAddress;
 

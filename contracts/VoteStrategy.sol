@@ -57,9 +57,9 @@ interface VoteStrategy {
     event AbstentionTally(uint256 proposalId, address wallet, uint256 count);
     event VoteUndo(uint256 proposalId, address wallet, uint256 count);
 
-    /// @notice open an existing proposal by id
+    /// @notice start the voting process by proposal id
     /// @param _proposalId The numeric id of the proposed vote
-    function openVote(uint256 _proposalId) external;
+    function startVote(uint256 _proposalId) external;
 
     /// @notice test if an existing proposal is open
     /// @param _proposalId The numeric id of the proposed vote

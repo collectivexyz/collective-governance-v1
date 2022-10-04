@@ -19,6 +19,7 @@ import "../contracts/Governance.sol";
 import "../contracts/CollectiveGovernance.sol";
 import "../contracts/GovernanceBuilder.sol";
 import "./MockERC721.sol";
+import "./FlagSet.sol";
 
 contract CollectiveGovernanceTest is Test {
     uint256 private constant UINT256MAX = Constant.UINT_MAX;
@@ -67,7 +68,7 @@ contract CollectiveGovernanceTest is Test {
     }
 
     function testName() public {
-        assertEq(governance.name(), "collective.xyz governance");
+        assertEq(governance.name(), "collective governance");
     }
 
     function testVersion() public {
@@ -93,7 +94,7 @@ contract CollectiveGovernanceTest is Test {
     function testConfigure721() public {
         vm.startPrank(_SUPERVISOR, _SUPERVISOR);
         governance.configure(PROPOSAL_ID, 2);
-        governance.openVote(PROPOSAL_ID);
+        governance.startVote(PROPOSAL_ID);
         vm.stopPrank();
         assertTrue(governance.isOpen(PROPOSAL_ID));
         assertEq(_storage.quorumRequired(PROPOSAL_ID), 2);
@@ -104,14 +105,14 @@ contract CollectiveGovernanceTest is Test {
         vm.startPrank(_SUPERVISOR, _SUPERVISOR);
         governance.configure(PROPOSAL_ID, 2);
         vm.expectRevert("Invalid proposal");
-        governance.openVote(PROPOSAL_ID + 1);
+        governance.startVote(PROPOSAL_ID + 1);
         vm.stopPrank();
     }
 
     function testCastSimpleVote721() public {
         vm.startPrank(_SUPERVISOR, _SUPERVISOR);
         governance.configure(PROPOSAL_ID, 2);
-        governance.openVote(PROPOSAL_ID);
+        governance.startVote(PROPOSAL_ID);
         vm.stopPrank();
         vm.prank(_VOTER1);
         governance.voteFor(PROPOSAL_ID, TOKEN_ID1);
@@ -121,7 +122,7 @@ contract CollectiveGovernanceTest is Test {
     function testCastSimpleVote721BadShare() public {
         vm.startPrank(_SUPERVISOR, _SUPERVISOR);
         governance.configure(PROPOSAL_ID, 2);
-        governance.openVote(PROPOSAL_ID);
+        governance.startVote(PROPOSAL_ID);
         vm.stopPrank();
         vm.prank(_VOTER1);
         vm.expectRevert("Share id is not valid");
@@ -131,7 +132,7 @@ contract CollectiveGovernanceTest is Test {
     function testCastSimpleVote721NoShare() public {
         vm.startPrank(_SUPERVISOR, _SUPERVISOR);
         governance.configure(PROPOSAL_ID, 2);
-        governance.openVote(PROPOSAL_ID);
+        governance.startVote(PROPOSAL_ID);
         vm.stopPrank();
         vm.expectRevert("No such token");
         vm.prank(_VOTER1);
@@ -141,7 +142,7 @@ contract CollectiveGovernanceTest is Test {
     function testCastSimpleVoteOpen() public {
         vm.startPrank(_SUPERVISOR, _SUPERVISOR);
         governance.configure(PROPOSAL_ID, 2);
-        governance.openVote(PROPOSAL_ID);
+        governance.startVote(PROPOSAL_ID);
         vm.stopPrank();
         vm.prank(_VOTER1);
         governance.voteFor(PROPOSAL_ID, TOKEN_ID1);
@@ -151,7 +152,7 @@ contract CollectiveGovernanceTest is Test {
     function testCastMultipleVote() public {
         vm.startPrank(_SUPERVISOR, _SUPERVISOR);
         governance.configure(PROPOSAL_ID, 5);
-        governance.openVote(PROPOSAL_ID);
+        governance.startVote(PROPOSAL_ID);
         vm.stopPrank();
         vm.prank(_VOTER1);
         governance.voteFor(PROPOSAL_ID, _tokenIdList);
@@ -161,7 +162,7 @@ contract CollectiveGovernanceTest is Test {
     function testCastMultipleVoteAgainst() public {
         vm.startPrank(_SUPERVISOR, _SUPERVISOR);
         governance.configure(PROPOSAL_ID, 5);
-        governance.openVote(PROPOSAL_ID);
+        governance.startVote(PROPOSAL_ID);
         vm.stopPrank();
         vm.prank(_VOTER1);
         governance.voteAgainst(PROPOSAL_ID, _tokenIdList);
@@ -171,7 +172,7 @@ contract CollectiveGovernanceTest is Test {
     function testCastMultipleVoteAbstain() public {
         vm.startPrank(_SUPERVISOR, _SUPERVISOR);
         governance.configure(PROPOSAL_ID, 5);
-        governance.openVote(PROPOSAL_ID);
+        governance.startVote(PROPOSAL_ID);
         vm.stopPrank();
         vm.prank(_VOTER1);
         governance.abstainFrom(PROPOSAL_ID, _tokenIdList);
@@ -181,7 +182,7 @@ contract CollectiveGovernanceTest is Test {
     function testCastSimpleVoteWhileActive() public {
         vm.startPrank(_SUPERVISOR, _SUPERVISOR);
         governance.configure(PROPOSAL_ID, 2);
-        governance.openVote(PROPOSAL_ID);
+        governance.startVote(PROPOSAL_ID);
         vm.stopPrank();
         vm.prank(_VOTER1);
         vm.warp(block.timestamp + 3);
@@ -192,7 +193,7 @@ contract CollectiveGovernanceTest is Test {
     function testVoteWrongProposal() public {
         vm.startPrank(_SUPERVISOR, _SUPERVISOR);
         governance.configure(PROPOSAL_ID, 2);
-        governance.openVote(PROPOSAL_ID);
+        governance.startVote(PROPOSAL_ID);
         vm.stopPrank();
         vm.expectRevert("Invalid proposal");
         vm.prank(_VOTER1);
@@ -202,7 +203,7 @@ contract CollectiveGovernanceTest is Test {
     function testVoteAgainstWrongProposal() public {
         vm.startPrank(_SUPERVISOR, _SUPERVISOR);
         governance.configure(PROPOSAL_ID, 2);
-        governance.openVote(PROPOSAL_ID);
+        governance.startVote(PROPOSAL_ID);
         vm.stopPrank();
         vm.expectRevert("Invalid proposal");
         vm.prank(_VOTER1);
@@ -212,7 +213,7 @@ contract CollectiveGovernanceTest is Test {
     function testAbstainWrongProposal() public {
         vm.startPrank(_SUPERVISOR, _SUPERVISOR);
         governance.configure(PROPOSAL_ID, 2);
-        governance.openVote(PROPOSAL_ID);
+        governance.startVote(PROPOSAL_ID);
         vm.stopPrank();
         vm.expectRevert("Invalid proposal");
         vm.prank(_VOTER1);
@@ -222,7 +223,7 @@ contract CollectiveGovernanceTest is Test {
     function testNonVoter() public {
         vm.startPrank(_SUPERVISOR, _SUPERVISOR);
         governance.configure(PROPOSAL_ID, 2);
-        governance.openVote(PROPOSAL_ID);
+        governance.startVote(PROPOSAL_ID);
         vm.stopPrank();
         vm.expectRevert("Not owner");
         vm.prank(_NOT_VOTER);
@@ -232,7 +233,7 @@ contract CollectiveGovernanceTest is Test {
     function testVoteAgainst() public {
         vm.startPrank(_SUPERVISOR, _SUPERVISOR);
         governance.configure(PROPOSAL_ID, 2);
-        governance.openVote(PROPOSAL_ID);
+        governance.startVote(PROPOSAL_ID);
         vm.stopPrank();
         vm.prank(_VOTER1);
         governance.voteAgainst(PROPOSAL_ID, TOKEN_ID1);
@@ -242,7 +243,7 @@ contract CollectiveGovernanceTest is Test {
     function testVoteAgainstNonVoter() public {
         vm.startPrank(_SUPERVISOR, _SUPERVISOR);
         governance.configure(PROPOSAL_ID, 2);
-        governance.openVote(PROPOSAL_ID);
+        governance.startVote(PROPOSAL_ID);
         vm.stopPrank();
         vm.expectRevert("Not owner");
         vm.prank(_NOT_VOTER);
@@ -252,7 +253,7 @@ contract CollectiveGovernanceTest is Test {
     function testAbstain() public {
         vm.startPrank(_SUPERVISOR, _SUPERVISOR);
         governance.configure(PROPOSAL_ID, 2);
-        governance.openVote(PROPOSAL_ID);
+        governance.startVote(PROPOSAL_ID);
         vm.stopPrank();
         vm.prank(_VOTER1);
         governance.abstainFrom(PROPOSAL_ID, TOKEN_ID1);
@@ -262,7 +263,7 @@ contract CollectiveGovernanceTest is Test {
     function testAbstentionNonVoter() public {
         vm.startPrank(_SUPERVISOR, _SUPERVISOR);
         governance.configure(PROPOSAL_ID, 2);
-        governance.openVote(PROPOSAL_ID);
+        governance.startVote(PROPOSAL_ID);
         vm.stopPrank();
         vm.prank(_NOT_VOTER);
         vm.expectRevert("Not owner");
@@ -275,7 +276,7 @@ contract CollectiveGovernanceTest is Test {
         _storage.makeFinal(PROPOSAL_ID, _SUPERVISOR);
         vm.stopPrank();
         vm.prank(_SUPERVISOR);
-        governance.openVote(PROPOSAL_ID);
+        governance.startVote(PROPOSAL_ID);
         governance.isOpen(PROPOSAL_ID);
     }
 
@@ -284,7 +285,7 @@ contract CollectiveGovernanceTest is Test {
         _storage.setQuorumRequired(PROPOSAL_ID, 2, _SUPERVISOR);
         vm.expectRevert("Voting is not ready");
         vm.prank(_SUPERVISOR);
-        governance.openVote(PROPOSAL_ID);
+        governance.startVote(PROPOSAL_ID);
     }
 
     function testOwnerOpenVote() public {
@@ -293,7 +294,7 @@ contract CollectiveGovernanceTest is Test {
         _storage.makeFinal(PROPOSAL_ID, _SUPERVISOR);
         vm.stopPrank();
         vm.prank(_OWNER);
-        governance.openVote(PROPOSAL_ID);
+        governance.startVote(PROPOSAL_ID);
     }
 
     function testOwnerEndVote() public {
@@ -304,7 +305,7 @@ contract CollectiveGovernanceTest is Test {
         _storage.makeFinal(PROPOSAL_ID, _SUPERVISOR);
         vm.stopPrank();
         vm.prank(_SUPERVISOR);
-        governance.openVote(PROPOSAL_ID);
+        governance.startVote(PROPOSAL_ID);
         assertTrue(governance.isOpen(PROPOSAL_ID));
         vm.warp(blockTimestamp + Constant.MINIMUM_VOTE_DURATION);
         vm.prank(_OWNER);
@@ -318,7 +319,7 @@ contract CollectiveGovernanceTest is Test {
         _storage.makeFinal(PROPOSAL_ID, _SUPERVISOR);
         vm.stopPrank();
         vm.prank(_SUPERVISOR);
-        governance.openVote(PROPOSAL_ID);
+        governance.startVote(PROPOSAL_ID);
         assertTrue(governance.isOpen(PROPOSAL_ID));
         vm.prank(_OWNER);
         vm.expectRevert("Vote open");
@@ -331,10 +332,10 @@ contract CollectiveGovernanceTest is Test {
         _storage.makeFinal(PROPOSAL_ID, _SUPERVISOR);
         vm.stopPrank();
         vm.prank(_SUPERVISOR);
-        governance.openVote(PROPOSAL_ID);
+        governance.startVote(PROPOSAL_ID);
         vm.expectRevert("Already open");
         vm.prank(_SUPERVISOR);
-        governance.openVote(PROPOSAL_ID);
+        governance.startVote(PROPOSAL_ID);
     }
 
     function testEndVoteWhenNotOpen() public {
@@ -355,7 +356,7 @@ contract CollectiveGovernanceTest is Test {
         governance.propose();
         governance.configure(PROPOSAL_ID, 2);
         vm.prank(_SUPERVISOR);
-        governance.openVote(PROPOSAL_ID);
+        governance.startVote(PROPOSAL_ID);
         vm.expectRevert("Not voter");
         vm.prank(_OWNER);
         governance.voteFor(PROPOSAL_ID);
@@ -373,7 +374,7 @@ contract CollectiveGovernanceTest is Test {
         _storage.makeFinal(PROPOSAL_ID, _SUPERVISOR);
         vm.stopPrank();
         vm.prank(_SUPERVISOR);
-        governance.openVote(PROPOSAL_ID);
+        governance.startVote(PROPOSAL_ID);
         vm.expectRevert("Not voter");
         vm.prank(_SUPERVISOR);
         governance.voteFor(PROPOSAL_ID);
@@ -403,7 +404,7 @@ contract CollectiveGovernanceTest is Test {
         _storage.makeFinal(PROPOSAL_ID, _SUPERVISOR);
         vm.stopPrank();
         vm.prank(_SUPERVISOR);
-        governance.openVote(PROPOSAL_ID);
+        governance.startVote(PROPOSAL_ID);
         vm.prank(_VOTER1);
         governance.voteFor(PROPOSAL_ID);
         assertEq(_storage.quorum(PROPOSAL_ID), 1);
@@ -429,7 +430,7 @@ contract CollectiveGovernanceTest is Test {
         _storage.makeFinal(PROPOSAL_ID, _SUPERVISOR);
         vm.stopPrank();
         vm.prank(_SUPERVISOR);
-        governance.openVote(PROPOSAL_ID);
+        governance.startVote(PROPOSAL_ID);
         vm.prank(_VOTER1);
         governance.voteFor(PROPOSAL_ID);
         vm.expectRevert("Already voted");
@@ -440,7 +441,7 @@ contract CollectiveGovernanceTest is Test {
     function testCastDoubleVoteOnTransferToken() public {
         vm.startPrank(_SUPERVISOR, _SUPERVISOR);
         governance.configure(PROPOSAL_ID, 2);
-        governance.openVote(PROPOSAL_ID);
+        governance.startVote(PROPOSAL_ID);
         vm.stopPrank();
         vm.prank(_VOTER1);
         governance.voteFor(PROPOSAL_ID, TOKEN_ID1);
@@ -477,7 +478,7 @@ contract CollectiveGovernanceTest is Test {
         _storage.makeFinal(PROPOSAL_ID, _SUPERVISOR);
         vm.stopPrank();
         vm.prank(_SUPERVISOR);
-        governance.openVote(PROPOSAL_ID);
+        governance.startVote(PROPOSAL_ID);
         vm.expectRevert("No vote cast");
         vm.prank(_VOTER1);
         governance.undoVote(PROPOSAL_ID);
@@ -490,7 +491,7 @@ contract CollectiveGovernanceTest is Test {
         _storage.makeFinal(PROPOSAL_ID, _SUPERVISOR);
         vm.stopPrank();
         vm.prank(_OWNER);
-        governance.openVote(PROPOSAL_ID);
+        governance.startVote(PROPOSAL_ID);
         vm.prank(_VOTER1);
         governance.voteFor(PROPOSAL_ID, TOKEN_ID1);
         vm.prank(_VOTER1);
@@ -510,7 +511,7 @@ contract CollectiveGovernanceTest is Test {
         _storage.makeFinal(PROPOSAL_ID, _SUPERVISOR);
         vm.stopPrank();
         vm.prank(_SUPERVISOR);
-        governance.openVote(PROPOSAL_ID);
+        governance.startVote(PROPOSAL_ID);
         vm.prank(_VOTER1);
         governance.voteFor(PROPOSAL_ID);
         vm.expectRevert("Undo not enabled");
@@ -528,7 +529,7 @@ contract CollectiveGovernanceTest is Test {
         _storage.makeFinal(PROPOSAL_ID, _SUPERVISOR);
         vm.stopPrank();
         vm.prank(_SUPERVISOR);
-        governance.openVote(PROPOSAL_ID);
+        governance.startVote(PROPOSAL_ID);
         vm.prank(_VOTER1);
         governance.voteFor(PROPOSAL_ID);
         vm.expectRevert("Not voter");
@@ -546,7 +547,7 @@ contract CollectiveGovernanceTest is Test {
         _storage.makeFinal(PROPOSAL_ID, _SUPERVISOR);
         vm.stopPrank();
         vm.prank(_SUPERVISOR);
-        governance.openVote(PROPOSAL_ID);
+        governance.startVote(PROPOSAL_ID);
         vm.stopPrank();
         vm.prank(_VOTER1);
         governance.voteFor(PROPOSAL_ID);
@@ -577,9 +578,10 @@ contract CollectiveGovernanceTest is Test {
         vm.mockCall(storageMock, abi.encodeWithSelector(Storage.isVeto.selector), abi.encode(false));
         vm.mockCall(storageMock, abi.encodeWithSelector(Storage.isSupervisor.selector), abi.encode(true));
         vm.mockCall(storageMock, abi.encodeWithSelector(Storage.revertNotValid.selector), abi.encode(PROPOSAL_ID));
+        vm.mockCall(storageMock, abi.encodeWithSelector(Storage.transactionCount.selector), abi.encode(0));
 
         vm.prank(_SUPERVISOR);
-        governance.openVote(PROPOSAL_ID);
+        governance.startVote(PROPOSAL_ID);
         vm.prank(_SUPERVISOR);
         governance.endVote(PROPOSAL_ID);
 
@@ -608,9 +610,10 @@ contract CollectiveGovernanceTest is Test {
         vm.mockCall(storageMock, abi.encodeWithSelector(Storage.isVeto.selector), abi.encode(false));
         vm.mockCall(storageMock, abi.encodeWithSelector(Storage.isSupervisor.selector), abi.encode(true));
         vm.mockCall(storageMock, abi.encodeWithSelector(Storage.revertNotValid.selector), abi.encode(PROPOSAL_ID));
+        vm.mockCall(storageMock, abi.encodeWithSelector(Storage.transactionCount.selector), abi.encode(0));
 
         vm.prank(_SUPERVISOR);
-        governance.openVote(PROPOSAL_ID);
+        governance.startVote(PROPOSAL_ID);
         vm.prank(_SUPERVISOR);
         governance.endVote(PROPOSAL_ID);
 
@@ -639,9 +642,10 @@ contract CollectiveGovernanceTest is Test {
         vm.mockCall(storageMock, abi.encodeWithSelector(Storage.isVeto.selector), abi.encode(false));
         vm.mockCall(storageMock, abi.encodeWithSelector(Storage.isSupervisor.selector), abi.encode(true));
         vm.mockCall(storageMock, abi.encodeWithSelector(Storage.revertNotValid.selector), abi.encode(PROPOSAL_ID));
+        vm.mockCall(storageMock, abi.encodeWithSelector(Storage.transactionCount.selector), abi.encode(0));
 
         vm.prank(_SUPERVISOR);
-        governance.openVote(PROPOSAL_ID);
+        governance.startVote(PROPOSAL_ID);
         vm.prank(_SUPERVISOR);
         governance.endVote(PROPOSAL_ID);
 
@@ -669,14 +673,14 @@ contract CollectiveGovernanceTest is Test {
         vm.mockCall(storageMock, abi.encodeWithSelector(Storage.isVeto.selector), abi.encode(false));
         vm.mockCall(storageMock, abi.encodeWithSelector(Storage.isSupervisor.selector), abi.encode(true));
         vm.mockCall(storageMock, abi.encodeWithSelector(Storage.revertNotValid.selector), abi.encode(PROPOSAL_ID));
+        vm.mockCall(storageMock, abi.encodeWithSelector(Storage.transactionCount.selector), abi.encode(0));
 
         vm.prank(_SUPERVISOR);
-        governance.openVote(PROPOSAL_ID);
+        governance.startVote(PROPOSAL_ID);
         vm.prank(_SUPERVISOR);
         governance.endVote(PROPOSAL_ID);
 
-        vm.expectRevert("Not enough participants");
-        governance.getVoteSucceeded(PROPOSAL_ID);
+        assertFalse(governance.getVoteSucceeded(PROPOSAL_ID));
     }
 
     function testGetVoteSucceededOnOpenMeasure() public {
@@ -689,7 +693,7 @@ contract CollectiveGovernanceTest is Test {
         _storage.makeFinal(PROPOSAL_ID, _SUPERVISOR);
         vm.stopPrank();
         vm.prank(_SUPERVISOR);
-        governance.openVote(PROPOSAL_ID);
+        governance.startVote(PROPOSAL_ID);
         vm.expectRevert("Vote is not closed");
         governance.getVoteSucceeded(PROPOSAL_ID);
     }
@@ -712,7 +716,7 @@ contract CollectiveGovernanceTest is Test {
         vm.stopPrank();
         vm.prank(_SUPERVISOR);
         uint256 blockTimestamp = block.timestamp;
-        governance.openVote(PROPOSAL_ID);
+        governance.startVote(PROPOSAL_ID);
         vm.prank(_VOTER1);
         governance.voteFor(PROPOSAL_ID);
         vm.prank(_VOTER2);
@@ -746,7 +750,7 @@ contract CollectiveGovernanceTest is Test {
         _storage.makeFinal(PROPOSAL_ID, _SUPERVISOR);
         vm.stopPrank();
         vm.prank(_SUPERVISOR);
-        governance.openVote(PROPOSAL_ID);
+        governance.startVote(PROPOSAL_ID);
         vm.prank(_VOTER1);
         governance.voteFor(PROPOSAL_ID);
         vm.prank(_VOTER2);
@@ -800,7 +804,7 @@ contract CollectiveGovernanceTest is Test {
         vm.stopPrank();
         uint256 startTime = block.timestamp;
         vm.prank(_SUPERVISOR);
-        governance.openVote(PROPOSAL_ID);
+        governance.startVote(PROPOSAL_ID);
         vm.warp(startTime + blockStep);
         vm.expectRevert("Vote not active");
         vm.prank(_VOTER1);
@@ -821,7 +825,7 @@ contract CollectiveGovernanceTest is Test {
         vm.stopPrank();
         uint256 startTime = block.timestamp;
         vm.prank(_SUPERVISOR);
-        governance.openVote(PROPOSAL_ID);
+        governance.startVote(PROPOSAL_ID);
         vm.warp(startTime + blockStep);
         vm.expectRevert("Vote not active");
         vm.prank(_VOTER1);
@@ -842,7 +846,7 @@ contract CollectiveGovernanceTest is Test {
         vm.stopPrank();
         uint256 startTime = block.timestamp;
         vm.prank(_SUPERVISOR);
-        governance.openVote(PROPOSAL_ID);
+        governance.startVote(PROPOSAL_ID);
         vm.warp(startTime + blockStep);
         vm.expectRevert("Vote open");
         vm.prank(_SUPERVISOR);
@@ -866,7 +870,7 @@ contract CollectiveGovernanceTest is Test {
         vm.stopPrank();
         uint256 startTime = block.timestamp;
         vm.prank(_SUPERVISOR);
-        governance.openVote(PROPOSAL_ID);
+        governance.startVote(PROPOSAL_ID);
         vm.warp(startTime + blockStep);
         vm.prank(_SUPERVISOR);
         governance.endVote(PROPOSAL_ID);
@@ -969,7 +973,7 @@ contract CollectiveGovernanceTest is Test {
         governance.cancel(PROPOSAL_ID);
         uint256 nextProposalId = governance.propose();
         governance.configure(nextProposalId, 2);
-        governance.openVote(nextProposalId);
+        governance.startVote(nextProposalId);
         vm.stopPrank();
         assertFalse(governance.isOpen(PROPOSAL_ID));
         assertTrue(_storage.isCancel(PROPOSAL_ID));
@@ -998,7 +1002,7 @@ contract CollectiveGovernanceTest is Test {
         governance.configure(PROPOSAL_ID, 2);
         governance.cancel(PROPOSAL_ID);
         vm.expectRevert("Vote cancelled");
-        governance.openVote(PROPOSAL_ID);
+        governance.startVote(PROPOSAL_ID);
         vm.stopPrank();
     }
 
@@ -1006,7 +1010,7 @@ contract CollectiveGovernanceTest is Test {
         vm.startPrank(_SUPERVISOR, _SUPERVISOR);
         uint256 blockTimestamp = block.timestamp;
         governance.configure(PROPOSAL_ID, 2);
-        governance.openVote(PROPOSAL_ID);
+        governance.startVote(PROPOSAL_ID);
         vm.warp(blockTimestamp + 2);
         vm.expectRevert("Not possible");
         governance.cancel(PROPOSAL_ID);
@@ -1017,7 +1021,7 @@ contract CollectiveGovernanceTest is Test {
         vm.startPrank(_SUPERVISOR, _SUPERVISOR);
         uint256 blockTimestamp = block.timestamp;
         governance.configure(PROPOSAL_ID, 2);
-        governance.openVote(PROPOSAL_ID);
+        governance.startVote(PROPOSAL_ID);
         vm.warp(blockTimestamp + Constant.MINIMUM_VOTE_DURATION);
         governance.endVote(PROPOSAL_ID);
         vm.expectRevert("Not possible");
@@ -1028,7 +1032,7 @@ contract CollectiveGovernanceTest is Test {
     function testEndNowIfVeto() public {
         vm.startPrank(_SUPERVISOR, _SUPERVISOR);
         governance.configure(PROPOSAL_ID, 2);
-        governance.openVote(PROPOSAL_ID);
+        governance.startVote(PROPOSAL_ID);
         governance.veto(PROPOSAL_ID);
         governance.endVote(PROPOSAL_ID);
         vm.stopPrank();
@@ -1037,10 +1041,109 @@ contract CollectiveGovernanceTest is Test {
     function testVetoWrongProposal() public {
         vm.startPrank(_SUPERVISOR, _SUPERVISOR);
         governance.configure(PROPOSAL_ID, 2);
-        governance.openVote(PROPOSAL_ID);
+        governance.startVote(PROPOSAL_ID);
         vm.expectRevert("Invalid proposal");
         governance.veto(PROPOSAL_ID + 1);
         vm.stopPrank();
+    }
+
+    function testAttachTransaction() public {
+        FlagSet flag = new FlagSet();
+        address flagMock = address(flag);
+        bytes memory data = abi.encodeWithSelector(flag.set.selector);
+        uint256 scheduleTime = block.timestamp + 2 days;
+        vm.prank(_OWNER);
+        governance.attachTransaction(PROPOSAL_ID, flagMock, 0, "", data, scheduleTime);
+        vm.startPrank(_SUPERVISOR, _SUPERVISOR);
+        governance.configure(PROPOSAL_ID, 1);
+        governance.startVote(PROPOSAL_ID);
+        vm.stopPrank();
+        vm.prank(_VOTER1);
+        governance.voteFor(PROPOSAL_ID, TOKEN_ID1);
+        vm.warp(scheduleTime + 7 days);
+        vm.prank(_OWNER);
+        governance.endVote(PROPOSAL_ID);
+        assertTrue(flag.isSet());
+        assertTrue(_storage.isExecuted(PROPOSAL_ID));
+    }
+
+    function testAttachTransactionButVeto() public {
+        FlagSet flag = new FlagSet();
+        address flagMock = address(flag);
+        bytes memory data = abi.encodeWithSelector(flag.set.selector);
+        uint256 scheduleTime = block.timestamp + 2 days;
+        vm.prank(_OWNER);
+        governance.attachTransaction(PROPOSAL_ID, flagMock, 0, "", data, scheduleTime);
+        vm.startPrank(_SUPERVISOR, _SUPERVISOR);
+        governance.configure(PROPOSAL_ID, 1);
+        governance.startVote(PROPOSAL_ID);
+        vm.stopPrank();
+        vm.prank(_VOTER1);
+        governance.voteFor(PROPOSAL_ID, TOKEN_ID1);
+        vm.warp(block.timestamp + 1 days);
+        vm.prank(_OWNER);
+        governance.veto(PROPOSAL_ID);
+        vm.warp(scheduleTime);
+        vm.prank(_OWNER);
+        governance.endVote(PROPOSAL_ID);
+        assertFalse(flag.isSet());
+        assertFalse(_storage.isExecuted(PROPOSAL_ID));
+        assertTrue(_storage.isVeto(PROPOSAL_ID));
+    }
+
+    function testAttachTransactionFailsVote() public {
+        FlagSet flag = new FlagSet();
+        address flagMock = address(flag);
+        bytes memory data = abi.encodeWithSelector(flag.set.selector);
+        uint256 scheduleTime = block.timestamp + 2 days;
+        vm.prank(_OWNER);
+        governance.attachTransaction(PROPOSAL_ID, flagMock, 0, "", data, scheduleTime);
+        vm.startPrank(_SUPERVISOR, _SUPERVISOR);
+        governance.configure(PROPOSAL_ID, 1);
+        governance.startVote(PROPOSAL_ID);
+        vm.stopPrank();
+        vm.prank(_VOTER1);
+        governance.voteAgainst(PROPOSAL_ID, TOKEN_ID1);
+        vm.warp(scheduleTime);
+        vm.prank(_OWNER);
+        governance.endVote(PROPOSAL_ID);
+        assertFalse(flag.isSet());
+        assertFalse(_storage.isExecuted(PROPOSAL_ID));
+    }
+
+    function testAttachTransactionQuorumNotAchieved() public {
+        FlagSet flag = new FlagSet();
+        address flagMock = address(flag);
+        bytes memory data = abi.encodeWithSelector(flag.set.selector);
+        uint256 scheduleTime = block.timestamp + 2 days;
+        vm.prank(_OWNER);
+        governance.attachTransaction(PROPOSAL_ID, flagMock, 0, "", data, scheduleTime);
+        vm.startPrank(_SUPERVISOR, _SUPERVISOR);
+        governance.configure(PROPOSAL_ID, 10);
+        governance.startVote(PROPOSAL_ID);
+        vm.stopPrank();
+        vm.prank(_VOTER1);
+        governance.voteFor(PROPOSAL_ID, TOKEN_ID1);
+        vm.warp(scheduleTime);
+        vm.prank(_OWNER);
+        governance.endVote(PROPOSAL_ID);
+        assertFalse(flag.isSet());
+        assertFalse(_storage.isExecuted(PROPOSAL_ID));
+    }
+
+    function testAttachTransactionEndsVoteDuringTimelock() public {
+        vm.prank(_OWNER);
+        governance.attachTransaction(PROPOSAL_ID, address(0x7fff), 0, "", "save()", block.timestamp + 7 days);
+        vm.startPrank(_SUPERVISOR, _SUPERVISOR);
+        governance.configure(PROPOSAL_ID, 1);
+        governance.startVote(PROPOSAL_ID);
+        vm.stopPrank();
+        vm.prank(_VOTER1);
+        governance.voteFor(PROPOSAL_ID, TOKEN_ID1);
+        vm.expectRevert("Transaction is locked");
+        vm.warp(block.timestamp + Constant.MINIMUM_VOTE_DURATION);
+        vm.prank(_OWNER);
+        governance.endVote(PROPOSAL_ID);
     }
 
     function mintTokens() private returns (IERC721) {

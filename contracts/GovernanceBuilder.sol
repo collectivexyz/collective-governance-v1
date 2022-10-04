@@ -55,7 +55,7 @@ import "../contracts/Builder.sol";
 /// @title Governance Builder implementation
 /// @notice This builder supports creating new instances of the Collective Governance Contract
 contract GovernanceBuilder is Builder, ERC165 {
-    string public constant NAME = "collective.xyz governance builder";
+    string public constant NAME = "collective governance builder";
 
     mapping(address => GovernanceProperties) private _buildMap;
 

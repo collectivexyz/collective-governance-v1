@@ -493,7 +493,7 @@ contract GovernanceStorageTest is Test {
     }
 
     function testName() public {
-        assertEq(_storage.name(), "collective.xyz governance storage");
+        assertEq(_storage.name(), "collective governance storage");
     }
 
     function testVersion() public {
@@ -562,5 +562,59 @@ contract GovernanceStorageTest is Test {
         GovernanceStorage _gStorage = new GovernanceStorage(_storage.voterClass(), Constant.MINIMUM_VOTE_DURATION);
         vm.prank(_SUPERVISOR);
         _gStorage.transferOwnership(_SUPERVISOR);
+    }
+
+    function testAddTransaction() public {
+        uint256 scheduleTime = block.timestamp + 7 days;
+        _storage.registerSupervisor(PROPOSAL_ID, _SUPERVISOR, _OWNER);
+        uint256 tid1 = _storage.addTransaction(PROPOSAL_ID, address(0x1), 0x10, "", "", scheduleTime, _OWNER);
+        assertEq(tid1, 0);
+        uint256 tid2 = _storage.addTransaction(PROPOSAL_ID, address(0x2), 0x20, "", "", scheduleTime, _OWNER);
+        assertEq(tid2, 1);
+        _storage.makeFinal(PROPOSAL_ID, _SUPERVISOR);
+    }
+
+    function testAddTransactionNotOwner() public {
+        uint256 scheduleTime = block.timestamp + 7 days;
+        _storage.registerSupervisor(PROPOSAL_ID, _SUPERVISOR, _OWNER);
+        vm.expectRevert("Not creator");
+        _storage.addTransaction(PROPOSAL_ID, address(0x1), 0x10, "", "", scheduleTime, _SUPERVISOR);
+    }
+
+    function testGetTransaction() public {
+        uint256 scheduleTime = block.timestamp + 7 days;
+        _storage.registerSupervisor(PROPOSAL_ID, _SUPERVISOR, _OWNER);
+        Storage.Transaction memory transaction = Storage.Transaction(address(0x1), 0x10, "ziggy", "a()", scheduleTime);
+        uint256 tid = _storage.addTransaction(
+            PROPOSAL_ID,
+            transaction.target,
+            transaction.value,
+            transaction.signature,
+            transaction._calldata,
+            transaction.scheduleTime,
+            _OWNER
+        );
+        (address target, uint256 value, string memory signature, bytes memory _calldata, uint256 scheduleTimeRet) = _storage
+            .getTransaction(PROPOSAL_ID, tid);
+        assertEq(target, transaction.target);
+        assertEq(value, transaction.value);
+        assertEq(signature, transaction.signature);
+        assertEq(_calldata, transaction._calldata);
+        assertEq(scheduleTimeRet, transaction.scheduleTime);
+    }
+
+    function testSetExecuted() public {
+        _storage.registerSupervisor(PROPOSAL_ID, _SUPERVISOR, _OWNER);
+        _storage.makeFinal(PROPOSAL_ID, _SUPERVISOR);
+        assertFalse(_storage.isExecuted(PROPOSAL_ID));
+        _storage.setExecuted(PROPOSAL_ID, _OWNER);
+        assertTrue(_storage.isExecuted(PROPOSAL_ID));
+    }
+
+    function testSetExecutedNotOwner() public {
+        _storage.registerSupervisor(PROPOSAL_ID, _SUPERVISOR, _OWNER);
+        _storage.makeFinal(PROPOSAL_ID, _SUPERVISOR);
+        vm.expectRevert("Not creator");
+        _storage.setExecuted(PROPOSAL_ID, _SUPERVISOR);
     }
 }

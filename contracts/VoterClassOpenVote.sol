@@ -50,7 +50,7 @@ import "../contracts/VoterClass.sol";
 
 /// @notice OpenVote VoterClass allows every wallet to participate in an open vote
 contract VoterClassOpenVote is VoterClass, ERC165 {
-    string public constant NAME = "collective.xyz VoterClassOpenVote";
+    string public constant NAME = "collective VoterClassOpenVote";
     uint32 public constant VERSION_1 = 1;
 
     uint256 private immutable _weight;

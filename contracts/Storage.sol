@@ -65,12 +65,33 @@ interface Storage is IERC165 {
     event VoteReady(uint256 proposalId, uint256 startTime, uint256 endTime);
     event VoteCancel(uint256 proposalId, address supervisor);
 
+    /// @notice the current state of a proposal
+    /// CONFIG indicates the proposal is currently mutable with building
+    /// and setup operations underway
+    /// while both FINAL and CANCELLED are immutable states indicating the proposal is final
+    /// however the CANCELLED state indicates the proposal never entered a voting phase
     enum Status {
         CONFIG,
         FINAL,
         CANCELLED
     }
 
+    /// @notice The executable transaction resulting from a proposed Governance operation
+    struct Transaction {
+        /// @notice target for call instruction
+        address target;
+        /// @notice value to pass
+        uint256 value;
+        /// @notice signature for call
+        string signature;
+        /// @notice call data of the call
+        bytes _calldata;
+        /// @notice future dated start time for call within the TimeLocked grace period
+        uint256 scheduleTime;
+    }
+
+    /// @notice struct indicating the data required for a specific vote
+    /// @dev proposal is only valid if id != 0 and proposal.id == id;
     struct Proposal {
         /// @notice Unique id for looking up a proposal
         uint256 id;
@@ -93,6 +114,8 @@ interface Storage is IERC165 {
         uint256 againstVotes;
         /// @notice Current number of votes for abstaining for this proposal
         uint256 abstentionCount;
+        /// @notice number of attached transactions
+        uint256 transactionCount;
         /// @notice Flag marking whether the proposal has been vetoed
         bool isVeto;
         /// @notice Flag marking whether the proposal has been executed
@@ -105,6 +128,8 @@ interface Storage is IERC165 {
         mapping(uint256 => Receipt) voteReceipt;
         /// @notice configured supervisors
         mapping(address => bool) supervisorPool;
+        /// @notice table of mapped transactions
+        mapping(uint256 => Transaction) transaction;
     }
 
     /// @notice Ballot receipt record for a voter
@@ -355,6 +380,61 @@ interface Storage is IERC165 {
         address _wallet,
         uint256 _receiptId
     ) external returns (uint256);
+
+    /// @notice add a transaction to the specified proposal
+    /// @param _proposalId the id of the proposal
+    /// @param _target the target address for this transaction
+    /// @param _value the value to pass to the call
+    /// @param _signature the tranaction signature
+    /// @param _calldata the call data to pass to the call
+    /// @param _scheduleTime the expected call time, within the timelock grace,
+    ///        for the transaction
+    /// @param _sender for this proposal
+    /// @return uint256 the id of the transaction that was added
+    function addTransaction(
+        uint256 _proposalId,
+        address _target,
+        uint256 _value,
+        string memory _signature,
+        bytes memory _calldata,
+        uint256 _scheduleTime,
+        address _sender
+    ) external returns (uint256);
+
+    /// @notice return the stored transaction by id
+    /// @param _proposalId the proposal where the transaction is stored
+    /// @param _transactionId The id of the transaction on the proposal
+    /// @return _target the target address for this transaction
+    /// @return _value the value to pass to the call
+    /// @return _signature the tranaction signature
+    /// @return _calldata the call data to pass to the call
+    /// @return _scheduleTime the expected call time, within the timelock grace,
+    ///        for the transaction
+    function getTransaction(uint256 _proposalId, uint256 _transactionId)
+        external
+        view
+        returns (
+            address _target,
+            uint256 _value,
+            string memory _signature,
+            bytes memory _calldata,
+            uint256 _scheduleTime
+        );
+
+    /// @notice set proposal state executed
+    /// @param _proposalId the id of the proposal
+    /// @param _sender for this proposal
+    function setExecuted(uint256 _proposalId, address _sender) external;
+
+    /// @notice get the current state if executed or not
+    /// @param _proposalId the id of the proposal
+    /// @return bool true if already executed
+    function isExecuted(uint256 _proposalId) external view returns (bool);
+
+    /// @notice get the number of attached transactions
+    /// @param _proposalId the id of the proposal
+    /// @return uint256 current number of transactions
+    function transactionCount(uint256 _proposalId) external view returns (uint256);
 
     /// @notice do nothing or revert if the proposal is not valid
     /// @param _proposalId the id of the proposal

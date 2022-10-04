@@ -1,0 +1,10 @@
+// SPDX-License-Identifier: BSD-3-Clause
+pragma solidity ^0.8.15;
+
+contract FlagSet {
+    bool public isSet = false;
+
+    function set() external {
+        isSet = true;
+    }
+}

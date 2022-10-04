@@ -52,14 +52,45 @@ import "@openzeppelin/contracts/interfaces/IERC165.sol";
 interface Governance is IERC165 {
     /// @notice A new proposal was created
     event ProposalCreated(address sender, uint256 proposalId);
+    /// @notice transaction attached to proposal
+    event ProposalTransactionAttached(
+        address creator,
+        uint256 proposalId,
+        address target,
+        uint256 value,
+        uint256 scheduleTime,
+        bytes32 txHash
+    );
     /// @notice The proposal is now open for voting
     event ProposalOpen(uint256 proposalId);
     /// @notice Voting is now closed for voting
     event ProposalClosed(uint256 proposalId);
+    /// @notice The attached transactions are executed
+    event ProposalExecuted(uint256 proposalId);
 
     /// @notice propose a vote for the community
     /// @return uint256 The id of the new proposal
     function propose() external returns (uint256);
+
+    /// @notice attach a transaction to the specified proposal.  It will be executed when voting ends
+    /// if the vote is successful.
+    /// @dev must be called prior to configuration
+    /// @param _proposalId the id of the proposal
+    /// @param _target the target address for this transaction
+    /// @param _value the value to pass to the call
+    /// @param _signature the tranaction signature
+    /// @param _calldata the call data to pass to the call
+    /// @param _scheduleTime the expected call time, within the timelock grace,
+    ///        for the transaction
+    /// @return uint256 the transactionId
+    function attachTransaction(
+        uint256 _proposalId,
+        address _target,
+        uint256 _value,
+        string memory _signature,
+        bytes memory _calldata,
+        uint256 _scheduleTime
+    ) external returns (uint256);
 
     /// @notice cancel a proposal if it is not yet open
     /// @param _proposalId The numeric id of the proposed vote

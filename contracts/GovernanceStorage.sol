@@ -59,7 +59,7 @@ import "../contracts/VoterClass.sol";
 /// is required for nearly all change operations
 contract GovernanceStorage is Storage, ERC165, Ownable {
     /// @notice contract name
-    string public constant NAME = "collective.xyz governance storage";
+    string public constant NAME = "collective governance storage";
 
     uint256 public constant MAXIMUM_QUORUM = Constant.UINT_MAX;
     uint256 public constant MAXIMUM_TIME = Constant.UINT_MAX;
@@ -137,13 +137,13 @@ contract GovernanceStorage is Storage, ERC165, Ownable {
         _;
     }
 
-    modifier requireVotingNotReady(uint256 _proposalId) {
+    modifier requireConfig(uint256 _proposalId) {
         Proposal storage proposal = proposalMap[_proposalId];
         require(proposal.status == Status.CONFIG, "Vote not modifiable");
         _;
     }
 
-    modifier requireVotingReady(uint256 _proposalId) {
+    modifier requireFinal(uint256 _proposalId) {
         Proposal storage proposal = proposalMap[_proposalId];
         require(proposal.status == Status.FINAL, "Not final");
         _;
@@ -152,7 +152,7 @@ contract GovernanceStorage is Storage, ERC165, Ownable {
     modifier requireVotingActive(uint256 _proposalId) {
         Proposal storage proposal = proposalMap[_proposalId];
         // solhint-disable-next-line not-rely-on-time
-        require(proposal.startTime <= block.timestamp && proposal.endTime > block.timestamp, "Vote not active");
+        require(proposal.startTime <= getBlockTimestamp() && proposal.endTime > getBlockTimestamp(), "Vote not active");
         _;
     }
 
@@ -178,7 +178,7 @@ contract GovernanceStorage is Storage, ERC165, Ownable {
         onlyOwner
         requireValidProposal(_proposalId)
         requireProposalSender(_proposalId, _sender)
-        requireVotingNotReady(_proposalId)
+        requireConfig(_proposalId)
     {
         Proposal storage proposal = proposalMap[_proposalId];
         if (!proposal.supervisorPool[_supervisor]) {
@@ -201,7 +201,7 @@ contract GovernanceStorage is Storage, ERC165, Ownable {
         onlyOwner
         requireValidProposal(_proposalId)
         requireProposalSender(_proposalId, _sender)
-        requireVotingNotReady(_proposalId)
+        requireConfig(_proposalId)
     {
         Proposal storage proposal = proposalMap[_proposalId];
         if (proposal.supervisorPool[_supervisor]) {
@@ -219,7 +219,7 @@ contract GovernanceStorage is Storage, ERC165, Ownable {
         uint256 _proposalId,
         uint256 _quorum,
         address _sender
-    ) external onlyOwner requireVotingNotReady(_proposalId) {
+    ) external onlyOwner requireConfig(_proposalId) {
         revertNotValid(_proposalId);
         Proposal storage proposal = proposalMap[_proposalId];
         require(proposal.supervisorPool[_sender], "Requires supervisor");
@@ -231,7 +231,7 @@ contract GovernanceStorage is Storage, ERC165, Ownable {
     /// @dev requires supervisor
     /// @param _proposalId the id of the proposal
     /// @param _sender original wallet for this request
-    function enableUndoVote(uint256 _proposalId, address _sender) external onlyOwner requireVotingNotReady(_proposalId) {
+    function enableUndoVote(uint256 _proposalId, address _sender) external onlyOwner requireConfig(_proposalId) {
         revertNotValid(_proposalId);
         Proposal storage proposal = proposalMap[_proposalId];
         require(proposal.supervisorPool[_sender], "Requires supervisor");
@@ -248,7 +248,7 @@ contract GovernanceStorage is Storage, ERC165, Ownable {
         uint256 _proposalId,
         uint256 _voteDelay,
         address _sender
-    ) external onlyOwner requireVotingNotReady(_proposalId) {
+    ) external onlyOwner requireConfig(_proposalId) {
         revertNotValid(_proposalId);
         Proposal storage proposal = proposalMap[_proposalId];
         require(proposal.supervisorPool[_sender], "Requires supervisor");
@@ -264,7 +264,7 @@ contract GovernanceStorage is Storage, ERC165, Ownable {
         uint256 _proposalId,
         uint256 _voteDuration,
         address _sender
-    ) external onlyOwner requireVotingNotReady(_proposalId) {
+    ) external onlyOwner requireConfig(_proposalId) {
         revertNotValid(_proposalId);
         require(_voteDuration >= Constant.MINIMUM_VOTE_DURATION, "Short vote");
         Proposal storage proposal = proposalMap[_proposalId];
@@ -454,8 +454,7 @@ contract GovernanceStorage is Storage, ERC165, Ownable {
         if (latestProposalId != 0) {
             Proposal storage lastProposal = proposalMap[latestProposalId];
             require(
-                // solhint-disable-next-line not-rely-on-time
-                isCancel(latestProposalId) || (isFinal(latestProposalId) && block.timestamp >= lastProposal.endTime),
+                isCancel(latestProposalId) || (isFinal(latestProposalId) && getBlockTimestamp() >= lastProposal.endTime),
                 "Too many proposals"
             );
         }
@@ -475,6 +474,7 @@ contract GovernanceStorage is Storage, ERC165, Ownable {
         proposal.forVotes = 0;
         proposal.againstVotes = 0;
         proposal.abstentionCount = 0;
+        proposal.transactionCount = 0;
         proposal.isVeto = false;
         proposal.status = Status.CONFIG;
         proposal.isUndoEnabled = false;
@@ -487,13 +487,12 @@ contract GovernanceStorage is Storage, ERC165, Ownable {
     /// @dev requires supervisor
     /// @param _proposalId the id of the proposal
     /// @param _sender original wallet for this request
-    function makeFinal(uint256 _proposalId, address _sender) public onlyOwner requireVotingNotReady(_proposalId) {
+    function makeFinal(uint256 _proposalId, address _sender) public onlyOwner requireConfig(_proposalId) {
         revertNotValid(_proposalId);
         Proposal storage proposal = proposalMap[_proposalId];
         require(proposal.supervisorPool[_sender], "Requires supervisor");
         proposal.status = Status.FINAL;
-        // solhint-disable-next-line not-rely-on-time
-        proposal.startTime = block.timestamp + proposal.voteDelay;
+        proposal.startTime = getBlockTimestamp() + proposal.voteDelay;
         proposal.endTime = proposal.startTime + proposal.voteDuration;
         emit VoteReady(_proposalId, proposal.startTime, proposal.endTime);
     }
@@ -632,6 +631,92 @@ contract GovernanceStorage is Storage, ERC165, Ownable {
         return undoVotes;
     }
 
+    /// @notice add a transaction to the specified proposal
+    /// @param _proposalId the id of the proposal
+    /// @param _target the target address for this transaction
+    /// @param _value the value to pass to the call
+    /// @param _signature the tranaction signature
+    /// @param _calldata the call data to pass to the call
+    /// @param _scheduleTime the expected call time, within the timelock grace,
+    ///        for the transaction
+    /// @param _sender for this proposal
+    /// @return uint256 the id of the transaction that was added
+    function addTransaction(
+        uint256 _proposalId,
+        address _target,
+        uint256 _value,
+        string memory _signature,
+        bytes memory _calldata,
+        uint256 _scheduleTime,
+        address _sender
+    ) external onlyOwner requireConfig(_proposalId) requireProposalSender(_proposalId, _sender) returns (uint256) {
+        revertNotValid(_proposalId);
+        Proposal storage proposal = proposalMap[_proposalId];
+        uint256 transactionId = proposal.transactionCount++;
+        proposal.transaction[transactionId] = Transaction(_target, _value, _signature, _calldata, _scheduleTime);
+        return transactionId;
+    }
+
+    /// @notice return the stored transaction by id
+    /// @param _proposalId the proposal where the transaction is stored
+    /// @param _transactionId The id of the transaction on the proposal
+    /// @return _target the target address for this transaction
+    /// @return _value the value to pass to the call
+    /// @return _signature the tranaction signature
+    /// @return _calldata the call data to pass to the call
+    /// @return _scheduleTime the expected call time, within the timelock grace,
+    ///        for the transaction
+    function getTransaction(uint256 _proposalId, uint256 _transactionId)
+        external
+        view
+        returns (
+            address _target,
+            uint256 _value,
+            string memory _signature,
+            bytes memory _calldata,
+            uint256 _scheduleTime
+        )
+    {
+        revertNotValid(_proposalId);
+        Proposal storage proposal = proposalMap[_proposalId];
+        require(_transactionId < proposal.transactionCount, "Invalid transaction");
+        Transaction storage transaction = proposal.transaction[_transactionId];
+        return (transaction.target, transaction.value, transaction.signature, transaction._calldata, transaction.scheduleTime);
+    }
+
+    /// @notice set proposal state executed
+    /// @param _proposalId the id of the proposal
+    /// @param _sender for this proposal
+    function setExecuted(uint256 _proposalId, address _sender)
+        external
+        onlyOwner
+        requireFinal(_proposalId)
+        requireProposalSender(_proposalId, _sender)
+    {
+        revertNotValid(_proposalId);
+        Proposal storage proposal = proposalMap[_proposalId];
+        require(!proposal.isExecuted, "Executed previously");
+        proposal.isExecuted = true;
+    }
+
+    /// @notice get the current state if executed or not
+    /// @param _proposalId the id of the proposal
+    /// @return bool true if already executed
+    function isExecuted(uint256 _proposalId) external view returns (bool) {
+        revertNotValid(_proposalId);
+        Proposal storage proposal = proposalMap[_proposalId];
+        return proposal.isExecuted;
+    }
+
+    /// @notice get the number of attached transactions
+    /// @param _proposalId the id of the proposal
+    /// @return uint256 current number of transactions
+    function transactionCount(uint256 _proposalId) external view returns (uint256) {
+        revertNotValid(_proposalId);
+        Proposal storage proposal = proposalMap[_proposalId];
+        return proposal.transactionCount;
+    }
+
     /// @notice do nothing or revert if the proposal is not valid
     /// @param _proposalId the id of the proposal
     function revertNotValid(uint256 _proposalId) public view {
@@ -669,5 +754,10 @@ contract GovernanceStorage is Storage, ERC165, Ownable {
     /// @return uint32 version number
     function version() public pure virtual returns (uint32) {
         return Constant.VERSION_1;
+    }
+
+    function getBlockTimestamp() internal view returns (uint256) {
+        // solhint-disable-next-line not-rely-on-time
+        return block.timestamp;
     }
 }

@@ -51,6 +51,7 @@ import "../contracts/VoteStrategy.sol";
 import "../contracts/VoterClass.sol";
 import "../contracts/VoterClassERC721.sol";
 import "../contracts/VoterClassOpenVote.sol";
+import "../contracts/TimeLock.sol";
 
 /// @title Collective Governance implementation
 /// @notice Governance contract implementation for Collective.   This contract implements voting by
@@ -66,12 +67,14 @@ import "../contracts/VoterClassOpenVote.sol";
 /// be configured as part of the proposal creation workflow but project supervisors are always included.
 contract CollectiveGovernance is Governance, VoteStrategy, ERC165 {
     /// @notice contract name
-    string public constant NAME = "collective.xyz governance";
+    string public constant NAME = "collective governance";
     uint32 public constant VERSION_1 = 1;
 
     VoterClass private immutable _voterClass;
 
     Storage private immutable _storage;
+
+    TimeLock private immutable _timeLock;
 
     address[] private _projectSupervisorList;
 
@@ -89,8 +92,10 @@ contract CollectiveGovernance is Governance, VoteStrategy, ERC165 {
         Storage _governanceStorage
     ) {
         _voterClass = _class;
+        _storage = _governanceStorage;
+        uint256 _timeLockDelay = max(_storage.minimumVoteDuration(), Constant.TIMELOCK_MINIMUM_DELAY);
+        _timeLock = new TimeLock(_timeLockDelay);
         _projectSupervisorList = _supervisorList;
-        _storage = _governanceStorage; //new GovernanceStorage(_class, _minimumDuration);
     }
 
     modifier requireVoteReady(uint256 _proposalId) {
@@ -115,6 +120,41 @@ contract CollectiveGovernance is Governance, VoteStrategy, ERC165 {
         }
         emit ProposalCreated(_sender, proposalId);
         return proposalId;
+    }
+
+    /// @notice attach a transaction to the specified proposal.  It will be executed when voting ends
+    /// if the vote is successful.
+    /// @dev must be called prior to configuration
+    /// @param _proposalId the id of the proposal
+    /// @param _target the target address for this transaction
+    /// @param _value the value to pass to the call
+    /// @param _signature the tranaction signature
+    /// @param _calldata the call data to pass to the call
+    /// @param _scheduleTime the expected call time, within the timelock grace,
+    ///        for the transaction
+    /// @return uint256 the transactionId
+    function attachTransaction(
+        uint256 _proposalId,
+        address _target,
+        uint256 _value,
+        string memory _signature,
+        bytes memory _calldata,
+        uint256 _scheduleTime
+    ) external returns (uint256) {
+        _storage.revertNotValid(_proposalId);
+        require(_storage.getSender(_proposalId) == msg.sender, "Not sender");
+        uint256 transactionId = _storage.addTransaction(
+            _proposalId,
+            _target,
+            _value,
+            _signature,
+            _calldata,
+            _scheduleTime,
+            msg.sender
+        );
+        bytes32 txHash = _timeLock.queueTransaction(_target, _value, _signature, _calldata, _scheduleTime);
+        emit ProposalTransactionAttached(msg.sender, _proposalId, _target, _value, _scheduleTime, txHash);
+        return transactionId;
     }
 
     /// @notice configure an existing proposal by id
@@ -148,9 +188,9 @@ contract CollectiveGovernance is Governance, VoteStrategy, ERC165 {
         emit ProposalOpen(_proposalId);
     }
 
-    /// @notice open an existing proposal by id
+    /// @notice start the voting process by proposal id
     /// @param _proposalId The numeric id of the proposed vote
-    function openVote(uint256 _proposalId) external requireVoteReady(_proposalId) {
+    function startVote(uint256 _proposalId) external requireVoteReady(_proposalId) {
         _storage.revertNotValid(_proposalId);
         revertNotSupervisor(_proposalId);
         revertVoteNotAllowed(_proposalId);
@@ -169,11 +209,9 @@ contract CollectiveGovernance is Governance, VoteStrategy, ERC165 {
     /// @return bool True if the proposal is open
     function isOpen(uint256 _proposalId) external view returns (bool) {
         _storage.revertNotValid(_proposalId);
-
         uint256 endTime = _storage.endTime(_proposalId);
         bool voteProceeding = !_storage.isCancel(_proposalId) && !_storage.isVeto(_proposalId);
-        // solhint-disable-next-line not-rely-on-time
-        return isVoteOpenByProposalId[_proposalId] && block.timestamp < endTime && voteProceeding;
+        return isVoteOpenByProposalId[_proposalId] && getBlockTimestamp() < endTime && voteProceeding;
     }
 
     /// @notice end voting on an existing proposal by id
@@ -185,9 +223,25 @@ contract CollectiveGovernance is Governance, VoteStrategy, ERC165 {
         revertVoteNotOpen(_proposalId);
 
         uint256 _endTime = _storage.endTime(_proposalId);
-        // solhint-disable-next-line not-rely-on-time
-        require(_endTime <= block.timestamp || _storage.isVeto(_proposalId) || _storage.isCancel(_proposalId), "Vote open");
+        require(_endTime <= getBlockTimestamp() || _storage.isVeto(_proposalId) || _storage.isCancel(_proposalId), "Vote open");
         isVoteOpenByProposalId[_proposalId] = false;
+
+        uint256 transactionCount = _storage.transactionCount(_proposalId);
+        if (transactionCount > 0 && !_storage.isVeto(_proposalId) && getVoteSucceeded(_proposalId)) {
+            for (uint256 tid = 0; tid < transactionCount; tid++) {
+                (address target, uint256 value, string memory signature, bytes memory _calldata, uint256 scheduleTime) = _storage
+                    .getTransaction(_proposalId, tid);
+                _timeLock.executeTransaction(target, value, signature, _calldata, scheduleTime);
+            }
+            _storage.setExecuted(_proposalId, msg.sender);
+            emit ProposalExecuted(_proposalId);
+        } else {
+            for (uint256 tid = 0; tid < transactionCount; tid++) {
+                (address target, uint256 value, string memory signature, bytes memory _calldata, uint256 scheduleTime) = _storage
+                    .getTransaction(_proposalId, tid);
+                _timeLock.cancelTransaction(target, value, signature, _calldata, scheduleTime);
+            }
+        }
         emit VoteClosed(_proposalId);
         emit ProposalClosed(_proposalId);
     }
@@ -407,13 +461,12 @@ contract CollectiveGovernance is Governance, VoteStrategy, ERC165 {
     /// @notice get the result of the vote
     /// @return bool True if the vote is closed and passed
     /// @dev This method will fail if the vote was vetoed
-    function getVoteSucceeded(uint256 _proposalId) external view requireVoteClosed(_proposalId) returns (bool) {
+    function getVoteSucceeded(uint256 _proposalId) public view requireVoteClosed(_proposalId) returns (bool) {
         _storage.revertNotValid(_proposalId);
         revertVoteNotAllowed(_proposalId);
-
         uint256 totalVotesCast = _storage.quorum(_proposalId);
-        require(totalVotesCast >= _storage.quorumRequired(_proposalId), "Not enough participants");
-        return _storage.forVotes(_proposalId) > _storage.againstVotes(_proposalId);
+        bool quorumRequirementMet = totalVotesCast >= _storage.quorumRequired(_proposalId);
+        return quorumRequirementMet && _storage.forVotes(_proposalId) > _storage.againstVotes(_proposalId);
     }
 
     /// @notice see ERC-165
@@ -437,8 +490,13 @@ contract CollectiveGovernance is Governance, VoteStrategy, ERC165 {
         _storage.revertNotValid(_proposalId);
         revertNotSupervisor(_proposalId);
         uint256 _startTime = _storage.startTime(_proposalId);
-        // solhint-disable-next-line not-rely-on-time
-        require(!isVoteOpenByProposalId[_proposalId] && block.timestamp <= _startTime, "Not possible");
+        require(!isVoteOpenByProposalId[_proposalId] && getBlockTimestamp() <= _startTime, "Not possible");
+        uint256 transactionCount = _storage.transactionCount(_proposalId);
+        for (uint256 tid = 0; tid < transactionCount; tid++) {
+            (address target, uint256 value, string memory signature, bytes memory _calldata, uint256 scheduleTime) = _storage
+                .getTransaction(_proposalId, tid);
+            _timeLock.cancelTransaction(target, value, signature, _calldata, scheduleTime);
+        }
         _storage.cancel(_proposalId, msg.sender);
         emit ProposalClosed(_proposalId);
     }
@@ -465,5 +523,17 @@ contract CollectiveGovernance is Governance, VoteStrategy, ERC165 {
     /// @return uint32 version number
     function version() external pure virtual returns (uint32) {
         return VERSION_1;
+    }
+
+    function getBlockTimestamp() internal view returns (uint256) {
+        // solhint-disable-next-line not-rely-on-time
+        return block.timestamp;
+    }
+
+    function max(uint256 a, uint256 b) internal pure returns (uint256) {
+        if (a > b) {
+            return a;
+        }
+        return b;
     }
 }

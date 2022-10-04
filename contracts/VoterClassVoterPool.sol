@@ -77,7 +77,7 @@ contract VoterClassVoterPool is VoterClass, ERC165, Ownable {
     event RegisterVoter(address voter);
     event BurnVoter(address voter);
 
-    string public constant NAME = "collective.xyz VoterClassVoterPool";
+    string public constant NAME = "collective VoterClassVoterPool";
 
     uint256 private immutable _weight;
 

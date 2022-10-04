@@ -50,7 +50,7 @@ import "./VoterClass.sol";
 /// @notice Null Object Pattern for VoterClass
 /// @dev No voter is allowed.
 contract VoterClassNullObject is VoterClass, ERC165 {
-    string public constant NAME = "collective.xyz VoterClassNullObject";
+    string public constant NAME = "collective VoterClassNullObject";
 
     modifier requireValidAddress(address _wallet) {
         require(_wallet != address(0), "Not a valid wallet");

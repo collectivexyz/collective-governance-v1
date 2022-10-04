@@ -51,7 +51,12 @@ library Constant {
 
     /// @notice minimum vote duration
     /// @dev For security reasons this must be a relatively long time compared to seconds
-    uint256 public constant MINIMUM_VOTE_DURATION = 86400;
+    uint256 public constant MINIMUM_VOTE_DURATION = 1 days;
+
+    // timelock values
+    uint256 public constant TIMELOCK_GRACE_PERIOD = 14 days;
+    uint256 public constant TIMELOCK_MINIMUM_DELAY = 2 * MINIMUM_VOTE_DURATION;
+    uint256 public constant TIMELOCK_MAXIMUM_DELAY = 30 days;
 
     uint32 public constant VERSION_1 = 1;
 }
