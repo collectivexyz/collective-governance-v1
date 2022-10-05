@@ -122,7 +122,8 @@ contract CollectiveGovernance is Governance, VoteStrategy, ERC165 {
         return proposalId;
     }
 
-    /// @notice attach a transaction to the specified proposal.  It will be executed when voting ends
+    /// @notice Attach a transaction to the specified proposal.
+    ///         If successfull, it will be executed when voting is ended.
     /// if the vote is successful.
     /// @dev must be called prior to configuration
     /// @param _proposalId the id of the proposal
@@ -228,12 +229,13 @@ contract CollectiveGovernance is Governance, VoteStrategy, ERC165 {
 
         uint256 transactionCount = _storage.transactionCount(_proposalId);
         if (transactionCount > 0 && !_storage.isVeto(_proposalId) && getVoteSucceeded(_proposalId)) {
+            require(!_storage.isExecuted(_proposalId), "Double execution");
+            _storage.setExecuted(_proposalId, msg.sender);
             for (uint256 tid = 0; tid < transactionCount; tid++) {
                 (address target, uint256 value, string memory signature, bytes memory _calldata, uint256 scheduleTime) = _storage
                     .getTransaction(_proposalId, tid);
                 _timeLock.executeTransaction(target, value, signature, _calldata, scheduleTime);
             }
-            _storage.setExecuted(_proposalId, msg.sender);
             emit ProposalExecuted(_proposalId);
         } else {
             for (uint256 tid = 0; tid < transactionCount; tid++) {

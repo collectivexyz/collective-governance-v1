@@ -51,7 +51,7 @@ import "../contracts/Constant.sol";
 /**
  * @notice TimeLock transactions until a future time.   This is useful to guarantee that a Transaction
  * is specified in advance of a Governance vote and to prevent it from executing before the end of voting.
- * @dev This is a modified version of Compound Finance TimeLock here
+ * @dev This is a modified version of Compound Finance TimeLock.
  * https://github.com/compound-finance/compound-protocol/blob/a3214f67b73310d547e00fc578e8355911c9d376/contracts/Timelock.sol
  * Implements Ownable and requires owner for all operations.
  */
@@ -83,7 +83,7 @@ contract TimeLock is Ownable {
 
     uint256 public _lockTime;
 
-    /// @notice table of transaction hashes that map to true if queued
+    /// @notice table of transaction hashes, map to true if seen by the queueTransaction operation
     mapping(bytes32 => bool) public _queuedTransaction;
 
     /**
@@ -96,7 +96,8 @@ contract TimeLock is Ownable {
     }
 
     /**
-     * @notice Enter a transaction as queued for future execution
+     * @notice Mark a transaction as queued for this time lock
+     * @dev it is only possible to execute a queued transaction
      * @param _target the target address for this transaction
      * @param _value the value to pass to the call
      * @param _signature the tranaction signature
@@ -141,7 +142,8 @@ contract TimeLock is Ownable {
     }
 
     /**
-     * @notice execute the scheduled transaction
+     * @notice If the time lock is concluded, execute the scheduled transaction.
+     * @dev It is only possible to execute a queued transaction.
      * @param _target the target address for this transaction
      * @param _value the value to pass to the call
      * @param _signature the tranaction signature

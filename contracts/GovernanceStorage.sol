@@ -151,7 +151,6 @@ contract GovernanceStorage is Storage, ERC165, Ownable {
 
     modifier requireVotingActive(uint256 _proposalId) {
         Proposal storage proposal = proposalMap[_proposalId];
-        // solhint-disable-next-line not-rely-on-time
         require(proposal.startTime <= getBlockTimestamp() && proposal.endTime > getBlockTimestamp(), "Vote not active");
         _;
     }

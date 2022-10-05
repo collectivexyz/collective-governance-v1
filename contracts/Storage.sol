@@ -65,11 +65,11 @@ interface Storage is IERC165 {
     event VoteReady(uint256 proposalId, uint256 startTime, uint256 endTime);
     event VoteCancel(uint256 proposalId, address supervisor);
 
-    /// @notice the current state of a proposal
+    /// @notice The current state of a proposal.
     /// CONFIG indicates the proposal is currently mutable with building
-    /// and setup operations underway
-    /// while both FINAL and CANCELLED are immutable states indicating the proposal is final
-    /// however the CANCELLED state indicates the proposal never entered a voting phase
+    /// and setup operations underway.
+    /// Both FINAL and CANCELLED are immutable states indicating the proposal is final,
+    /// however the CANCELLED state indicates the proposal never entered a voting phase.
     enum Status {
         CONFIG,
         FINAL,
@@ -90,7 +90,7 @@ interface Storage is IERC165 {
         uint256 scheduleTime;
     }
 
-    /// @notice struct indicating the data required for a specific vote
+    /// @notice Struct describing the data required for a specific vote.
     /// @dev proposal is only valid if id != 0 and proposal.id == id;
     struct Proposal {
         /// @notice Unique id for looking up a proposal

@@ -72,8 +72,8 @@ interface Governance is IERC165 {
     /// @return uint256 The id of the new proposal
     function propose() external returns (uint256);
 
-    /// @notice attach a transaction to the specified proposal.  It will be executed when voting ends
-    /// if the vote is successful.
+    /// @notice Attach a transaction to the specified proposal.
+    ///         If successfull, it will be executed when voting is ended.
     /// @dev must be called prior to configuration
     /// @param _proposalId the id of the proposal
     /// @param _target the target address for this transaction
