@@ -48,16 +48,16 @@ import "@openzeppelin/contracts/interfaces/IERC165.sol";
 import "../contracts/VoterClass.sol";
 import "../contracts/Storage.sol";
 
-/// @title Governance Builder interface
-/// @notice Requirements for Governance Builder implementation
+/// @title Governance GovernanceCreator interface
+/// @notice Requirements for Governance GovernanceCreator implementation
 /// @custom:type interface
-interface Builder is IERC165 {
+interface GovernanceCreator is IERC165 {
     event GovernanceContractCreated(address creator, address governance);
-    event BuilderContractInitialized(address creator);
-    event BuilderWithSupervisor(address creator, address supervisor);
-    event BuilderWithVoterClass(address creator, address class, string name, uint32 version);
-    event BuilderWithMinimumDuration(address creator, uint256 duration);
-    event BuilderWithStorageAddress(address creator, address _storage);
+    event GovernanceCreatorContractInitialized(address creator);
+    event GovernanceCreatorWithSupervisor(address creator, address supervisor);
+    event GovernanceCreatorWithVoterClass(address creator, address class, string name, uint32 version);
+    event GovernanceCreatorWithMinimumDuration(address creator, uint256 duration);
+    event GovernanceCreatorWithStorageAddress(address creator, address _storage);
 
     struct GovernanceProperties {
         uint256 minimumVoteDuration;
@@ -74,34 +74,35 @@ interface Builder is IERC165 {
     function version() external pure returns (uint32);
 
     /// @notice initialize and create a new builder context for this sender
-    /// @return Builder this contract
-    function aGovernance() external returns (Builder);
+    /// @return GovernanceCreator this contract
+    function aGovernance() external returns (GovernanceCreator);
 
     /// @notice add a supervisor to the supervisor list for the next constructed contract contract
     /// @dev maintains an internal list which increases with every call
     /// @param _supervisor the address of the wallet representing a supervisor for the project
-    /// @return Builder this contract
-    function withSupervisor(address _supervisor) external returns (Builder);
+    /// @return GovernanceCreator this contract
+    function withSupervisor(address _supervisor) external returns (GovernanceCreator);
 
     /// @notice set the VoterClass to be used for the next constructed contract
     /// @param _classAddress the address of the VoterClass contract
-    /// @return Builder this contract
-    function withVoterClassAddress(address _classAddress) external returns (Builder);
+    /// @return GovernanceCreator this contract
+    function withVoterClassAddress(address _classAddress) external returns (GovernanceCreator);
 
     /// @notice set the VoterClass to be used for the next constructed contract
     /// @dev the type safe VoterClass for use within Solidity code
     /// @param _class the address of the VoterClass contract
-    /// @return Builder this contract
-    function withVoterClass(VoterClass _class) external returns (Builder);
+    /// @return GovernanceCreator this contract
+    function withVoterClass(VoterClass _class) external returns (GovernanceCreator);
 
     /// @notice set the minimum duration to the specified value
     /// @dev at least one day is required
     /// @param _minimumDuration the duration in seconds
-    /// @return Builder this contract
-    function withMinimumDuration(uint256 _minimumDuration) external returns (Builder);
+    /// @return GovernanceCreator this contract
+    function withMinimumDuration(uint256 _minimumDuration) external returns (GovernanceCreator);
 
     /// @notice build the specified contract
-    /// @dev contructs a new contract and may require a large gas fee, does not reinitialize context
+    /// @dev Contructs a new contract and may require a large gas fee.  Build does not reinitialize context.
+    /// If you wish to reset the settings call reset or aGovernance directly.
     /// @return the address of the new Governance contract
     function build() external returns (address);
 }

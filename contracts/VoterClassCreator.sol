@@ -44,42 +44,25 @@
 pragma solidity ^0.8.15;
 
 import "../contracts/VoterClass.sol";
-import "../contracts/VoterClassOpenVote.sol";
-import "../contracts/VoterClassVoterPool.sol";
-import "../contracts/VoterClassERC721.sol";
-import "../contracts/VoterClassCreator.sol";
 
-/// @title Creator for VoterClass implementations
-/// @notice A simple factory for VoterClass instances.
-contract VoterClassFactory is VoterClassCreator {
+/// @title Interface for VoterClass creation
+interface VoterClassCreator {
+    event VoterClassCreated(address voterClass);
+    event VoterClassCreated(address voterClass, address project);
+
     /// @notice create a VoterClass for open voting
     /// @param _weight The weight associated with each vote
     /// @return address The address of the resulting voter class
-    function createOpenVote(uint256 _weight) external returns (address) {
-        VoterClass _class = new VoterClassOpenVote(_weight);
-        address _classAddr = address(_class);
-        emit VoterClassCreated(_classAddr);
-        return _classAddr;
-    }
+    function createOpenVote(uint256 _weight) external returns (address);
 
     /// @notice create a VoterClass for pooled voting
     /// @param _weight The weight associated with each vote
     /// @return address The address of the resulting voter class
-    function createVoterPool(uint256 _weight) external returns (address) {
-        VoterClass _class = new VoterClassVoterPool(_weight);
-        address _classAddr = address(_class);
-        emit VoterClassCreated(_classAddr);
-        return _classAddr;
-    }
+    function createVoterPool(uint256 _weight) external returns (address);
 
     /// @notice create a VoterClass for token holding members
     /// @param _erc721 The address of the ERC-721 contract for voting
     /// @param _weight The weight associated with each vote
     /// @return address The address of the resulting voter class
-    function createERC721(address _erc721, uint256 _weight) external returns (address) {
-        VoterClass _class = new VoterClassERC721(_erc721, _weight);
-        address _classAddr = address(_class);
-        emit VoterClassCreated(_classAddr, _erc721);
-        return _classAddr;
-    }
+    function createERC721(address _erc721, uint256 _weight) external returns (address);
 }
