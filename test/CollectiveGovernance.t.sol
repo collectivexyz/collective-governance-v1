@@ -322,7 +322,7 @@ contract CollectiveGovernanceTest is Test {
         governance.startVote(PROPOSAL_ID);
         assertTrue(governance.isOpen(PROPOSAL_ID));
         vm.prank(_OWNER);
-        vm.expectRevert("Vote open");
+        vm.expectRevert("Vote in progress");
         governance.endVote(PROPOSAL_ID);
     }
 
@@ -848,7 +848,7 @@ contract CollectiveGovernanceTest is Test {
         vm.prank(_SUPERVISOR);
         governance.startVote(PROPOSAL_ID);
         vm.warp(startTime + blockStep);
-        vm.expectRevert("Vote open");
+        vm.expectRevert("Vote in progress");
         vm.prank(_SUPERVISOR);
         governance.endVote(PROPOSAL_ID);
     }

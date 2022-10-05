@@ -224,25 +224,16 @@ contract CollectiveGovernance is Governance, VoteStrategy, ERC165 {
         revertVoteNotOpen(_proposalId);
 
         uint256 _endTime = _storage.endTime(_proposalId);
-        require(_endTime <= getBlockTimestamp() || _storage.isVeto(_proposalId) || _storage.isCancel(_proposalId), "Vote open");
+        require(
+            _endTime <= getBlockTimestamp() || _storage.isVeto(_proposalId) || _storage.isCancel(_proposalId),
+            "Vote in progress"
+        );
         isVoteOpenByProposalId[_proposalId] = false;
 
-        uint256 transactionCount = _storage.transactionCount(_proposalId);
-        if (transactionCount > 0 && !_storage.isVeto(_proposalId) && getVoteSucceeded(_proposalId)) {
-            require(!_storage.isExecuted(_proposalId), "Double execution");
-            _storage.setExecuted(_proposalId, msg.sender);
-            for (uint256 tid = 0; tid < transactionCount; tid++) {
-                (address target, uint256 value, string memory signature, bytes memory _calldata, uint256 scheduleTime) = _storage
-                    .getTransaction(_proposalId, tid);
-                _timeLock.executeTransaction(target, value, signature, _calldata, scheduleTime);
-            }
-            emit ProposalExecuted(_proposalId);
+        if (!_storage.isVeto(_proposalId) && getVoteSucceeded(_proposalId)) {
+            executeTransaction(_proposalId);
         } else {
-            for (uint256 tid = 0; tid < transactionCount; tid++) {
-                (address target, uint256 value, string memory signature, bytes memory _calldata, uint256 scheduleTime) = _storage
-                    .getTransaction(_proposalId, tid);
-                _timeLock.cancelTransaction(target, value, signature, _calldata, scheduleTime);
-            }
+            cancelTransaction(_proposalId);
         }
         emit VoteClosed(_proposalId);
         emit ProposalClosed(_proposalId);
@@ -513,6 +504,31 @@ contract CollectiveGovernance is Governance, VoteStrategy, ERC165 {
 
     function revertNotSupervisor(uint256 _proposalId) private view {
         require(_storage.isSupervisor(_proposalId, msg.sender), "Supervisor required");
+    }
+
+    function executeTransaction(uint256 _proposalId) private {
+        uint256 transactionCount = _storage.transactionCount(_proposalId);
+        if (transactionCount > 0) {
+            require(!_storage.isExecuted(_proposalId), "Double execution");
+            _storage.setExecuted(_proposalId, msg.sender);
+            for (uint256 tid = 0; tid < transactionCount; tid++) {
+                (address target, uint256 value, string memory signature, bytes memory _calldata, uint256 scheduleTime) = _storage
+                    .getTransaction(_proposalId, tid);
+                _timeLock.executeTransaction(target, value, signature, _calldata, scheduleTime);
+            }
+            emit ProposalExecuted(_proposalId);
+        }
+    }
+
+    function cancelTransaction(uint256 _proposalId) private {
+        uint256 transactionCount = _storage.transactionCount(_proposalId);
+        if (transactionCount > 0) {
+            for (uint256 tid = 0; tid < transactionCount; tid++) {
+                (address target, uint256 value, string memory signature, bytes memory _calldata, uint256 scheduleTime) = _storage
+                    .getTransaction(_proposalId, tid);
+                _timeLock.cancelTransaction(target, value, signature, _calldata, scheduleTime);
+            }
+        }
     }
 
     /// @notice return the name of this implementation
