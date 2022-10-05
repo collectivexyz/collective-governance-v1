@@ -52,12 +52,11 @@ import "../contracts/Storage.sol";
 /// @notice Requirements for Governance GovernanceCreator implementation
 /// @custom:type interface
 interface GovernanceCreator is IERC165 {
-    event GovernanceContractCreated(address creator, address governance);
-    event GovernanceCreatorContractInitialized(address creator);
-    event GovernanceCreatorWithSupervisor(address creator, address supervisor);
-    event GovernanceCreatorWithVoterClass(address creator, address class, string name, uint32 version);
-    event GovernanceCreatorWithMinimumDuration(address creator, uint256 duration);
-    event GovernanceCreatorWithStorageAddress(address creator, address _storage);
+    event GovernanceContractCreated(address creator, address _storage, address governance);
+    event GovernanceContractInitialized(address creator);
+    event GovernanceContractWithSupervisor(address creator, address supervisor);
+    event GovernanceContractWithVoterClass(address creator, address class, string name, uint32 version);
+    event GovernanceContractWithMinimumDuration(address creator, uint256 duration);
 
     struct GovernanceProperties {
         uint256 minimumVoteDuration;

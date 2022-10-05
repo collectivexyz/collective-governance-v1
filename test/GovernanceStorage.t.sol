@@ -262,12 +262,6 @@ contract GovernanceStorageTest is Test {
         _storage.veto(PROPOSAL_ID, _VOTER1);
     }
 
-    function testRevertInvalidProposal(uint256 _proposalId) public {
-        vm.assume(_proposalId > PROPOSAL_ID);
-        vm.expectRevert("Invalid proposal");
-        _storage.revertNotValid(_proposalId);
-    }
-
     function testAbstainFromVote() public {
         _storage.registerSupervisor(PROPOSAL_ID, _SUPERVISOR, _OWNER);
         _storage.setQuorumRequired(PROPOSAL_ID, 2, _SUPERVISOR);
@@ -513,7 +507,7 @@ contract GovernanceStorageTest is Test {
     }
 
     function testLatestRevertIfNone() public {
-        vm.expectRevert("No current proposal");
+        vm.expectRevert("No proposal");
         _storage.latestProposal(_SUPERVISOR);
     }
 

@@ -75,7 +75,7 @@ contract GovernanceStorage is Storage, ERC165, Ownable {
     /// @notice global list of proposed issues by id
     mapping(uint256 => Proposal) public proposalMap;
 
-    /// @notice The latest proposal for each proposer
+    /// @notice The last contest for each sender
     mapping(address => uint256) private _latestProposalId;
 
     /// @notice create a new storage object with VoterClass as the voting population
@@ -89,7 +89,7 @@ contract GovernanceStorage is Storage, ERC165, Ownable {
         _proposalCount = 0;
     }
 
-    modifier requireValidProposal(uint256 _proposalId) {
+    modifier requireValid(uint256 _proposalId) {
         Proposal storage proposal = proposalMap[_proposalId];
         require(_proposalId > 0 && _proposalId <= _proposalCount && proposal.id == _proposalId, "Invalid proposal");
         _;
@@ -172,13 +172,7 @@ contract GovernanceStorage is Storage, ERC165, Ownable {
         uint256 _proposalId,
         address _supervisor,
         address _sender
-    )
-        external
-        onlyOwner
-        requireValidProposal(_proposalId)
-        requireProposalSender(_proposalId, _sender)
-        requireConfig(_proposalId)
-    {
+    ) external onlyOwner requireValid(_proposalId) requireProposalSender(_proposalId, _sender) requireConfig(_proposalId) {
         Proposal storage proposal = proposalMap[_proposalId];
         if (!proposal.supervisorPool[_supervisor]) {
             proposal.supervisorPool[_supervisor] = true;
@@ -195,13 +189,7 @@ contract GovernanceStorage is Storage, ERC165, Ownable {
         uint256 _proposalId,
         address _supervisor,
         address _sender
-    )
-        external
-        onlyOwner
-        requireValidProposal(_proposalId)
-        requireProposalSender(_proposalId, _sender)
-        requireConfig(_proposalId)
-    {
+    ) external onlyOwner requireValid(_proposalId) requireProposalSender(_proposalId, _sender) requireConfig(_proposalId) {
         Proposal storage proposal = proposalMap[_proposalId];
         if (proposal.supervisorPool[_supervisor]) {
             proposal.supervisorPool[_supervisor] = false;
@@ -218,8 +206,7 @@ contract GovernanceStorage is Storage, ERC165, Ownable {
         uint256 _proposalId,
         uint256 _quorum,
         address _sender
-    ) external onlyOwner requireConfig(_proposalId) {
-        revertNotValid(_proposalId);
+    ) external onlyOwner requireValid(_proposalId) requireConfig(_proposalId) {
         Proposal storage proposal = proposalMap[_proposalId];
         require(proposal.supervisorPool[_sender], "Requires supervisor");
         proposal.quorumRequired = _quorum;
@@ -230,8 +217,12 @@ contract GovernanceStorage is Storage, ERC165, Ownable {
     /// @dev requires supervisor
     /// @param _proposalId the id of the proposal
     /// @param _sender original wallet for this request
-    function enableUndoVote(uint256 _proposalId, address _sender) external onlyOwner requireConfig(_proposalId) {
-        revertNotValid(_proposalId);
+    function enableUndoVote(uint256 _proposalId, address _sender)
+        external
+        onlyOwner
+        requireValid(_proposalId)
+        requireConfig(_proposalId)
+    {
         Proposal storage proposal = proposalMap[_proposalId];
         require(proposal.supervisorPool[_sender], "Requires supervisor");
         proposal.isUndoEnabled = true;
@@ -247,8 +238,7 @@ contract GovernanceStorage is Storage, ERC165, Ownable {
         uint256 _proposalId,
         uint256 _voteDelay,
         address _sender
-    ) external onlyOwner requireConfig(_proposalId) {
-        revertNotValid(_proposalId);
+    ) external onlyOwner requireValid(_proposalId) requireConfig(_proposalId) {
         Proposal storage proposal = proposalMap[_proposalId];
         require(proposal.supervisorPool[_sender], "Requires supervisor");
         proposal.voteDelay = _voteDelay;
@@ -263,8 +253,7 @@ contract GovernanceStorage is Storage, ERC165, Ownable {
         uint256 _proposalId,
         uint256 _voteDuration,
         address _sender
-    ) external onlyOwner requireConfig(_proposalId) {
-        revertNotValid(_proposalId);
+    ) external onlyOwner requireValid(_proposalId) requireConfig(_proposalId) {
         require(_voteDuration >= Constant.MINIMUM_VOTE_DURATION, "Short vote");
         Proposal storage proposal = proposalMap[_proposalId];
         require(proposal.supervisorPool[_sender], "Requires supervisor");
@@ -274,8 +263,7 @@ contract GovernanceStorage is Storage, ERC165, Ownable {
     /// @notice get the address of the proposal sender
     /// @param _proposalId the id of the proposal
     /// @return address the address of the sender
-    function getSender(uint256 _proposalId) external view returns (address) {
-        revertNotValid(_proposalId);
+    function getSender(uint256 _proposalId) external view requireValid(_proposalId) returns (address) {
         Proposal storage proposal = proposalMap[_proposalId];
         return proposal.proposalSender;
     }
@@ -283,8 +271,7 @@ contract GovernanceStorage is Storage, ERC165, Ownable {
     /// @notice get the quorum required
     /// @param _proposalId the id of the proposal
     /// @return uint256 the number required for quorum
-    function quorumRequired(uint256 _proposalId) external view returns (uint256) {
-        revertNotValid(_proposalId);
+    function quorumRequired(uint256 _proposalId) external view requireValid(_proposalId) returns (uint256) {
         Proposal storage proposal = proposalMap[_proposalId];
         return proposal.quorumRequired;
     }
@@ -292,8 +279,7 @@ contract GovernanceStorage is Storage, ERC165, Ownable {
     /// @notice get the vote delay
     /// @param _proposalId the id of the proposal
     /// @return uint256 the delay
-    function voteDelay(uint256 _proposalId) external view returns (uint256) {
-        revertNotValid(_proposalId);
+    function voteDelay(uint256 _proposalId) external view requireValid(_proposalId) returns (uint256) {
         Proposal storage proposal = proposalMap[_proposalId];
         return proposal.voteDelay;
     }
@@ -301,8 +287,7 @@ contract GovernanceStorage is Storage, ERC165, Ownable {
     /// @notice get the vote duration
     /// @param _proposalId the id of the proposal
     /// @return uint256 the duration
-    function voteDuration(uint256 _proposalId) external view returns (uint256) {
-        revertNotValid(_proposalId);
+    function voteDuration(uint256 _proposalId) external view requireValid(_proposalId) returns (uint256) {
         Proposal storage proposal = proposalMap[_proposalId];
         return proposal.voteDuration;
     }
@@ -311,8 +296,7 @@ contract GovernanceStorage is Storage, ERC165, Ownable {
     /// @dev timestamp in epoch seconds since January 1, 1970
     /// @param _proposalId the id of the proposal
     /// @return uint256 the start time
-    function startTime(uint256 _proposalId) external view returns (uint256) {
-        revertNotValid(_proposalId);
+    function startTime(uint256 _proposalId) external view requireValid(_proposalId) returns (uint256) {
         Proposal storage proposal = proposalMap[_proposalId];
         return proposal.startTime;
     }
@@ -321,8 +305,7 @@ contract GovernanceStorage is Storage, ERC165, Ownable {
     /// @dev timestamp in epoch seconds since January 1, 1970
     /// @param _proposalId the id of the proposal
     /// @return uint256 the end time
-    function endTime(uint256 _proposalId) external view returns (uint256) {
-        revertNotValid(_proposalId);
+    function endTime(uint256 _proposalId) external view requireValid(_proposalId) returns (uint256) {
         Proposal storage proposal = proposalMap[_proposalId];
         return proposal.endTime;
     }
@@ -330,8 +313,7 @@ contract GovernanceStorage is Storage, ERC165, Ownable {
     /// @notice get the for vote count
     /// @param _proposalId the id of the proposal
     /// @return uint256 the number of votes in favor
-    function forVotes(uint256 _proposalId) public view returns (uint256) {
-        revertNotValid(_proposalId);
+    function forVotes(uint256 _proposalId) public view requireValid(_proposalId) returns (uint256) {
         Proposal storage proposal = proposalMap[_proposalId];
         return proposal.forVotes;
     }
@@ -339,8 +321,7 @@ contract GovernanceStorage is Storage, ERC165, Ownable {
     /// @notice get the against vote count
     /// @param _proposalId the id of the proposal
     /// @return uint256 the number of against votes
-    function againstVotes(uint256 _proposalId) public view returns (uint256) {
-        revertNotValid(_proposalId);
+    function againstVotes(uint256 _proposalId) public view requireValid(_proposalId) returns (uint256) {
         Proposal storage proposal = proposalMap[_proposalId];
         return proposal.againstVotes;
     }
@@ -348,8 +329,7 @@ contract GovernanceStorage is Storage, ERC165, Ownable {
     /// @notice get the number of abstentions
     /// @param _proposalId the id of the proposal
     /// @return uint256 the number abstentions
-    function abstentionCount(uint256 _proposalId) public view returns (uint256) {
-        revertNotValid(_proposalId);
+    function abstentionCount(uint256 _proposalId) public view requireValid(_proposalId) returns (uint256) {
         Proposal storage proposal = proposalMap[_proposalId];
         return proposal.abstentionCount;
     }
@@ -365,8 +345,7 @@ contract GovernanceStorage is Storage, ERC165, Ownable {
     /// @param _proposalId the id of the proposal
     /// @param _supervisor the address to check
     /// @return bool true if the address is a supervisor
-    function isSupervisor(uint256 _proposalId, address _supervisor) external view returns (bool) {
-        revertNotValid(_proposalId);
+    function isSupervisor(uint256 _proposalId, address _supervisor) external view requireValid(_proposalId) returns (bool) {
         Proposal storage proposal = proposalMap[_proposalId];
         return proposal.supervisorPool[_supervisor];
     }
@@ -375,16 +354,14 @@ contract GovernanceStorage is Storage, ERC165, Ownable {
     /// @param _proposalId the id of the proposal
     /// @param _voter the address to check
     /// @return bool true if the address is a voter
-    function isVoter(uint256 _proposalId, address _voter) external view returns (bool) {
-        revertNotValid(_proposalId);
+    function isVoter(uint256 _proposalId, address _voter) external view requireValid(_proposalId) returns (bool) {
         return _voterClass.isVoter(_voter);
     }
 
     /// @notice test if proposal is ready or in the setup phase
     /// @param _proposalId the id of the proposal
     /// @return bool true if the proposal is marked ready
-    function isFinal(uint256 _proposalId) public view returns (bool) {
-        revertNotValid(_proposalId);
+    function isFinal(uint256 _proposalId) public view requireValid(_proposalId) returns (bool) {
         Proposal storage proposal = proposalMap[_proposalId];
         return proposal.status == Status.FINAL || proposal.status == Status.CANCELLED;
     }
@@ -392,8 +369,7 @@ contract GovernanceStorage is Storage, ERC165, Ownable {
     /// @notice test if proposal is cancelled
     /// @param _proposalId the id of the proposal
     /// @return bool true if the proposal is marked cancelled
-    function isCancel(uint256 _proposalId) public view returns (bool) {
-        revertNotValid(_proposalId);
+    function isCancel(uint256 _proposalId) public view requireValid(_proposalId) returns (bool) {
         Proposal storage proposal = proposalMap[_proposalId];
         return proposal.status == Status.CANCELLED;
     }
@@ -401,8 +377,7 @@ contract GovernanceStorage is Storage, ERC165, Ownable {
     /// @notice test if proposal is veto
     /// @param _proposalId the id of the proposal
     /// @return bool true if the proposal is marked veto
-    function isVeto(uint256 _proposalId) external view returns (bool) {
-        revertNotValid(_proposalId);
+    function isVeto(uint256 _proposalId) external view requireValid(_proposalId) returns (bool) {
         Proposal storage proposal = proposalMap[_proposalId];
         require(_proposalId > 0 && _proposalId <= _proposalCount, "Unknown proposal");
         return proposal.isVeto;
@@ -412,7 +387,7 @@ contract GovernanceStorage is Storage, ERC165, Ownable {
     /// @return uint256 the id of the most recent proposal for sender
     function latestProposal(address _sender) external view returns (uint256) {
         uint256 latestProposalId = _latestProposalId[_sender];
-        require(latestProposalId > 0, "No current proposal");
+        require(latestProposalId > 0, "No proposal");
         return latestProposalId;
     }
 
@@ -425,6 +400,7 @@ contract GovernanceStorage is Storage, ERC165, Ownable {
     function voteReceipt(uint256 _proposalId, uint256 _shareId)
         external
         view
+        requireValid(_proposalId)
         requireValidReceipt(_proposalId, _shareId)
         returns (
             uint256,
@@ -434,7 +410,6 @@ contract GovernanceStorage is Storage, ERC165, Ownable {
             bool
         )
     {
-        revertNotValid(_proposalId);
         Proposal storage proposal = proposalMap[_proposalId];
         Receipt storage receipt = proposal.voteReceipt[_shareId];
         return (receipt.shareId, receipt.shareFor, receipt.votesCast, receipt.abstention, receipt.undoCast);
@@ -486,8 +461,12 @@ contract GovernanceStorage is Storage, ERC165, Ownable {
     /// @dev requires supervisor
     /// @param _proposalId the id of the proposal
     /// @param _sender original wallet for this request
-    function makeFinal(uint256 _proposalId, address _sender) public onlyOwner requireConfig(_proposalId) {
-        revertNotValid(_proposalId);
+    function makeFinal(uint256 _proposalId, address _sender)
+        public
+        onlyOwner
+        requireValid(_proposalId)
+        requireConfig(_proposalId)
+    {
         Proposal storage proposal = proposalMap[_proposalId];
         require(proposal.supervisorPool[_sender], "Requires supervisor");
         proposal.status = Status.FINAL;
@@ -500,8 +479,7 @@ contract GovernanceStorage is Storage, ERC165, Ownable {
     /// @dev requires supervisor
     /// @param _proposalId the id of the proposal
     /// @param _sender original wallet for this request
-    function cancel(uint256 _proposalId, address _sender) external onlyOwner {
-        revertNotValid(_proposalId);
+    function cancel(uint256 _proposalId, address _sender) external onlyOwner requireValid(_proposalId) {
         if (!isFinal(_proposalId)) {
             // calculate start and end time
             makeFinal(_proposalId, _sender);
@@ -516,8 +494,7 @@ contract GovernanceStorage is Storage, ERC165, Ownable {
     /// @dev supervisor is required
     /// @param _proposalId the id of the proposal
     /// @param _sender the address of the veto sender
-    function veto(uint256 _proposalId, address _sender) external onlyOwner {
-        revertNotValid(_proposalId);
+    function veto(uint256 _proposalId, address _sender) external onlyOwner requireValid(_proposalId) {
         Proposal storage proposal = proposalMap[_proposalId];
         require(proposal.supervisorPool[_sender], "Requires supervisor");
         if (!proposal.isVeto) {
@@ -537,8 +514,14 @@ contract GovernanceStorage is Storage, ERC165, Ownable {
         uint256 _proposalId,
         address _wallet,
         uint256 _shareId
-    ) external onlyOwner requireShareAvailable(_proposalId, _shareId) requireVotingActive(_proposalId) returns (uint256) {
-        revertNotValid(_proposalId);
+    )
+        external
+        onlyOwner
+        requireShareAvailable(_proposalId, _shareId)
+        requireValid(_proposalId)
+        requireVotingActive(_proposalId)
+        returns (uint256)
+    {
         Proposal storage proposal = proposalMap[_proposalId];
         uint256 _shareCount = _voterClass.confirm(_wallet, _shareId);
         require(_shareCount > 0, "Share not available");
@@ -561,8 +544,14 @@ contract GovernanceStorage is Storage, ERC165, Ownable {
         uint256 _proposalId,
         address _wallet,
         uint256 _shareId
-    ) external onlyOwner requireShareAvailable(_proposalId, _shareId) requireVotingActive(_proposalId) returns (uint256) {
-        revertNotValid(_proposalId);
+    )
+        external
+        onlyOwner
+        requireValid(_proposalId)
+        requireShareAvailable(_proposalId, _shareId)
+        requireVotingActive(_proposalId)
+        returns (uint256)
+    {
         Proposal storage proposal = proposalMap[_proposalId];
         uint256 _shareCount = _voterClass.confirm(_wallet, _shareId);
         require(_shareCount > 0, "Share not available");
@@ -585,8 +574,7 @@ contract GovernanceStorage is Storage, ERC165, Ownable {
         uint256 _proposalId,
         address _wallet,
         uint256 _shareId
-    ) public onlyOwner requireVotingActive(_proposalId) returns (uint256) {
-        revertNotValid(_proposalId);
+    ) public onlyOwner requireValid(_proposalId) requireVotingActive(_proposalId) returns (uint256) {
         Proposal storage proposal = proposalMap[_proposalId];
         uint256 _shareCount = _voterClass.confirm(_wallet, _shareId);
         require(_shareCount > 0, "Share not available");
@@ -613,13 +601,13 @@ contract GovernanceStorage is Storage, ERC165, Ownable {
     )
         public
         onlyOwner
+        requireValid(_proposalId)
         requireVoteCast(_proposalId, _receiptId)
         requireReceiptForWallet(_proposalId, _receiptId, _wallet)
         requireUndo(_proposalId)
         requireVotingActive(_proposalId)
         returns (uint256)
     {
-        revertNotValid(_proposalId);
         Proposal storage proposal = proposalMap[_proposalId];
         Receipt storage receipt = proposal.voteReceipt[_receiptId];
         require(receipt.shareFor > 0, "Vote not affirmative");
@@ -648,8 +636,14 @@ contract GovernanceStorage is Storage, ERC165, Ownable {
         bytes memory _calldata,
         uint256 _scheduleTime,
         address _sender
-    ) external onlyOwner requireConfig(_proposalId) requireProposalSender(_proposalId, _sender) returns (uint256) {
-        revertNotValid(_proposalId);
+    )
+        external
+        onlyOwner
+        requireConfig(_proposalId)
+        requireValid(_proposalId)
+        requireProposalSender(_proposalId, _sender)
+        returns (uint256)
+    {
         Proposal storage proposal = proposalMap[_proposalId];
         uint256 transactionId = proposal.transactionCount++;
         proposal.transaction[transactionId] = Transaction(_target, _value, _signature, _calldata, _scheduleTime);
@@ -668,6 +662,7 @@ contract GovernanceStorage is Storage, ERC165, Ownable {
     function getTransaction(uint256 _proposalId, uint256 _transactionId)
         external
         view
+        requireValid(_proposalId)
         returns (
             address _target,
             uint256 _value,
@@ -676,7 +671,6 @@ contract GovernanceStorage is Storage, ERC165, Ownable {
             uint256 _scheduleTime
         )
     {
-        revertNotValid(_proposalId);
         Proposal storage proposal = proposalMap[_proposalId];
         require(_transactionId < proposal.transactionCount, "Invalid transaction");
         Transaction storage transaction = proposal.transaction[_transactionId];
@@ -689,10 +683,10 @@ contract GovernanceStorage is Storage, ERC165, Ownable {
     function setExecuted(uint256 _proposalId, address _sender)
         external
         onlyOwner
+        requireValid(_proposalId)
         requireFinal(_proposalId)
         requireProposalSender(_proposalId, _sender)
     {
-        revertNotValid(_proposalId);
         Proposal storage proposal = proposalMap[_proposalId];
         require(!proposal.isExecuted, "Executed previously");
         proposal.isExecuted = true;
@@ -701,8 +695,7 @@ contract GovernanceStorage is Storage, ERC165, Ownable {
     /// @notice get the current state if executed or not
     /// @param _proposalId the id of the proposal
     /// @return bool true if already executed
-    function isExecuted(uint256 _proposalId) external view returns (bool) {
-        revertNotValid(_proposalId);
+    function isExecuted(uint256 _proposalId) external view requireValid(_proposalId) returns (bool) {
         Proposal storage proposal = proposalMap[_proposalId];
         return proposal.isExecuted;
     }
@@ -710,17 +703,9 @@ contract GovernanceStorage is Storage, ERC165, Ownable {
     /// @notice get the number of attached transactions
     /// @param _proposalId the id of the proposal
     /// @return uint256 current number of transactions
-    function transactionCount(uint256 _proposalId) external view returns (uint256) {
-        revertNotValid(_proposalId);
+    function transactionCount(uint256 _proposalId) external view requireValid(_proposalId) returns (uint256) {
         Proposal storage proposal = proposalMap[_proposalId];
         return proposal.transactionCount;
-    }
-
-    /// @notice do nothing or revert if the proposal is not valid
-    /// @param _proposalId the id of the proposal
-    function revertNotValid(uint256 _proposalId) public view {
-        Proposal storage proposal = proposalMap[_proposalId];
-        require(_proposalId > 0 && _proposalId <= _proposalCount && proposal.id == _proposalId, "Invalid proposal");
     }
 
     /// @notice see ERC-165

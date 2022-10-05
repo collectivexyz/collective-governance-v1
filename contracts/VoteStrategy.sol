@@ -118,6 +118,11 @@ interface VoteStrategy {
     function undoVote(uint256 _proposalId) external;
 
     /// @notice undo any previous vote if any
+    /// @param _proposalId The numeric id of the proposed vote
+    /// @param _tokenIdList A array of tokens or shares that confer the right to vote
+    function undoVote(uint256 _proposalId, uint256[] memory _tokenIdList) external;
+
+    /// @notice undo any previous vote if any
     /// @dev only applies to affirmative vote
     /// @param _proposalId The numeric id of the proposed vote
     /// @param _tokenId The id of a token or share representing the right to vote

@@ -436,10 +436,6 @@ interface Storage is IERC165 {
     /// @return uint256 current number of transactions
     function transactionCount(uint256 _proposalId) external view returns (uint256);
 
-    /// @notice do nothing or revert if the proposal is not valid
-    /// @param _proposalId the id of the proposal
-    function revertNotValid(uint256 _proposalId) external view;
-
     /// @notice get the maxiumum possible for the pass threshold
     /// @return uint256 the maximum value
     function maxPassThreshold() external pure returns (uint256);

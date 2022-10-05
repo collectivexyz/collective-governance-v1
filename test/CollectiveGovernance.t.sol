@@ -577,7 +577,6 @@ contract CollectiveGovernanceTest is Test {
         vm.mockCall(storageMock, abi.encodeWithSelector(Storage.isFinal.selector), abi.encode(true));
         vm.mockCall(storageMock, abi.encodeWithSelector(Storage.isVeto.selector), abi.encode(false));
         vm.mockCall(storageMock, abi.encodeWithSelector(Storage.isSupervisor.selector), abi.encode(true));
-        vm.mockCall(storageMock, abi.encodeWithSelector(Storage.revertNotValid.selector), abi.encode(PROPOSAL_ID));
         vm.mockCall(storageMock, abi.encodeWithSelector(Storage.transactionCount.selector), abi.encode(0));
 
         vm.prank(_SUPERVISOR);
@@ -609,7 +608,6 @@ contract CollectiveGovernanceTest is Test {
         vm.mockCall(storageMock, abi.encodeWithSelector(Storage.isFinal.selector), abi.encode(true));
         vm.mockCall(storageMock, abi.encodeWithSelector(Storage.isVeto.selector), abi.encode(false));
         vm.mockCall(storageMock, abi.encodeWithSelector(Storage.isSupervisor.selector), abi.encode(true));
-        vm.mockCall(storageMock, abi.encodeWithSelector(Storage.revertNotValid.selector), abi.encode(PROPOSAL_ID));
         vm.mockCall(storageMock, abi.encodeWithSelector(Storage.transactionCount.selector), abi.encode(0));
 
         vm.prank(_SUPERVISOR);
@@ -641,7 +639,6 @@ contract CollectiveGovernanceTest is Test {
         vm.mockCall(storageMock, abi.encodeWithSelector(Storage.isFinal.selector), abi.encode(true));
         vm.mockCall(storageMock, abi.encodeWithSelector(Storage.isVeto.selector), abi.encode(false));
         vm.mockCall(storageMock, abi.encodeWithSelector(Storage.isSupervisor.selector), abi.encode(true));
-        vm.mockCall(storageMock, abi.encodeWithSelector(Storage.revertNotValid.selector), abi.encode(PROPOSAL_ID));
         vm.mockCall(storageMock, abi.encodeWithSelector(Storage.transactionCount.selector), abi.encode(0));
 
         vm.prank(_SUPERVISOR);
@@ -672,7 +669,6 @@ contract CollectiveGovernanceTest is Test {
         vm.mockCall(storageMock, abi.encodeWithSelector(Storage.isFinal.selector), abi.encode(true));
         vm.mockCall(storageMock, abi.encodeWithSelector(Storage.isVeto.selector), abi.encode(false));
         vm.mockCall(storageMock, abi.encodeWithSelector(Storage.isSupervisor.selector), abi.encode(true));
-        vm.mockCall(storageMock, abi.encodeWithSelector(Storage.revertNotValid.selector), abi.encode(PROPOSAL_ID));
         vm.mockCall(storageMock, abi.encodeWithSelector(Storage.transactionCount.selector), abi.encode(0));
 
         vm.prank(_SUPERVISOR);

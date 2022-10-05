@@ -74,7 +74,7 @@ contract GovernanceBuilder is GovernanceCreator, ERC165 {
     /// @return GovernanceCreator this contract
     function aGovernance() external returns (GovernanceCreator) {
         clear(msg.sender);
-        emit GovernanceCreatorContractInitialized(msg.sender);
+        emit GovernanceContractInitialized(msg.sender);
         return this;
     }
 
@@ -85,7 +85,7 @@ contract GovernanceBuilder is GovernanceCreator, ERC165 {
     function withSupervisor(address _supervisor) external returns (GovernanceCreator) {
         GovernanceProperties storage _properties = _buildMap[msg.sender];
         _properties.supervisorList.push(_supervisor);
-        emit GovernanceCreatorWithSupervisor(msg.sender, _supervisor);
+        emit GovernanceContractWithSupervisor(msg.sender, _supervisor);
         return this;
     }
 
@@ -105,7 +105,7 @@ contract GovernanceBuilder is GovernanceCreator, ERC165 {
     function withVoterClass(VoterClass _class) public returns (GovernanceCreator) {
         GovernanceProperties storage _properties = _buildMap[msg.sender];
         _properties.class = _class;
-        emit GovernanceCreatorWithVoterClass(msg.sender, address(_class), _class.name(), _class.version());
+        emit GovernanceContractWithVoterClass(msg.sender, address(_class), _class.name(), _class.version());
         return this;
     }
 
@@ -116,7 +116,7 @@ contract GovernanceBuilder is GovernanceCreator, ERC165 {
     function withMinimumDuration(uint256 _minimumDuration) external returns (GovernanceCreator) {
         GovernanceProperties storage _properties = _buildMap[msg.sender];
         _properties.minimumVoteDuration = _minimumDuration;
-        emit GovernanceCreatorWithMinimumDuration(msg.sender, _minimumDuration);
+        emit GovernanceContractWithMinimumDuration(msg.sender, _minimumDuration);
         return this;
     }
 
@@ -133,7 +133,7 @@ contract GovernanceBuilder is GovernanceCreator, ERC165 {
         Governance _governance = new CollectiveGovernance(_properties.supervisorList, _properties.class, _storage);
         address _governanceAddress = address(_governance);
         transferOwnership(_storage, _governanceAddress);
-        emit GovernanceContractCreated(_creator, _governanceAddress);
+        emit GovernanceContractCreated(_creator, address(_storage), _governanceAddress);
         return _governanceAddress;
     }
 
