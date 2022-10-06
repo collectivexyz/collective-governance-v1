@@ -12,9 +12,34 @@
         "internalType": "address",
         "name": "creator",
         "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "_storage",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "governance",
+        "type": "address"
       }
     ],
-    "name": "BuilderContractInitialized",
+    "name": "GovernanceContractCreated",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "creator",
+        "type": "address"
+      }
+    ],
+    "name": "GovernanceContractInitialized",
     "type": "event"
   },
   {
@@ -33,26 +58,7 @@
         "type": "uint256"
       }
     ],
-    "name": "BuilderWithMinimumDuration",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "address",
-        "name": "creator",
-        "type": "address"
-      },
-      {
-        "indexed": false,
-        "internalType": "address",
-        "name": "_storage",
-        "type": "address"
-      }
-    ],
-    "name": "BuilderWithStorageAddress",
+    "name": "GovernanceContractWithMinimumDuration",
     "type": "event"
   },
   {
@@ -71,7 +77,7 @@
         "type": "address"
       }
     ],
-    "name": "BuilderWithSupervisor",
+    "name": "GovernanceContractWithSupervisor",
     "type": "event"
   },
   {
@@ -102,26 +108,7 @@
         "type": "uint32"
       }
     ],
-    "name": "BuilderWithVoterClass",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "address",
-        "name": "creator",
-        "type": "address"
-      },
-      {
-        "indexed": false,
-        "internalType": "address",
-        "name": "governance",
-        "type": "address"
-      }
-    ],
-    "name": "GovernanceContractCreated",
+    "name": "GovernanceContractWithVoterClass",
     "type": "event"
   },
   {
@@ -142,7 +129,7 @@
     "name": "aGovernance",
     "outputs": [
       {
-        "internalType": "contract Builder",
+        "internalType": "contract GovernanceCreator",
         "name": "",
         "type": "address"
       }
@@ -226,7 +213,7 @@
     "name": "withMinimumDuration",
     "outputs": [
       {
-        "internalType": "contract Builder",
+        "internalType": "contract GovernanceCreator",
         "name": "",
         "type": "address"
       }
@@ -245,7 +232,7 @@
     "name": "withSupervisor",
     "outputs": [
       {
-        "internalType": "contract Builder",
+        "internalType": "contract GovernanceCreator",
         "name": "",
         "type": "address"
       }
@@ -264,7 +251,7 @@
     "name": "withVoterClass",
     "outputs": [
       {
-        "internalType": "contract Builder",
+        "internalType": "contract GovernanceCreator",
         "name": "",
         "type": "address"
       }
@@ -283,7 +270,7 @@
     "name": "withVoterClassAddress",
     "outputs": [
       {
-        "internalType": "contract Builder",
+        "internalType": "contract GovernanceCreator",
         "name": "",
         "type": "address"
       }
