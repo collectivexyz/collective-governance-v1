@@ -44,44 +44,46 @@
 
 pragma solidity ^0.8.15;
 
-import "@openzeppelin/contracts/access/Ownable.sol";
-
-import "../contracts/Constant.sol";
-import "../contracts/TimeLocker.sol";
-
 /**
  * @notice TimeLock transactions until a future time.   This is useful to guarantee that a Transaction
  * is specified in advance of a vote and to make it impossible to execute before the end of voting.
- *
- * @dev This is a modified version of Compound Finance TimeLock.
- *
- * https://github.com/compound-finance/compound-protocol/blob/a3214f67b73310d547e00fc578e8355911c9d376/contracts/Timelock.sol
- *
- * Implements Ownable and requires owner for all operations.
  */
-contract TimeLock is TimeLocker, Ownable {
-    uint256 public immutable _lockTime;
+/// @custom:type interface
+interface TimeLocker {
+    error AlreadyInQueue(bytes32 txHash);
+    error TimestampNotInLockRange(bytes32 txHash, uint256 timestamp, uint256 scheduleTime);
+    error RequiredDelayNotInRange(uint256 lockDelay, uint256 minDelay, uint256 maxDelay);
+    error NotInQueue(bytes32 txHash);
+    error TransactionLocked(bytes32 txHash, uint256 untilTime);
+    error TransactionStale(bytes32 txHash);
+    error ExecutionFailed(bytes32 txHash);
 
-    /// @notice table of transaction hashes, map to true if seen by the queueTransaction operation
-    mapping(bytes32 => bool) public _queuedTransaction;
-
-    /**
-     * @param _lockDuration The time delay required for the time lock
-     */
-    constructor(uint256 _lockDuration) {
-        if (_lockDuration < Constant.TIMELOCK_MINIMUM_DELAY || _lockDuration > Constant.TIMELOCK_MAXIMUM_DELAY) {
-            revert RequiredDelayNotInRange(_lockDuration, Constant.TIMELOCK_MINIMUM_DELAY, Constant.TIMELOCK_MAXIMUM_DELAY);
-        }
-        _lockTime = _lockDuration;
-    }
-
-    receive() external payable {
-        emit TimelockEth(msg.sender, msg.value);
-    }
-
-    fallback() external payable {
-        emit TransferEth(msg.sender, msg.value);
-    }
+    event TimelockEth(address sender, uint256 amount);
+    event TransferEth(address recipient, uint256 amount);
+    event CancelTransaction(
+        bytes32 indexed txHash,
+        address indexed target,
+        uint256 value,
+        string signature,
+        bytes data,
+        uint256 scheduleTime
+    );
+    event ExecuteTransaction(
+        bytes32 indexed txHash,
+        address indexed target,
+        uint256 value,
+        string signature,
+        bytes data,
+        uint256 scheduleTime
+    );
+    event QueueTransaction(
+        bytes32 indexed txHash,
+        address indexed target,
+        uint256 value,
+        string signature,
+        bytes data,
+        uint256 scheduleTime
+    );
 
     /**
      * @notice Mark a transaction as queued for this time lock
@@ -100,22 +102,13 @@ contract TimeLock is TimeLocker, Ownable {
         string calldata _signature,
         bytes calldata _calldata,
         uint256 _scheduleTime
-    ) external onlyOwner returns (bytes32) {
-        bytes32 txHash = getTxHash(_target, _value, _signature, _calldata, _scheduleTime);
-        uint256 blockTime = getBlockTimestamp();
-        if (_scheduleTime < (blockTime + _lockTime) || _scheduleTime > (blockTime + _lockTime + Constant.TIMELOCK_GRACE_PERIOD)) {
-            revert TimestampNotInLockRange(txHash, blockTime, _scheduleTime);
-        }
-        if (_queuedTransaction[txHash]) {
-            revert AlreadyInQueue(txHash);
-        }
-        enqueue(txHash);
-        emit QueueTransaction(txHash, _target, _value, _signature, _calldata, _scheduleTime);
-        return txHash;
-    }
+    ) external returns (bytes32);
 
     /**
      * @notice cancel a queued transaction from the timelock
+     *
+     * @dev this method unmarks the named transaction so that it may not be executed
+     *
      * @param _target the target address for this transaction
      * @param _value the value to pass to the call
      * @param _signature the tranaction signature
@@ -128,15 +121,10 @@ contract TimeLock is TimeLocker, Ownable {
         string calldata _signature,
         bytes calldata _calldata,
         uint256 _scheduleTime
-    ) external onlyOwner {
-        bytes32 txHash = getTxHash(_target, _value, _signature, _calldata, _scheduleTime);
-        if (!_queuedTransaction[txHash]) revert NotInQueue(txHash);
-        unqueue(txHash);
-        emit CancelTransaction(txHash, _target, _value, _signature, _calldata, _scheduleTime);
-    }
+    ) external;
 
     /**
-     * @notice If the time lock is concluded, execute the scheduled transaction.
+     * @notice Execute the scheduled transaction at the end of the time lock or scheduled time.
      * @dev It is only possible to execute a queued transaction.
      * @param _target the target address for this transaction
      * @param _value the value to pass to the call
@@ -151,35 +139,7 @@ contract TimeLock is TimeLocker, Ownable {
         string calldata _signature,
         bytes calldata _calldata,
         uint256 _scheduleTime
-    ) external payable onlyOwner returns (bytes memory) {
-        bytes32 txHash = getTxHash(_target, _value, _signature, _calldata, _scheduleTime);
-        if (!_queuedTransaction[txHash]) revert NotInQueue(txHash);
-
-        uint256 blockTime = getBlockTimestamp();
-        if (blockTime < _scheduleTime) {
-            revert TransactionLocked(txHash, _scheduleTime);
-        }
-        if (blockTime > (_lockTime + Constant.TIMELOCK_GRACE_PERIOD)) {
-            revert TransactionStale(txHash);
-        }
-
-        unqueue(txHash);
-
-        bytes memory callData;
-        if (bytes(_signature).length == 0) {
-            callData = _calldata;
-        } else {
-            callData = abi.encodePacked(bytes4(keccak256(bytes(_signature))), _calldata);
-        }
-
-        // solhint-disable-next-line avoid-low-level-calls
-        (bool ok, bytes memory returnData) = _target.call{value: _value}(callData);
-        if (!ok) revert ExecutionFailed(txHash);
-
-        emit ExecuteTransaction(txHash, _target, _value, _signature, _calldata, _scheduleTime);
-
-        return returnData;
-    }
+    ) external payable returns (bytes memory);
 
     /**
      * Calculate the hash code of the specified transaction.  This is used as the transaction id
@@ -197,23 +157,5 @@ contract TimeLock is TimeLocker, Ownable {
         string calldata _signature,
         bytes calldata _calldata,
         uint256 _scheduleTime
-    ) public pure returns (bytes32) {
-        bytes32 txHash = keccak256(abi.encode(_target, _value, _signature, _calldata, _scheduleTime));
-        return txHash;
-    }
-
-    function enqueue(bytes32 txHash) private {
-        _queuedTransaction[txHash] = true;
-    }
-
-    function unqueue(bytes32 txHash) private {
-        // overwrite memory to protect against value rebinding
-        _queuedTransaction[txHash] = false;
-        delete _queuedTransaction[txHash];
-    }
-
-    function getBlockTimestamp() internal view returns (uint256) {
-        // solhint-disable-next-line not-rely-on-time
-        return block.timestamp;
-    }
+    ) external returns (bytes32);
 }

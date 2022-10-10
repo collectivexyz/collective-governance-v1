@@ -1129,14 +1129,17 @@ contract CollectiveGovernanceTest is Test {
 
     function testAttachTransactionEndsVoteDuringTimelock() public {
         vm.prank(_OWNER);
-        governance.attachTransaction(PROPOSAL_ID, address(0x7fff), 0, "", "save()", block.timestamp + 7 days);
+        uint256 etaOfLock = block.timestamp + 7 days;
+        governance.attachTransaction(PROPOSAL_ID, address(0x7fff), 0, "", "save()", etaOfLock);
         vm.startPrank(_SUPERVISOR, _SUPERVISOR);
         governance.configure(PROPOSAL_ID, 1);
         governance.startVote(PROPOSAL_ID);
         vm.stopPrank();
         vm.prank(_VOTER1);
         governance.voteFor(PROPOSAL_ID, TOKEN_ID1);
-        vm.expectRevert("Transaction is locked");
+        TimeLocker locker = new TimeLock(Constant.TIMELOCK_MINIMUM_DELAY);
+        bytes32 txHash = locker.getTxHash(address(0x7fff), 0, "", "save()", etaOfLock);
+        vm.expectRevert(abi.encodeWithSelector(TimeLocker.TransactionLocked.selector, txHash, etaOfLock));
         vm.warp(block.timestamp + Constant.MINIMUM_VOTE_DURATION);
         vm.prank(_OWNER);
         governance.endVote(PROPOSAL_ID);

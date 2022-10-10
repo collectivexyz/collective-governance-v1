@@ -49,6 +49,7 @@ import "../contracts/Storage.sol";
 /**
  * @notice Factory interface for CollectiveStorage
  */
+/// @custom:type interface
 interface StorageCreator {
     event StorageCreated(address _storage, address _owner);
 

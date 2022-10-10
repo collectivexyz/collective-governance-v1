@@ -46,6 +46,7 @@ pragma solidity ^0.8.15;
 import "../contracts/VoterClass.sol";
 
 /// @title Interface for VoterClass creation
+/// @custom:type interface
 interface VoterClassCreator {
     event VoterClassCreated(address voterClass);
     event VoterClassCreated(address voterClass, address project);

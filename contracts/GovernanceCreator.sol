@@ -46,7 +46,6 @@ pragma solidity ^0.8.15;
 import "@openzeppelin/contracts/interfaces/IERC165.sol";
 
 import "../contracts/VoterClass.sol";
-import "../contracts/Storage.sol";
 
 /// @title Governance GovernanceCreator interface
 /// @notice Requirements for Governance GovernanceCreator implementation

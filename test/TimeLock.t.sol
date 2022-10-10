@@ -4,6 +4,7 @@ pragma solidity ^0.8.15;
 
 import "forge-std/Test.sol";
 
+import "../contracts/TimeLocker.sol";
 import "../contracts/TimeLock.sol";
 import "./FlagSet.sol";
 
@@ -11,19 +12,88 @@ contract TimeLockTest is Test {
     uint256 private constant _WEEK_DELAY = 7 days;
     address private constant _FUNCTION = address(0x7);
     address private constant _NOT_OWNER = address(0xffee);
+    address private constant _TYCOON = address(0x1001);
+    address private constant _JOE = address(0x1002);
     // solhint-disable-next-line var-name-mixedcase
-    address private immutable _OWNER = address(this);
+    address private immutable _OWNER = address(0xffdd);
 
     TimeLock private _timeLock;
 
     function setUp() public {
         vm.clearMockedCalls();
         _timeLock = new TimeLock(_WEEK_DELAY);
+        _timeLock.transferOwnership(_OWNER);
     }
 
-    function testTransactionDuringTimeLock() public {
-        vm.expectRevert("Scheduled during time lock");
-        _timeLock.queueTransaction(_FUNCTION, 7, "abc", "data", block.timestamp);
+    function testMinimumRequiredDelay(uint256 delayDelta) public {
+        vm.assume(delayDelta > 0 && delayDelta < Constant.TIMELOCK_MINIMUM_DELAY);
+        vm.expectRevert(
+            abi.encodeWithSelector(
+                TimeLocker.RequiredDelayNotInRange.selector,
+                Constant.TIMELOCK_MINIMUM_DELAY - delayDelta,
+                Constant.TIMELOCK_MINIMUM_DELAY,
+                Constant.TIMELOCK_MAXIMUM_DELAY
+            )
+        );
+        new TimeLock(Constant.TIMELOCK_MINIMUM_DELAY - delayDelta);
+    }
+
+    function testMaximumRequiredDelay(uint256 delayDelta) public {
+        vm.assume(
+            delayDelta > Constant.TIMELOCK_MAXIMUM_DELAY && delayDelta < Constant.UINT_MAX - Constant.TIMELOCK_MAXIMUM_DELAY
+        );
+        vm.expectRevert(
+            abi.encodeWithSelector(
+                TimeLocker.RequiredDelayNotInRange.selector,
+                Constant.TIMELOCK_MAXIMUM_DELAY + delayDelta,
+                Constant.TIMELOCK_MINIMUM_DELAY,
+                Constant.TIMELOCK_MAXIMUM_DELAY
+            )
+        );
+        new TimeLock(Constant.TIMELOCK_MAXIMUM_DELAY + delayDelta);
+    }
+
+    function testTransactionEarlyForTimeLock(uint256 timeDelta) public {
+        vm.assume(timeDelta > 1 && timeDelta < _WEEK_DELAY);
+        bytes32 txHash = _timeLock.getTxHash(_FUNCTION, 7, "abc", "data", block.timestamp + _WEEK_DELAY - timeDelta);
+        vm.expectRevert(
+            abi.encodeWithSelector(
+                TimeLocker.TimestampNotInLockRange.selector,
+                txHash,
+                block.timestamp,
+                block.timestamp + _WEEK_DELAY - timeDelta
+            )
+        );
+        vm.prank(_OWNER);
+        _timeLock.queueTransaction(_FUNCTION, 7, "abc", "data", block.timestamp + _WEEK_DELAY - timeDelta);
+    }
+
+    function testTransactionLateForTimeLock(uint256 timeDelta) public {
+        vm.assume(timeDelta > 0 && timeDelta < (Constant.UINT_MAX - _WEEK_DELAY - Constant.TIMELOCK_GRACE_PERIOD));
+        bytes32 txHash = _timeLock.getTxHash(
+            _FUNCTION,
+            7,
+            "abc",
+            "data",
+            block.timestamp + _WEEK_DELAY + Constant.TIMELOCK_GRACE_PERIOD + timeDelta
+        );
+        vm.expectRevert(
+            abi.encodeWithSelector(
+                TimeLocker.TimestampNotInLockRange.selector,
+                txHash,
+                block.timestamp,
+                block.timestamp + _WEEK_DELAY + Constant.TIMELOCK_GRACE_PERIOD + timeDelta
+            )
+        );
+
+        vm.prank(_OWNER);
+        _timeLock.queueTransaction(
+            _FUNCTION,
+            7,
+            "abc",
+            "data",
+            block.timestamp + _WEEK_DELAY + Constant.TIMELOCK_GRACE_PERIOD + timeDelta
+        );
     }
 
     function testOwnerMustQueueTransaction() public {
@@ -33,36 +103,101 @@ contract TimeLockTest is Test {
     }
 
     function testQueueTransactionHash() public {
-        bytes32 hashValue = _timeLock.queueTransaction(_FUNCTION, 7, "abc", "data", block.timestamp + _WEEK_DELAY);
-        assertTrue(_timeLock._queuedTransaction(hashValue));
-        assertEq(hashValue, 0xfb5a0fa7bd3bcd62232b1089ddbf45e63aa6d00e6cdf09f48ce3bb8d034746a2);
+        vm.prank(_OWNER);
+        bytes32 txHash = _timeLock.queueTransaction(_FUNCTION, 7, "abc", "data", block.timestamp + _WEEK_DELAY);
+        assertTrue(_timeLock._queuedTransaction(txHash));
+        assertEq(txHash, 0xfb5a0fa7bd3bcd62232b1089ddbf45e63aa6d00e6cdf09f48ce3bb8d034746a2);
+    }
+
+    function testQueueTransactionDoubleQueue() public {
+        vm.prank(_OWNER);
+        bytes32 txHash = _timeLock.queueTransaction(_FUNCTION, 7, "abc", "data", block.timestamp + _WEEK_DELAY);
+        assertTrue(_timeLock._queuedTransaction(txHash));
+        vm.expectRevert(abi.encodeWithSelector(TimeLocker.AlreadyInQueue.selector, txHash));
+        vm.prank(_OWNER);
+        _timeLock.queueTransaction(_FUNCTION, 7, "abc", "data", block.timestamp + _WEEK_DELAY);
     }
 
     function testCancelTransaction() public {
-        bytes32 hashValue = _timeLock.queueTransaction(_FUNCTION, 7, "abc", "data", block.timestamp + _WEEK_DELAY);
-        assertTrue(_timeLock._queuedTransaction(hashValue));
+        vm.prank(_OWNER);
+        bytes32 txHash = _timeLock.queueTransaction(_FUNCTION, 7, "abc", "data", block.timestamp + _WEEK_DELAY);
+        assertTrue(_timeLock._queuedTransaction(txHash));
+        vm.prank(_OWNER);
         _timeLock.cancelTransaction(_FUNCTION, 7, "abc", "data", block.timestamp + _WEEK_DELAY);
-        assertFalse(_timeLock._queuedTransaction(hashValue));
+        assertFalse(_timeLock._queuedTransaction(txHash));
+    }
+
+    function testDoubleCancel() public {
+        vm.prank(_OWNER);
+        bytes32 txHash = _timeLock.queueTransaction(_FUNCTION, 7, "abc", "data", block.timestamp + _WEEK_DELAY);
+        assertTrue(_timeLock._queuedTransaction(txHash));
+        vm.prank(_OWNER);
+        _timeLock.cancelTransaction(_FUNCTION, 7, "abc", "data", block.timestamp + _WEEK_DELAY);
+        vm.expectRevert(abi.encodeWithSelector(TimeLocker.NotInQueue.selector, txHash));
+
+        vm.prank(_OWNER);
+        _timeLock.cancelTransaction(_FUNCTION, 7, "abc", "data", block.timestamp + _WEEK_DELAY);
     }
 
     function testCancelTransactionRequiresOwner() public {
-        bytes32 hashValue = _timeLock.queueTransaction(_FUNCTION, 7, "abc", "data", block.timestamp + _WEEK_DELAY);
-        assertTrue(_timeLock._queuedTransaction(hashValue));
+        vm.prank(_OWNER);
+        bytes32 txHash = _timeLock.queueTransaction(_FUNCTION, 7, "abc", "data", block.timestamp + _WEEK_DELAY);
+        assertTrue(_timeLock._queuedTransaction(txHash));
         vm.expectRevert("Ownable: caller is not the owner");
         vm.prank(_NOT_OWNER);
         _timeLock.cancelTransaction(_FUNCTION, 7, "abc", "data", block.timestamp + _WEEK_DELAY);
     }
 
+    function testExecuteRequiresOwner() public {
+        vm.prank(_OWNER);
+        _timeLock.queueTransaction(_FUNCTION, 7, "abc", "data", block.timestamp + _WEEK_DELAY);
+        vm.expectRevert("Ownable: caller is not the owner");
+        vm.warp(block.timestamp + _WEEK_DELAY);
+        vm.prank(_NOT_OWNER);
+        _timeLock.executeTransaction(_FUNCTION, 7, "abc", "data", block.timestamp + _WEEK_DELAY);
+    }
+
     function testExecuteTransaction() public {
         FlagSet flag = new FlagSet();
+        assertFalse(flag.isSet());
         address flagMock = address(flag);
-        bytes memory data = abi.encodeWithSelector(flag.set.selector);
-        uint256 eta = block.timestamp + _WEEK_DELAY;
-        bytes32 hashValue = _timeLock.queueTransaction(flagMock, 0, "", data, eta);
-        assertTrue(_timeLock._queuedTransaction(hashValue));
+        bytes memory _calldata = abi.encodeWithSelector(flag.set.selector);
+        uint256 etaOfLock = block.timestamp + _WEEK_DELAY;
+        vm.prank(_OWNER);
+        bytes32 txHash = _timeLock.queueTransaction(flagMock, 0, "", _calldata, etaOfLock);
+        assertTrue(_timeLock._queuedTransaction(txHash));
         vm.warp(block.timestamp + _WEEK_DELAY);
-        _timeLock.executeTransaction(flagMock, 0, "", data, eta);
-        assertFalse(_timeLock._queuedTransaction(hashValue));
+        vm.prank(_OWNER);
+        _timeLock.executeTransaction(flagMock, 0, "", _calldata, etaOfLock);
+        assertFalse(_timeLock._queuedTransaction(txHash));
         assertTrue(flag.isSet());
+    }
+
+    function testExecuteDuringLockPeriod() public {
+        FlagSet flag = new FlagSet();
+        address flagMock = address(flag);
+        bytes memory _calldata = abi.encodeWithSelector(flag.set.selector);
+        uint256 etaOfLock = block.timestamp + _WEEK_DELAY;
+        vm.prank(_OWNER);
+        bytes32 txHash = _timeLock.queueTransaction(flagMock, 0, "", _calldata, etaOfLock);
+        assertTrue(_timeLock._queuedTransaction(txHash));
+        vm.warp(block.timestamp + 1 days);
+        vm.expectRevert(abi.encodeWithSelector(TimeLocker.TransactionLocked.selector, txHash, etaOfLock));
+        vm.prank(_OWNER);
+        _timeLock.executeTransaction(flagMock, 0, "", _calldata, etaOfLock);
+    }
+
+    function testTransferCoin() public {
+        vm.deal(_TYCOON, 10 gwei);
+        vm.prank(_TYCOON);
+        payable(_timeLock).transfer(10 gwei);
+        assertEq(_TYCOON.balance, 0);
+        uint256 scheduleTime = block.timestamp + _WEEK_DELAY;
+        vm.prank(_OWNER);
+        _timeLock.queueTransaction(_JOE, 10 gwei, "", "", scheduleTime);
+        vm.warp(scheduleTime);
+        vm.prank(_OWNER);
+        _timeLock.executeTransaction(_JOE, 10 gwei, "", "", scheduleTime);
+        assertEq(_JOE.balance, 10 gwei);
     }
 }
