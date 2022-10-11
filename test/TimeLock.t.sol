@@ -157,20 +157,37 @@ contract TimeLockTest is Test {
         _timeLock.executeTransaction(_FUNCTION, 7, "abc", "data", block.timestamp + _WEEK_DELAY);
     }
 
-    function testExecuteTransaction() public {
+    function testExecuteFlag() public {
         FlagSet flag = new FlagSet();
         assertFalse(flag.isSet());
         address flagMock = address(flag);
-        bytes memory _calldata = abi.encodeWithSelector(flag.set.selector);
+        bytes memory _call = abi.encodeWithSelector(flag.set.selector);
         uint256 etaOfLock = block.timestamp + _WEEK_DELAY;
         vm.prank(_OWNER);
-        bytes32 txHash = _timeLock.queueTransaction(flagMock, 0, "", _calldata, etaOfLock);
-        assertTrue(_timeLock._queuedTransaction(txHash));
+        bytes32 txHash = _timeLock.queueTransaction(flagMock, 0, "", _call, etaOfLock);
         vm.warp(block.timestamp + _WEEK_DELAY);
+        assertTrue(_timeLock._queuedTransaction(txHash));
         vm.prank(_OWNER);
-        _timeLock.executeTransaction(flagMock, 0, "", _calldata, etaOfLock);
+        _timeLock.executeTransaction(flagMock, 0, "", _call, etaOfLock);
         assertFalse(_timeLock._queuedTransaction(txHash));
         assertTrue(flag.isSet());
+    }
+
+    function testExecuteTransaction(uint256 systemClock) public {
+        vm.assume(systemClock < Constant.UINT_MAX - _WEEK_DELAY - block.timestamp);
+        vm.warp(block.timestamp + systemClock);
+        vm.deal(_TYCOON, 1 ether);
+        vm.prank(_TYCOON);
+        payable(_timeLock).transfer(1 ether);
+        uint256 etaOfLock = block.timestamp + _WEEK_DELAY;
+        vm.prank(_OWNER);
+        bytes32 txHash = _timeLock.queueTransaction(_JOE, 1 ether, "", "", etaOfLock);
+        vm.warp(block.timestamp + _WEEK_DELAY);
+        assertTrue(_timeLock._queuedTransaction(txHash));
+        vm.prank(_OWNER);
+        _timeLock.executeTransaction(_JOE, 1 ether, "", "", etaOfLock);
+        assertFalse(_timeLock._queuedTransaction(txHash));
+        assertEq(_JOE.balance, 1 ether);
     }
 
     function testExecuteDuringLockPeriod() public {

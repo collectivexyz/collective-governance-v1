@@ -829,30 +829,33 @@ contract CollectiveGovernanceTest is Test {
     }
 
     function testEndVoteWhileActive(uint256 blockStep) public {
-        vm.assume(blockStep > 3600 && blockStep < Constant.MINIMUM_VOTE_DURATION + 3600);
+        uint256 voteDelay = Constant.MINIMUM_VOTE_DURATION;
+        // note one voteDelay one vote duration
+        vm.assume(blockStep < Constant.MINIMUM_VOTE_DURATION);
         _governanceAddress = buildVoterPool();
         governance = CollectiveGovernance(_governanceAddress);
         governance.propose();
         vm.startPrank(_governanceAddress);
         _storage = Storage(governance.getStorageAddress());
         _storage.setQuorumRequired(PROPOSAL_ID, 1, _SUPERVISOR);
-        _storage.setVoteDelay(PROPOSAL_ID, 3600, _SUPERVISOR);
+        _storage.setVoteDelay(PROPOSAL_ID, voteDelay, _SUPERVISOR);
         _storage.setVoteDuration(PROPOSAL_ID, Constant.MINIMUM_VOTE_DURATION, _SUPERVISOR);
         _storage.makeFinal(PROPOSAL_ID, _SUPERVISOR);
         vm.stopPrank();
         uint256 startTime = block.timestamp;
         vm.prank(_SUPERVISOR);
         governance.startVote(PROPOSAL_ID);
-        vm.warp(startTime + blockStep);
+        vm.warp(startTime + voteDelay + blockStep);
         vm.expectRevert("Vote in progress");
         vm.prank(_SUPERVISOR);
         governance.endVote(PROPOSAL_ID);
     }
 
     function testEndVoteWhenFinished(uint256 blockStep) public {
+        uint256 voteDelay = Constant.MINIMUM_VOTE_DURATION;
         vm.assume(
-            blockStep >= 3600 + Constant.MINIMUM_VOTE_DURATION &&
-                blockStep < UINT256MAX - 3600 - block.timestamp - Constant.MINIMUM_VOTE_DURATION
+            blockStep >= voteDelay + Constant.MINIMUM_VOTE_DURATION &&
+                blockStep < UINT256MAX - voteDelay - block.timestamp - Constant.MINIMUM_VOTE_DURATION
         );
         _governanceAddress = buildVoterPool();
         governance = CollectiveGovernance(_governanceAddress);
@@ -860,7 +863,7 @@ contract CollectiveGovernanceTest is Test {
         vm.startPrank(_governanceAddress);
         _storage = Storage(governance.getStorageAddress());
         _storage.setQuorumRequired(PROPOSAL_ID, 1, _SUPERVISOR);
-        _storage.setVoteDelay(PROPOSAL_ID, 3600, _SUPERVISOR);
+        _storage.setVoteDelay(PROPOSAL_ID, voteDelay, _SUPERVISOR);
         _storage.setVoteDuration(PROPOSAL_ID, Constant.MINIMUM_VOTE_DURATION, _SUPERVISOR);
         _storage.makeFinal(PROPOSAL_ID, _SUPERVISOR);
         vm.stopPrank();

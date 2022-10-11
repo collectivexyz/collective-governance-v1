@@ -106,9 +106,7 @@ contract TimeLock is TimeLocker, Ownable {
         if (_scheduleTime < (blockTime + _lockTime) || _scheduleTime > (blockTime + _lockTime + Constant.TIMELOCK_GRACE_PERIOD)) {
             revert TimestampNotInLockRange(txHash, blockTime, _scheduleTime);
         }
-        if (_queuedTransaction[txHash]) {
-            revert AlreadyInQueue(txHash);
-        }
+        if (_queuedTransaction[txHash]) revert AlreadyInQueue(txHash);
         enqueue(txHash);
         emit QueueTransaction(txHash, _target, _value, _signature, _calldata, _scheduleTime);
         return txHash;
@@ -153,13 +151,14 @@ contract TimeLock is TimeLocker, Ownable {
         uint256 _scheduleTime
     ) external payable onlyOwner returns (bytes memory) {
         bytes32 txHash = getTxHash(_target, _value, _signature, _calldata, _scheduleTime);
-        if (!_queuedTransaction[txHash]) revert NotInQueue(txHash);
-
+        if (!_queuedTransaction[txHash]) {
+            revert NotInQueue(txHash);
+        }
         uint256 blockTime = getBlockTimestamp();
         if (blockTime < _scheduleTime) {
             revert TransactionLocked(txHash, _scheduleTime);
         }
-        if (blockTime > (_lockTime + Constant.TIMELOCK_GRACE_PERIOD)) {
+        if (blockTime > (_scheduleTime + Constant.TIMELOCK_GRACE_PERIOD)) {
             revert TransactionStale(txHash);
         }
 
