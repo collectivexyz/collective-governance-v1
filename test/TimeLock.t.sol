@@ -217,4 +217,30 @@ contract TimeLockTest is Test {
         _timeLock.executeTransaction(_JOE, 10 gwei, "", "", scheduleTime);
         assertEq(_JOE.balance, 10 gwei);
     }
+
+    function testFallbackNotAllowed() public {
+        vm.deal(_JOE, 1 ether);
+        vm.prank(_JOE);
+        payable(_timeLock).transfer(1 ether);
+        vm.expectRevert(abi.encodeWithSelector(TimeLocker.NotPermitted.selector, _JOE));
+        vm.prank(_JOE);
+        // solhint-disable-next-line avoid-low-level-calls
+        (bool ok, bytes memory retData) = address(_timeLock).call("fallback()");
+        // unreachable but solc warns without it
+        assertTrue(ok);
+        emit log_bytes(retData);
+    }
+
+    function testExecuteArbitraryFunctionCall() public {
+        ValueSet valueSet = new ValueSet();
+        address valueAddress = address(valueSet);
+        bytes memory _calldata = abi.encode(_JOE, 13);
+        uint256 etaOfLock = block.timestamp + _WEEK_DELAY;
+        vm.prank(_OWNER);
+        _timeLock.queueTransaction(valueAddress, 0, "set(address,uint256)", _calldata, etaOfLock);
+        vm.warp(etaOfLock + Constant.TIMELOCK_GRACE_PERIOD - 1);
+        vm.prank(_OWNER);
+        _timeLock.executeTransaction(valueAddress, 0, "set(address,uint256)", _calldata, etaOfLock);
+        assertEq(valueSet.valueOf(_JOE), 13);
+    }
 }

@@ -50,12 +50,21 @@ pragma solidity ^0.8.15;
  */
 /// @custom:type interface
 interface TimeLocker {
+    /// @notice operation is not used or forbidden
+    error NotPermitted(address sender);
+    /// @notice A transaction has been queued previously
     error AlreadyInQueue(bytes32 txHash);
+    /// @notice The timestamp or nonce specified does not meet the requirements for the timelock
     error TimestampNotInLockRange(bytes32 txHash, uint256 timestamp, uint256 scheduleTime);
+    /// @notice The provided delay does not meet the requirements for the TimeLock
     error RequiredDelayNotInRange(uint256 lockDelay, uint256 minDelay, uint256 maxDelay);
+    /// @notice It is impossible to execute a call which is not in the queue already
     error NotInQueue(bytes32 txHash);
+    /// @notice The specified transaction is currently locked.  Caller must wait to scheduleTime
     error TransactionLocked(bytes32 txHash, uint256 untilTime);
+    /// @notice The grace period is past and the transaction is lost
     error TransactionStale(bytes32 txHash);
+    /// @notice Call failed
     error ExecutionFailed(bytes32 txHash);
 
     event TimelockEth(address sender, uint256 amount);

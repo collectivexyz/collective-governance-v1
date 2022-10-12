@@ -55,7 +55,7 @@ library Constant {
 
     // timelock setup
     uint256 public constant TIMELOCK_GRACE_PERIOD = 14 days;
-    uint256 public constant TIMELOCK_MINIMUM_DELAY = 2 * MINIMUM_VOTE_DURATION;
+    uint256 public constant TIMELOCK_MINIMUM_DELAY = MINIMUM_VOTE_DURATION;
     uint256 public constant TIMELOCK_MAXIMUM_DELAY = 30 days;
 
     uint32 public constant VERSION_1 = 1;

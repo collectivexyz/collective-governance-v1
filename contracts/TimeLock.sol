@@ -79,8 +79,9 @@ contract TimeLock is TimeLocker, Ownable {
         emit TimelockEth(msg.sender, msg.value);
     }
 
-    fallback() external payable {
-        emit TransferEth(msg.sender, msg.value);
+    // solhint-disable-next-line payable-fallback
+    fallback() external {
+        revert NotPermitted(msg.sender);
     }
 
     /**
