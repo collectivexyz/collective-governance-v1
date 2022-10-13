@@ -626,6 +626,7 @@ contract GovernanceStorage is Storage, ERC165, Ownable {
     /// @param _calldata the call data to pass to the call
     /// @param _scheduleTime the expected call time, within the timelock grace,
     ///        for the transaction
+    /// @param _txHash the transaction hash of the stored transaction
     /// @param _sender for this proposal
     /// @return uint256 the id of the transaction that was added
     function addTransaction(
@@ -635,6 +636,7 @@ contract GovernanceStorage is Storage, ERC165, Ownable {
         string memory _signature,
         bytes memory _calldata,
         uint256 _scheduleTime,
+        bytes32 _txHash,
         address _sender
     )
         external
@@ -646,7 +648,7 @@ contract GovernanceStorage is Storage, ERC165, Ownable {
     {
         Proposal storage proposal = proposalMap[_proposalId];
         uint256 transactionId = proposal.transactionCount++;
-        proposal.transaction[transactionId] = Transaction(_target, _value, _signature, _calldata, _scheduleTime);
+        proposal.transaction[transactionId] = Transaction(_target, _value, _signature, _calldata, _scheduleTime, _txHash);
         return transactionId;
     }
 
@@ -659,6 +661,7 @@ contract GovernanceStorage is Storage, ERC165, Ownable {
     /// @return _calldata the call data to pass to the call
     /// @return _scheduleTime the expected call time, within the timelock grace,
     ///        for the transaction
+    /// @return _txHash the transaction hash of the stored transaction
     function getTransaction(uint256 _proposalId, uint256 _transactionId)
         external
         view
@@ -668,13 +671,42 @@ contract GovernanceStorage is Storage, ERC165, Ownable {
             uint256 _value,
             string memory _signature,
             bytes memory _calldata,
-            uint256 _scheduleTime
+            uint256 _scheduleTime,
+            bytes32 _txHash
         )
     {
         Proposal storage proposal = proposalMap[_proposalId];
         require(_transactionId < proposal.transactionCount, "Invalid transaction");
         Transaction storage transaction = proposal.transaction[_transactionId];
-        return (transaction.target, transaction.value, transaction.signature, transaction._calldata, transaction.scheduleTime);
+        return (
+            transaction.target,
+            transaction.value,
+            transaction.signature,
+            transaction._calldata,
+            transaction.scheduleTime,
+            transaction.txHash
+        );
+    }
+
+    /// @notice clear a stored transaction
+    /// @param _proposalId the proposal where the transaction is stored
+    /// @param _transactionId The id of the transaction on the proposal
+    /// @param _sender The message sender
+    function clearTransaction(
+        uint256 _proposalId,
+        uint256 _transactionId,
+        address _sender
+    ) external onlyOwner requireConfig(_proposalId) requireValid(_proposalId) requireProposalSender(_proposalId, _sender) {
+        Proposal storage proposal = proposalMap[_proposalId];
+        require(_transactionId < proposal.transactionCount, "Invalid transaction");
+        Transaction storage transaction = proposal.transaction[_transactionId];
+        transaction.target = address(0x0);
+        transaction.value = 0;
+        transaction.signature = "";
+        transaction._calldata = "";
+        transaction.scheduleTime = 0;
+        transaction.txHash = "";
+        delete proposal.transaction[_transactionId];
     }
 
     /// @notice set proposal state executed

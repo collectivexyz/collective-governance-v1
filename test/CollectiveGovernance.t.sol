@@ -60,6 +60,7 @@ contract CollectiveGovernanceTest is Test {
         version = governance.version();
         vm.prank(_OWNER);
         pid = governance.propose();
+        assertEq(pid, PROPOSAL_ID);
     }
 
     function testGetStorageAddress() public {
@@ -1062,10 +1063,62 @@ contract CollectiveGovernanceTest is Test {
         vm.prank(_VOTER1);
         governance.voteFor(PROPOSAL_ID, TOKEN_ID1);
         vm.warp(scheduleTime + 7 days);
+        assertFalse(flag.isSet());
         vm.prank(_OWNER);
         governance.endVote(PROPOSAL_ID);
         assertTrue(flag.isSet());
         assertTrue(_storage.isExecuted(PROPOSAL_ID));
+    }
+
+    function testAttachAndClearMultipleTransaction() public {
+        vm.warp(400000000);
+        FlagSet flag = new FlagSet();
+        address flagMock = address(flag);
+        bytes memory data = abi.encodeWithSelector(flag.set.selector);
+        uint256 scheduleTime = block.timestamp + 2 days;
+        for (uint256 i = 0; i < 3; i++) {
+            vm.prank(_OWNER);
+            governance.attachTransaction(PROPOSAL_ID, address(0x10), i, "", "", scheduleTime + i);
+        }
+        for (uint256 i = 0; i < 3; i++) {
+            vm.prank(address(governance));
+            _storage.clearTransaction(PROPOSAL_ID, i, _OWNER);
+        }
+        vm.prank(_OWNER);
+        governance.attachTransaction(PROPOSAL_ID, flagMock, 0, "", data, scheduleTime);
+        vm.startPrank(_SUPERVISOR, _SUPERVISOR);
+        governance.configure(PROPOSAL_ID, 1);
+        governance.startVote(PROPOSAL_ID);
+        vm.stopPrank();
+        vm.prank(_VOTER1);
+        governance.voteFor(PROPOSAL_ID, TOKEN_ID1);
+        vm.warp(scheduleTime + 7 days);
+        assertFalse(flag.isSet());
+        vm.prank(_OWNER);
+        governance.endVote(PROPOSAL_ID);
+        assertTrue(flag.isSet());
+        assertTrue(_storage.isExecuted(PROPOSAL_ID));
+    }
+
+    function testAttachTransactionWithSuccessfulOutcomeButDoNotExecute() public {
+        FlagSet flag = new FlagSet();
+        address flagMock = address(flag);
+        bytes memory data = abi.encodeWithSelector(flag.set.selector);
+        uint256 scheduleTime = block.timestamp + 2 days;
+        vm.prank(_OWNER);
+        governance.attachTransaction(PROPOSAL_ID, flagMock, 0, "", data, scheduleTime);
+        vm.startPrank(_SUPERVISOR, _SUPERVISOR);
+        governance.configure(PROPOSAL_ID, 1);
+        governance.startVote(PROPOSAL_ID);
+        vm.stopPrank();
+        vm.prank(_VOTER1);
+        governance.voteFor(PROPOSAL_ID, TOKEN_ID1);
+        vm.warp(scheduleTime + 7 days);
+        assertFalse(flag.isSet());
+        vm.prank(_OWNER);
+        governance.endVoteAndCancelTransaction(PROPOSAL_ID);
+        assertFalse(flag.isSet());
+        assertFalse(_storage.isExecuted(PROPOSAL_ID));
     }
 
     function testAttachTransactionButVeto() public {

@@ -67,8 +67,10 @@ interface TimeLocker {
     /// @notice Call failed
     error ExecutionFailed(bytes32 txHash);
 
+    /// @notice logs the receipt of eth in the Timelock for purposes of depensing later
     event TimelockEth(address sender, uint256 amount);
-    event TransferEth(address recipient, uint256 amount);
+
+    /// @notice named transaction was cancelled
     event CancelTransaction(
         bytes32 indexed txHash,
         address indexed target,
@@ -77,6 +79,8 @@ interface TimeLocker {
         bytes data,
         uint256 scheduleTime
     );
+
+    /// @notice named transaction was executed
     event ExecuteTransaction(
         bytes32 indexed txHash,
         address indexed target,
@@ -85,6 +89,8 @@ interface TimeLocker {
         bytes data,
         uint256 scheduleTime
     );
+
+    /// @notice specified transaction was queued
     event QueueTransaction(
         bytes32 indexed txHash,
         address indexed target,
@@ -130,7 +136,7 @@ interface TimeLocker {
         string calldata _signature,
         bytes calldata _calldata,
         uint256 _scheduleTime
-    ) external;
+    ) external returns (bytes32);
 
     /**
      * @notice Execute the scheduled transaction at the end of the time lock or scheduled time.

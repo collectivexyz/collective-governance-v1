@@ -88,6 +88,8 @@ interface Storage is IERC165 {
         bytes _calldata;
         /// @notice future dated start time for call within the TimeLocked grace period
         uint256 scheduleTime;
+        /// @notice hash value of this transaction once queued
+        bytes32 txHash;
     }
 
     /// @notice Struct describing the data required for a specific vote.
@@ -389,6 +391,7 @@ interface Storage is IERC165 {
     /// @param _calldata the call data to pass to the call
     /// @param _scheduleTime the expected call time, within the timelock grace,
     ///        for the transaction
+    /// @param _txHash The hash of the queued transaction
     /// @param _sender for this proposal
     /// @return uint256 the id of the transaction that was added
     function addTransaction(
@@ -398,6 +401,7 @@ interface Storage is IERC165 {
         string memory _signature,
         bytes memory _calldata,
         uint256 _scheduleTime,
+        bytes32 _txHash,
         address _sender
     ) external returns (uint256);
 
@@ -410,6 +414,7 @@ interface Storage is IERC165 {
     /// @return _calldata the call data to pass to the call
     /// @return _scheduleTime the expected call time, within the timelock grace,
     ///        for the transaction
+    /// @return _txHash the transaction hash of the stored transaction
     function getTransaction(uint256 _proposalId, uint256 _transactionId)
         external
         view
@@ -418,8 +423,18 @@ interface Storage is IERC165 {
             uint256 _value,
             string memory _signature,
             bytes memory _calldata,
-            uint256 _scheduleTime
+            uint256 _scheduleTime,
+            bytes32 _txHash
         );
+
+    /// @notice clear a stored transaction
+    /// @param _proposalId the proposal where the transaction is stored
+    /// @param _transactionId The id of the transaction on the proposal
+    function clearTransaction(
+        uint256 _proposalId,
+        uint256 _transactionId,
+        address _sender
+    ) external;
 
     /// @notice set proposal state executed
     /// @param _proposalId the id of the proposal

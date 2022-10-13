@@ -108,7 +108,7 @@ contract TimeLock is TimeLocker, Ownable {
             revert TimestampNotInLockRange(txHash, blockTime, _scheduleTime);
         }
         if (_queuedTransaction[txHash]) revert AlreadyInQueue(txHash);
-        enqueue(txHash);
+        setQueue(txHash);
         emit QueueTransaction(txHash, _target, _value, _signature, _calldata, _scheduleTime);
         return txHash;
     }
@@ -127,11 +127,12 @@ contract TimeLock is TimeLocker, Ownable {
         string calldata _signature,
         bytes calldata _calldata,
         uint256 _scheduleTime
-    ) external onlyOwner {
+    ) external onlyOwner returns (bytes32) {
         bytes32 txHash = getTxHash(_target, _value, _signature, _calldata, _scheduleTime);
         if (!_queuedTransaction[txHash]) revert NotInQueue(txHash);
-        unqueue(txHash);
+        clearQueue(txHash);
         emit CancelTransaction(txHash, _target, _value, _signature, _calldata, _scheduleTime);
+        return txHash;
     }
 
     /**
@@ -163,8 +164,7 @@ contract TimeLock is TimeLocker, Ownable {
             revert TransactionStale(txHash);
         }
 
-        unqueue(txHash);
-
+        clearQueue(txHash);
         bytes memory callData;
         if (bytes(_signature).length == 0) {
             callData = _calldata;
@@ -202,11 +202,11 @@ contract TimeLock is TimeLocker, Ownable {
         return txHash;
     }
 
-    function enqueue(bytes32 txHash) private {
+    function setQueue(bytes32 txHash) private {
         _queuedTransaction[txHash] = true;
     }
 
-    function unqueue(bytes32 txHash) private {
+    function clearQueue(bytes32 txHash) private {
         // overwrite memory to protect against value rebinding
         _queuedTransaction[txHash] = false;
         delete _queuedTransaction[txHash];

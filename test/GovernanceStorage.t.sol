@@ -561,9 +561,9 @@ contract GovernanceStorageTest is Test {
     function testAddTransaction() public {
         uint256 scheduleTime = block.timestamp + 7 days;
         _storage.registerSupervisor(PROPOSAL_ID, _SUPERVISOR, _OWNER);
-        uint256 tid1 = _storage.addTransaction(PROPOSAL_ID, address(0x1), 0x10, "", "", scheduleTime, _OWNER);
+        uint256 tid1 = _storage.addTransaction(PROPOSAL_ID, address(0x1), 0x10, "", "", scheduleTime, "", _OWNER);
         assertEq(tid1, 0);
-        uint256 tid2 = _storage.addTransaction(PROPOSAL_ID, address(0x2), 0x20, "", "", scheduleTime, _OWNER);
+        uint256 tid2 = _storage.addTransaction(PROPOSAL_ID, address(0x2), 0x20, "", "", scheduleTime, "", _OWNER);
         assertEq(tid2, 1);
         _storage.makeFinal(PROPOSAL_ID, _SUPERVISOR);
     }
@@ -572,13 +572,30 @@ contract GovernanceStorageTest is Test {
         uint256 scheduleTime = block.timestamp + 7 days;
         _storage.registerSupervisor(PROPOSAL_ID, _SUPERVISOR, _OWNER);
         vm.expectRevert("Not creator");
-        _storage.addTransaction(PROPOSAL_ID, address(0x1), 0x10, "", "", scheduleTime, _SUPERVISOR);
+        _storage.addTransaction(PROPOSAL_ID, address(0x1), 0x10, "", "", scheduleTime, "", _SUPERVISOR);
+    }
+
+    function testAddTransactionIfFinal() public {
+        uint256 scheduleTime = block.timestamp + 7 days;
+        _storage.registerSupervisor(PROPOSAL_ID, _SUPERVISOR, _OWNER);
+        _storage.makeFinal(PROPOSAL_ID, _SUPERVISOR);
+        vm.expectRevert("Vote not modifiable");
+        _storage.addTransaction(PROPOSAL_ID, address(0x1), 0x10, "", "", scheduleTime, "", _OWNER);
+    }
+
+    function testClearTransactionIfFinal() public {
+        uint256 scheduleTime = block.timestamp + 7 days;
+        _storage.registerSupervisor(PROPOSAL_ID, _SUPERVISOR, _OWNER);
+        uint256 tid = _storage.addTransaction(PROPOSAL_ID, address(0x1), 0x10, "", "", scheduleTime, "", _OWNER);
+        _storage.makeFinal(PROPOSAL_ID, _SUPERVISOR);
+        vm.expectRevert("Vote not modifiable");
+        _storage.clearTransaction(PROPOSAL_ID, tid, _OWNER);
     }
 
     function testGetTransaction() public {
         uint256 scheduleTime = block.timestamp + 7 days;
         _storage.registerSupervisor(PROPOSAL_ID, _SUPERVISOR, _OWNER);
-        Storage.Transaction memory transaction = Storage.Transaction(address(0x1), 0x10, "ziggy", "a()", scheduleTime);
+        Storage.Transaction memory transaction = Storage.Transaction(address(0x1), 0x10, "ziggy", "a()", scheduleTime, "abc123");
         uint256 tid = _storage.addTransaction(
             PROPOSAL_ID,
             transaction.target,
@@ -586,15 +603,55 @@ contract GovernanceStorageTest is Test {
             transaction.signature,
             transaction._calldata,
             transaction.scheduleTime,
+            transaction.txHash,
             _OWNER
         );
-        (address target, uint256 value, string memory signature, bytes memory _calldata, uint256 scheduleTimeRet) = _storage
-            .getTransaction(PROPOSAL_ID, tid);
+        (
+            address target,
+            uint256 value,
+            string memory signature,
+            bytes memory _calldata,
+            uint256 scheduleTimeRet,
+            bytes32 txHash
+        ) = _storage.getTransaction(PROPOSAL_ID, tid);
         assertEq(target, transaction.target);
         assertEq(value, transaction.value);
         assertEq(signature, transaction.signature);
         assertEq(_calldata, transaction._calldata);
         assertEq(scheduleTimeRet, transaction.scheduleTime);
+        assertEq(txHash, transaction.txHash);
+    }
+
+    function testClearTransaction() public {
+        uint256 scheduleTime = block.timestamp + 7 days;
+        _storage.registerSupervisor(PROPOSAL_ID, _SUPERVISOR, _OWNER);
+        uint256 tid1 = _storage.addTransaction(PROPOSAL_ID, address(0x1), 0x10, "", "", scheduleTime, "tx1", _OWNER);
+        assertEq(tid1, 0);
+        uint256 tid2 = _storage.addTransaction(PROPOSAL_ID, address(0x2), 0x20, "f()", "1", scheduleTime + 1, "tx2", _OWNER);
+        assertEq(tid2, 1);
+        _storage.clearTransaction(PROPOSAL_ID, tid1, _OWNER);
+        (
+            address target,
+            uint256 value,
+            string memory signature,
+            bytes memory _calldata,
+            uint256 scheduleTimeRet,
+            bytes32 txHash
+        ) = _storage.getTransaction(PROPOSAL_ID, tid1);
+        assertEq(target, address(0x0));
+        assertEq(value, 0);
+        assertEq(signature, "");
+        assertEq(_calldata, "");
+        assertEq(scheduleTimeRet, 0);
+        assertEq(txHash, "");
+
+        (target, value, signature, _calldata, scheduleTimeRet, txHash) = _storage.getTransaction(PROPOSAL_ID, tid2);
+        assertEq(target, address(0x2));
+        assertEq(value, 0x20);
+        assertEq(signature, "f()");
+        assertEq(_calldata, "1");
+        assertEq(scheduleTimeRet, scheduleTime + 1);
+        assertEq(txHash, "tx2");
     }
 
     function testSetExecuted() public {

@@ -158,6 +158,7 @@ contract CollectiveGovernance is Governance, VoteStrategy, ERC165 {
         uint256 _scheduleTime
     ) external returns (uint256) {
         require(_storage.getSender(_proposalId) == msg.sender, "Not sender");
+        bytes32 txHash = _timeLock.queueTransaction(_target, _value, _signature, _calldata, _scheduleTime);
         uint256 transactionId = _storage.addTransaction(
             _proposalId,
             _target,
@@ -165,10 +166,10 @@ contract CollectiveGovernance is Governance, VoteStrategy, ERC165 {
             _signature,
             _calldata,
             _scheduleTime,
+            txHash,
             msg.sender
         );
-        bytes32 txHash = _timeLock.queueTransaction(_target, _value, _signature, _calldata, _scheduleTime);
-        emit ProposalTransactionAttached(msg.sender, _proposalId, _target, _value, _scheduleTime, txHash);
+        emit ProposalTransactionAttached(msg.sender, _proposalId, transactionId, _target, _value, _scheduleTime, txHash);
         return transactionId;
     }
 
@@ -220,6 +221,27 @@ contract CollectiveGovernance is Governance, VoteStrategy, ERC165 {
         uint256 endTime = _storage.endTime(_proposalId);
         bool voteProceeding = !_storage.isCancel(_proposalId) && !_storage.isVeto(_proposalId);
         return isVoteOpenByProposalId[_proposalId] && getBlockTimestamp() < endTime && voteProceeding;
+    }
+
+    /// @notice End voting on an existing proposal by id.  All scheduled transactions are cancelled and nothing is executed.
+    /// @param _proposalId The numeric id of the proposed vote
+    /// @dev It is not possible to end voting until the required duration has elapsed.
+    function endVoteAndCancelTransaction(uint256 _proposalId)
+        external
+        requireSupervisor(_proposalId)
+        requireVoteOpen(_proposalId)
+    {
+        uint256 _endTime = _storage.endTime(_proposalId);
+        require(
+            _endTime <= getBlockTimestamp() || _storage.isVeto(_proposalId) || _storage.isCancel(_proposalId),
+            "Vote in progress"
+        );
+        isVoteOpenByProposalId[_proposalId] = false;
+
+        cancelTransaction(_proposalId);
+
+        emit VoteClosed(_proposalId);
+        emit ProposalClosed(_proposalId);
     }
 
     /// @notice end voting on an existing proposal by id
@@ -417,9 +439,17 @@ contract CollectiveGovernance is Governance, VoteStrategy, ERC165 {
         require(!isVoteOpenByProposalId[_proposalId] && getBlockTimestamp() <= _startTime, "Not possible");
         uint256 transactionCount = _storage.transactionCount(_proposalId);
         for (uint256 tid = 0; tid < transactionCount; tid++) {
-            (address target, uint256 value, string memory signature, bytes memory _calldata, uint256 scheduleTime) = _storage
-                .getTransaction(_proposalId, tid);
+            (
+                address target,
+                uint256 value,
+                string memory signature,
+                bytes memory _calldata,
+                uint256 scheduleTime,
+                bytes32 txHash
+            ) = _storage.getTransaction(_proposalId, tid);
             _timeLock.cancelTransaction(target, value, signature, _calldata, scheduleTime);
+            _storage.clearTransaction(_proposalId, tid, msg.sender);
+            emit ProposalTransactionCancelled(_proposalId, tid, target, value, scheduleTime, txHash);
         }
         _storage.cancel(_proposalId, msg.sender);
         emit ProposalClosed(_proposalId);
@@ -427,14 +457,25 @@ contract CollectiveGovernance is Governance, VoteStrategy, ERC165 {
 
     function executeTransaction(uint256 _proposalId) private {
         uint256 transactionCount = _storage.transactionCount(_proposalId);
+        uint256 executedCount = 0;
         if (transactionCount > 0) {
             _storage.setExecuted(_proposalId, msg.sender);
             for (uint256 tid = 0; tid < transactionCount; tid++) {
-                (address target, uint256 value, string memory signature, bytes memory _calldata, uint256 scheduleTime) = _storage
-                    .getTransaction(_proposalId, tid);
-                _timeLock.executeTransaction(target, value, signature, _calldata, scheduleTime);
+                (
+                    address target,
+                    uint256 value,
+                    string memory signature,
+                    bytes memory _calldata,
+                    uint256 scheduleTime,
+                    bytes32 txHash
+                ) = _storage.getTransaction(_proposalId, tid);
+                if (txHash.length > 0 && _timeLock._queuedTransaction(txHash)) {
+                    _timeLock.executeTransaction(target, value, signature, _calldata, scheduleTime);
+                    emit ProposalTransactionExecuted(_proposalId, tid, target, value, scheduleTime, txHash);
+                    executedCount++;
+                }
             }
-            emit ProposalExecuted(_proposalId);
+            emit ProposalExecuted(_proposalId, executedCount);
         }
     }
 
@@ -442,9 +483,17 @@ contract CollectiveGovernance is Governance, VoteStrategy, ERC165 {
         uint256 transactionCount = _storage.transactionCount(_proposalId);
         if (transactionCount > 0) {
             for (uint256 tid = 0; tid < transactionCount; tid++) {
-                (address target, uint256 value, string memory signature, bytes memory _calldata, uint256 scheduleTime) = _storage
-                    .getTransaction(_proposalId, tid);
-                _timeLock.cancelTransaction(target, value, signature, _calldata, scheduleTime);
+                (
+                    address target,
+                    uint256 value,
+                    string memory signature,
+                    bytes memory _calldata,
+                    uint256 scheduleTime,
+                    bytes32 txHash
+                ) = _storage.getTransaction(_proposalId, tid);
+                if (txHash.length > 0 && _timeLock._queuedTransaction(txHash)) {
+                    _timeLock.cancelTransaction(target, value, signature, _calldata, scheduleTime);
+                }
             }
         }
     }

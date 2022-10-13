@@ -58,6 +58,25 @@ interface Governance is IERC165 {
     event ProposalTransactionAttached(
         address creator,
         uint256 proposalId,
+        uint256 transactionId,
+        address target,
+        uint256 value,
+        uint256 scheduleTime,
+        bytes32 txHash
+    );
+    /// @notice transaction canceled on proposal
+    event ProposalTransactionCancelled(
+        uint256 proposalId,
+        uint256 transactionId,
+        address target,
+        uint256 value,
+        uint256 scheduleTime,
+        bytes32 txHash
+    );
+    /// @notice transaction executed on proposal
+    event ProposalTransactionExecuted(
+        uint256 proposalId,
+        uint256 transactionId,
         address target,
         uint256 value,
         uint256 scheduleTime,
@@ -68,7 +87,7 @@ interface Governance is IERC165 {
     /// @notice Voting is now closed for voting
     event ProposalClosed(uint256 proposalId);
     /// @notice The attached transactions are executed
-    event ProposalExecuted(uint256 proposalId);
+    event ProposalExecuted(uint256 proposalId, uint256 executedTransactionCount);
 
     /// @notice propose a vote for the community
     /// @return uint256 The id of the new proposal
