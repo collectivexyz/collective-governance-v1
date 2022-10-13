@@ -1,3 +1,4 @@
+0.8.5: Time locked execution for passing votes
 0.8.4: Cancellation
 0.8.3: Documentation upgrade
 0.8.2: One token one vote

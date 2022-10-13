@@ -96,6 +96,7 @@ contract CollectiveGovernance is Governance, VoteStrategy, ERC165 {
         uint256 _timeLockDelay = max(_storage.minimumVoteDuration(), Constant.TIMELOCK_MINIMUM_DELAY);
         _timeLock = new TimeLock(_timeLockDelay);
         _projectSupervisorList = _supervisorList;
+        emit TimeLockCreated(address(_timeLock), _timeLockDelay);
     }
 
     modifier requireVoteReady(uint256 _proposalId) {

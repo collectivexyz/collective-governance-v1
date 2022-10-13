@@ -101,6 +101,25 @@
     "type": "event"
   },
   {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "timeLock",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "lockTime",
+        "type": "uint256"
+      }
+    ],
+    "name": "TimeLockCreated",
+    "type": "event"
+  },
+  {
     "inputs": [
       {
         "internalType": "uint256",

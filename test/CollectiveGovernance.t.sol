@@ -1046,7 +1046,9 @@ contract CollectiveGovernanceTest is Test {
         vm.stopPrank();
     }
 
-    function testAttachTransaction() public {
+    function testAttachTransaction(uint256 systemClock) public {
+        vm.assume(systemClock < Constant.UINT_MAX - block.timestamp - Constant.TIMELOCK_MAXIMUM_DELAY);
+        vm.warp(systemClock);
         FlagSet flag = new FlagSet();
         address flagMock = address(flag);
         bytes memory data = abi.encodeWithSelector(flag.set.selector);
