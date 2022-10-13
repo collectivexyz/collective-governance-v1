@@ -41,44 +41,47 @@ def merge(method_a: dict, method_b: dict) -> dict:
     method_dict[k] = method_data
   return method_dict
 
-def parse_docgen(path: str) -> {}: 
+def parse_docgen(path: str) -> dict: 
   """ parse the solc docgen """
   docgen_data = {}
   with open(path, 'r') as docgen_stream:
     doclines = docgen_stream.readlines()
     doclines = [ line.rstrip().lstrip() for line in doclines ]
-    while len(doclines) > 0:
-      while len(doclines[0]) == 0:
+    while len(doclines) > 5:
+      while len(doclines[0]) == 0 and len(doclines) > 0:
         doclines = doclines[1:]
-      (contract, devdesc, devdoc, userdesc, userdoc) = doclines[:5]
-      doclines = doclines[5:]
-      contract = contract_name(contract)
-      if contract_filter(contract):
-        contract_meta = {}
-        devdoc_parsed = {}
-        userdoc_parsed = {}
-        if devdesc == 'Developer Documentation':
-          devdoc_parsed = json.loads(devdoc)
-        else:
-          print('Documentation not in expected format: %s' % devdesc)
-          sys.exit(1)
-        if userdesc == 'User Documentation': 
-          userdoc_parsed = json.loads(userdoc)
-        else:
-          print('Documentation not in expected format: %s' % userdesc)
-          sys.exit(1)
-        contract_meta = devdoc_parsed | userdoc_parsed
-        if 'methods' in contract_meta:
-          del contract_meta['methods']
-        if 'kind' in contract_meta:
-          del contract_meta['kind']
-        contract_meta['name'] = short_name(contract)
-        contract_meta['devdoc'] = devdoc_parsed
-        contract_meta['userdoc'] = userdoc_parsed
-        contract_methods = merge(userdoc_parsed['methods'], devdoc_parsed['methods'])
-        contract_meta['mergedoc'] = userdoc_parsed | devdoc_parsed | { 'kind' : 'merged'}
-        contract_meta['mergedoc']['methods'] = contract_methods
-        docgen_data[contract] = contract_meta
+      if len(doclines) >= 5:
+        (contract, devdesc, devdoc, userdesc, userdoc) = doclines[:5]
+        doclines = doclines[5:]
+        contract = contract_name(contract)
+        if contract_filter(contract):
+          contract_meta = {}
+          devdoc_parsed = {}
+          userdoc_parsed = {}
+          if devdesc == 'Developer Documentation':
+            devdoc_parsed = json.loads(devdoc)
+          else:
+            print('Documentation not in expected format: %s' % devdesc)
+            sys.exit(1)
+          if userdesc == 'User Documentation': 
+            userdoc_parsed = json.loads(userdoc)
+          else:
+            print('Documentation not in expected format: %s' % userdesc)
+            sys.exit(1)
+          contract_meta = devdoc_parsed | userdoc_parsed
+          if 'methods' in contract_meta:
+            del contract_meta['methods']
+          if 'kind' in contract_meta:
+            del contract_meta['kind']
+          contract_meta['name'] = short_name(contract)
+          contract_meta['devdoc'] = devdoc_parsed
+          contract_meta['userdoc'] = userdoc_parsed
+          contract_methods = merge(userdoc_parsed['methods'], devdoc_parsed['methods'])
+          contract_meta['mergedoc'] = userdoc_parsed | devdoc_parsed | { 'kind' : 'merged'}
+          contract_meta['mergedoc']['methods'] = contract_methods
+          docgen_data[contract] = contract_meta
+    if any(len(line) > 0 for line in doclines):
+      print('WARNING: Not all doc lines parsed')
   return docgen_data
 
 if __name__ == '__main__':
