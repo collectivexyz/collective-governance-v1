@@ -33,8 +33,8 @@ _____________
 =====================  ==========================================  =========== ===========================
 Contract               Ethereum Address                            Version     Description
 =====================  ==========================================  =========== ===========================
-VoterClassFactory      0x1aC59AF6a2c30c8eD2bEb7d9432Be45ee2fd2c2a  0.8.4       VoterClass Factory
-GovernanceBuilder      0x2deA4A45A9AD2282db00d01fFB16f44cf6303f75  0.8.4       Governance Contract Builder
+`VoterClassFactory`    0x1d93033e03da00dA6FfCbe1972dA0A1e60dA9341  0.8.5       VoterClass Factory
+`GovernanceBuilder`    0xaA6E2605a1aE5CBFbceD6E8D92e976b6D449FBa4  0.8.5       Governance Contract Builder
 =====================  ==========================================  =========== ===========================
 
 Project Links
@@ -44,7 +44,8 @@ Project Links
   
 .. _GitHub: https://github.com/momentranks/collective-governance-v1
 .. _JavaScript Reference: https://github.com/momentranks/collective_governance_js
-
+.. _VoterClassFactory: https://goerli.etherscan.io/address/0x1d93033e03da00dA6FfCbe1972dA0A1e60dA9341
+.. _GovernanceBuilder: https://goerli.etherscan.io/address/0xaA6E2605a1aE5CBFbceD6E8D92e976b6D449FBa4
 
 Indices and tables
 ==================

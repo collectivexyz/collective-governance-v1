@@ -21,10 +21,10 @@ This smart contract enables a measure to be proposed, voted upon and successfull
 
 ### Contract Deployment Details
 
-| Contract          | Ethereum Address                           | Version |
-| ----------------- | ------------------------------------------ | ------- |
-| VoterClassFactory | 0x1aC59AF6a2c30c8eD2bEb7d9432Be45ee2fd2c2a | 0.8.4   |
-| GovernanceBuilder | 0x2deA4A45A9AD2282db00d01fFB16f44cf6303f75 | 0.8.4   |
+| Contract          | Ethereum Address | Version |
+| ----------------- | ---------------- | ------- |
+| VoterClassFactory | 0x1d93033e03da00dA6FfCbe1972dA0A1e60dA9341 | 0.8.5   |
+| GovernanceBuilder | 0xaA6E2605a1aE5CBFbceD6E8D92e976b6D449FBa4 | 0.8.5   |
 
 ### Example deployment
 
