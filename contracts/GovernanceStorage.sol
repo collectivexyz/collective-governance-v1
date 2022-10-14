@@ -64,7 +64,14 @@ contract GovernanceStorage is Storage, ERC165, Ownable {
     uint256 public constant MAXIMUM_QUORUM = Constant.UINT_MAX;
     uint256 public constant MAXIMUM_TIME = Constant.UINT_MAX;
 
+    /// @notice minimum vote delay for any vote
+    uint256 private immutable _minimumVoteDelay;
+
+    /// @notice minimum time for any vote
     uint256 private immutable _minimumVoteDuration;
+
+    /// @notice minimum quorum for any vote
+    uint256 private immutable _minimumProjectQuorum;
 
     /// @notice Voter class for storage
     VoterClass private immutable _voterClass;
@@ -80,11 +87,22 @@ contract GovernanceStorage is Storage, ERC165, Ownable {
 
     /// @notice create a new storage object with VoterClass as the voting population
     /// @param _class the contract that defines the popluation
+    /// @param _minimumQuorum the least possible quorum for any vote
+    /// @param _minimumDelay the least possible vote delay
     /// @param _minimumDuration the least possible voting duration
-    constructor(VoterClass _class, uint256 _minimumDuration) {
-        require(_minimumDuration >= Constant.MINIMUM_VOTE_DURATION, "Short vote");
+    constructor(
+        VoterClass _class,
+        uint256 _minimumQuorum,
+        uint256 _minimumDelay,
+        uint256 _minimumDuration
+    ) {
+        require(_minimumDelay >= Constant.MINIMUM_VOTE_DELAY, "Delay not allowed");
+        require(_minimumDuration >= Constant.MINIMUM_VOTE_DURATION, "Duration not allowed");
+        require(_minimumQuorum >= Constant.MINIMUM_PROJECT_QUORUM, "Quorum invalid");
         require(_class.isFinal(), "Voter Class modifiable");
+        _minimumVoteDelay = _minimumDelay;
         _minimumVoteDuration = _minimumDuration;
+        _minimumProjectQuorum = _minimumQuorum;
         _voterClass = _class;
         _proposalCount = 0;
     }
@@ -161,6 +179,12 @@ contract GovernanceStorage is Storage, ERC165, Ownable {
         _;
     }
 
+    modifier requireSupervisor(uint256 _proposalId, address _sender) {
+        Proposal storage proposal = proposalMap[_proposalId];
+        require(proposal.supervisorPool[_sender], "Requires supervisor");
+        _;
+    }
+
     /// @notice Register a new supervisor on the specified proposal.
     /// The supervisor has rights to add or remove voters prior to start of voting
     /// in a Voter Pool. The supervisor also has the right to veto the outcome of the vote.
@@ -206,9 +230,10 @@ contract GovernanceStorage is Storage, ERC165, Ownable {
         uint256 _proposalId,
         uint256 _quorum,
         address _sender
-    ) external onlyOwner requireValid(_proposalId) requireConfig(_proposalId) {
+    ) external onlyOwner requireValid(_proposalId) requireConfig(_proposalId) requireSupervisor(_proposalId, _sender) {
+        require(_quorum >= minimumProjectQuorum(), "Quorum not allowed");
         Proposal storage proposal = proposalMap[_proposalId];
-        require(proposal.supervisorPool[_sender], "Requires supervisor");
+
         proposal.quorumRequired = _quorum;
         emit SetQuorumRequired(_proposalId, _quorum);
     }
@@ -222,9 +247,9 @@ contract GovernanceStorage is Storage, ERC165, Ownable {
         onlyOwner
         requireValid(_proposalId)
         requireConfig(_proposalId)
+        requireSupervisor(_proposalId, _sender)
     {
         Proposal storage proposal = proposalMap[_proposalId];
-        require(proposal.supervisorPool[_sender], "Requires supervisor");
         proposal.isUndoEnabled = true;
         emit UndoVoteEnabled(_proposalId);
     }
@@ -238,9 +263,9 @@ contract GovernanceStorage is Storage, ERC165, Ownable {
         uint256 _proposalId,
         uint256 _voteDelay,
         address _sender
-    ) external onlyOwner requireValid(_proposalId) requireConfig(_proposalId) {
+    ) external onlyOwner requireValid(_proposalId) requireConfig(_proposalId) requireSupervisor(_proposalId, _sender) {
+        require(_voteDelay >= minimumVoteDelay(), "Delay not allowed");
         Proposal storage proposal = proposalMap[_proposalId];
-        require(proposal.supervisorPool[_sender], "Requires supervisor");
         proposal.voteDelay = _voteDelay;
     }
 
@@ -253,10 +278,9 @@ contract GovernanceStorage is Storage, ERC165, Ownable {
         uint256 _proposalId,
         uint256 _voteDuration,
         address _sender
-    ) external onlyOwner requireValid(_proposalId) requireConfig(_proposalId) {
-        require(_voteDuration >= Constant.MINIMUM_VOTE_DURATION, "Short vote");
+    ) external onlyOwner requireValid(_proposalId) requireConfig(_proposalId) requireSupervisor(_proposalId, _sender) {
+        require(_voteDuration >= minimumVoteDuration(), "Duration not allowed");
         Proposal storage proposal = proposalMap[_proposalId];
-        require(proposal.supervisorPool[_sender], "Requires supervisor");
         proposal.voteDuration = _voteDuration;
     }
 
@@ -466,12 +490,12 @@ contract GovernanceStorage is Storage, ERC165, Ownable {
         onlyOwner
         requireValid(_proposalId)
         requireConfig(_proposalId)
+        requireSupervisor(_proposalId, _sender)
     {
         Proposal storage proposal = proposalMap[_proposalId];
-        require(proposal.supervisorPool[_sender], "Requires supervisor");
-        proposal.status = Status.FINAL;
         proposal.startTime = getBlockTimestamp() + proposal.voteDelay;
         proposal.endTime = proposal.startTime + proposal.voteDuration;
+        proposal.status = Status.FINAL;
         emit VoteReady(_proposalId, proposal.startTime, proposal.endTime);
     }
 
@@ -479,13 +503,17 @@ contract GovernanceStorage is Storage, ERC165, Ownable {
     /// @dev requires supervisor
     /// @param _proposalId the id of the proposal
     /// @param _sender original wallet for this request
-    function cancel(uint256 _proposalId, address _sender) external onlyOwner requireValid(_proposalId) {
+    function cancel(uint256 _proposalId, address _sender)
+        external
+        onlyOwner
+        requireValid(_proposalId)
+        requireSupervisor(_proposalId, _sender)
+    {
         if (!isFinal(_proposalId)) {
             // calculate start and end time
             makeFinal(_proposalId, _sender);
         }
         Proposal storage proposal = proposalMap[_proposalId];
-        require(proposal.supervisorPool[_sender], "Requires supervisor");
         proposal.status = Status.CANCELLED;
         emit VoteCancel(_proposalId, _sender);
     }
@@ -494,9 +522,13 @@ contract GovernanceStorage is Storage, ERC165, Ownable {
     /// @dev supervisor is required
     /// @param _proposalId the id of the proposal
     /// @param _sender the address of the veto sender
-    function veto(uint256 _proposalId, address _sender) external onlyOwner requireValid(_proposalId) {
+    function veto(uint256 _proposalId, address _sender)
+        external
+        onlyOwner
+        requireValid(_proposalId)
+        requireSupervisor(_proposalId, _sender)
+    {
         Proposal storage proposal = proposalMap[_proposalId];
-        require(proposal.supervisorPool[_sender], "Requires supervisor");
         if (!proposal.isVeto) {
             proposal.isVeto = true;
             emit VoteVeto(_proposalId, msg.sender);
@@ -748,16 +780,22 @@ contract GovernanceStorage is Storage, ERC165, Ownable {
             super.supportsInterface(interfaceId);
     }
 
+    /// @notice get the project vote delay requirement
+    /// @return uint the least vote delay allowed for any vote
+    function minimumVoteDelay() public view returns (uint256) {
+        return _minimumVoteDelay;
+    }
+
     /// @notice get the vote duration in seconds
     /// @return uint256 the least duration of a vote in seconds
-    function minimumVoteDuration() external view returns (uint256) {
+    function minimumVoteDuration() public view returns (uint256) {
         return _minimumVoteDuration;
     }
 
-    /// @notice get the maxiumum possible for the pass threshold
-    /// @return uint256 the maximum value
-    function maxPassThreshold() external pure returns (uint256) {
-        return MAXIMUM_QUORUM;
+    /// @notice get the project quorum requirement
+    /// @return uint256 the least quorum allowed for any vote
+    function minimumProjectQuorum() public view returns (uint256) {
+        return _minimumProjectQuorum;
     }
 
     /// @notice return the name of this implementation

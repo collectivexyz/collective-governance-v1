@@ -46,13 +46,14 @@ contract GovernanceBuilderTest is Test {
         assertEq(Storage(_storage).minimumVoteDuration(), 2 * Constant.MINIMUM_VOTE_DURATION);
     }
 
-    function testWithoutVoteDuration() public {
+    function testWithoutVoteDurationOrQuorum() public {
         VoterClass _class = new VoterClassNullObject();
         address _governance = _builder.aGovernance().withSupervisor(_SUPERVISOR).withVoterClass(_class).build();
         Governance _gov = Governance(_governance);
         _gov.propose();
         address _storage = _gov.getStorageAddress();
         assertEq(Storage(_storage).minimumVoteDuration(), Constant.MINIMUM_VOTE_DURATION);
+        assertEq(Storage(_storage).minimumProjectQuorum(), Constant.MINIMUM_PROJECT_QUORUM);
     }
 
     function testFailWithVoteDurationThatIsTooShort() public {
@@ -63,6 +64,30 @@ contract GovernanceBuilderTest is Test {
             .withSupervisor(_SUPERVISOR)
             .withVoterClass(_class)
             .build();
+    }
+
+    function testFailWithInvalidQuorum() public {
+        VoterClass _class = new VoterClassNullObject();
+        _builder
+            .aGovernance()
+            .withProjectQuorum(Constant.MINIMUM_PROJECT_QUORUM - 1)
+            .withSupervisor(_SUPERVISOR)
+            .withVoterClass(_class)
+            .build();
+    }
+
+    function testWithProjectQuorum() public {
+        VoterClass _class = new VoterClassNullObject();
+        address _governance = _builder
+            .aGovernance()
+            .withProjectQuorum(10000)
+            .withSupervisor(_SUPERVISOR)
+            .withVoterClass(_class)
+            .build();
+        Governance _gov = Governance(_governance);
+        _gov.propose();
+        address _storage = _gov.getStorageAddress();
+        assertEq(Storage(_storage).minimumProjectQuorum(), 10000);
     }
 
     function testWithOpenVote() public {

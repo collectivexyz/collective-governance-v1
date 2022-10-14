@@ -89,7 +89,99 @@ contract CollectiveGovernanceTest is Test {
     function testConfigureDurationWrongProposalId() public {
         vm.expectRevert("Invalid proposal");
         vm.startPrank(_SUPERVISOR, _SUPERVISOR);
-        governance.configure(PROPOSAL_ID + 1, 2, Constant.MINIMUM_VOTE_DURATION);
+        governance.configure(PROPOSAL_ID + 1, 2, Constant.MINIMUM_VOTE_DELAY, Constant.MINIMUM_VOTE_DURATION);
+    }
+
+    function testConfigureInvalidDuration() public {
+        vm.expectRevert("Duration not allowed");
+        vm.startPrank(_SUPERVISOR, _SUPERVISOR);
+        governance.configure(PROPOSAL_ID, 2, Constant.MINIMUM_VOTE_DELAY, Constant.MINIMUM_VOTE_DURATION - 1);
+    }
+
+    function testConfigureInvalidQuorum() public {
+        vm.startPrank(_SUPERVISOR, _SUPERVISOR);
+        vm.expectRevert("Quorum not allowed");
+        governance.configure(
+            PROPOSAL_ID,
+            Constant.MINIMUM_PROJECT_QUORUM - 1,
+            Constant.MINIMUM_VOTE_DELAY,
+            Constant.MINIMUM_VOTE_DURATION
+        );
+    }
+
+    function testConfigureProjectMinimumWithInvalidQuorum() public {
+        address projectAddress = address(_erc721);
+        _governanceAddress = buildERC721(projectAddress, 10000, Constant.MINIMUM_VOTE_DELAY, Constant.MINIMUM_VOTE_DURATION);
+        governance = CollectiveGovernance(_governanceAddress);
+        pid = governance.propose();
+        assertEq(pid, PROPOSAL_ID);
+        vm.expectRevert("Quorum not allowed");
+        vm.startPrank(_SUPERVISOR, _SUPERVISOR);
+        governance.configure(PROPOSAL_ID, 9999, Constant.MINIMUM_VOTE_DELAY, Constant.MINIMUM_VOTE_DURATION);
+    }
+
+    function testConfigureProjectMinimumQuorum() public {
+        address projectAddress = address(_erc721);
+        _governanceAddress = buildERC721(projectAddress, 10000, Constant.MINIMUM_VOTE_DELAY, Constant.MINIMUM_VOTE_DURATION);
+        governance = CollectiveGovernance(_governanceAddress);
+        _storage = Storage(governance.getStorageAddress());
+        pid = governance.propose();
+        assertEq(pid, PROPOSAL_ID);
+        vm.startPrank(_SUPERVISOR, _SUPERVISOR);
+        governance.configure(PROPOSAL_ID, 10000, Constant.MINIMUM_VOTE_DELAY, Constant.MINIMUM_VOTE_DURATION);
+        assertEq(_storage.minimumProjectQuorum(), 10000);
+    }
+
+    function testConfigureMinimumWithInvalidDuration() public {
+        address projectAddress = address(_erc721);
+        _governanceAddress = buildERC721(projectAddress, Constant.MINIMUM_PROJECT_QUORUM, Constant.MINIMUM_VOTE_DELAY, 6 days);
+        governance = CollectiveGovernance(_governanceAddress);
+        pid = governance.propose();
+        assertEq(pid, PROPOSAL_ID);
+        vm.expectRevert("Duration not allowed");
+        vm.startPrank(_SUPERVISOR, _SUPERVISOR);
+        governance.configure(PROPOSAL_ID, Constant.MINIMUM_PROJECT_QUORUM, Constant.MINIMUM_VOTE_DELAY, 5 days);
+    }
+
+    function testConfigureProjectMinimumDuration() public {
+        address projectAddress = address(_erc721);
+        _governanceAddress = buildERC721(projectAddress, Constant.MINIMUM_PROJECT_QUORUM, Constant.MINIMUM_VOTE_DELAY, 6 days);
+        governance = CollectiveGovernance(_governanceAddress);
+        _storage = Storage(governance.getStorageAddress());
+        pid = governance.propose();
+        assertEq(pid, PROPOSAL_ID);
+        vm.startPrank(_SUPERVISOR, _SUPERVISOR);
+        governance.configure(PROPOSAL_ID, Constant.MINIMUM_PROJECT_QUORUM, Constant.MINIMUM_VOTE_DELAY, 8 days);
+        assertEq(_storage.voteDuration(PROPOSAL_ID), 8 days);
+    }
+
+    function testConfigureProjectMinimumDelay() public {
+        address projectAddress = address(_erc721);
+        _governanceAddress = buildERC721(projectAddress, Constant.MINIMUM_PROJECT_QUORUM, 1 days, Constant.MINIMUM_VOTE_DURATION);
+        governance = CollectiveGovernance(_governanceAddress);
+        _storage = Storage(governance.getStorageAddress());
+        pid = governance.propose();
+        assertEq(pid, PROPOSAL_ID);
+        vm.startPrank(_SUPERVISOR, _SUPERVISOR);
+        governance.configure(PROPOSAL_ID, Constant.MINIMUM_PROJECT_QUORUM, 10 days, Constant.MINIMUM_VOTE_DURATION);
+        assertEq(_storage.voteDelay(PROPOSAL_ID), 10 days);
+    }
+
+    function testConfigureProjectMinimumDelayNotAllowed() public {
+        address projectAddress = address(_erc721);
+        _governanceAddress = buildERC721(
+            projectAddress,
+            Constant.MINIMUM_PROJECT_QUORUM,
+            10 days,
+            Constant.MINIMUM_VOTE_DURATION
+        );
+        governance = CollectiveGovernance(_governanceAddress);
+        _storage = Storage(governance.getStorageAddress());
+        pid = governance.propose();
+        assertEq(pid, PROPOSAL_ID);
+        vm.expectRevert("Delay not allowed");
+        vm.startPrank(_SUPERVISOR, _SUPERVISOR);
+        governance.configure(PROPOSAL_ID, Constant.MINIMUM_PROJECT_QUORUM, 10 days - 1, Constant.MINIMUM_VOTE_DURATION);
     }
 
     function testConfigure721() public {
@@ -572,7 +664,6 @@ contract CollectiveGovernanceTest is Test {
         vm.mockCall(storageMock, abi.encodeWithSelector(Storage.quorum.selector), abi.encode(quorum));
         uint256 quorumRequired = 399;
         vm.mockCall(storageMock, abi.encodeWithSelector(Storage.quorumRequired.selector), abi.encode(quorumRequired));
-        vm.mockCall(storageMock, abi.encodeWithSelector(Storage.maxPassThreshold.selector), abi.encode(0xffffffff));
         vm.mockCall(storageMock, abi.encodeWithSelector(Storage.startTime.selector), abi.encode(block.timestamp - 2));
         vm.mockCall(storageMock, abi.encodeWithSelector(Storage.endTime.selector), abi.encode(block.timestamp - 1));
         vm.mockCall(storageMock, abi.encodeWithSelector(Storage.isFinal.selector), abi.encode(true));
@@ -603,7 +694,6 @@ contract CollectiveGovernanceTest is Test {
         vm.mockCall(storageMock, abi.encodeWithSelector(Storage.quorum.selector), abi.encode(quorum));
         uint256 quorumRequired = 399;
         vm.mockCall(storageMock, abi.encodeWithSelector(Storage.quorumRequired.selector), abi.encode(quorumRequired));
-        vm.mockCall(storageMock, abi.encodeWithSelector(Storage.maxPassThreshold.selector), abi.encode(0xffffffff));
         vm.mockCall(storageMock, abi.encodeWithSelector(Storage.startTime.selector), abi.encode(block.timestamp - 2));
         vm.mockCall(storageMock, abi.encodeWithSelector(Storage.endTime.selector), abi.encode(block.timestamp - 1));
         vm.mockCall(storageMock, abi.encodeWithSelector(Storage.isFinal.selector), abi.encode(true));
@@ -634,7 +724,6 @@ contract CollectiveGovernanceTest is Test {
         vm.mockCall(storageMock, abi.encodeWithSelector(Storage.quorum.selector), abi.encode(quorum));
         uint256 quorumRequired = 399;
         vm.mockCall(storageMock, abi.encodeWithSelector(Storage.quorumRequired.selector), abi.encode(quorumRequired));
-        vm.mockCall(storageMock, abi.encodeWithSelector(Storage.maxPassThreshold.selector), abi.encode(0xffffffff));
         vm.mockCall(storageMock, abi.encodeWithSelector(Storage.startTime.selector), abi.encode(block.timestamp - 2));
         vm.mockCall(storageMock, abi.encodeWithSelector(Storage.endTime.selector), abi.encode(block.timestamp - 1));
         vm.mockCall(storageMock, abi.encodeWithSelector(Storage.isFinal.selector), abi.encode(true));
@@ -666,7 +755,6 @@ contract CollectiveGovernanceTest is Test {
         vm.mockCall(storageMock, abi.encodeWithSelector(Storage.quorumRequired.selector), abi.encode(quorumRequired));
         vm.mockCall(storageMock, abi.encodeWithSelector(Storage.startTime.selector), abi.encode(block.timestamp - 2));
         vm.mockCall(storageMock, abi.encodeWithSelector(Storage.endTime.selector), abi.encode(block.timestamp - 1));
-        vm.mockCall(storageMock, abi.encodeWithSelector(Storage.maxPassThreshold.selector), abi.encode(0xffffffff));
         vm.mockCall(storageMock, abi.encodeWithSelector(Storage.isFinal.selector), abi.encode(true));
         vm.mockCall(storageMock, abi.encodeWithSelector(Storage.isVeto.selector), abi.encode(false));
         vm.mockCall(storageMock, abi.encodeWithSelector(Storage.isSupervisor.selector), abi.encode(true));
@@ -1217,6 +1305,24 @@ contract CollectiveGovernanceTest is Test {
     function buildERC721(address projectAddress) private returns (address) {
         VoterClass _class = new VoterClassERC721(projectAddress, 1);
         return _builder.aGovernance().withVoterClass(_class).withSupervisor(_SUPERVISOR).build();
+    }
+
+    function buildERC721(
+        address projectAddress,
+        uint256 minimumProjectQuorum,
+        uint256 minimumVoteDelay,
+        uint256 minimumDuration
+    ) private returns (address) {
+        VoterClass _class = new VoterClassERC721(projectAddress, 1);
+        return
+            _builder
+                .aGovernance()
+                .withVoterClass(_class)
+                .withSupervisor(_SUPERVISOR)
+                .withProjectQuorum(minimumProjectQuorum)
+                .withMinimumDelay(minimumVoteDelay)
+                .withMinimumDuration(minimumDuration)
+                .build();
     }
 
     function buildVoterPool() private returns (address) {

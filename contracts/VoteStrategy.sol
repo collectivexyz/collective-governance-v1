@@ -50,11 +50,13 @@ import "./VoterClassNullObject.sol";
 /// Requirements for voting implementations in Collective Governance
 /// @custom:type interface
 interface VoteStrategy {
-    // event section
+    /// @notice voting is open and ready on this proposal
     event VoteOpen(uint256 proposalId);
+    /// @notice all voting is now closed for proposal
     event VoteClosed(uint256 proposalId);
-    event VoteTally(uint256 proposalId, address wallet, uint256 count);
-    event AbstentionTally(uint256 proposalId, address wallet, uint256 count);
+    /// @notice a vote has been cast by wallet
+    event VoteCount(uint256 proposalId, address wallet, uint256 shareId, uint256 count, uint256 againstCount);
+    /// @notice a prior vote has been reversed for wallet
     event VoteUndo(uint256 proposalId, address wallet, uint256 count);
 
     /// @notice start the voting process by proposal id

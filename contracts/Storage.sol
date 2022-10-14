@@ -451,13 +451,17 @@ interface Storage is IERC165 {
     /// @return uint256 current number of transactions
     function transactionCount(uint256 _proposalId) external view returns (uint256);
 
-    /// @notice get the maxiumum possible for the pass threshold
-    /// @return uint256 the maximum value
-    function maxPassThreshold() external pure returns (uint256);
+    /// @notice get the project vote delay requirement
+    /// @return uint the least vote delay allowed for any vote
+    function minimumVoteDelay() external view returns (uint256);
 
     /// @notice get the vote duration in seconds
     /// @return uint256 the least duration of a vote in seconds
     function minimumVoteDuration() external view returns (uint256);
+
+    /// @notice get the project quorum requirement
+    /// @return uint the least quorum allowed for any vote
+    function minimumProjectQuorum() external view returns (uint256);
 
     /// @notice return the name of this implementation
     /// @return string memory representation of name

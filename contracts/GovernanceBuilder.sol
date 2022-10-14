@@ -109,6 +109,16 @@ contract GovernanceBuilder is GovernanceCreator, ERC165 {
         return this;
     }
 
+    /// @notice set the minimum vote delay to the specified value
+    /// @param _minimumDelay the duration in seconds
+    /// @return GovernanceCreator this contract
+    function withMinimumDelay(uint256 _minimumDelay) external returns (GovernanceCreator) {
+        GovernanceProperties storage _properties = _buildMap[msg.sender];
+        _properties.minimumVoteDelay = _minimumDelay;
+        emit GovernanceContractWithMinimumVoteDelay(msg.sender, _minimumDelay);
+        return this;
+    }
+
     /// @notice set the minimum duration to the specified value
     /// @dev at least one day is required
     /// @param _minimumDuration the duration in seconds
@@ -120,6 +130,17 @@ contract GovernanceBuilder is GovernanceCreator, ERC165 {
         return this;
     }
 
+    /// @notice set the minimum quorum for the project
+    /// @dev must be non zero
+    /// @param _minimumQuorum the quorum for the project
+    /// @return GovernanceCreator this contract
+    function withProjectQuorum(uint256 _minimumQuorum) external returns (GovernanceCreator) {
+        GovernanceProperties storage _properties = _buildMap[msg.sender];
+        _properties.minimumProjectQuorum = _minimumQuorum;
+        emit GovernanceContractWithMinimumQuorum(msg.sender, _minimumQuorum);
+        return this;
+    }
+
     /// @notice build the specified contract
     /// @dev contructs a new contract and may require a large gas fee, does not reinitialize context
     /// @return the address of the new Governance contract
@@ -127,9 +148,16 @@ contract GovernanceBuilder is GovernanceCreator, ERC165 {
         address _creator = msg.sender;
         GovernanceProperties storage _properties = _buildMap[_creator];
         require(_properties.supervisorList.length > 0, "Supervisor required");
-        require(_properties.minimumVoteDuration >= Constant.MINIMUM_VOTE_DURATION, "Longer minimum duration required");
+        require(_properties.minimumVoteDelay >= Constant.MINIMUM_VOTE_DELAY, "Delay not allowed");
+        require(_properties.minimumVoteDuration >= Constant.MINIMUM_VOTE_DURATION, "Duration not allowed");
+        require(_properties.minimumProjectQuorum >= Constant.MINIMUM_PROJECT_QUORUM, "Quorum not allowed");
         require(address(_properties.class) != address(_voterClassNull), "Voter class required");
-        Storage _storage = _storageFactory.create(_properties.class, _properties.minimumVoteDuration);
+        Storage _storage = _storageFactory.create(
+            _properties.class,
+            _properties.minimumProjectQuorum,
+            _properties.minimumVoteDelay,
+            _properties.minimumVoteDuration
+        );
         Governance _governance = new CollectiveGovernance(_properties.supervisorList, _properties.class, _storage);
         address _governanceAddress = address(_governance);
         transferOwnership(_storage, _governanceAddress);
@@ -170,6 +198,8 @@ contract GovernanceBuilder is GovernanceCreator, ERC165 {
         GovernanceProperties storage _properties = _buildMap[sender];
         _properties.class = _voterClassNull;
         _properties.supervisorList = new address[](0);
+        _properties.minimumVoteDelay = Constant.MINIMUM_VOTE_DELAY;
         _properties.minimumVoteDuration = Constant.MINIMUM_VOTE_DURATION;
+        _properties.minimumProjectQuorum = Constant.MINIMUM_PROJECT_QUORUM;
     }
 }

@@ -49,14 +49,27 @@ pragma solidity ^0.8.15;
 library Constant {
     uint256 public constant UINT_MAX = 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF;
 
+    /// @notice minimum quorum
+    uint256 public constant MINIMUM_PROJECT_QUORUM = 1;
+
     /// @notice minimum vote duration
     /// @dev For security reasons this must be a relatively long time compared to seconds
     uint256 public constant MINIMUM_VOTE_DURATION = 1 days;
 
+    /// @notice minimum vote delay
+    /// @dev A vote delay is recommended to support cancellation of votes, however it is not
+    ///      required
+    uint256 public constant MINIMUM_VOTE_DELAY = 0 days;
+
     // timelock setup
+
+    /// @notice maximum time allowed after the nonce to successfully execute the time lock
     uint256 public constant TIMELOCK_GRACE_PERIOD = 14 days;
+    /// @notice the minimum lock period
     uint256 public constant TIMELOCK_MINIMUM_DELAY = MINIMUM_VOTE_DURATION;
+    /// @notice the maximum lock period
     uint256 public constant TIMELOCK_MAXIMUM_DELAY = 30 days;
 
+    /// contract versions
     uint32 public constant VERSION_1 = 1;
 }

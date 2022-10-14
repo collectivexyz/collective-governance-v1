@@ -83,6 +83,8 @@ contract VoterClassVoterPool is VoterClass, ERC165, Ownable {
 
     bool private _isPoolFinal;
 
+    uint256 private _poolCount = 0;
+
     // whitelisted voters
     mapping(address => bool) private _voterPool;
 
@@ -123,6 +125,7 @@ contract VoterClassVoterPool is VoterClass, ERC165, Ownable {
     function addVoter(address _wallet) external requireValidAddress(_wallet) onlyOwner requireNotFinal {
         if (!_voterPool[_wallet]) {
             _voterPool[_wallet] = true;
+            _poolCount++;
             emit RegisterVoter(_wallet);
         } else {
             revert("Voter already registered");
@@ -135,6 +138,7 @@ contract VoterClassVoterPool is VoterClass, ERC165, Ownable {
     function removeVoter(address _wallet) external requireValidAddress(_wallet) onlyOwner requireNotFinal {
         if (_voterPool[_wallet]) {
             _voterPool[_wallet] = false;
+            _poolCount--;
             emit BurnVoter(_wallet);
         } else {
             revert("Voter not registered");
@@ -181,6 +185,7 @@ contract VoterClassVoterPool is VoterClass, ERC165, Ownable {
 
     /// @notice set the voterpool final.   No further changes may be made to the voting pool.
     function makeFinal() external requireNotFinal {
+        require(_poolCount > 0, "No voters");
         _isPoolFinal = true;
     }
 

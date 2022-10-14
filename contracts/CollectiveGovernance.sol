@@ -186,13 +186,16 @@ contract CollectiveGovernance is Governance, VoteStrategy, ERC165 {
     /// @notice configure an existing proposal by id
     /// @param _proposalId The numeric id of the proposed vote
     /// @param _quorumRequired The threshold of participation that is required for a successful conclusion of voting
+    /// @param _requiredDelay The minimum time required before the start of voting
     /// @param _requiredDuration The minimum time for voting to proceed before ending the vote is allowed
     function configure(
         uint256 _proposalId,
         uint256 _quorumRequired,
+        uint256 _requiredDelay,
         uint256 _requiredDuration
     ) external requireSupervisor(_proposalId) {
         address _sender = msg.sender;
+        _storage.setVoteDelay(_proposalId, _requiredDelay, _sender);
         _storage.setVoteDuration(_proposalId, _requiredDuration, _sender);
         configure(_proposalId, _quorumRequired);
     }
@@ -205,7 +208,7 @@ contract CollectiveGovernance is Governance, VoteStrategy, ERC165 {
         requireVoteReady(_proposalId)
         requireVoteAllowed(_proposalId)
     {
-        require(_storage.quorumRequired(_proposalId) < _storage.maxPassThreshold(), "Set quorum required");
+        require(_storage.quorumRequired(_proposalId) < Constant.UINT_MAX, "Quorum required");
         if (!isVoteOpenByProposalId[_proposalId]) {
             isVoteOpenByProposalId[_proposalId] = true;
             emit VoteOpen(_proposalId);
@@ -287,7 +290,7 @@ contract CollectiveGovernance is Governance, VoteStrategy, ERC165 {
     function voteFor(uint256 _proposalId, uint256 _tokenId) public requireVoteOpen(_proposalId) requireVoteAllowed(_proposalId) {
         uint256 count = _storage.voteForByShare(_proposalId, msg.sender, _tokenId);
         if (count > 0) {
-            emit VoteTally(_proposalId, msg.sender, count);
+            emit VoteCount(_proposalId, msg.sender, _tokenId, count, 0);
         } else {
             revert("Not voter");
         }
@@ -320,7 +323,7 @@ contract CollectiveGovernance is Governance, VoteStrategy, ERC165 {
     {
         uint256 count = _storage.voteAgainstByShare(_proposalId, msg.sender, _tokenId);
         if (count > 0) {
-            emit VoteTally(_proposalId, msg.sender, count);
+            emit VoteCount(_proposalId, msg.sender, _tokenId, 0, count);
         } else {
             revert("Not voter");
         }
@@ -353,7 +356,7 @@ contract CollectiveGovernance is Governance, VoteStrategy, ERC165 {
     {
         uint256 count = _storage.abstainForShare(_proposalId, msg.sender, _tokenId);
         if (count > 0) {
-            emit AbstentionTally(_proposalId, msg.sender, count);
+            emit VoteCount(_proposalId, msg.sender, _tokenId, 0, 0);
         } else {
             revert("Not voter");
         }

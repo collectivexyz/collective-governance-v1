@@ -51,14 +51,25 @@ import "../contracts/VoterClass.sol";
 /// @notice Requirements for Governance GovernanceCreator implementation
 /// @custom:type interface
 interface GovernanceCreator is IERC165 {
+    /// @notice new contract created
     event GovernanceContractCreated(address creator, address _storage, address governance);
+    /// @notice initialized local state for sender
     event GovernanceContractInitialized(address creator);
+    /// @notice add supervisor
     event GovernanceContractWithSupervisor(address creator, address supervisor);
+    /// @notice set voterclass
     event GovernanceContractWithVoterClass(address creator, address class, string name, uint32 version);
+    /// @notice set minimum delay
+    event GovernanceContractWithMinimumVoteDelay(address creator, uint256 delay);
+    /// @notice set minimum duration
     event GovernanceContractWithMinimumDuration(address creator, uint256 duration);
+    /// @notice set minimum quorum
+    event GovernanceContractWithMinimumQuorum(address creator, uint256 quorum);
 
     struct GovernanceProperties {
+        uint256 minimumVoteDelay;
         uint256 minimumVoteDuration;
+        uint256 minimumProjectQuorum;
         address[] supervisorList;
         VoterClass class;
     }
@@ -92,11 +103,22 @@ interface GovernanceCreator is IERC165 {
     /// @return GovernanceCreator this contract
     function withVoterClass(VoterClass _class) external returns (GovernanceCreator);
 
+    /// @notice set the minimum vote delay to the specified value
+    /// @param _minimumDelay the duration in seconds
+    /// @return GovernanceCreator this contract
+    function withMinimumDelay(uint256 _minimumDelay) external returns (GovernanceCreator);
+
     /// @notice set the minimum duration to the specified value
     /// @dev at least one day is required
     /// @param _minimumDuration the duration in seconds
     /// @return GovernanceCreator this contract
     function withMinimumDuration(uint256 _minimumDuration) external returns (GovernanceCreator);
+
+    /// @notice set the minimum quorum for the project
+    /// @dev must be non zero
+    /// @param _minimumQuorum the quorum for the project
+    /// @return GovernanceCreator this contract
+    function withProjectQuorum(uint256 _minimumQuorum) external returns (GovernanceCreator);
 
     /// @notice build the specified contract
     /// @dev Contructs a new contract and may require a large gas fee.  Build does not reinitialize context.

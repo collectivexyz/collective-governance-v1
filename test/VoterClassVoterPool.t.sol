@@ -15,6 +15,10 @@ contract VoterClassVoterPoolTest is Test {
         _class = new VoterClassVoterPool(1);
     }
 
+    function testFailEmptyClass() public {
+        _class.makeFinal();
+    }
+
     function testDiscoverVoter() public {
         _class.addVoter(_voter);
         _class.makeFinal();

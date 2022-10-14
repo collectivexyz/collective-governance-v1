@@ -7,7 +7,7 @@ import "@openzeppelin/contracts/interfaces/IERC721.sol";
 import "forge-std/Test.sol";
 
 import "../contracts/Constant.sol";
-import "../contracts/GovernanceStorage.sol";
+import "../contracts/StorageFactory.sol";
 import "../contracts/CollectiveGovernance.sol";
 import "../contracts/VoteStrategy.sol";
 import "../contracts/VoterClass.sol";
@@ -42,8 +42,42 @@ contract GovernanceStorageTest is Test {
         _voterClass.addVoter(_VOTER2);
         _voterClass.addVoter(_VOTER3);
         _voterClass.makeFinal();
-        _storage = new GovernanceStorage(_voterClass, Constant.MINIMUM_VOTE_DURATION);
+        _storage = new StorageFactory().create(
+            _voterClass,
+            Constant.MINIMUM_PROJECT_QUORUM,
+            Constant.MINIMUM_VOTE_DELAY,
+            Constant.MINIMUM_VOTE_DURATION
+        );
         _storage.initializeProposal(_OWNER);
+    }
+
+    function testMinimumVoteDelay() public {
+        VoterClassVoterPool _voterClass = new VoterClassVoterPool(1);
+        _voterClass.addVoter(_VOTER1);
+        _voterClass.makeFinal();
+        _storage = new StorageFactory().create(_voterClass, Constant.MINIMUM_PROJECT_QUORUM, 333, Constant.MINIMUM_VOTE_DURATION);
+        assertEq(_storage.minimumVoteDelay(), 333);
+    }
+
+    function testMinimumVoteDuration() public {
+        VoterClassVoterPool _voterClass = new VoterClassVoterPool(1);
+        _voterClass.addVoter(_VOTER1);
+        _voterClass.makeFinal();
+        _storage = new StorageFactory().create(
+            _voterClass,
+            Constant.MINIMUM_PROJECT_QUORUM,
+            Constant.MINIMUM_VOTE_DELAY,
+            22 days
+        );
+        assertEq(_storage.minimumVoteDuration(), 22 days);
+    }
+
+    function testMinimumProjectQuorum() public {
+        VoterClassVoterPool _voterClass = new VoterClassVoterPool(1);
+        _voterClass.addVoter(_VOTER1);
+        _voterClass.makeFinal();
+        _storage = new StorageFactory().create(_voterClass, 11111, Constant.MINIMUM_VOTE_DELAY, Constant.MINIMUM_VOTE_DURATION);
+        assertEq(_storage.minimumProjectQuorum(), 11111);
     }
 
     function testVotesCastZero() public {
@@ -53,14 +87,41 @@ contract GovernanceStorageTest is Test {
         assertEq(_storage.quorum(PROPOSAL_ID), NONE);
     }
 
+    function testMinimumDelayNotEnforced() public {
+        VoterClassVoterPool _voterClass = new VoterClassVoterPool(1);
+        _voterClass.addVoter(_VOTER1);
+        _voterClass.makeFinal();
+        new GovernanceStorage(_voterClass, Constant.MINIMUM_PROJECT_QUORUM, 0, Constant.MINIMUM_VOTE_DURATION);
+    }
+
     function testFailMinimumDurationRequired() public {
         VoterClass _voterClass = new VoterClassNullObject();
-        new GovernanceStorage(_voterClass, 1);
+        new GovernanceStorage(
+            _voterClass,
+            Constant.MINIMUM_PROJECT_QUORUM,
+            Constant.MINIMUM_VOTE_DELAY,
+            Constant.MINIMUM_VOTE_DURATION - 1
+        );
+    }
+
+    function testFailMinimumQuorumRequired() public {
+        VoterClass _voterClass = new VoterClassNullObject();
+        new GovernanceStorage(
+            _voterClass,
+            Constant.MINIMUM_PROJECT_QUORUM - 1,
+            Constant.MINIMUM_VOTE_DELAY,
+            Constant.MINIMUM_VOTE_DURATION
+        );
     }
 
     function testFailVoterClassNotFinal() public {
         VoterClass _class = new VoterClassVoterPool(1);
-        new GovernanceStorage(_class, Constant.MINIMUM_VOTE_DURATION);
+        new GovernanceStorage(
+            _class,
+            Constant.MINIMUM_PROJECT_QUORUM,
+            Constant.MINIMUM_VOTE_DELAY,
+            Constant.MINIMUM_VOTE_DURATION
+        );
     }
 
     function testIsReady() public {
@@ -187,13 +248,13 @@ contract GovernanceStorageTest is Test {
 
     function testSetMinimumVoteDurationNonZero() public {
         _storage.registerSupervisor(PROPOSAL_ID, _SUPERVISOR, _OWNER);
-        vm.expectRevert("Short vote");
+        vm.expectRevert("Duration not allowed");
         _storage.setVoteDuration(PROPOSAL_ID, 0, _SUPERVISOR);
     }
 
     function testSetMinimumVoteDurationShort() public {
         _storage.registerSupervisor(PROPOSAL_ID, _SUPERVISOR, _OWNER);
-        vm.expectRevert("Short vote");
+        vm.expectRevert("Duration not allowed");
         _storage.setVoteDuration(PROPOSAL_ID, Constant.MINIMUM_VOTE_DURATION - 1, _SUPERVISOR);
     }
 
@@ -428,7 +489,12 @@ contract GovernanceStorageTest is Test {
     }
 
     function testCastOneVoteFromAll() public {
-        _storage = new GovernanceStorage(new VoterClassOpenVote(1), Constant.MINIMUM_VOTE_DURATION);
+        _storage = new GovernanceStorage(
+            new VoterClassOpenVote(1),
+            Constant.MINIMUM_PROJECT_QUORUM,
+            Constant.MINIMUM_VOTE_DELAY,
+            Constant.MINIMUM_VOTE_DURATION
+        );
         _storage.initializeProposal(_OWNER);
         _storage.registerSupervisor(PROPOSAL_ID, _SUPERVISOR, _OWNER);
         _storage.setQuorumRequired(PROPOSAL_ID, 2, _SUPERVISOR);
@@ -441,7 +507,12 @@ contract GovernanceStorageTest is Test {
         uint256 tokenId = 0x71;
         MockERC721 token = new MockERC721();
         token.mintTo(_VOTER2, tokenId);
-        _storage = new GovernanceStorage(new VoterClassERC721(address(token), 1), Constant.MINIMUM_VOTE_DURATION);
+        _storage = new GovernanceStorage(
+            new VoterClassERC721(address(token), 1),
+            Constant.MINIMUM_PROJECT_QUORUM,
+            Constant.MINIMUM_VOTE_DELAY,
+            Constant.MINIMUM_VOTE_DURATION
+        );
         _storage.initializeProposal(_OWNER);
         _storage.registerSupervisor(PROPOSAL_ID, _SUPERVISOR, _OWNER);
         _storage.setQuorumRequired(PROPOSAL_ID, 1, _SUPERVISOR);
@@ -553,7 +624,12 @@ contract GovernanceStorageTest is Test {
     }
 
     function testFailTransferNotOwner() public {
-        GovernanceStorage _gStorage = new GovernanceStorage(_storage.voterClass(), Constant.MINIMUM_VOTE_DURATION);
+        GovernanceStorage _gStorage = new GovernanceStorage(
+            _storage.voterClass(),
+            Constant.MINIMUM_VOTE_DELAY,
+            Constant.MINIMUM_VOTE_DURATION,
+            Constant.MINIMUM_PROJECT_QUORUM
+        );
         vm.prank(_SUPERVISOR);
         _gStorage.transferOwnership(_SUPERVISOR);
     }

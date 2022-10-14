@@ -52,12 +52,20 @@ import "../contracts/GovernanceStorage.sol";
 contract StorageFactory is StorageCreator {
     /// @notice create a new storage object with VoterClass as the voting population
     /// @param _class the contract that defines the popluation
+    /// @param _minimumQuorum the least possible quorum
+    /// @param _minimumDelay the minimum voting delay for the project
     /// @param _minimumDuration the least possible voting duration
+
     /// @return Storage the created instance
-    function create(VoterClass _class, uint256 _minimumDuration) external returns (Storage) {
-        GovernanceStorage _storage = new GovernanceStorage(_class, _minimumDuration);
+    function create(
+        VoterClass _class,
+        uint256 _minimumQuorum,
+        uint256 _minimumDelay,
+        uint256 _minimumDuration
+    ) external returns (Storage) {
+        GovernanceStorage _storage = new GovernanceStorage(_class, _minimumQuorum, _minimumDelay, _minimumDuration);
         _storage.transferOwnership(msg.sender);
-        emit StorageCreated(address(_storage), msg.sender);
+        emit StorageCreated(address(_storage), _minimumQuorum, _minimumDelay, _minimumDuration, msg.sender);
         return _storage;
     }
 }
