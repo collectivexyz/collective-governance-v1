@@ -72,6 +72,44 @@
       },
       {
         "indexed": false,
+        "internalType": "uint256",
+        "name": "quorum",
+        "type": "uint256"
+      }
+    ],
+    "name": "GovernanceContractWithMinimumQuorum",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "creator",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "delay",
+        "type": "uint256"
+      }
+    ],
+    "name": "GovernanceContractWithMinimumVoteDelay",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "creator",
+        "type": "address"
+      },
+      {
+        "indexed": false,
         "internalType": "address",
         "name": "supervisor",
         "type": "address"
@@ -206,11 +244,49 @@
     "inputs": [
       {
         "internalType": "uint256",
+        "name": "_minimumDelay",
+        "type": "uint256"
+      }
+    ],
+    "name": "withMinimumDelay",
+    "outputs": [
+      {
+        "internalType": "contract GovernanceCreator",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
         "name": "_minimumDuration",
         "type": "uint256"
       }
     ],
     "name": "withMinimumDuration",
+    "outputs": [
+      {
+        "internalType": "contract GovernanceCreator",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_minimumQuorum",
+        "type": "uint256"
+      }
+    ],
+    "name": "withProjectQuorum",
     "outputs": [
       {
         "internalType": "contract GovernanceCreator",
