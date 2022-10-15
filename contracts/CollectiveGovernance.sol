@@ -65,6 +65,17 @@ import "../contracts/TimeLock.sol";
 ///
 /// @dev The VoterClass is common to all proposed votes as are the project supervisors.   Individual supervisors may
 /// be configured as part of the proposal creation workflow but project supervisors are always included.
+
+error CG__VotingNotReady();
+error CG__VotingClosed();
+error CG__VotingOpen();
+error CG__VotingCancelled();
+error CG__SupervisorRequired();
+error CG__NotSender();
+error CG__QuorumRequired();
+error CG__VotingInProgress();
+error CG__NotVoter();
+error CG__CancelNotPossible();
 contract CollectiveGovernance is Governance, VoteStrategy, ERC165 {
     /// @notice contract name
     string public constant NAME = "collective governance";
@@ -100,27 +111,27 @@ contract CollectiveGovernance is Governance, VoteStrategy, ERC165 {
     }
 
     modifier requireVoteReady(uint256 _proposalId) {
-        require(_storage.isFinal(_proposalId), "Voting is not ready");
+        if(!(_storage.isFinal(_proposalId)) revert CG__VotingNotReady();
         _;
     }
 
     modifier requireVoteClosed(uint256 _proposalId) {
-        require(_storage.isFinal(_proposalId) && !isVoteOpenByProposalId[_proposalId], "Vote is not closed");
+        if(_storage.isFinal(_proposalId) && isVoteOpenByProposalId[_proposalId]) revert CG__VotingOpen();
         _;
     }
 
     modifier requireVoteOpen(uint256 _proposalId) {
-        require(_storage.isFinal(_proposalId) && isVoteOpenByProposalId[_proposalId], "Voting is closed");
+        if(!(_storage.isFinal(_proposalId) && isVoteOpenByProposalId[_proposalId])) revert CG__VotingClosed();
         _;
     }
 
     modifier requireVoteAllowed(uint256 _proposalId) {
-        require(!_storage.isCancel(_proposalId) && !_storage.isVeto(_proposalId), "Vote cancelled");
+        if(_storage.isCancel(_proposalId) && _storage.isVeto(_proposalId) revert CG__VotingCancelled();
         _;
     }
 
     modifier requireSupervisor(uint256 _proposalId) {
-        require(_storage.isSupervisor(_proposalId, msg.sender), "Supervisor required");
+        if(!(_storage.isSupervisor(_proposalId, msg.sender)) revert CG__SupervisorRequired();
         _;
     }
 
@@ -157,7 +168,7 @@ contract CollectiveGovernance is Governance, VoteStrategy, ERC165 {
         bytes memory _calldata,
         uint256 _scheduleTime
     ) external returns (uint256) {
-        require(_storage.getSender(_proposalId) == msg.sender, "Not sender");
+        if(!(_storage.getSender(_proposalId) == msg.sender) revert CG__NotSender();
         bytes32 txHash = _timeLock.queueTransaction(_target, _value, _signature, _calldata, _scheduleTime);
         uint256 transactionId = _storage.addTransaction(
             _proposalId,
@@ -205,12 +216,12 @@ contract CollectiveGovernance is Governance, VoteStrategy, ERC165 {
         requireVoteReady(_proposalId)
         requireVoteAllowed(_proposalId)
     {
-        require(_storage.quorumRequired(_proposalId) < _storage.maxPassThreshold(), "Set quorum required");
+        if(!(_storage.quorumRequired(_proposalId) < _storage.maxPassThreshold()) revert CG__QuorumRequired();
         if (!isVoteOpenByProposalId[_proposalId]) {
             isVoteOpenByProposalId[_proposalId] = true;
             emit VoteOpen(_proposalId);
         } else {
-            revert("Already open");
+            revert CG__VotingOpen();
         }
     }
 
@@ -232,10 +243,7 @@ contract CollectiveGovernance is Governance, VoteStrategy, ERC165 {
         requireVoteOpen(_proposalId)
     {
         uint256 _endTime = _storage.endTime(_proposalId);
-        require(
-            _endTime <= getBlockTimestamp() || _storage.isVeto(_proposalId) || _storage.isCancel(_proposalId),
-            "Vote in progress"
-        );
+        if(!(_endTime <= getBlockTimestamp() || _storage.isVeto(_proposalId) || _storage.isCancel(_proposalId)) revert CG__VotingInProgress();
         isVoteOpenByProposalId[_proposalId] = false;
 
         cancelTransaction(_proposalId);
@@ -249,10 +257,8 @@ contract CollectiveGovernance is Governance, VoteStrategy, ERC165 {
     /// @dev it is not possible to end voting until the required duration has elapsed
     function endVote(uint256 _proposalId) public requireSupervisor(_proposalId) requireVoteOpen(_proposalId) {
         uint256 _endTime = _storage.endTime(_proposalId);
-        require(
-            _endTime <= getBlockTimestamp() || _storage.isVeto(_proposalId) || _storage.isCancel(_proposalId),
-            "Vote in progress"
-        );
+        if(!(_endTime <= getBlockTimestamp() || _storage.isVeto(_proposalId) || _storage.isCancel(_proposalId)) revert CG__VotingInProgress();
+
         isVoteOpenByProposalId[_proposalId] = false;
 
         if (!_storage.isVeto(_proposalId) && getVoteSucceeded(_proposalId)) {
@@ -289,7 +295,7 @@ contract CollectiveGovernance is Governance, VoteStrategy, ERC165 {
         if (count > 0) {
             emit VoteTally(_proposalId, msg.sender, count);
         } else {
-            revert("Not voter");
+            revert CG__NotVoter();
         }
     }
 
@@ -322,7 +328,7 @@ contract CollectiveGovernance is Governance, VoteStrategy, ERC165 {
         if (count > 0) {
             emit VoteTally(_proposalId, msg.sender, count);
         } else {
-            revert("Not voter");
+            revert CG__NotVoter();
         }
     }
 
@@ -355,7 +361,7 @@ contract CollectiveGovernance is Governance, VoteStrategy, ERC165 {
         if (count > 0) {
             emit AbstentionTally(_proposalId, msg.sender, count);
         } else {
-            revert("Not voter");
+            revert CG__NotVoter();
         }
     }
 
@@ -386,7 +392,7 @@ contract CollectiveGovernance is Governance, VoteStrategy, ERC165 {
         if (count > 0) {
             emit VoteUndo(_proposalId, msg.sender, count);
         } else {
-            revert("Not voter");
+            revert CG__NotVoter();
         }
     }
 
@@ -436,7 +442,7 @@ contract CollectiveGovernance is Governance, VoteStrategy, ERC165 {
     /// @param _proposalId The numeric id of the proposed vote
     function cancel(uint256 _proposalId) public requireSupervisor(_proposalId) {
         uint256 _startTime = _storage.startTime(_proposalId);
-        require(!isVoteOpenByProposalId[_proposalId] && getBlockTimestamp() <= _startTime, "Not possible");
+        if(isVoteOpenByProposalId[_proposalId] && getBlockTimestamp() >= _startTime) revert CG__CancelNotPossible();
         uint256 transactionCount = _storage.transactionCount(_proposalId);
         for (uint256 tid = 0; tid < transactionCount; tid++) {
             (
