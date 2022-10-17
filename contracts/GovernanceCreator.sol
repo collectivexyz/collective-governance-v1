@@ -67,7 +67,13 @@ interface GovernanceCreator is IERC165 {
     event GovernanceContractWithMinimumQuorum(address creator, uint256 quorum);
 
     struct GovernanceProperties {
+<<<<<<< HEAD
         uint256 minimumVoteDelay;
+=======
+        bytes32 name;
+        string url;
+        string description;
+>>>>>>> 257344f (#9: implement project metadata)
         uint256 minimumVoteDuration;
         uint256 minimumProjectQuorum;
         address[] supervisorList;
@@ -119,6 +125,21 @@ interface GovernanceCreator is IERC165 {
     /// @param _minimumQuorum the quorum for the project
     /// @return GovernanceCreator this contract
     function withProjectQuorum(uint256 _minimumQuorum) external returns (GovernanceCreator);
+    
+    /// @notice set the project name
+    /// @param _name the name
+    /// @return GovernanceCreator this contract
+    function withName(bytes32 _name) external returns (GovernanceCreator);
+
+    /// @notice set the project url
+    /// @param _url the url
+    /// @return GovernanceCreator this contract
+    function withUrl(string memory _url) external returns (GovernanceCreator);
+
+    /// @notice set the project description
+    /// @dev limit 1k
+    /// @return GovernanceCreator this contract
+    function withDescription(string memory _descritpion) external returns (GovernanceCreator);
 
     /// @notice build the specified contract
     /// @dev Contructs a new contract and may require a large gas fee.  Build does not reinitialize context.

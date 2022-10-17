@@ -136,4 +136,41 @@ contract GovernanceBuilderTest is Test {
         _builder.reset();
         _builder.build();
     }
+
+    function testWithName() public {
+        VoterClass _class = new VoterClassNullObject();
+        address _governance = _builder
+            .aGovernance()
+            .withSupervisor(_SUPERVISOR)
+            .withVoterClass(_class)
+            .withName("acme inc")
+            .build();
+        Governance gov = Governance(_governance);
+        assertEq(gov.project(), "acme inc");
+    }
+
+    function testWithUrl() public {
+        VoterClass _class = new VoterClassNullObject();
+        address _governance = _builder
+            .aGovernance()
+            .withSupervisor(_SUPERVISOR)
+            .withVoterClass(_class)
+            .withUrl("https://collective.xyz")
+            .build();
+        Governance gov = Governance(_governance);
+        assertEq(gov.url(), "https://collective.xyz");
+    }
+
+    function testWithDescription() public {
+        string memory desc = "A unique project to build on chain governance for all web3 communities";
+        VoterClass _class = new VoterClassNullObject();
+        address _governance = _builder
+            .aGovernance()
+            .withSupervisor(_SUPERVISOR)
+            .withVoterClass(_class)
+            .withDescription(desc)
+            .build();
+        Governance gov = Governance(_governance);
+        assertEq(gov.description(), desc);
+    }
 }

@@ -78,6 +78,12 @@ contract CollectiveGovernance is Governance, VoteStrategy, ERC165 {
 
     address[] private _projectSupervisorList;
 
+    bytes32 public immutable _projectName;
+
+    string public _projectUrl;
+
+    string public _projectDescription;
+
     /// @notice voting is open or not
     mapping(uint256 => bool) private isVoteOpenByProposalId;
 
@@ -86,16 +92,29 @@ contract CollectiveGovernance is Governance, VoteStrategy, ERC165 {
     /// @param _supervisorList the list of supervisors for this project
     /// @param _class the VoterClass for this project
     /// @param _governanceStorage The storage contract for this governance
+    /// @param _name The project name
+    /// @param _url The Url for this project
+    /// @param _description The project description
     constructor(
         address[] memory _supervisorList,
         VoterClass _class,
-        Storage _governanceStorage
+        Storage _governanceStorage,
+        bytes32 _name,
+        string memory _url,
+        string memory _description
     ) {
+        require(_supervisorList.length > 0, "Supervisor required");
+        require(Constant.len(_url) <= Constant.STRING_DATA_LIMIT, "Url too large");
+        require(Constant.len(_description) <= Constant.STRING_DATA_LIMIT, "Description too large");
+
         _voterClass = _class;
         _storage = _governanceStorage;
         uint256 _timeLockDelay = max(_storage.minimumVoteDuration(), Constant.TIMELOCK_MINIMUM_DELAY);
         _timeLock = new TimeLock(_timeLockDelay);
         _projectSupervisorList = _supervisorList;
+        _projectName = _name;
+        _projectUrl = _url;
+        _projectDescription = _description;
         emit TimeLockCreated(address(_timeLock), _timeLockDelay);
     }
 
@@ -511,6 +530,24 @@ contract CollectiveGovernance is Governance, VoteStrategy, ERC165 {
     /// @return uint32 version number
     function version() external pure virtual returns (uint32) {
         return VERSION_1;
+    }
+
+    /// @notice return the name of the project
+    /// @return bytes32 the project name
+    function project() external view returns (bytes32) {
+        return _projectName;
+    }
+
+    /// @notice return the project url
+    /// @return string memory representation of url
+    function url() external view returns (string memory) {
+        return _projectUrl;
+    }
+
+    /// @notice return project description
+    /// @return string memory representation of project description
+    function description() external view returns (string memory) {
+        return _projectDescription;
     }
 
     function getBlockTimestamp() internal view returns (uint256) {

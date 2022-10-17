@@ -70,6 +70,34 @@ library Constant {
     /// @notice the maximum lock period
     uint256 public constant TIMELOCK_MAXIMUM_DELAY = 30 days;
 
-    /// contract versions
+    /// @notice limit for string information in meta data
+    uint256 public constant STRING_DATA_LIMIT = 1024;
+
     uint32 public constant VERSION_1 = 1;
+
+    /// @notice Compute the length of any string in solidity
+    /// @dev This method is expensive and is used only for validating
+    ///      inputs on the creation of new project Governance contracts
+    function len(string memory str) public pure returns (uint256) {
+        uint256 bytelength = bytes(str).length;
+        uint256 i = 0;
+        uint256 length;
+        for (length = 0; i < bytelength; length++) {
+            bytes1 b = bytes(str)[i];
+            if (b < 0x80) {
+                i += 1;
+            } else if (b < 0xE0) {
+                i += 2;
+            } else if (b < 0xF0) {
+                i += 3;
+            } else if (b < 0xF8) {
+                i += 4;
+            } else if (b < 0xFC) {
+                i += 5;
+            } else {
+                i += 6;
+            }
+        }
+        return length;
+    }
 }

@@ -47,8 +47,7 @@ import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
 import "@openzeppelin/contracts/interfaces/IERC165.sol";
 
 import "../contracts/Constant.sol";
-import "../contracts/GovernanceStorage.sol";
-import "../contracts/CollectiveGovernance.sol";
+import "../contracts/CollectiveGovernanceFactory.sol";
 import "../contracts/VoterClass.sol";
 import "../contracts/GovernanceCreator.sol";
 import "../contracts/StorageFactory.sol";
@@ -63,11 +62,8 @@ contract GovernanceBuilder is GovernanceCreator, ERC165 {
     /// @dev implement the null object pattern requring voter class to be valid
     VoterClass private immutable _voterClassNull;
 
-    StorageCreator private immutable _storageFactory;
-
     constructor() {
         _voterClassNull = new VoterClassNullObject();
-        _storageFactory = new StorageFactory();
     }
 
     /// @notice initialize and create a new builder context for this sender
@@ -138,6 +134,35 @@ contract GovernanceBuilder is GovernanceCreator, ERC165 {
         GovernanceProperties storage _properties = _buildMap[msg.sender];
         _properties.minimumProjectQuorum = _minimumQuorum;
         emit GovernanceContractWithMinimumQuorum(msg.sender, _minimumQuorum);
+    }
+
+    /// @notice set the project name
+    /// @param _name the name
+    /// @return GovernanceCreator this contract
+    function withName(bytes32 _name) external returns (GovernanceCreator) {
+        GovernanceProperties storage _properties = _buildMap[msg.sender];
+        _properties.name = _name;
+                emit GovernanceContractWithName(msg.sender, _name);
+        return this;
+    }
+
+    /// @notice set the project url
+    /// @param _url the url
+    /// @return GovernanceCreator this contract
+    function withUrl(string memory _url) external returns (GovernanceCreator) {
+        GovernanceProperties storage _properties = _buildMap[msg.sender];
+        _properties.url = _url;
+                        emit GovernanceContractWithUrl(msg.sender, _url);
+        return this;
+    }
+
+    /// @notice set the project description
+    /// @dev limit 1k
+    /// @return GovernanceCreator this contract
+    function withDescription(string memory _description) external returns (GovernanceCreator) {
+        GovernanceProperties storage _properties = _buildMap[msg.sender];
+        _properties.description = _description;
+                        emit GovernanceContractWithDescription(msg.sender, _description);
         return this;
     }
 
@@ -147,18 +172,17 @@ contract GovernanceBuilder is GovernanceCreator, ERC165 {
     function build() external returns (address) {
         address _creator = msg.sender;
         GovernanceProperties storage _properties = _buildMap[_creator];
-        require(_properties.supervisorList.length > 0, "Supervisor required");
-        require(_properties.minimumVoteDelay >= Constant.MINIMUM_VOTE_DELAY, "Delay not allowed");
-        require(_properties.minimumVoteDuration >= Constant.MINIMUM_VOTE_DURATION, "Duration not allowed");
-        require(_properties.minimumProjectQuorum >= Constant.MINIMUM_PROJECT_QUORUM, "Quorum not allowed");
         require(address(_properties.class) != address(_voterClassNull), "Voter class required");
-        Storage _storage = _storageFactory.create(
+        require(_properties.minimumVoteDuration >= Constant.MINIMUM_VOTE_DURATION, "Longer minimum duration required");
+        Storage _storage = StorageFactory.create(_properties.class, _properties.minimumVoteDuration);
+        Governance _governance = CollectiveGovernanceFactory.create(
+            _properties.supervisorList,
             _properties.class,
-            _properties.minimumProjectQuorum,
-            _properties.minimumVoteDelay,
-            _properties.minimumVoteDuration
+            _storage,
+            _properties.name,
+            _properties.url,
+            _properties.description
         );
-        Governance _governance = new CollectiveGovernance(_properties.supervisorList, _properties.class, _storage);
         address _governanceAddress = address(_governance);
         transferOwnership(_storage, _governanceAddress);
         emit GovernanceContractCreated(_creator, address(_storage), _governanceAddress);
@@ -201,5 +225,8 @@ contract GovernanceBuilder is GovernanceCreator, ERC165 {
         _properties.minimumVoteDelay = Constant.MINIMUM_VOTE_DELAY;
         _properties.minimumVoteDuration = Constant.MINIMUM_VOTE_DURATION;
         _properties.minimumProjectQuorum = Constant.MINIMUM_PROJECT_QUORUM;
+        _properties.name = "";
+        _properties.url = "";
+        _properties.description = "";
     }
 }

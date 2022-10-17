@@ -145,4 +145,16 @@ interface Governance is IERC165 {
     /// @notice return the version of this implementation
     /// @return uint32 version number
     function version() external pure returns (uint32);
+
+    /// @notice return the name of the project
+    /// @return bytes32 the project name
+    function project() external view returns (bytes32);
+
+    /// @notice return the project url
+    /// @return string memory representation of url
+    function url() external view returns (string memory);
+
+    /// @notice return project description
+    /// @return string memory representation of project description
+    function description() external view returns (string memory);
 }

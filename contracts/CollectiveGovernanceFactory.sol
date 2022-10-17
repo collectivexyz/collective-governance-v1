@@ -43,26 +43,23 @@
  */
 pragma solidity ^0.8.15;
 
-import "../contracts/VoterClass.sol";
-import "../contracts/Storage.sol";
+import "../contracts/Governance.sol";
+import "../contracts/CollectiveGovernance.sol";
 
 /**
- * @notice Factory interface for CollectiveStorage
+ * @title CollectiveGovernance creator
+ *
+ * @dev This library proxy is required by the code size limit to avoid including the constructor for
+ * CollectiveGovernance in the Builder.  The GovernanceBuilder should be preferred for creating a new
+ * instance of the contract.
  */
 /// @custom:type interface
 interface StorageCreator {
-    event StorageCreated(address _storage, uint256 projectQuorum, uint256 votingDelay, uint256 votingDuration, address _owner);
+    event StorageCreated(address _storage, address _owner);
 
     /// @notice create a new storage object with VoterClass as the voting population
     /// @param _class the contract that defines the popluation
-    /// @param _minimumQuorum the least possible quorum
-    /// @param _minimumDelay the minimum voting delay for the project
     /// @param _minimumDuration the least possible voting duration
     /// @return Storage the created instance
-    function create(
-        VoterClass _class,
-        uint256 _minimumQuorum,
-        uint256 _minimumDelay,
-        uint256 _minimumDuration
-    ) external returns (Storage);
+    function create(VoterClass _class, uint256 _minimumDuration) external returns (Storage);
 }
