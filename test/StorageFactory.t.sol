@@ -19,12 +19,22 @@ contract StorageFactoryTest is Test {
     }
 
     function testSetupNewStorage() public {
-        Storage _storage = StorageFactory.create(_class, Constant.MINIMUM_VOTE_DURATION);
+        Storage _storage = StorageFactory.create(
+            _class,
+            Constant.MINIMUM_PROJECT_QUORUM,
+            Constant.MINIMUM_VOTE_DELAY,
+            Constant.MINIMUM_VOTE_DURATION
+        );
         assertTrue(_storage.supportsInterface(type(Storage).interfaceId));
     }
 
     function testIsStorageOwner() public {
-        Storage _storage = StorageFactory.create(_class, Constant.MINIMUM_VOTE_DURATION);
+        Storage _storage = StorageFactory.create(
+            _class,
+            Constant.MINIMUM_PROJECT_QUORUM,
+            Constant.MINIMUM_VOTE_DELAY,
+            Constant.MINIMUM_VOTE_DURATION
+        );
         Ownable _ownable = Ownable(address(_storage));
         assertEq(_ownable.owner(), address(this));
     }

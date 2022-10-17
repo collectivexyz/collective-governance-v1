@@ -76,6 +76,16 @@ interface Storage is IERC165 {
         CANCELLED
     }
 
+    /// @notice User defined metadata associated with a proposal
+    struct Meta {
+        /// @notice metadata id
+        uint256 id;
+        /// @notice metadata key or name
+        bytes32 name;
+        /// @notice metadata value
+        string value;
+    }
+
     /// @notice The executable transaction resulting from a proposed Governance operation
     struct Transaction {
         /// @notice target for call instruction
@@ -118,6 +128,8 @@ interface Storage is IERC165 {
         uint256 abstentionCount;
         /// @notice number of attached transactions
         uint256 transactionCount;
+        /// @notice number of attached metadata
+        uint256 metaCount;
         /// @notice Flag marking whether the proposal has been vetoed
         bool isVeto;
         /// @notice Flag marking whether the proposal has been executed
@@ -126,12 +138,18 @@ interface Storage is IERC165 {
         Status status;
         /// @notice this proposal allows undo votes
         bool isUndoEnabled;
+        /// @notice proposal description
+        string description;
+        /// @notice proposal url
+        string url;
         /// @notice Receipts of ballots for the entire set of voters
         mapping(uint256 => Receipt) voteReceipt;
         /// @notice configured supervisors
         mapping(address => bool) supervisorPool;
         /// @notice table of mapped transactions
         mapping(uint256 => Transaction) transaction;
+        /// @notice mapping of id to user defined metadata
+        mapping(uint256 => Meta) metadata;
     }
 
     /// @notice Ballot receipt record for a voter
@@ -212,6 +230,61 @@ interface Storage is IERC165 {
         uint256 _voteDuration,
         address _sender
     ) external;
+
+    /// @notice set proposal url
+    /// @dev requires supervisor
+    /// @param _proposalId the id of the proposal
+    /// @param _url the url
+    function setProposalUrl(
+        uint256 _proposalId,
+        string memory _url,
+        address _sender
+    ) external;
+
+    /// @notice get the proposal url
+    /// @param _proposalId the id of the proposal
+    /// @return string the url
+    function url(uint256 _proposalId) external returns (string memory);
+
+    /// @notice set proposal description
+    /// @dev requires supervisor
+    /// @param _proposalId the id of the proposal
+    /// @param _description the description
+    function setProposalDescription(
+        uint256 _proposalId,
+        string memory _description,
+        address _sender
+    ) external;
+
+    /// @notice get the proposal description
+    /// @param _proposalId the id of the proposal
+    /// @return string the url
+    function description(uint256 _proposalId) external returns (string memory);
+
+    /// @notice get the number of attached metadata
+    /// @param _proposalId the id of the proposal
+    /// @return uint256 current number of meta elements
+    function metaCount(uint256 _proposalId) external view returns (uint256);
+
+    /// @notice attach arbitrary metadata to proposal
+    /// @dev requires supervisor
+    /// @param _proposalId the id of the proposal
+    /// @param _name the name of the metadata field
+    /// @param _value the value of the metadata
+    /// @return uint256 the metadata id
+    function addMeta(
+        uint256 _proposalId,
+        bytes32 _name,
+        string memory _value,
+        address _sender
+    ) external returns (uint256);
+
+    /// @notice get arbitrary metadata from proposal
+    /// @param _proposalId the id of the proposal
+    /// @param _mId the id of the metadata
+    /// @return _name the name of the metadata field
+    /// @return _value the value of the metadata field
+    function getMeta(uint256 _proposalId, uint256 _mId) external returns (bytes32 _name, string memory _value);
 
     /// @notice get the address of the proposal sender
     /// @param _proposalId the id of the proposal

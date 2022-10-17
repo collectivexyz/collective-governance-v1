@@ -65,15 +65,18 @@ interface GovernanceCreator is IERC165 {
     event GovernanceContractWithMinimumDuration(address creator, uint256 duration);
     /// @notice set minimum quorum
     event GovernanceContractWithMinimumQuorum(address creator, uint256 quorum);
+    /// @notice add name
+    event GovernanceContractWithName(address creator, bytes32 name);
+    /// @notice add url
+    event GovernanceContractWithUrl(address creator, string url);
+    /// @notice add description
+    event GovernanceContractWithDescription(address creator, string description);
 
     struct GovernanceProperties {
-<<<<<<< HEAD
-        uint256 minimumVoteDelay;
-=======
         bytes32 name;
         string url;
         string description;
->>>>>>> 257344f (#9: implement project metadata)
+        uint256 minimumVoteDelay;
         uint256 minimumVoteDuration;
         uint256 minimumProjectQuorum;
         address[] supervisorList;
@@ -125,7 +128,7 @@ interface GovernanceCreator is IERC165 {
     /// @param _minimumQuorum the quorum for the project
     /// @return GovernanceCreator this contract
     function withProjectQuorum(uint256 _minimumQuorum) external returns (GovernanceCreator);
-    
+
     /// @notice set the project name
     /// @param _name the name
     /// @return GovernanceCreator this contract

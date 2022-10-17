@@ -23,7 +23,12 @@ contract CollectiveGovernanceFactoryTest is Test {
         VoterClassCreator _vcCreator = new VoterClassFactory();
         address vcAddress = _vcCreator.createOpenVote(1);
         _class = VoterClass(vcAddress);
-        _storage = StorageFactory.create(_class, Constant.MINIMUM_VOTE_DURATION);
+        _storage = StorageFactory.create(
+            _class,
+            Constant.MINIMUM_PROJECT_QUORUM,
+            Constant.MINIMUM_VOTE_DELAY,
+            Constant.MINIMUM_VOTE_DURATION
+        );
         _supervisorList = new address[](1);
         _supervisorList[0] = _OWNER;
     }

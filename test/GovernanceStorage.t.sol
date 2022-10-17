@@ -13,6 +13,7 @@ import "../contracts/VoteStrategy.sol";
 import "../contracts/VoterClass.sol";
 import "../contracts/VoterClassVoterPool.sol";
 import "../contracts/VoterClassERC721.sol";
+import "./TestData.sol";
 
 import "./MockERC721.sol";
 
@@ -42,7 +43,7 @@ contract GovernanceStorageTest is Test {
         _voterClass.addVoter(_VOTER2);
         _voterClass.addVoter(_VOTER3);
         _voterClass.makeFinal();
-        _storage = new StorageFactory().create(
+        _storage = StorageFactory.create(
             _voterClass,
             Constant.MINIMUM_PROJECT_QUORUM,
             Constant.MINIMUM_VOTE_DELAY,
@@ -55,7 +56,7 @@ contract GovernanceStorageTest is Test {
         VoterClassVoterPool _voterClass = new VoterClassVoterPool(1);
         _voterClass.addVoter(_VOTER1);
         _voterClass.makeFinal();
-        _storage = new StorageFactory().create(_voterClass, Constant.MINIMUM_PROJECT_QUORUM, 333, Constant.MINIMUM_VOTE_DURATION);
+        _storage = StorageFactory.create(_voterClass, Constant.MINIMUM_PROJECT_QUORUM, 333, Constant.MINIMUM_VOTE_DURATION);
         assertEq(_storage.minimumVoteDelay(), 333);
     }
 
@@ -63,12 +64,7 @@ contract GovernanceStorageTest is Test {
         VoterClassVoterPool _voterClass = new VoterClassVoterPool(1);
         _voterClass.addVoter(_VOTER1);
         _voterClass.makeFinal();
-        _storage = new StorageFactory().create(
-            _voterClass,
-            Constant.MINIMUM_PROJECT_QUORUM,
-            Constant.MINIMUM_VOTE_DELAY,
-            22 days
-        );
+        _storage = StorageFactory.create(_voterClass, Constant.MINIMUM_PROJECT_QUORUM, Constant.MINIMUM_VOTE_DELAY, 22 days);
         assertEq(_storage.minimumVoteDuration(), 22 days);
     }
 
@@ -76,7 +72,7 @@ contract GovernanceStorageTest is Test {
         VoterClassVoterPool _voterClass = new VoterClassVoterPool(1);
         _voterClass.addVoter(_VOTER1);
         _voterClass.makeFinal();
-        _storage = new StorageFactory().create(_voterClass, 11111, Constant.MINIMUM_VOTE_DELAY, Constant.MINIMUM_VOTE_DURATION);
+        _storage = StorageFactory.create(_voterClass, 11111, Constant.MINIMUM_VOTE_DELAY, Constant.MINIMUM_VOTE_DURATION);
         assertEq(_storage.minimumProjectQuorum(), 11111);
     }
 
@@ -743,5 +739,116 @@ contract GovernanceStorageTest is Test {
         _storage.makeFinal(PROPOSAL_ID, _SUPERVISOR);
         vm.expectRevert("Not creator");
         _storage.setExecuted(PROPOSAL_ID, _SUPERVISOR);
+    }
+
+    function testSetProposalUrl() public {
+        _storage.registerSupervisor(PROPOSAL_ID, _SUPERVISOR, _OWNER);
+        _storage.setProposalUrl(PROPOSAL_ID, "https://collective.xyz", _SUPERVISOR);
+        assertEq(_storage.url(PROPOSAL_ID), "https://collective.xyz");
+    }
+
+    function testSetProposalUrlIfFinal() public {
+        _storage.registerSupervisor(PROPOSAL_ID, _SUPERVISOR, _OWNER);
+        _storage.makeFinal(PROPOSAL_ID, _SUPERVISOR);
+        vm.expectRevert("Vote not modifiable");
+        _storage.setProposalUrl(PROPOSAL_ID, "https://collective.xyz", _SUPERVISOR);
+    }
+
+    function testSetProposalUrlNotSupervisor() public {
+        _storage.registerSupervisor(PROPOSAL_ID, _SUPERVISOR, _OWNER);
+        vm.expectRevert("Requires supervisor");
+        _storage.setProposalUrl(PROPOSAL_ID, "https://collective.xyz", _VOTER1);
+    }
+
+    function testSetProposalUrlNotOwner() public {
+        _storage.registerSupervisor(PROPOSAL_ID, _SUPERVISOR, _OWNER);
+        vm.expectRevert("Ownable: caller is not the owner");
+        vm.prank(_VOTER1);
+        _storage.setProposalUrl(PROPOSAL_ID, "https://collective.xyz", _SUPERVISOR);
+    }
+
+    function testFailSetProposalUrlTooLarge() public {
+        _storage.registerSupervisor(PROPOSAL_ID, _SUPERVISOR, _OWNER);
+        _storage.setProposalUrl(PROPOSAL_ID, TestData.pi1kplus(), _SUPERVISOR);
+    }
+
+    function testSetProposalDescription() public {
+        _storage.registerSupervisor(PROPOSAL_ID, _SUPERVISOR, _OWNER);
+        _storage.setProposalDescription(PROPOSAL_ID, "A project to build governance for all communities", _SUPERVISOR);
+        assertEq(_storage.description(PROPOSAL_ID), "A project to build governance for all communities");
+    }
+
+    function testSetProposalDescriptionIfFinal() public {
+        _storage.registerSupervisor(PROPOSAL_ID, _SUPERVISOR, _OWNER);
+        _storage.makeFinal(PROPOSAL_ID, _SUPERVISOR);
+        vm.expectRevert("Vote not modifiable");
+        _storage.setProposalDescription(PROPOSAL_ID, "A project to build governance for all communities", _SUPERVISOR);
+    }
+
+    function testSetProposalDescriptionNotSupervisor() public {
+        _storage.registerSupervisor(PROPOSAL_ID, _SUPERVISOR, _OWNER);
+        vm.expectRevert("Requires supervisor");
+        _storage.setProposalDescription(PROPOSAL_ID, "A project to build governance for all communities", _VOTER1);
+    }
+
+    function testSetProposalDescriptionNotOwner() public {
+        _storage.registerSupervisor(PROPOSAL_ID, _SUPERVISOR, _OWNER);
+        vm.expectRevert("Ownable: caller is not the owner");
+        vm.prank(_VOTER1);
+        _storage.setProposalDescription(PROPOSAL_ID, "Url", _SUPERVISOR);
+    }
+
+    function testFailSetProposalDescriptionTooLarge() public {
+        _storage.registerSupervisor(PROPOSAL_ID, _SUPERVISOR, _OWNER);
+        _storage.setProposalDescription(PROPOSAL_ID, TestData.pi1kplus(), _SUPERVISOR);
+    }
+
+    function testMetaCountInitialValue() public {
+        assertEq(_storage.metaCount(PROPOSAL_ID), 0);
+    }
+
+    function testMetaCount() public {
+        _storage.registerSupervisor(PROPOSAL_ID, _SUPERVISOR, _OWNER);
+        for (uint256 i = 0; i < 10; i++) {
+            _storage.addMeta(PROPOSAL_ID, "a", "1", _SUPERVISOR);
+        }
+        assertEq(_storage.metaCount(PROPOSAL_ID), 10);
+    }
+
+    function testAddMeta() public {
+        _storage.registerSupervisor(PROPOSAL_ID, _SUPERVISOR, _OWNER);
+        uint256 m1 = _storage.addMeta(PROPOSAL_ID, "a", "1", _SUPERVISOR);
+        uint256 m2 = _storage.addMeta(PROPOSAL_ID, "b", "2", _SUPERVISOR);
+        _storage.makeFinal(PROPOSAL_ID, _SUPERVISOR);
+        (bytes32 m1name, string memory m1value) = _storage.getMeta(PROPOSAL_ID, m1);
+        assertEq(m1name, "a");
+        assertEq(m1value, "1");
+        (bytes32 m2name, string memory m2value) = _storage.getMeta(PROPOSAL_ID, m2);
+        assertEq(m2name, "b");
+        assertEq(m2value, "2");
+    }
+
+    function testAddMetaIfFinal() public {
+        _storage.registerSupervisor(PROPOSAL_ID, _SUPERVISOR, _OWNER);
+        _storage.makeFinal(PROPOSAL_ID, _SUPERVISOR);
+        vm.expectRevert("Vote not modifiable");
+        _storage.addMeta(PROPOSAL_ID, "a", "1", _SUPERVISOR);
+    }
+
+    function testAddMetaNotOwner() public {
+        _storage.registerSupervisor(PROPOSAL_ID, _SUPERVISOR, _OWNER);
+        vm.expectRevert("Ownable: caller is not the owner");
+        vm.prank(_SUPERVISOR);
+        _storage.addMeta(PROPOSAL_ID, "a", "1", _SUPERVISOR);
+    }
+
+    function testAddMetaNotSupervisor() public {
+        vm.expectRevert("Requires supervisor");
+        _storage.addMeta(PROPOSAL_ID, "a", "1", _VOTER1);
+    }
+
+    function testFailAddMetaValueTooLarge() public {
+        _storage.registerSupervisor(PROPOSAL_ID, _SUPERVISOR, _OWNER);
+        _storage.addMeta(PROPOSAL_ID, "a", TestData.pi1kplus(), _SUPERVISOR);
     }
 }

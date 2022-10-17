@@ -77,7 +77,8 @@ library Constant {
 
     /// @notice Compute the length of any string in solidity
     /// @dev This method is expensive and is used only for validating
-    ///      inputs on the creation of new project Governance contracts
+    ///      inputs on the creation of new project Governance contract
+    ///      or upon the configuration of a new vote
     function len(string memory str) public pure returns (uint256) {
         uint256 bytelength = bytes(str).length;
         uint256 i = 0;

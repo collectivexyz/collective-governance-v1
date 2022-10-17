@@ -465,7 +465,7 @@ contract GovernanceStorage is Storage, ERC165, Ownable {
         proposal.id = proposalId;
         proposal.proposalSender = _sender;
         proposal.quorumRequired = MAXIMUM_QUORUM;
-        proposal.voteDelay = 0;
+        proposal.voteDelay = Constant.MINIMUM_VOTE_DELAY;
         proposal.voteDuration = Constant.MINIMUM_VOTE_DURATION;
         proposal.startTime = MAXIMUM_TIME;
         proposal.endTime = MAXIMUM_TIME;
@@ -473,9 +473,12 @@ contract GovernanceStorage is Storage, ERC165, Ownable {
         proposal.againstVotes = 0;
         proposal.abstentionCount = 0;
         proposal.transactionCount = 0;
+        proposal.metaCount = 0;
         proposal.isVeto = false;
         proposal.status = Status.CONFIG;
         proposal.isUndoEnabled = false;
+        proposal.url = "";
+        proposal.description = "";
 
         emit InitializeProposal(proposalId, _sender);
         return proposalId;
@@ -770,6 +773,102 @@ contract GovernanceStorage is Storage, ERC165, Ownable {
     function transactionCount(uint256 _proposalId) external view requireValid(_proposalId) returns (uint256) {
         Proposal storage proposal = proposalMap[_proposalId];
         return proposal.transactionCount;
+    }
+
+    /// @notice get the number of attached metadata
+    /// @param _proposalId the id of the proposal
+    /// @return uint256 current number of meta elements
+    function metaCount(uint256 _proposalId) external view requireValid(_proposalId) returns (uint256) {
+        Proposal storage proposal = proposalMap[_proposalId];
+        return proposal.metaCount;
+    }
+
+    /// @notice set proposal url
+    /// @dev requires supervisor
+    /// @param _proposalId the id of the proposal
+    /// @param _url the url
+    function setProposalUrl(
+        uint256 _proposalId,
+        string memory _url,
+        address _sender
+    ) external onlyOwner requireValid(_proposalId) requireConfig(_proposalId) requireSupervisor(_proposalId, _sender) {
+        require(Constant.len(_url) < Constant.STRING_DATA_LIMIT, "Url exceeds limit");
+        Proposal storage proposal = proposalMap[_proposalId];
+        proposal.url = _url;
+    }
+
+    /// @notice get the proposal url
+    /// @param _proposalId the id of the proposal
+    /// @return string the url
+    function url(uint256 _proposalId) external view requireValid(_proposalId) returns (string memory) {
+        Proposal storage proposal = proposalMap[_proposalId];
+        return proposal.url;
+    }
+
+    /// @notice set proposal description
+    /// @dev requires supervisor
+    /// @param _proposalId the id of the proposal
+    /// @param _description the description
+    function setProposalDescription(
+        uint256 _proposalId,
+        string memory _description,
+        address _sender
+    ) external onlyOwner requireValid(_proposalId) requireConfig(_proposalId) requireSupervisor(_proposalId, _sender) {
+        require(Constant.len(_description) < Constant.STRING_DATA_LIMIT, "Description exceeds limit");
+        Proposal storage proposal = proposalMap[_proposalId];
+        proposal.description = _description;
+    }
+
+    /// @notice get the proposal description
+    /// @param _proposalId the id of the proposal
+    /// @return string the description
+    function description(uint256 _proposalId) external view requireValid(_proposalId) returns (string memory) {
+        Proposal storage proposal = proposalMap[_proposalId];
+        return proposal.description;
+    }
+
+    /// @notice attach arbitrary metadata to proposal
+    /// @dev requires supervisor
+    /// @param _proposalId the id of the proposal
+    /// @param _name the name of the metadata field
+    /// @param _value the value of the metadata
+    /// @return uint256 the metadata id
+    function addMeta(
+        uint256 _proposalId,
+        bytes32 _name,
+        string memory _value,
+        address _sender
+    )
+        external
+        onlyOwner
+        requireValid(_proposalId)
+        requireConfig(_proposalId)
+        requireSupervisor(_proposalId, _sender)
+        returns (uint256)
+    {
+        require(Constant.len(_value) < Constant.STRING_DATA_LIMIT, "Value exceeds limit");
+        Proposal storage proposal = proposalMap[_proposalId];
+        uint256 metadataId = proposal.metaCount++;
+        proposal.metadata[metadataId] = Meta(metadataId, _name, _value);
+        return metadataId;
+    }
+
+    /// @notice get arbitrary metadata from proposal
+    /// @param _proposalId the id of the proposal
+    /// @param _mId the id of the metadata
+    /// @return _name the name of the metadata field
+    /// @return _value the value of the metadata field
+    function getMeta(uint256 _proposalId, uint256 _mId)
+        external
+        view
+        requireValid(_proposalId)
+        returns (bytes32 _name, string memory _value)
+    {
+        Proposal storage proposal = proposalMap[_proposalId];
+        require(_mId < proposal.metaCount, "Metadata id unknown");
+        Meta storage meta = proposal.metadata[_mId];
+        require(meta.id == _mId, "Metadata invalid");
+        return (meta.name, meta.value);
     }
 
     /// @notice see ERC-165

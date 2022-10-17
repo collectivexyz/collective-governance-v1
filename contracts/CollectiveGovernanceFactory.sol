@@ -53,13 +53,24 @@ import "../contracts/CollectiveGovernance.sol";
  * CollectiveGovernance in the Builder.  The GovernanceBuilder should be preferred for creating a new
  * instance of the contract.
  */
-/// @custom:type interface
-interface StorageCreator {
-    event StorageCreated(address _storage, address _owner);
-
-    /// @notice create a new storage object with VoterClass as the voting population
-    /// @param _class the contract that defines the popluation
-    /// @param _minimumDuration the least possible voting duration
-    /// @return Storage the created instance
-    function create(VoterClass _class, uint256 _minimumDuration) external returns (Storage);
+library CollectiveGovernanceFactory {
+    /// @notice create a new collective governance contract
+    /// @dev this should be invoked through the GovernanceBuilder
+    /// @param _supervisorList the list of supervisors for this project
+    /// @param _class the VoterClass for this project
+    /// @param _storage The storage contract for this governance
+    /// @param _name The project name
+    /// @param _url The Url for this project
+    /// @param _description The project description
+    function create(
+        address[] memory _supervisorList,
+        VoterClass _class,
+        Storage _storage,
+        bytes32 _name,
+        string memory _url,
+        string memory _description
+    ) external returns (Governance) {
+        Governance governance = new CollectiveGovernance(_supervisorList, _class, _storage, _name, _url, _description);
+        return governance;
+    }
 }

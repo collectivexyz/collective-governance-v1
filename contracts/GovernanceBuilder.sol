@@ -134,6 +134,7 @@ contract GovernanceBuilder is GovernanceCreator, ERC165 {
         GovernanceProperties storage _properties = _buildMap[msg.sender];
         _properties.minimumProjectQuorum = _minimumQuorum;
         emit GovernanceContractWithMinimumQuorum(msg.sender, _minimumQuorum);
+        return this;
     }
 
     /// @notice set the project name
@@ -142,7 +143,7 @@ contract GovernanceBuilder is GovernanceCreator, ERC165 {
     function withName(bytes32 _name) external returns (GovernanceCreator) {
         GovernanceProperties storage _properties = _buildMap[msg.sender];
         _properties.name = _name;
-                emit GovernanceContractWithName(msg.sender, _name);
+        emit GovernanceContractWithName(msg.sender, _name);
         return this;
     }
 
@@ -152,7 +153,7 @@ contract GovernanceBuilder is GovernanceCreator, ERC165 {
     function withUrl(string memory _url) external returns (GovernanceCreator) {
         GovernanceProperties storage _properties = _buildMap[msg.sender];
         _properties.url = _url;
-                        emit GovernanceContractWithUrl(msg.sender, _url);
+        emit GovernanceContractWithUrl(msg.sender, _url);
         return this;
     }
 
@@ -162,7 +163,7 @@ contract GovernanceBuilder is GovernanceCreator, ERC165 {
     function withDescription(string memory _description) external returns (GovernanceCreator) {
         GovernanceProperties storage _properties = _buildMap[msg.sender];
         _properties.description = _description;
-                        emit GovernanceContractWithDescription(msg.sender, _description);
+        emit GovernanceContractWithDescription(msg.sender, _description);
         return this;
     }
 
@@ -174,7 +175,12 @@ contract GovernanceBuilder is GovernanceCreator, ERC165 {
         GovernanceProperties storage _properties = _buildMap[_creator];
         require(address(_properties.class) != address(_voterClassNull), "Voter class required");
         require(_properties.minimumVoteDuration >= Constant.MINIMUM_VOTE_DURATION, "Longer minimum duration required");
-        Storage _storage = StorageFactory.create(_properties.class, _properties.minimumVoteDuration);
+        Storage _storage = StorageFactory.create(
+            _properties.class,
+            _properties.minimumProjectQuorum,
+            _properties.minimumVoteDelay,
+            _properties.minimumVoteDuration
+        );
         Governance _governance = CollectiveGovernanceFactory.create(
             _properties.supervisorList,
             _properties.class,
