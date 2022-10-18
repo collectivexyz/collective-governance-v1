@@ -179,9 +179,17 @@ contract GovernanceStorage is Storage, ERC165, Ownable {
         _;
     }
 
+    modifier requireEditSupervisor(uint256 _proposalId, address _sender) {
+        Proposal storage proposal = proposalMap[_proposalId];
+        Supervisor storage supervisor = proposal.supervisorPool[_sender];
+        require(supervisor.isEnabled && !supervisor.isProject, "Supervisor change not permitted");
+        _;
+    }
+
     modifier requireSupervisor(uint256 _proposalId, address _sender) {
         Proposal storage proposal = proposalMap[_proposalId];
-        require(proposal.supervisorPool[_sender], "Requires supervisor");
+        Supervisor storage supervisor = proposal.supervisorPool[_sender];
+        require(supervisor.isEnabled, "Requires supervisor");
         _;
     }
 
@@ -196,11 +204,31 @@ contract GovernanceStorage is Storage, ERC165, Ownable {
         uint256 _proposalId,
         address _supervisor,
         address _sender
-    ) external onlyOwner requireValid(_proposalId) requireProposalSender(_proposalId, _sender) requireConfig(_proposalId) {
+    ) external {
+        registerSupervisor(_proposalId, _supervisor, false, _sender);
+    }
+
+    /// @notice Register a new supervisor on the specified proposal.
+    /// The supervisor has rights to add or remove voters prior to start of voting
+    /// in a Voter Pool. The supervisor also has the right to veto the outcome of the vote.
+    /// @dev requires proposal creator
+    /// @param _proposalId the id of the proposal
+    /// @param _supervisor the supervisor address
+    /// @param _isProject true if project supervisor
+    /// @param _sender original wallet for this request
+    function registerSupervisor(
+        uint256 _proposalId,
+        address _supervisor,
+        bool _isProject,
+        address _sender
+    ) public onlyOwner requireValid(_proposalId) requireProposalSender(_proposalId, _sender) requireConfig(_proposalId) {
         Proposal storage proposal = proposalMap[_proposalId];
-        if (!proposal.supervisorPool[_supervisor]) {
-            proposal.supervisorPool[_supervisor] = true;
-            emit AddSupervisor(_proposalId, _supervisor);
+        Supervisor storage supervisor = proposal.supervisorPool[_supervisor];
+        if (!supervisor.isEnabled) {
+            proposal.supervisorPool[_supervisor] = Supervisor(true, _isProject);
+            emit AddSupervisor(_proposalId, _supervisor, _isProject);
+        } else {
+            revert("Already enabled");
         }
     }
 
@@ -213,11 +241,21 @@ contract GovernanceStorage is Storage, ERC165, Ownable {
         uint256 _proposalId,
         address _supervisor,
         address _sender
-    ) external onlyOwner requireValid(_proposalId) requireProposalSender(_proposalId, _sender) requireConfig(_proposalId) {
+    )
+        external
+        onlyOwner
+        requireValid(_proposalId)
+        requireProposalSender(_proposalId, _sender)
+        requireConfig(_proposalId)
+        requireEditSupervisor(_proposalId, _supervisor)
+    {
         Proposal storage proposal = proposalMap[_proposalId];
-        if (proposal.supervisorPool[_supervisor]) {
-            proposal.supervisorPool[_supervisor] = false;
+        Supervisor storage supervisor = proposal.supervisorPool[_supervisor];
+        if (supervisor.isEnabled) {
+            supervisor.isEnabled = false;
             emit BurnSupervisor(_proposalId, _supervisor);
+        } else {
+            revert("Supervisor is not enabled.");
         }
     }
 
@@ -371,7 +409,8 @@ contract GovernanceStorage is Storage, ERC165, Ownable {
     /// @return bool true if the address is a supervisor
     function isSupervisor(uint256 _proposalId, address _supervisor) external view requireValid(_proposalId) returns (bool) {
         Proposal storage proposal = proposalMap[_proposalId];
-        return proposal.supervisorPool[_supervisor];
+        Supervisor storage supervisor = proposal.supervisorPool[_supervisor];
+        return supervisor.isEnabled;
     }
 
     /// @notice test if address is a voter on the specified proposal

@@ -80,6 +80,13 @@ contract CollectiveGovernanceTest is Test {
         assertEq(pid, PROPOSAL_ID);
     }
 
+    function testSupervisorPropose() public {
+        vm.prank(_SUPERVISOR);
+        uint256 pid2 = governance.propose();
+        assertEq(pid2, PROPOSAL_ID + 1);
+        _storage.isSupervisor(pid2, _SUPERVISOR);
+    }
+
     function testConfigureWrongProposalId() public {
         vm.expectRevert("Invalid proposal");
         vm.startPrank(_SUPERVISOR, _SUPERVISOR);

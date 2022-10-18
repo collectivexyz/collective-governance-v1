@@ -13,6 +13,12 @@
         "internalType": "address",
         "name": "supervisor",
         "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "bool",
+        "name": "isProject",
+        "type": "bool"
       }
     ],
     "name": "AddSupervisor",
@@ -891,6 +897,34 @@
       }
     ],
     "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_proposalId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "_supervisor",
+        "type": "address"
+      },
+      {
+        "internalType": "bool",
+        "name": "_isProject",
+        "type": "bool"
+      },
+      {
+        "internalType": "address",
+        "name": "_sender",
+        "type": "address"
+      }
+    ],
+    "name": "registerSupervisor",
+    "outputs": [],
+    "stateMutability": "nonpayable",
     "type": "function"
   },
   {

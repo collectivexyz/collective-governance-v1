@@ -158,6 +158,17 @@ contract GovernanceStorageTest is Test {
         _storage.registerSupervisor(PROPOSAL_ID, _NOTSUPERVISOR, _OWNER);
     }
 
+    function testRegisterProjectSupervisor() public {
+        _storage.registerSupervisor(PROPOSAL_ID, _SUPERVISOR, true, _OWNER);
+        assertTrue(_storage.isSupervisor(PROPOSAL_ID, _SUPERVISOR));
+    }
+
+    function testBurnProjectSupervisor() public {
+        _storage.registerSupervisor(PROPOSAL_ID, _SUPERVISOR, true, _OWNER);
+        vm.expectRevert("Supervisor change not permitted");
+        _storage.burnSupervisor(PROPOSAL_ID, _SUPERVISOR, _OWNER);
+    }
+
     function testRegisterAndBurnSupervisor() public {
         _storage.registerSupervisor(PROPOSAL_ID, _SUPERVISOR, _OWNER);
         _storage.burnSupervisor(PROPOSAL_ID, _SUPERVISOR, _OWNER);

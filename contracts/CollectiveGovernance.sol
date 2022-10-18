@@ -149,9 +149,11 @@ contract CollectiveGovernance is Governance, VoteStrategy, ERC165 {
     function propose() external returns (uint256) {
         address _sender = msg.sender;
         uint256 proposalId = _storage.initializeProposal(_sender);
-        _storage.registerSupervisor(proposalId, _sender, _sender);
         for (uint256 i = 0; i < _projectSupervisorList.length; i++) {
-            _storage.registerSupervisor(proposalId, _projectSupervisorList[i], _sender);
+            _storage.registerSupervisor(proposalId, _projectSupervisorList[i], true, _sender);
+        }
+        if (!_storage.isSupervisor(proposalId, _sender)) {
+            _storage.registerSupervisor(proposalId, _sender, _sender);
         }
         emit ProposalCreated(_sender, proposalId);
         return proposalId;

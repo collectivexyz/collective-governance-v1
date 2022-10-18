@@ -54,7 +54,7 @@ import "../contracts/VoteStrategy.sol";
 interface Storage is IERC165 {
     // event section
     event InitializeProposal(uint256 proposalId, address owner);
-    event AddSupervisor(uint256 proposalId, address supervisor);
+    event AddSupervisor(uint256 proposalId, address supervisor, bool isProject);
     event BurnSupervisor(uint256 proposalId, address supervisor);
     event SetQuorumRequired(uint256 proposalId, uint256 passThreshold);
     event UndoVoteEnabled(uint256 proposalId);
@@ -84,6 +84,11 @@ interface Storage is IERC165 {
         bytes32 name;
         /// @notice metadata value
         string value;
+    }
+
+    struct Supervisor {
+        bool isEnabled;
+        bool isProject;
     }
 
     /// @notice The executable transaction resulting from a proposed Governance operation
@@ -145,7 +150,7 @@ interface Storage is IERC165 {
         /// @notice Receipts of ballots for the entire set of voters
         mapping(uint256 => Receipt) voteReceipt;
         /// @notice configured supervisors
-        mapping(address => bool) supervisorPool;
+        mapping(address => Supervisor) supervisorPool;
         /// @notice table of mapped transactions
         mapping(uint256 => Transaction) transaction;
         /// @notice mapping of id to user defined metadata
@@ -178,6 +183,21 @@ interface Storage is IERC165 {
     function registerSupervisor(
         uint256 _proposalId,
         address _supervisor,
+        address _sender
+    ) external;
+
+    /// @notice Register a new supervisor on the specified proposal.
+    /// The supervisor has rights to add or remove voters prior to start of voting
+    /// in a Voter Pool. The supervisor also has the right to veto the outcome of the vote.
+    /// @dev requires proposal creator
+    /// @param _proposalId the id of the proposal
+    /// @param _supervisor the supervisor address
+    /// @param _isProject true if supervisor is project supervisor
+    /// @param _sender original wallet for this request
+    function registerSupervisor(
+        uint256 _proposalId,
+        address _supervisor,
+        bool _isProject,
         address _sender
     ) external;
 
