@@ -8,7 +8,7 @@
 
 - **POLICY**:
 
-_Our security policy is to fix security vulnerabilities prior to making other changes. a. priori we set out to provide test coverage including coverage of vulnerable use cases to avoid or eliminate the possiblity of security vulnerabilities. We solicit feedback from our community as well encourage transparency through open source software processes._
+_Our security policy is to fix security vulnerabilities prior to making other changes. a. priori we set out to provide test coverage including coverage of vulnerable use cases to avoid or eliminate the possibility of security vulnerabilities. We solicit feedback from our community as well as encourage transparency through open source software processes._
 
 The "Collective Governance" team and community take all security bugs in "Collective Governance" seriously. Thank you for improving the security of "Collective Governance". We appreciate your efforts and responsible disclosure and will make every effort to acknowledge your contributions.
 
@@ -26,7 +26,7 @@ Report security bugs in third-party modules to the person or team maintaining th
 
 _Your responsibility is to report vulnerabilities to us using the guidelines outlined below._
 
-Please give detailed steps on how to reproduce the vulnerability. Keep these OWASP guidelines in mind ( https://www.owasp.org/index.php/Vulnerability_Disclosure_Cheat_Sheet ) when creating your disclosure policy. Below are some recommendations for security disclosures:
+Please give detailed steps on how to reproduce the vulnerability. Keep [these OWASP](https://www.owasp.org/index.php/Vulnerability_Disclosure_Cheat_Sheet] guidelines in mind. Below are some recommendations for security disclosures:
 
 - "Collective Governance" security contact { contact: mailto:security@collective.xyz }
 - Disclosure format: When disclosing vulnerabilities please include
@@ -35,13 +35,29 @@ Please give detailed steps on how to reproduce the vulnerability. Keep these OWA
   3. Document steps to identify the vulnerability. It is important that we can reproduce your findings.
   4. Show how to exploit the vulnerability and provide an attack scenario.
 
+## "Collective Governance" Checklist: Security Recommendations
+
+Follow these steps to improve security when using "Collective Governance".
+
+1. Always minimize the list of project supervisors
+2. Always configure and make final a proposed vote as soon as possible
+3. Always provide sufficient voting time of at least one day and possibly longer
+4. Use of a voting delay is recommended
+5. Always veto suspect proposals immediately.  A proposal can be renewed, but a confirmed transaction can never be undone.
+
+## Semantic Versioning
+
+- Major version incremented when contact information changes in the `security.md` file or in the `security.txt` file that refers to this file. Or a required field in the `security.txt` has changed in a non backwards compatible manner.
+- Minor update is a backward compatible change has been made to the aforementioned files.
+- Patch update is when a minor typo is fixed but no significant change has been made.
+
 ### Encryption key for john@collective.xyz
 
 For critical flaws and sensitive security information you may encrypt your transmission with key below.
 
-Via [public keyserver](https://keys.openpgp.org/search?q=DD453D1420D17CA0102FF85C7BEF3762B55F70AD)
+Via [public keyserver](https://keys.openpgp.org/search?q=DD453D1420D17CA0102FF85C7BEF3762B55F70AD).  The fingerprint of this key is `DD453D1420D17CA0102FF85C7BEF3762B55F70AD` and must be manually confirmed prior to trust.
 
-If you trust the source of this document, see `SECURITY.md.asc`:
+This document is signed with the above key, see `SECURITY.md.asc`:
 
 ```
 -----BEGIN PGP PUBLIC KEY BLOCK-----
@@ -469,19 +485,3 @@ vvokmWwEqCjOjkXAnrO2fR7KOw0mWDw826R/XWy5l7xJQ1JDwVbuLgE=
 =IVy6
 -----END PGP PUBLIC KEY BLOCK-----
 ```
-
-## "Collective Governance" Checklist: Security Recommendations
-
-Follow these steps to improve security when using "Collective Governance".
-
-1. Always minimize the list of project supervisors
-2. Always configure and make final a proposed vote as soon as possible
-3. Always provide sufficient voting time of at least one day and possibly longer
-
-## Semantic Versioning
-
-Use Semantic Versioning to help other see at a glance if this document has been updated and what was the scope of the udpate.
-
-- Major version incremented when contact information changes in the `security.md` file or in the `security.txt` file that refers to this file. Or a required field in the `security.txt` has changed in a non backwards compatible manner.
-- Minor update is a backward compatible change has been made to the aforementioned files.
-- Patch update is when a minor typo is fixed but no significant change has been made.
