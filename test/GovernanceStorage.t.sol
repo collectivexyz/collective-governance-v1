@@ -572,11 +572,23 @@ contract GovernanceStorageTest is Test {
         assertEq(_storage.version(), 1);
     }
 
-    function testLatestProposal() public {
+    function testLatestProposalAfterEnd() public {
         uint256 latestProposalId = _storage.latestProposal(_OWNER);
         assertEq(PROPOSAL_ID, latestProposalId);
         _storage.registerSupervisor(latestProposalId, _SUPERVISOR, _OWNER);
         _storage.makeFinal(latestProposalId, _SUPERVISOR);
+        uint256 endTime = _storage.endTime(latestProposalId);
+        vm.warp(endTime);
+        uint256 nextId = _storage.initializeProposal(_OWNER);
+        latestProposalId = _storage.latestProposal(_OWNER);
+        assertEq(latestProposalId, nextId);
+    }
+
+    function testCancelThenNewProposal() public {
+        uint256 latestProposalId = _storage.latestProposal(_OWNER);
+        assertEq(PROPOSAL_ID, latestProposalId);
+        _storage.registerSupervisor(latestProposalId, _SUPERVISOR, _OWNER);
+        _storage.cancel(latestProposalId, _SUPERVISOR);
         uint256 endTime = _storage.endTime(latestProposalId);
         vm.warp(endTime);
         uint256 nextId = _storage.initializeProposal(_OWNER);
@@ -597,11 +609,11 @@ contract GovernanceStorageTest is Test {
         assertTrue(nextProposalId > PROPOSAL_ID);
     }
 
-    function testExemptFromDelayIfCancel() public {
+    function testNotExemptFromDelayIfCancelled() public {
         _storage.registerSupervisor(PROPOSAL_ID, _SUPERVISOR, _OWNER);
         _storage.cancel(PROPOSAL_ID, _SUPERVISOR);
-        uint256 nextProposalId = _storage.initializeProposal(_OWNER);
-        assertTrue(nextProposalId > PROPOSAL_ID);
+        vm.expectRevert("Too many proposals");
+        _storage.initializeProposal(_OWNER);
     }
 
     function testRevertOnSecondProposal() public {

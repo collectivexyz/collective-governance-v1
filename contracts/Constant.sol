@@ -54,7 +54,7 @@ library Constant {
 
     /// @notice minimum vote duration
     /// @dev For security reasons this must be a relatively long time compared to seconds
-    uint256 public constant MINIMUM_VOTE_DURATION = 1 days;
+    uint256 public constant MINIMUM_VOTE_DURATION = 1 hours;
 
     /// @notice minimum vote delay
     /// @dev A vote delay is recommended to support cancellation of votes, however it is not

@@ -490,10 +490,7 @@ contract GovernanceStorage is Storage, ERC165, Ownable {
         uint256 latestProposalId = _latestProposalId[_sender];
         if (latestProposalId != 0) {
             Proposal storage lastProposal = proposalMap[latestProposalId];
-            require(
-                isCancel(latestProposalId) || (isFinal(latestProposalId) && getBlockTimestamp() >= lastProposal.endTime),
-                "Too many proposals"
-            );
+            require(isFinal(latestProposalId) && getBlockTimestamp() >= lastProposal.endTime, "Too many proposals");
         }
         _proposalCount++;
         uint256 proposalId = _proposalCount;
