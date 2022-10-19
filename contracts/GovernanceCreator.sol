@@ -129,17 +129,17 @@ interface GovernanceCreator is IERC165 {
     /// @return GovernanceCreator this contract
     function withProjectQuorum(uint256 _minimumQuorum) external returns (GovernanceCreator);
 
-    /// @notice set the project name
+    /// @notice set the community name
     /// @param _name the name
     /// @return GovernanceCreator this contract
     function withName(bytes32 _name) external returns (GovernanceCreator);
 
-    /// @notice set the project url
+    /// @notice set the community url
     /// @param _url the url
     /// @return GovernanceCreator this contract
     function withUrl(string memory _url) external returns (GovernanceCreator);
 
-    /// @notice set the project description
+    /// @notice set the community description
     /// @dev limit 1k
     /// @return GovernanceCreator this contract
     function withDescription(string memory _descritpion) external returns (GovernanceCreator);

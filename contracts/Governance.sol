@@ -150,11 +150,11 @@ interface Governance is IERC165 {
     /// @return bytes32 the community name
     function community() external view returns (bytes32);
 
-    /// @notice return the project url
+    /// @notice return the community url
     /// @return string memory representation of url
     function url() external view returns (string memory);
 
-    /// @notice return project description
-    /// @return string memory representation of project description
+    /// @notice return community description
+    /// @return string memory representation of community description
     function description() external view returns (string memory);
 }

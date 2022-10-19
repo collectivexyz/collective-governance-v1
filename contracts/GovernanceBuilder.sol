@@ -137,7 +137,7 @@ contract GovernanceBuilder is GovernanceCreator, ERC165 {
         return this;
     }
 
-    /// @notice set the project name
+    /// @notice set the community name
     /// @param _name the name
     /// @return GovernanceCreator this contract
     function withName(bytes32 _name) external returns (GovernanceCreator) {
@@ -147,7 +147,7 @@ contract GovernanceBuilder is GovernanceCreator, ERC165 {
         return this;
     }
 
-    /// @notice set the project url
+    /// @notice set the community url
     /// @param _url the url
     /// @return GovernanceCreator this contract
     function withUrl(string memory _url) external returns (GovernanceCreator) {
@@ -157,7 +157,7 @@ contract GovernanceBuilder is GovernanceCreator, ERC165 {
         return this;
     }
 
-    /// @notice set the project description
+    /// @notice set the community description
     /// @dev limit 1k
     /// @return GovernanceCreator this contract
     function withDescription(string memory _description) external returns (GovernanceCreator) {

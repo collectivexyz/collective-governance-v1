@@ -59,9 +59,9 @@ library CollectiveGovernanceFactory {
     /// @param _supervisorList the list of supervisors for this project
     /// @param _class the VoterClass for this project
     /// @param _storage The storage contract for this governance
-    /// @param _name The project name
+    /// @param _name The community name
     /// @param _url The Url for this project
-    /// @param _description The project description
+    /// @param _description The community description
     function create(
         address[] memory _supervisorList,
         VoterClass _class,
