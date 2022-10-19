@@ -146,7 +146,7 @@ contract GovernanceBuilderTest is Test {
             .withName("acme inc")
             .build();
         Governance gov = Governance(_governance);
-        assertEq(gov.project(), "acme inc");
+        assertEq(gov.community(), "acme inc");
     }
 
     function testWithUrl() public {

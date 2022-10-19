@@ -78,11 +78,11 @@ contract CollectiveGovernance is Governance, VoteStrategy, ERC165 {
 
     address[] private _projectSupervisorList;
 
-    bytes32 public immutable _projectName;
+    bytes32 public immutable _communityName;
 
-    string public _projectUrl;
+    string public _communityUrl;
 
-    string public _projectDescription;
+    string public _communityDescription;
 
     /// @notice voting is open or not
     mapping(uint256 => bool) private isVoteOpenByProposalId;
@@ -112,9 +112,9 @@ contract CollectiveGovernance is Governance, VoteStrategy, ERC165 {
         uint256 _timeLockDelay = max(_storage.minimumVoteDuration(), Constant.TIMELOCK_MINIMUM_DELAY);
         _timeLock = new TimeLock(_timeLockDelay);
         _projectSupervisorList = _supervisorList;
-        _projectName = _name;
-        _projectUrl = _url;
-        _projectDescription = _description;
+        _communityName = _name;
+        _communityUrl = _url;
+        _communityDescription = _description;
         emit TimeLockCreated(address(_timeLock), _timeLockDelay);
     }
 
@@ -532,22 +532,22 @@ contract CollectiveGovernance is Governance, VoteStrategy, ERC165 {
         return VERSION_1;
     }
 
-    /// @notice return the name of the project
+    /// @notice return the name of the community
     /// @return bytes32 the project name
-    function project() external view returns (bytes32) {
-        return _projectName;
+    function community() external view returns (bytes32) {
+        return _communityName;
     }
 
     /// @notice return the project url
     /// @return string memory representation of url
     function url() external view returns (string memory) {
-        return _projectUrl;
+        return _communityUrl;
     }
 
-    /// @notice return project description
+    /// @notice return community description
     /// @return string memory representation of project description
     function description() external view returns (string memory) {
-        return _projectDescription;
+        return _communityDescription;
     }
 
     function getBlockTimestamp() internal view returns (uint256) {

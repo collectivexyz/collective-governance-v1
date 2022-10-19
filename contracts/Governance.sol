@@ -146,9 +146,9 @@ interface Governance is IERC165 {
     /// @return uint32 version number
     function version() external pure returns (uint32);
 
-    /// @notice return the name of the project
-    /// @return bytes32 the project name
-    function project() external view returns (bytes32);
+    /// @notice return the name of the community
+    /// @return bytes32 the community name
+    function community() external view returns (bytes32);
 
     /// @notice return the project url
     /// @return string memory representation of url
