@@ -53,7 +53,10 @@ import "../contracts/CollectiveGovernance.sol";
  * CollectiveGovernance in the Builder.  The GovernanceBuilder should be preferred for creating a new
  * instance of the contract.
  */
-library CollectiveGovernanceFactory {
+contract CollectiveGovernanceFactory {
+
+    mapping(address => bool) registry;
+
     /// @notice create a new collective governance contract
     /// @dev this should be invoked through the GovernanceBuilder
     /// @param _supervisorList the list of supervisors for this project
@@ -71,6 +74,7 @@ library CollectiveGovernanceFactory {
         string memory _description
     ) external returns (Governance) {
         Governance governance = new CollectiveGovernance(_supervisorList, _class, _storage, _name, _url, _description);
+        registry[address(governance)] = true;
         return governance;
     }
 }
