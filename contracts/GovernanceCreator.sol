@@ -52,7 +52,7 @@ import "../contracts/VoterClass.sol";
 /// @custom:type interface
 interface GovernanceCreator is IERC165 {
     /// @notice new contract created
-    event GovernanceContractCreated(address creator, address _storage, address governance);
+    event GovernanceContractCreated(address creator, bytes32 name, address _storage, address governance);
     /// @notice initialized local state for sender
     event GovernanceContractInitialized(address creator);
     /// @notice add supervisor

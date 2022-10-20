@@ -424,6 +424,7 @@ contract CollectiveGovernance is Governance, VoteStrategy, ERC165 {
         requireVoteAllowed(_proposalId)
     {
         _storage.veto(_proposalId, msg.sender);
+        emit ProposalVeto(_proposalId, msg.sender);
     }
 
     /// @notice get the result of the vote

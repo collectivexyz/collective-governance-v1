@@ -191,7 +191,7 @@ contract GovernanceBuilder is GovernanceCreator, ERC165 {
         );
         address _governanceAddress = address(_governance);
         transferOwnership(_storage, _governanceAddress);
-        emit GovernanceContractCreated(_creator, address(_storage), _governanceAddress);
+        emit GovernanceContractCreated(_creator, _properties.name, address(_storage), _governanceAddress);
         return _governanceAddress;
     }
 

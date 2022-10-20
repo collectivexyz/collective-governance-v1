@@ -305,6 +305,7 @@ contract GovernanceStorage is Storage, ERC165, Ownable {
         require(_voteDelay >= minimumVoteDelay(), "Delay not allowed");
         Proposal storage proposal = proposalMap[_proposalId];
         proposal.voteDelay = _voteDelay;
+        emit SetVoteDelay(_proposalId, _voteDelay);
     }
 
     /// @notice set the required duration for the vote
@@ -320,6 +321,7 @@ contract GovernanceStorage is Storage, ERC165, Ownable {
         require(_voteDuration >= minimumVoteDuration(), "Duration not allowed");
         Proposal storage proposal = proposalMap[_proposalId];
         proposal.voteDuration = _voteDuration;
+        emit SetVoteDuration(_proposalId, _voteDuration);
     }
 
     /// @notice get the address of the proposal sender
@@ -720,6 +722,7 @@ contract GovernanceStorage is Storage, ERC165, Ownable {
         Proposal storage proposal = proposalMap[_proposalId];
         uint256 transactionId = proposal.transactionCount++;
         proposal.transaction[transactionId] = Transaction(_target, _value, _signature, _calldata, _scheduleTime, _txHash);
+        emit AddTransaction(_proposalId, transactionId, _target, _value, _scheduleTime, _txHash);
         return transactionId;
     }
 
@@ -771,6 +774,8 @@ contract GovernanceStorage is Storage, ERC165, Ownable {
         Proposal storage proposal = proposalMap[_proposalId];
         require(_transactionId < proposal.transactionCount, "Invalid transaction");
         Transaction storage transaction = proposal.transaction[_transactionId];
+        (uint256 scheduleTime, bytes32 txHash) = (transaction.scheduleTime, transaction.txHash);
+
         transaction.target = address(0x0);
         transaction.value = 0;
         transaction.signature = "";
@@ -778,6 +783,7 @@ contract GovernanceStorage is Storage, ERC165, Ownable {
         transaction.scheduleTime = 0;
         transaction.txHash = "";
         delete proposal.transaction[_transactionId];
+        emit ClearTransaction(_proposalId, _transactionId, scheduleTime, txHash);
     }
 
     /// @notice set proposal state executed
@@ -793,6 +799,7 @@ contract GovernanceStorage is Storage, ERC165, Ownable {
         Proposal storage proposal = proposalMap[_proposalId];
         require(!proposal.isExecuted, "Executed previously");
         proposal.isExecuted = true;
+        emit Executed(_proposalId);
     }
 
     /// @notice get the current state if executed or not
@@ -831,6 +838,7 @@ contract GovernanceStorage is Storage, ERC165, Ownable {
         require(Constant.len(_url) < Constant.STRING_DATA_LIMIT, "Url exceeds limit");
         Proposal storage proposal = proposalMap[_proposalId];
         proposal.url = _url;
+        emit SetVoteUrl(_proposalId, proposal.url);
     }
 
     /// @notice get the proposal url
@@ -853,6 +861,7 @@ contract GovernanceStorage is Storage, ERC165, Ownable {
         require(Constant.len(_description) < Constant.STRING_DATA_LIMIT, "Description exceeds limit");
         Proposal storage proposal = proposalMap[_proposalId];
         proposal.description = _description;
+        emit SetVoteDescription(_proposalId, proposal.description);
     }
 
     /// @notice get the proposal description
@@ -886,6 +895,7 @@ contract GovernanceStorage is Storage, ERC165, Ownable {
         Proposal storage proposal = proposalMap[_proposalId];
         uint256 metadataId = proposal.metaCount++;
         proposal.metadata[metadataId] = Meta(metadataId, _name, _value);
+        emit AddMeta(_proposalId, metadataId, _name, _value);
         return metadataId;
     }
 

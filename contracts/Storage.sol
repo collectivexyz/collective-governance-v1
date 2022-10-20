@@ -57,7 +57,22 @@ interface Storage is IERC165 {
     event AddSupervisor(uint256 proposalId, address supervisor, bool isProject);
     event BurnSupervisor(uint256 proposalId, address supervisor);
     event SetQuorumRequired(uint256 proposalId, uint256 passThreshold);
+    event SetVoteDelay(uint256 proposalId, uint256 voteDelay);
+    event SetVoteDuration(uint256 proposalId, uint256 voteDuration);
+    event SetVoteUrl(uint256 proposalId, string url);
+    event SetVoteDescription(uint256 proposalId, string description);
     event UndoVoteEnabled(uint256 proposalId);
+    event AddTransaction(
+        uint256 proposalId,
+        uint256 transactionId,
+        address target,
+        uint256 value,
+        uint256 scheduleTime,
+        bytes32 txHash
+    );
+    event ClearTransaction(uint256 proposalId, uint256 transactionId, uint256 scheduleTime, bytes32 txHash);
+    event Executed(uint256 proposalId);
+    event AddMeta(uint256 proposalId, uint256 metaId, bytes32 name, string value);
 
     event VoteCast(uint256 proposalId, address voter, uint256 shareId, uint256 totalVotesCast);
     event UndoVote(uint256 proposalId, address voter, uint256 shareId, uint256 votesUndone);

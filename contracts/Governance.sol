@@ -88,6 +88,8 @@ interface Governance is IERC165 {
     event ProposalClosed(uint256 proposalId);
     /// @notice The attached transactions are executed
     event ProposalExecuted(uint256 proposalId, uint256 executedTransactionCount);
+    /// @notice The proposal has been vetoed
+    event ProposalVeto(uint256 proposalId, address sender);
 
     /// @notice propose a vote for the community
     /// @return uint256 The id of the new proposal
