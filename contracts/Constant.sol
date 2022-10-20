@@ -73,6 +73,15 @@ library Constant {
     /// @notice limit for string information in meta data
     uint256 public constant STRING_DATA_LIMIT = 1024;
 
+    /// @notice The maximum priority fee
+    uint256 public constant MAXIMUM_REFUND_PRIORITY_FEE = 2 gwei;
+    /// @notice The vote refund gas overhead, including 7K for ETH transfer and 29K for general transaction overhead
+    uint256 public constant REFUND_BASE_GAS = 36000;
+    /// @notice The maximum refundable gas fee
+    uint256 public constant MAXIMUM_REFUND_GAS_USED = 200_000;
+    /// @notice the maximum allowed gas rebate parameterization
+    uint256 public constant MAXIMUM_REFUND_BASE_FEE = 200 gwei;
+
     uint32 public constant VERSION_1 = 1;
 
     /// @notice Compute the length of any string in solidity

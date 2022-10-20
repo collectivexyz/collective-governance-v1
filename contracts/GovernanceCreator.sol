@@ -79,6 +79,8 @@ interface GovernanceCreator is IERC165 {
         uint256 minimumVoteDelay;
         uint256 minimumVoteDuration;
         uint256 minimumProjectQuorum;
+        uint256 maxGasUsed;
+        uint256 maxBaseFee;
         address[] supervisorList;
         VoterClass class;
     }
@@ -144,9 +146,22 @@ interface GovernanceCreator is IERC165 {
     /// @return GovernanceCreator this contract
     function withDescription(string memory _descritpion) external returns (GovernanceCreator);
 
+    /// @notice setup gas refund parameters
+    /// @param _gasUsed the maximum gas used for refund
+    /// @param _baseFee the maximum base fee for refund
+    /// @return GovernanceCreator this contract
+    function withGasRefund(uint256 _gasUsed, uint256 _baseFee) external returns (GovernanceCreator);
+
     /// @notice build the specified contract
     /// @dev Contructs a new contract and may require a large gas fee.  Build does not reinitialize context.
     /// If you wish to reset the settings call reset or aGovernance directly.
     /// @return the address of the new Governance contract
-    function build() external returns (address);
+    function build() external returns (address payable);
+
+    /// @notice clear and reset resources associated with sender build requests
+    function reset() external;
+
+    /// @notice identify a contract that was created by this builder
+    /// @return bool True if contract was created by this builder
+    function contractRegistered(address _contract) external view returns (bool);
 }

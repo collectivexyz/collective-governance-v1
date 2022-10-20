@@ -34,19 +34,97 @@ contract CollectiveGovernanceFactoryTest is Test {
     }
 
     function testFailUrlTooLarge() public {
-        CollectiveGovernanceFactory.create(_supervisorList, _class, _storage, "", TestData.pi1kplus(), "");
+        CollectiveGovernanceFactory.create(
+            _supervisorList,
+            _class,
+            _storage,
+            Constant.MAXIMUM_REFUND_GAS_USED,
+            Constant.MAXIMUM_REFUND_BASE_FEE,
+            "",
+            TestData.pi1kplus(),
+            ""
+        );
     }
 
     function testFailDescriptionTooLarge() public {
-        CollectiveGovernanceFactory.create(_supervisorList, _class, _storage, "", "", TestData.pi1kplus());
+        CollectiveGovernanceFactory.create(
+            _supervisorList,
+            _class,
+            _storage,
+            Constant.MAXIMUM_REFUND_GAS_USED,
+            Constant.MAXIMUM_REFUND_BASE_FEE,
+            "",
+            "",
+            TestData.pi1kplus()
+        );
     }
 
     function testFailSupervisorListIsEmpty() public {
-        CollectiveGovernanceFactory.create(new address[](0), _class, _storage, "", "", "");
+        CollectiveGovernanceFactory.create(
+            new address[](0),
+            _class,
+            _storage,
+            Constant.MAXIMUM_REFUND_GAS_USED,
+            Constant.MAXIMUM_REFUND_BASE_FEE,
+            "",
+            "",
+            ""
+        );
+    }
+
+    function testFailGasUsedTooLow() public {
+        CollectiveGovernanceFactory.create(
+            _supervisorList,
+            _class,
+            _storage,
+            Constant.MAXIMUM_REFUND_GAS_USED - 1,
+            Constant.MAXIMUM_REFUND_BASE_FEE,
+            "",
+            "",
+            ""
+        );
+    }
+
+    function testFailBaseFeeTooLow() public {
+        CollectiveGovernanceFactory.create(
+            _supervisorList,
+            _class,
+            _storage,
+            Constant.MAXIMUM_REFUND_GAS_USED,
+            Constant.MAXIMUM_REFUND_BASE_FEE - 1,
+            "",
+            "",
+            ""
+        );
     }
 
     function testCreateNewGovernance() public {
-        Governance governance = CollectiveGovernanceFactory.create(_supervisorList, _class, _storage, "", "", "");
+        Governance governance = CollectiveGovernanceFactory.create(
+            _supervisorList,
+            _class,
+            _storage,
+            Constant.MAXIMUM_REFUND_GAS_USED,
+            Constant.MAXIMUM_REFUND_BASE_FEE,
+            "",
+            "",
+            ""
+        );
         assertTrue(governance.supportsInterface(type(Governance).interfaceId));
+    }
+
+    function testCreateNewGovernanceGasRefund() public {
+        Governance governance = CollectiveGovernanceFactory.create(
+            _supervisorList,
+            _class,
+            _storage,
+            Constant.MAXIMUM_REFUND_GAS_USED + 1,
+            Constant.MAXIMUM_REFUND_BASE_FEE + 7,
+            "",
+            "",
+            ""
+        );
+        CollectiveGovernance cGovernance = CollectiveGovernance(payable(address(governance)));
+        assertEq(cGovernance._maximumGasUsedRefund(), Constant.MAXIMUM_REFUND_GAS_USED + 1);
+        assertEq(cGovernance._maximumBaseFeeRefund(), Constant.MAXIMUM_REFUND_BASE_FEE + 7);
     }
 }

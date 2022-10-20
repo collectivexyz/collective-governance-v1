@@ -62,6 +62,8 @@ contract GovernanceBuilder is GovernanceCreator, ERC165 {
     /// @dev implement the null object pattern requring voter class to be valid
     VoterClass private immutable _voterClassNull;
 
+    mapping(address => bool) public _governanceContractRegistered;
+
     constructor() {
         _voterClassNull = new VoterClassNullObject();
     }
@@ -167,10 +169,21 @@ contract GovernanceBuilder is GovernanceCreator, ERC165 {
         return this;
     }
 
+    /// @notice setup gas refund parameters
+    /// @param _gasUsed the maximum gas used for refund
+    /// @param _baseFee the maximum base fee for refund
+    /// @return GovernanceCreator this contract
+    function withGasRefund(uint256 _gasUsed, uint256 _baseFee) external returns (GovernanceCreator) {
+        GovernanceProperties storage _properties = _buildMap[msg.sender];
+        _properties.maxGasUsed = _gasUsed;
+        _properties.maxBaseFee = _baseFee;
+        return this;
+    }
+
     /// @notice build the specified contract
     /// @dev contructs a new contract and may require a large gas fee, does not reinitialize context
     /// @return the address of the new Governance contract
-    function build() external returns (address) {
+    function build() external returns (address payable) {
         address _creator = msg.sender;
         GovernanceProperties storage _properties = _buildMap[_creator];
         require(address(_properties.class) != address(_voterClassNull), "Voter class required");
@@ -185,14 +198,23 @@ contract GovernanceBuilder is GovernanceCreator, ERC165 {
             _properties.supervisorList,
             _properties.class,
             _storage,
+            _properties.maxGasUsed,
+            _properties.maxBaseFee,
             _properties.name,
             _properties.url,
             _properties.description
         );
-        address _governanceAddress = address(_governance);
+        address payable _governanceAddress = payable(address(_governance));
         transferOwnership(_storage, _governanceAddress);
+        _governanceContractRegistered[_governanceAddress] = true;
         emit GovernanceContractCreated(_creator, _properties.name, address(_storage), _governanceAddress);
         return _governanceAddress;
+    }
+
+    /// @notice identify a contract that was created by this builder
+    /// @return bool True if contract was created by this builder
+    function contractRegistered(address _contract) external view returns (bool) {
+        return _governanceContractRegistered[_contract];
     }
 
     /// @notice clear and reset resources associated with sender build requests
@@ -231,6 +253,8 @@ contract GovernanceBuilder is GovernanceCreator, ERC165 {
         _properties.minimumVoteDelay = Constant.MINIMUM_VOTE_DELAY;
         _properties.minimumVoteDuration = Constant.MINIMUM_VOTE_DURATION;
         _properties.minimumProjectQuorum = Constant.MINIMUM_PROJECT_QUORUM;
+        _properties.maxGasUsed = Constant.MAXIMUM_REFUND_GAS_USED;
+        _properties.maxBaseFee = Constant.MAXIMUM_REFUND_BASE_FEE;
         _properties.name = "";
         _properties.url = "";
         _properties.description = "";

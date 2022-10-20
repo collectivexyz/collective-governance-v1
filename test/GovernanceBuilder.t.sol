@@ -5,6 +5,7 @@ import "forge-std/Test.sol";
 
 import "../contracts/GovernanceBuilder.sol";
 import "../contracts/Governance.sol";
+import "../contracts/CollectiveGovernance.sol";
 import "../contracts/VoterClass.sol";
 import "../contracts/VoterClassVoterPool.sol";
 import "../contracts/VoterClassERC721.sol";
@@ -130,7 +131,7 @@ contract GovernanceBuilderTest is Test {
         _builder.aGovernance().withSupervisor(_SUPERVISOR).build();
     }
 
-    function testFailResetBuilder() public {
+    function testFailAfterResetBuilder() public {
         VoterClass _class = new VoterClassNullObject();
         _builder.aGovernance().withSupervisor(_SUPERVISOR).withVoterClass(_class).build();
         _builder.reset();
@@ -172,5 +173,38 @@ contract GovernanceBuilderTest is Test {
             .build();
         Governance gov = Governance(_governance);
         assertEq(gov.description(), desc);
+    }
+
+    function testWithGasRefund() public {
+        VoterClass _class = new VoterClassNullObject();
+        address _governance = _builder
+            .aGovernance()
+            .withGasRefund(Constant.MAXIMUM_REFUND_GAS_USED + 0x7, Constant.MAXIMUM_REFUND_BASE_FEE + 0x13)
+            .withSupervisor(_SUPERVISOR)
+            .withVoterClass(_class)
+            .build();
+        CollectiveGovernance _gov = CollectiveGovernance(payable(_governance));
+        assertEq(_gov._maximumGasUsedRefund(), Constant.MAXIMUM_REFUND_GAS_USED + 0x7);
+        assertEq(_gov._maximumBaseFeeRefund(), Constant.MAXIMUM_REFUND_BASE_FEE + 0x13);
+    }
+
+    function testFailWithGasRefundGasUsedBelowMinimumRequired() public {
+        VoterClass _class = new VoterClassNullObject();
+        _builder
+            .aGovernance()
+            .withGasRefund(Constant.MAXIMUM_REFUND_GAS_USED - 0x1, Constant.MAXIMUM_REFUND_BASE_FEE)
+            .withSupervisor(_SUPERVISOR)
+            .withVoterClass(_class)
+            .build();
+    }
+
+    function testFailWithGasRefundBaseFeeBelowMinimumRequired() public {
+        VoterClass _class = new VoterClassNullObject();
+        _builder
+            .aGovernance()
+            .withGasRefund(Constant.MAXIMUM_REFUND_GAS_USED, Constant.MAXIMUM_REFUND_BASE_FEE - 0x1)
+            .withSupervisor(_SUPERVISOR)
+            .withVoterClass(_class)
+            .build();
     }
 }

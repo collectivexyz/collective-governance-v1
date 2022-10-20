@@ -78,6 +78,10 @@ contract CollectiveGovernance is Governance, VoteStrategy, ERC165 {
 
     address[] private _projectSupervisorList;
 
+    uint256 public immutable _maximumGasUsedRefund;
+
+    uint256 public immutable _maximumBaseFeeRefund;
+
     bytes32 public immutable _communityName;
 
     string public _communityUrl;
@@ -88,17 +92,23 @@ contract CollectiveGovernance is Governance, VoteStrategy, ERC165 {
     mapping(uint256 => bool) private isVoteOpenByProposalId;
 
     /// @notice create a new collective governance contract
-    /// @dev this should be invoked through the GovernanceBuilder
+    /// @dev This should be invoked through the GovernanceBuilder.  Gas refund
+    /// is contingent on contract being funded through a transfer.
     /// @param _supervisorList the list of supervisors for this project
     /// @param _class the VoterClass for this project
     /// @param _governanceStorage The storage contract for this governance
+    /// @param _gasUsedRefund The maximum refund for gas used
+    /// @param _baseFeeRefund The maximum base fee refund
     /// @param _name The community name
     /// @param _url The Url for this project
     /// @param _description The community description
+    ///
     constructor(
         address[] memory _supervisorList,
         VoterClass _class,
         Storage _governanceStorage,
+        uint256 _gasUsedRefund,
+        uint256 _baseFeeRefund,
         bytes32 _name,
         string memory _url,
         string memory _description
@@ -106,12 +116,16 @@ contract CollectiveGovernance is Governance, VoteStrategy, ERC165 {
         require(_supervisorList.length > 0, "Supervisor required");
         require(Constant.len(_url) <= Constant.STRING_DATA_LIMIT, "Url too large");
         require(Constant.len(_description) <= Constant.STRING_DATA_LIMIT, "Description too large");
+        require(_gasUsedRefund >= Constant.MAXIMUM_REFUND_GAS_USED, "Insufficient gas used refund");
+        require(_baseFeeRefund >= Constant.MAXIMUM_REFUND_BASE_FEE, "Insufficient base fee refund");
 
         _voterClass = _class;
         _storage = _governanceStorage;
         uint256 _timeLockDelay = max(_storage.minimumVoteDuration(), Constant.TIMELOCK_MINIMUM_DELAY);
         _timeLock = new TimeLock(_timeLockDelay);
         _projectSupervisorList = _supervisorList;
+        _maximumGasUsedRefund = _gasUsedRefund;
+        _maximumBaseFeeRefund = _baseFeeRefund;
         _communityName = _name;
         _communityUrl = _url;
         _communityDescription = _description;
@@ -141,6 +155,22 @@ contract CollectiveGovernance is Governance, VoteStrategy, ERC165 {
     modifier requireSupervisor(uint256 _proposalId) {
         require(_storage.isSupervisor(_proposalId, msg.sender), "Supervisor required");
         _;
+    }
+
+    // vote only allowed from a wallet not from contract
+    modifier requireOrigin() {
+        // solhint-disable-next-line avoid-tx-origin
+        require(tx.origin == msg.sender, "Not origin");
+        _;
+    }
+
+    receive() external payable {
+        emit RebateFund(msg.sender, msg.value, getRebateBalance());
+    }
+
+    // solhint-disable-next-line payable-fallback
+    fallback() external {
+        revert NotPermitted(msg.sender);
     }
 
     /// @notice propose a vote for the community
@@ -291,127 +321,181 @@ contract CollectiveGovernance is Governance, VoteStrategy, ERC165 {
     /// @notice cast an affirmative vote for the measure by id
     /// @param _proposalId The numeric id of the proposed vote
     /// @dev Auto discovery is attempted and if possible the method will proceed using the discovered shares
-    function voteFor(uint256 _proposalId) external {
+    function voteFor(uint256 _proposalId) external requireOrigin requireVoteOpen(_proposalId) requireVoteAllowed(_proposalId) {
+        uint256 startGas = gasleft();
         uint256[] memory _shareList = _voterClass.discover(msg.sender);
-        voteFor(_proposalId, _shareList);
+        for (uint256 i = 0; i < _shareList.length; i++) {
+            castVoteFor(_proposalId, _shareList[i]);
+        }
+        sendGasRebate(msg.sender, startGas);
     }
 
     /// @notice cast an affirmative vote for the measure by id
     /// @param _proposalId The numeric id of the proposed vote
-    /// @param _tokenIdList A array of tokens or shares that confer the right to vote
-    function voteFor(uint256 _proposalId, uint256[] memory _tokenIdList) public {
-        for (uint256 i = 0; i < _tokenIdList.length; i++) {
-            voteFor(_proposalId, _tokenIdList[i]);
+    /// @param _shareList A array of tokens or shares that confer the right to vote
+    function voteFor(uint256 _proposalId, uint256[] memory _shareList)
+        external
+        requireOrigin
+        requireVoteOpen(_proposalId)
+        requireVoteAllowed(_proposalId)
+    {
+        uint256 startGas = gasleft();
+        for (uint256 i = 0; i < _shareList.length; i++) {
+            castVoteFor(_proposalId, _shareList[i]);
         }
+        sendGasRebate(msg.sender, startGas);
     }
 
     /// @notice cast an affirmative vote for the measure by id
     /// @param _proposalId The numeric id of the proposed vote
     /// @param _tokenId The id of a token or share representing the right to vote
-    function voteFor(uint256 _proposalId, uint256 _tokenId) public requireVoteOpen(_proposalId) requireVoteAllowed(_proposalId) {
-        uint256 count = _storage.voteForByShare(_proposalId, msg.sender, _tokenId);
-        if (count > 0) {
-            emit VoteCount(_proposalId, msg.sender, _tokenId, count, 0);
-        } else {
-            revert("Not voter");
-        }
+    function voteFor(uint256 _proposalId, uint256 _tokenId)
+        external
+        requireOrigin
+        requireVoteOpen(_proposalId)
+        requireVoteAllowed(_proposalId)
+    {
+        uint256 startGas = gasleft();
+        castVoteFor(_proposalId, _tokenId);
+        sendGasRebate(msg.sender, startGas);
     }
 
     /// @notice cast an against vote by id
     /// @dev auto discovery is attempted and if possible the method will proceed using the discovered shares
     /// @param _proposalId The numeric id of the proposed vote
-    function voteAgainst(uint256 _proposalId) public {
+    function voteAgainst(uint256 _proposalId)
+        external
+        requireOrigin
+        requireVoteOpen(_proposalId)
+        requireVoteAllowed(_proposalId)
+    {
+        uint256 startGas = gasleft();
         uint256[] memory _shareList = _voterClass.discover(msg.sender);
-        voteAgainst(_proposalId, _shareList);
+        for (uint256 i = 0; i < _shareList.length; i++) {
+            castVoteAgainst(_proposalId, _shareList[i]);
+        }
+        sendGasRebate(msg.sender, startGas);
     }
 
     /// @notice cast an against vote by id
     /// @param _proposalId The numeric id of the proposed vote
-    /// @param _tokenIdList A array of tokens or shares that confer the right to vote
-    function voteAgainst(uint256 _proposalId, uint256[] memory _tokenIdList) public {
-        for (uint256 i = 0; i < _tokenIdList.length; i++) {
-            voteAgainst(_proposalId, _tokenIdList[i]);
+    /// @param _shareList A array of tokens or shares that confer the right to vote
+    function voteAgainst(uint256 _proposalId, uint256[] memory _shareList)
+        external
+        requireOrigin
+        requireVoteOpen(_proposalId)
+        requireVoteAllowed(_proposalId)
+    {
+        uint256 startGas = gasleft();
+        for (uint256 i = 0; i < _shareList.length; i++) {
+            castVoteAgainst(_proposalId, _shareList[i]);
         }
+        sendGasRebate(msg.sender, startGas);
     }
 
     /// @notice cast an against vote by id
     /// @param _proposalId The numeric id of the proposed vote
     /// @param _tokenId The id of a token or share representing the right to vote
     function voteAgainst(uint256 _proposalId, uint256 _tokenId)
-        public
+        external
+        requireOrigin
         requireVoteOpen(_proposalId)
         requireVoteAllowed(_proposalId)
     {
-        uint256 count = _storage.voteAgainstByShare(_proposalId, msg.sender, _tokenId);
-        if (count > 0) {
-            emit VoteCount(_proposalId, msg.sender, _tokenId, 0, count);
-        } else {
-            revert("Not voter");
-        }
+        uint256 startGas = gasleft();
+        castVoteAgainst(_proposalId, _tokenId);
+        sendGasRebate(msg.sender, startGas);
     }
 
     /// @notice abstain from vote by id
     /// @dev auto discovery is attempted and if possible the method will proceed using the discovered shares
     /// @param _proposalId The numeric id of the proposed vote
-    function abstainFrom(uint256 _proposalId) external {
+    function abstainFrom(uint256 _proposalId)
+        external
+        requireOrigin
+        requireVoteOpen(_proposalId)
+        requireVoteAllowed(_proposalId)
+    {
+        uint256 startGas = gasleft();
         uint256[] memory _shareList = _voterClass.discover(msg.sender);
-        abstainFrom(_proposalId, _shareList);
+        for (uint256 i = 0; i < _shareList.length; i++) {
+            castAbstention(_proposalId, _shareList[i]);
+        }
+        sendGasRebate(msg.sender, startGas);
     }
 
     /// @notice abstain from vote by id
     /// @param _proposalId The numeric id of the proposed vote
-    /// @param _tokenIdList A array of tokens or shares that confer the right to vote
-    function abstainFrom(uint256 _proposalId, uint256[] memory _tokenIdList) public {
-        for (uint256 i = 0; i < _tokenIdList.length; i++) {
-            abstainFrom(_proposalId, _tokenIdList[i]);
+    /// @param _shareList A array of tokens or shares that confer the right to vote
+    function abstainFrom(uint256 _proposalId, uint256[] memory _shareList)
+        external
+        requireOrigin
+        requireVoteOpen(_proposalId)
+        requireVoteAllowed(_proposalId)
+    {
+        uint256 startGas = gasleft();
+        for (uint256 i = 0; i < _shareList.length; i++) {
+            castAbstention(_proposalId, _shareList[i]);
         }
+        sendGasRebate(msg.sender, startGas);
     }
 
     /// @notice abstain from vote by id
     /// @param _proposalId The numeric id of the proposed vote
     /// @param _tokenId The id of a token or share representing the right to vote
     function abstainFrom(uint256 _proposalId, uint256 _tokenId)
-        public
+        external
+        requireOrigin
         requireVoteOpen(_proposalId)
         requireVoteAllowed(_proposalId)
     {
-        uint256 count = _storage.abstainForShare(_proposalId, msg.sender, _tokenId);
-        if (count > 0) {
-            emit VoteCount(_proposalId, msg.sender, _tokenId, 0, 0);
-        } else {
-            revert("Not voter");
-        }
+        uint256 startGas = gasleft();
+        castAbstention(_proposalId, _tokenId);
+        sendGasRebate(msg.sender, startGas);
     }
 
     /// @notice undo any previous vote if any
     /// @dev Only applies to affirmative vote.
     /// auto discovery is attempted and if possible the method will proceed using the discovered shares
     /// @param _proposalId The numeric id of the proposed vote
-    function undoVote(uint256 _proposalId) external {
+    function undoVote(uint256 _proposalId) external requireOrigin requireVoteOpen(_proposalId) requireVoteAllowed(_proposalId) {
+        uint256 startGas = gasleft();
         uint256[] memory _shareList = _voterClass.discover(msg.sender);
-        undoVote(_proposalId, _shareList);
+        for (uint256 i = 0; i < _shareList.length; i++) {
+            _undoVote(_proposalId, _shareList[i]);
+        }
+        sendGasRebate(msg.sender, startGas);
     }
 
     /// @notice undo any previous vote if any
     /// @param _proposalId The numeric id of the proposed vote
-    /// @param _tokenIdList A array of tokens or shares that confer the right to vote
-    function undoVote(uint256 _proposalId, uint256[] memory _tokenIdList) public {
-        for (uint256 i = 0; i < _tokenIdList.length; i++) {
-            undoVote(_proposalId, _tokenIdList[i]);
+    /// @param _shareList A array of tokens or shares that confer the right to vote
+    function undoVote(uint256 _proposalId, uint256[] memory _shareList)
+        external
+        requireOrigin
+        requireVoteOpen(_proposalId)
+        requireVoteAllowed(_proposalId)
+    {
+        uint256 startGas = gasleft();
+        for (uint256 i = 0; i < _shareList.length; i++) {
+            _undoVote(_proposalId, _shareList[i]);
         }
+        sendGasRebate(msg.sender, startGas);
     }
 
     /// @notice undo any previous vote if any
     /// @dev only applies to affirmative vote
     /// @param _proposalId The numeric id of the proposed vote
     /// @param _tokenId The id of a token or share representing the right to vote
-    function undoVote(uint256 _proposalId, uint256 _tokenId) public requireVoteOpen(_proposalId) requireVoteAllowed(_proposalId) {
-        uint256 count = _storage.undoVoteById(_proposalId, msg.sender, _tokenId);
-        if (count > 0) {
-            emit VoteUndo(_proposalId, msg.sender, count);
-        } else {
-            revert("Not voter");
-        }
+    function undoVote(uint256 _proposalId, uint256 _tokenId)
+        external
+        requireOrigin
+        requireVoteOpen(_proposalId)
+        requireVoteAllowed(_proposalId)
+    {
+        uint256 startGas = gasleft();
+        _undoVote(_proposalId, _tokenId);
+        sendGasRebate(msg.sender, startGas);
     }
 
     /// @notice veto proposal by id
@@ -553,9 +637,71 @@ contract CollectiveGovernance is Governance, VoteStrategy, ERC165 {
         return _communityDescription;
     }
 
+    function castVoteFor(uint256 _proposalId, uint256 _tokenId) private {
+        uint256 count = _storage.voteForByShare(_proposalId, msg.sender, _tokenId);
+        if (count > 0) {
+            emit VoteCount(_proposalId, msg.sender, _tokenId, count, 0);
+        } else {
+            revert("Not voter");
+        }
+    }
+
+    function castVoteAgainst(uint256 _proposalId, uint256 _tokenId) private {
+        uint256 count = _storage.voteAgainstByShare(_proposalId, msg.sender, _tokenId);
+        if (count > 0) {
+            emit VoteCount(_proposalId, msg.sender, _tokenId, 0, count);
+        } else {
+            revert("Not voter");
+        }
+    }
+
+    function castAbstention(uint256 _proposalId, uint256 _tokenId) private {
+        uint256 count = _storage.abstainForShare(_proposalId, msg.sender, _tokenId);
+        if (count > 0) {
+            emit VoteCount(_proposalId, msg.sender, _tokenId, 0, 0);
+        } else {
+            revert("Not voter");
+        }
+    }
+
+    function _undoVote(uint256 _proposalId, uint256 _tokenId) private {
+        uint256 count = _storage.undoVoteById(_proposalId, msg.sender, _tokenId);
+        if (count > 0) {
+            emit VoteUndo(_proposalId, msg.sender, count);
+        } else {
+            revert("Not voter");
+        }
+    }
+
+    function sendGasRebate(address recipient, uint256 startGas) internal {
+        uint256 balance = getRebateBalance();
+        if (balance == 0) {
+            return;
+        }
+
+        uint256 totalGasUsed = startGas - gasleft();
+        uint256 basefee = min(block.basefee, _maximumBaseFeeRefund);
+        uint256 gasPrice = min(tx.gasprice, basefee + Constant.MAXIMUM_REFUND_PRIORITY_FEE);
+        uint256 gasUsed = min(totalGasUsed + Constant.REFUND_BASE_GAS, _maximumGasUsedRefund);
+        uint256 rebateQuantity = min(gasPrice * gasUsed, balance);
+        payable(recipient).transfer(rebateQuantity);
+        emit RebatePaid(recipient, rebateQuantity, totalGasUsed);
+    }
+
     function getBlockTimestamp() internal view returns (uint256) {
         // solhint-disable-next-line not-rely-on-time
         return block.timestamp;
+    }
+
+    function getRebateBalance() internal view returns (uint256) {
+        return address(this).balance;
+    }
+
+    function min(uint256 a, uint256 b) internal pure returns (uint256) {
+        if (a < b) {
+            return a;
+        }
+        return b;
     }
 
     function max(uint256 a, uint256 b) internal pure returns (uint256) {

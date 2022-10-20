@@ -59,6 +59,8 @@ library CollectiveGovernanceFactory {
     /// @param _supervisorList the list of supervisors for this project
     /// @param _class the VoterClass for this project
     /// @param _storage The storage contract for this governance
+    /// @param _gasUsedRefund The maximum refund for gas used
+    /// @param _baseFeeRefund The maximum base fee refund
     /// @param _name The community name
     /// @param _url The Url for this project
     /// @param _description The community description
@@ -66,11 +68,22 @@ library CollectiveGovernanceFactory {
         address[] memory _supervisorList,
         VoterClass _class,
         Storage _storage,
+        uint256 _gasUsedRefund,
+        uint256 _baseFeeRefund,
         bytes32 _name,
         string memory _url,
         string memory _description
     ) external returns (Governance) {
-        Governance governance = new CollectiveGovernance(_supervisorList, _class, _storage, _name, _url, _description);
+        Governance governance = new CollectiveGovernance(
+            _supervisorList,
+            _class,
+            _storage,
+            _gasUsedRefund,
+            _baseFeeRefund,
+            _name,
+            _url,
+            _description
+        );
         return governance;
     }
 }

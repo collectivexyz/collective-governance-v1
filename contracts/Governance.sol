@@ -50,6 +50,8 @@ import "@openzeppelin/contracts/interfaces/IERC165.sol";
 /// @notice Requirements for Governance implementation
 /// @custom:type interface
 interface Governance is IERC165 {
+    error NotPermitted(address sender);
+
     /// @notice The timelock requirement
     event TimeLockCreated(address timeLock, uint256 lockTime);
     /// @notice A new proposal was created
@@ -90,6 +92,10 @@ interface Governance is IERC165 {
     event ProposalExecuted(uint256 proposalId, uint256 executedTransactionCount);
     /// @notice The proposal has been vetoed
     event ProposalVeto(uint256 proposalId, address sender);
+    /// @notice The contract has been funded to provide gas rebates
+    event RebateFund(address sender, uint256 transfer, uint256 totalFund);
+    /// @notice Gas Rebate payment
+    event RebatePaid(address recipient, uint256 refund, uint256 gasPaid);
 
     /// @notice propose a vote for the community
     /// @return uint256 The id of the new proposal
