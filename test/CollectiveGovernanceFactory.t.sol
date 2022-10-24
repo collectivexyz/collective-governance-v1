@@ -17,6 +17,7 @@ contract CollectiveGovernanceFactoryTest is Test {
 
     VoterClass private _class;
     Storage private _storage;
+    TimeLocker private _timeLock;
     address[] private _supervisorList;
 
     function setUp() public {
@@ -29,6 +30,7 @@ contract CollectiveGovernanceFactoryTest is Test {
             Constant.MINIMUM_VOTE_DELAY,
             Constant.MINIMUM_VOTE_DURATION
         );
+        _timeLock = new TimeLock(Constant.TIMELOCK_MINIMUM_DELAY);
         _supervisorList = new address[](1);
         _supervisorList[0] = _OWNER;
     }
@@ -38,6 +40,7 @@ contract CollectiveGovernanceFactoryTest is Test {
             _supervisorList,
             _class,
             _storage,
+            _timeLock,
             Constant.MAXIMUM_REFUND_GAS_USED,
             Constant.MAXIMUM_REFUND_BASE_FEE,
             "",
@@ -51,6 +54,7 @@ contract CollectiveGovernanceFactoryTest is Test {
             _supervisorList,
             _class,
             _storage,
+            _timeLock,
             Constant.MAXIMUM_REFUND_GAS_USED,
             Constant.MAXIMUM_REFUND_BASE_FEE,
             "",
@@ -64,6 +68,7 @@ contract CollectiveGovernanceFactoryTest is Test {
             new address[](0),
             _class,
             _storage,
+            _timeLock,
             Constant.MAXIMUM_REFUND_GAS_USED,
             Constant.MAXIMUM_REFUND_BASE_FEE,
             "",
@@ -77,6 +82,7 @@ contract CollectiveGovernanceFactoryTest is Test {
             _supervisorList,
             _class,
             _storage,
+            _timeLock,
             Constant.MAXIMUM_REFUND_GAS_USED - 1,
             Constant.MAXIMUM_REFUND_BASE_FEE,
             "",
@@ -90,6 +96,7 @@ contract CollectiveGovernanceFactoryTest is Test {
             _supervisorList,
             _class,
             _storage,
+            _timeLock,
             Constant.MAXIMUM_REFUND_GAS_USED,
             Constant.MAXIMUM_REFUND_BASE_FEE - 1,
             "",
@@ -103,6 +110,7 @@ contract CollectiveGovernanceFactoryTest is Test {
             _supervisorList,
             _class,
             _storage,
+            _timeLock,
             Constant.MAXIMUM_REFUND_GAS_USED,
             Constant.MAXIMUM_REFUND_BASE_FEE,
             "",
@@ -117,6 +125,7 @@ contract CollectiveGovernanceFactoryTest is Test {
             _supervisorList,
             _class,
             _storage,
+            _timeLock,
             Constant.MAXIMUM_REFUND_GAS_USED + 1,
             Constant.MAXIMUM_REFUND_BASE_FEE + 7,
             "",

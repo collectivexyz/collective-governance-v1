@@ -74,9 +74,9 @@ contract CollectiveGovernance is Governance, VoteStrategy, ERC165 {
 
     Storage private immutable _storage;
 
-    TimeLock private immutable _timeLock;
+    TimeLocker private immutable _timeLock;
 
-    address[] private _projectSupervisorList;
+    address[] private _communitySupervisorList;
 
     uint256 public immutable _maximumGasUsedRefund;
 
@@ -107,6 +107,7 @@ contract CollectiveGovernance is Governance, VoteStrategy, ERC165 {
         address[] memory _supervisorList,
         VoterClass _class,
         Storage _governanceStorage,
+        TimeLocker _timeLocker,
         uint256 _gasUsedRefund,
         uint256 _baseFeeRefund,
         bytes32 _name,
@@ -121,15 +122,13 @@ contract CollectiveGovernance is Governance, VoteStrategy, ERC165 {
 
         _voterClass = _class;
         _storage = _governanceStorage;
-        uint256 _timeLockDelay = max(_storage.minimumVoteDuration(), Constant.TIMELOCK_MINIMUM_DELAY);
-        _timeLock = new TimeLock(_timeLockDelay);
-        _projectSupervisorList = _supervisorList;
+        _timeLock = _timeLocker;
+        _communitySupervisorList = _supervisorList;
         _maximumGasUsedRefund = _gasUsedRefund;
         _maximumBaseFeeRefund = _baseFeeRefund;
         _communityName = _name;
         _communityUrl = _url;
         _communityDescription = _description;
-        emit TimeLockCreated(address(_timeLock), _timeLockDelay);
     }
 
     modifier requireVoteReady(uint256 _proposalId) {
@@ -179,8 +178,8 @@ contract CollectiveGovernance is Governance, VoteStrategy, ERC165 {
     function propose() external returns (uint256) {
         address _sender = msg.sender;
         uint256 proposalId = _storage.initializeProposal(_sender);
-        for (uint256 i = 0; i < _projectSupervisorList.length; i++) {
-            _storage.registerSupervisor(proposalId, _projectSupervisorList[i], true, _sender);
+        for (uint256 i = 0; i < _communitySupervisorList.length; i++) {
+            _storage.registerSupervisor(proposalId, _communitySupervisorList[i], true, _sender);
         }
         if (!_storage.isSupervisor(proposalId, _sender)) {
             _storage.registerSupervisor(proposalId, _sender, _sender);
@@ -578,7 +577,7 @@ contract CollectiveGovernance is Governance, VoteStrategy, ERC165 {
                     uint256 scheduleTime,
                     bytes32 txHash
                 ) = _storage.getTransaction(_proposalId, tid);
-                if (txHash.length > 0 && _timeLock._queuedTransaction(txHash)) {
+                if (txHash.length > 0 && _timeLock.queuedTransaction(txHash)) {
                     _timeLock.executeTransaction(target, value, signature, _calldata, scheduleTime);
                     emit ProposalTransactionExecuted(_proposalId, tid, target, value, scheduleTime, txHash);
                     executedCount++;
@@ -600,7 +599,7 @@ contract CollectiveGovernance is Governance, VoteStrategy, ERC165 {
                     uint256 scheduleTime,
                     bytes32 txHash
                 ) = _storage.getTransaction(_proposalId, tid);
-                if (txHash.length > 0 && _timeLock._queuedTransaction(txHash)) {
+                if (txHash.length > 0 && _timeLock.queuedTransaction(txHash)) {
                     _timeLock.cancelTransaction(target, value, signature, _calldata, scheduleTime);
                 }
             }
@@ -699,13 +698,6 @@ contract CollectiveGovernance is Governance, VoteStrategy, ERC165 {
 
     function min(uint256 a, uint256 b) internal pure returns (uint256) {
         if (a < b) {
-            return a;
-        }
-        return b;
-    }
-
-    function max(uint256 a, uint256 b) internal pure returns (uint256) {
-        if (a > b) {
             return a;
         }
         return b;

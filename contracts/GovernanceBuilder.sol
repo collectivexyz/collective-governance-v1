@@ -186,18 +186,13 @@ contract GovernanceBuilder is GovernanceCreator, ERC165 {
     function build() external returns (address payable) {
         address _creator = msg.sender;
         GovernanceProperties storage _properties = _buildMap[_creator];
-        require(address(_properties.class) != address(_voterClassNull), "Voter class required");
-        require(_properties.minimumVoteDuration >= Constant.MINIMUM_VOTE_DURATION, "Longer minimum duration required");
-        Storage _storage = StorageFactory.create(
-            _properties.class,
-            _properties.minimumProjectQuorum,
-            _properties.minimumVoteDelay,
-            _properties.minimumVoteDuration
-        );
+        Storage _storage = createStorage(_properties);
+        TimeLocker _timeLock = createTimelock(_storage);
         Governance _governance = CollectiveGovernanceFactory.create(
             _properties.supervisorList,
             _properties.class,
             _storage,
+            _timeLock,
             _properties.maxGasUsed,
             _properties.maxBaseFee,
             _properties.name,
@@ -205,6 +200,7 @@ contract GovernanceBuilder is GovernanceCreator, ERC165 {
             _properties.description
         );
         address payable _governanceAddress = payable(address(_governance));
+        transferOwnership(_timeLock, _governanceAddress);
         transferOwnership(_storage, _governanceAddress);
         _governanceContractRegistered[_governanceAddress] = true;
         emit GovernanceContractCreated(_creator, _properties.name, address(_storage), _governanceAddress);
@@ -241,9 +237,34 @@ contract GovernanceBuilder is GovernanceCreator, ERC165 {
         return Constant.VERSION_1;
     }
 
+    function transferOwnership(TimeLocker _timeLock, address _targetOwner) private {
+        Ownable _ownableStorage = Ownable(address(_timeLock));
+        _ownableStorage.transferOwnership(_targetOwner);
+    }
+
     function transferOwnership(Storage _storage, address _targetOwner) private {
         Ownable _ownableStorage = Ownable(address(_storage));
         _ownableStorage.transferOwnership(_targetOwner);
+    }
+
+    function createTimelock(Storage _storage) private returns (TimeLocker) {
+        uint256 _timeLockDelay = max(_storage.minimumVoteDuration(), Constant.TIMELOCK_MINIMUM_DELAY);
+        TimeLocker _timeLock = new TimeLock(_timeLockDelay);
+        emit TimeLockCreated(address(_timeLock), _timeLockDelay);
+        return _timeLock;
+    }
+
+    function createStorage(GovernanceProperties storage _properties) private returns (Storage) {
+        require(address(_properties.class) != address(_voterClassNull), "Voter class required");
+        require(_properties.minimumVoteDuration >= Constant.MINIMUM_VOTE_DURATION, "Longer minimum duration required");
+        Storage _storage = StorageFactory.create(
+            _properties.class,
+            _properties.minimumProjectQuorum,
+            _properties.minimumVoteDelay,
+            _properties.minimumVoteDuration
+        );
+        emit StorageCreated(address(_storage));
+        return _storage;
     }
 
     function clear(address sender) internal {
@@ -258,5 +279,12 @@ contract GovernanceBuilder is GovernanceCreator, ERC165 {
         _properties.name = "";
         _properties.url = "";
         _properties.description = "";
+    }
+
+    function max(uint256 a, uint256 b) internal pure returns (uint256) {
+        if (a > b) {
+            return a;
+        }
+        return b;
     }
 }

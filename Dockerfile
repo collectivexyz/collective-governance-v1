@@ -1,4 +1,4 @@
-FROM ghcr.io/momentranks/foundry:latest
+FROM ghcr.io/collectivexyz/foundry:latest
 
 ARG PROJECT=collective-governance-v1
 WORKDIR /workspaces/${PROJECT}

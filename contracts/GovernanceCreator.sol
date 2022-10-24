@@ -72,16 +72,33 @@ interface GovernanceCreator is IERC165 {
     /// @notice add description
     event GovernanceContractWithDescription(address creator, string description);
 
+    /// @notice The timelock created
+    event TimeLockCreated(address timeLock, uint256 lockTime);
+
+    /// @notice The storage
+    event StorageCreated(address _storage);
+
+    /// @notice settings state used by builder for creating Governance contract
     struct GovernanceProperties {
+        /// @notice community name
         bytes32 name;
+        /// @notice community url
         string url;
+        /// @notice community description
         string description;
+        /// @notice minimum allowed vote delay
         uint256 minimumVoteDelay;
+        /// @notice minimum allowed vote duration
         uint256 minimumVoteDuration;
+        /// @notice minimum allowed quorum
         uint256 minimumProjectQuorum;
+        /// @notice max gas used for refund
         uint256 maxGasUsed;
+        /// @notice max base fee for refund
         uint256 maxBaseFee;
+        /// @notice array of supervisors
         address[] supervisorList;
+        /// @notice voting class
         VoterClass class;
     }
 

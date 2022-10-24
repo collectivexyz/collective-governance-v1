@@ -109,6 +109,12 @@ contract TimeLockTest is Test {
         assertEq(txHash, 0xfb5a0fa7bd3bcd62232b1089ddbf45e63aa6d00e6cdf09f48ce3bb8d034746a2);
     }
 
+    function testQueuedTransactionGetterHash() public {
+        vm.prank(_OWNER);
+        bytes32 txHash = _timeLock.queueTransaction(_FUNCTION, 7, "abc", "data", block.timestamp + _WEEK_DELAY);
+        assertTrue(_timeLock.queuedTransaction(txHash));
+    }
+
     function testQueueTransactionDoubleQueue() public {
         vm.prank(_OWNER);
         bytes32 txHash = _timeLock.queueTransaction(_FUNCTION, 7, "abc", "data", block.timestamp + _WEEK_DELAY);

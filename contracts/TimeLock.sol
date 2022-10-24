@@ -202,14 +202,23 @@ contract TimeLock is TimeLocker, Ownable {
         return txHash;
     }
 
-    function setQueue(bytes32 txHash) private {
-        _queuedTransaction[txHash] = true;
+    /**
+     * @notice get a queued transaction
+     * @param _txHash Transaction hash to check
+     * @return bool True if transaction is queued and false otherwise
+     */
+    function queuedTransaction(bytes32 _txHash) external view returns (bool) {
+        return _queuedTransaction[_txHash];
     }
 
-    function clearQueue(bytes32 txHash) private {
+    function setQueue(bytes32 _txHash) private {
+        _queuedTransaction[_txHash] = true;
+    }
+
+    function clearQueue(bytes32 _txHash) private {
         // overwrite memory to protect against value rebinding
-        _queuedTransaction[txHash] = false;
-        delete _queuedTransaction[txHash];
+        _queuedTransaction[_txHash] = false;
+        delete _queuedTransaction[_txHash];
     }
 
     function getBlockTimestamp() internal view returns (uint256) {

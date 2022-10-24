@@ -52,8 +52,6 @@ import "@openzeppelin/contracts/interfaces/IERC165.sol";
 interface Governance is IERC165 {
     error NotPermitted(address sender);
 
-    /// @notice The timelock requirement
-    event TimeLockCreated(address timeLock, uint256 lockTime);
     /// @notice A new proposal was created
     event ProposalCreated(address sender, uint256 proposalId);
     /// @notice transaction attached to proposal

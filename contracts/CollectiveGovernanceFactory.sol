@@ -59,6 +59,7 @@ library CollectiveGovernanceFactory {
     /// @param _supervisorList the list of supervisors for this project
     /// @param _class the VoterClass for this project
     /// @param _storage The storage contract for this governance
+    /// @param _timeLock The timelock for the contract
     /// @param _gasUsedRefund The maximum refund for gas used
     /// @param _baseFeeRefund The maximum base fee refund
     /// @param _name The community name
@@ -68,6 +69,7 @@ library CollectiveGovernanceFactory {
         address[] memory _supervisorList,
         VoterClass _class,
         Storage _storage,
+        TimeLocker _timeLock,
         uint256 _gasUsedRefund,
         uint256 _baseFeeRefund,
         bytes32 _name,
@@ -78,6 +80,7 @@ library CollectiveGovernanceFactory {
             _supervisorList,
             _class,
             _storage,
+            _timeLock,
             _gasUsedRefund,
             _baseFeeRefund,
             _name,
