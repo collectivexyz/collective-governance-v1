@@ -1,5 +1,16 @@
 [
   {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "sender",
+        "type": "address"
+      }
+    ],
+    "name": "NotPermitted",
+    "type": "error"
+  },
+  {
     "anonymous": false,
     "inputs": [
       {
@@ -223,17 +234,48 @@
       {
         "indexed": false,
         "internalType": "address",
-        "name": "timeLock",
+        "name": "sender",
         "type": "address"
       },
       {
         "indexed": false,
         "internalType": "uint256",
-        "name": "lockTime",
+        "name": "transfer",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "totalFund",
         "type": "uint256"
       }
     ],
-    "name": "TimeLockCreated",
+    "name": "RebateFund",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "recipient",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "refund",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "gasPaid",
+        "type": "uint256"
+      }
+    ],
+    "name": "RebatePaid",
     "type": "event"
   },
   {
