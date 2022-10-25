@@ -44,6 +44,7 @@
 pragma solidity ^0.8.15;
 
 import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
+import "@openzeppelin/contracts/utils/math/Math.sol";
 import "@openzeppelin/contracts/interfaces/IERC165.sol";
 
 import "../contracts/Constant.sol";
@@ -169,11 +170,11 @@ contract GovernanceBuilder is GovernanceCreator, ERC165 {
         return this;
     }
 
-    /// @notice setup gas refund parameters
-    /// @param _gasUsed the maximum gas used for refund
-    /// @param _baseFee the maximum base fee for refund
+    /// @notice setup gas rebate parameters
+    /// @param _gasUsed the maximum gas used for rebate
+    /// @param _baseFee the maximum base fee for rebate
     /// @return GovernanceCreator this contract
-    function withGasRefund(uint256 _gasUsed, uint256 _baseFee) external returns (GovernanceCreator) {
+    function withGasRebate(uint256 _gasUsed, uint256 _baseFee) external returns (GovernanceCreator) {
         GovernanceProperties storage _properties = _buildMap[msg.sender];
         _properties.maxGasUsed = _gasUsed;
         _properties.maxBaseFee = _baseFee;
@@ -248,7 +249,7 @@ contract GovernanceBuilder is GovernanceCreator, ERC165 {
     }
 
     function createTimelock(Storage _storage) private returns (TimeLocker) {
-        uint256 _timeLockDelay = max(_storage.minimumVoteDuration(), Constant.TIMELOCK_MINIMUM_DELAY);
+        uint256 _timeLockDelay = Math.max(_storage.minimumVoteDuration(), Constant.TIMELOCK_MINIMUM_DELAY);
         TimeLocker _timeLock = new TimeLock(_timeLockDelay);
         emit TimeLockCreated(address(_timeLock), _timeLockDelay);
         return _timeLock;
@@ -274,17 +275,10 @@ contract GovernanceBuilder is GovernanceCreator, ERC165 {
         _properties.minimumVoteDelay = Constant.MINIMUM_VOTE_DELAY;
         _properties.minimumVoteDuration = Constant.MINIMUM_VOTE_DURATION;
         _properties.minimumProjectQuorum = Constant.MINIMUM_PROJECT_QUORUM;
-        _properties.maxGasUsed = Constant.MAXIMUM_REFUND_GAS_USED;
-        _properties.maxBaseFee = Constant.MAXIMUM_REFUND_BASE_FEE;
+        _properties.maxGasUsed = Constant.MAXIMUM_REBATE_GAS_USED;
+        _properties.maxBaseFee = Constant.MAXIMUM_REBATE_BASE_FEE;
         _properties.name = "";
         _properties.url = "";
         _properties.description = "";
-    }
-
-    function max(uint256 a, uint256 b) internal pure returns (uint256) {
-        if (a > b) {
-            return a;
-        }
-        return b;
     }
 }

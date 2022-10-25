@@ -175,34 +175,34 @@ contract GovernanceBuilderTest is Test {
         assertEq(gov.description(), desc);
     }
 
-    function testWithGasRefund() public {
+    function testWithGasRebate() public {
         VoterClass _class = new VoterClassNullObject();
         address _governance = _builder
             .aGovernance()
-            .withGasRefund(Constant.MAXIMUM_REFUND_GAS_USED + 0x7, Constant.MAXIMUM_REFUND_BASE_FEE + 0x13)
+            .withGasRebate(Constant.MAXIMUM_REBATE_GAS_USED + 0x7, Constant.MAXIMUM_REBATE_BASE_FEE + 0x13)
             .withSupervisor(_SUPERVISOR)
             .withVoterClass(_class)
             .build();
         CollectiveGovernance _gov = CollectiveGovernance(payable(_governance));
-        assertEq(_gov._maximumGasUsedRefund(), Constant.MAXIMUM_REFUND_GAS_USED + 0x7);
-        assertEq(_gov._maximumBaseFeeRefund(), Constant.MAXIMUM_REFUND_BASE_FEE + 0x13);
+        assertEq(_gov._maximumGasUsedRebate(), Constant.MAXIMUM_REBATE_GAS_USED + 0x7);
+        assertEq(_gov._maximumBaseFeeRebate(), Constant.MAXIMUM_REBATE_BASE_FEE + 0x13);
     }
 
-    function testFailWithGasRefundGasUsedBelowMinimumRequired() public {
+    function testFailWithGasRebateGasUsedBelowMinimumRequired() public {
         VoterClass _class = new VoterClassNullObject();
         _builder
             .aGovernance()
-            .withGasRefund(Constant.MAXIMUM_REFUND_GAS_USED - 0x1, Constant.MAXIMUM_REFUND_BASE_FEE)
+            .withGasRebate(Constant.MAXIMUM_REBATE_GAS_USED - 0x1, Constant.MAXIMUM_REBATE_BASE_FEE)
             .withSupervisor(_SUPERVISOR)
             .withVoterClass(_class)
             .build();
     }
 
-    function testFailWithGasRefundBaseFeeBelowMinimumRequired() public {
+    function testFailWithGasRebateBaseFeeBelowMinimumRequired() public {
         VoterClass _class = new VoterClassNullObject();
         _builder
             .aGovernance()
-            .withGasRefund(Constant.MAXIMUM_REFUND_GAS_USED, Constant.MAXIMUM_REFUND_BASE_FEE - 0x1)
+            .withGasRebate(Constant.MAXIMUM_REBATE_GAS_USED, Constant.MAXIMUM_REBATE_BASE_FEE - 0x1)
             .withSupervisor(_SUPERVISOR)
             .withVoterClass(_class)
             .build();

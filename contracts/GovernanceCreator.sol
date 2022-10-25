@@ -92,9 +92,9 @@ interface GovernanceCreator is IERC165 {
         uint256 minimumVoteDuration;
         /// @notice minimum allowed quorum
         uint256 minimumProjectQuorum;
-        /// @notice max gas used for refund
+        /// @notice max gas used for rebate
         uint256 maxGasUsed;
-        /// @notice max base fee for refund
+        /// @notice max base fee for rebate
         uint256 maxBaseFee;
         /// @notice array of supervisors
         address[] supervisorList;
@@ -163,11 +163,11 @@ interface GovernanceCreator is IERC165 {
     /// @return GovernanceCreator this contract
     function withDescription(string memory _descritpion) external returns (GovernanceCreator);
 
-    /// @notice setup gas refund parameters
-    /// @param _gasUsed the maximum gas used for refund
-    /// @param _baseFee the maximum base fee for refund
+    /// @notice setup gas rebate parameters
+    /// @param _gasUsed the maximum gas used for rebate
+    /// @param _baseFee the maximum base fee for rebate
     /// @return GovernanceCreator this contract
-    function withGasRefund(uint256 _gasUsed, uint256 _baseFee) external returns (GovernanceCreator);
+    function withGasRebate(uint256 _gasUsed, uint256 _baseFee) external returns (GovernanceCreator);
 
     /// @notice build the specified contract
     /// @dev Contructs a new contract and may require a large gas fee.  Build does not reinitialize context.

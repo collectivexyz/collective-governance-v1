@@ -92,8 +92,8 @@ interface Governance is IERC165 {
     event ProposalVeto(uint256 proposalId, address sender);
     /// @notice The contract has been funded to provide gas rebates
     event RebateFund(address sender, uint256 transfer, uint256 totalFund);
-    /// @notice Gas Rebate payment
-    event RebatePaid(address recipient, uint256 refund, uint256 gasPaid);
+    /// @notice Gas rebate payment
+    event RebatePaid(address recipient, uint256 rebate, uint256 gasPaid);
 
     /// @notice propose a vote for the community
     /// @return uint256 The id of the new proposal

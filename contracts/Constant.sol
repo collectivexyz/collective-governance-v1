@@ -74,13 +74,13 @@ library Constant {
     uint256 public constant STRING_DATA_LIMIT = 1024;
 
     /// @notice The maximum priority fee
-    uint256 public constant MAXIMUM_REFUND_PRIORITY_FEE = 2 gwei;
-    /// @notice The vote refund gas overhead, including 7K for ETH transfer and 29K for general transaction overhead
-    uint256 public constant REFUND_BASE_GAS = 36000;
-    /// @notice The maximum refundable gas fee
-    uint256 public constant MAXIMUM_REFUND_GAS_USED = 200_000;
-    /// @notice the maximum allowed gas rebate parameterization
-    uint256 public constant MAXIMUM_REFUND_BASE_FEE = 200 gwei;
+    uint256 public constant MAXIMUM_REBATE_PRIORITY_FEE = 2 gwei;
+    /// @notice The vote rebate gas overhead, including 7K for ETH transfer and 29K for general transaction overhead
+    uint256 public constant REBATE_BASE_GAS = 36000;
+    /// @notice The maximum refundable gas used
+    uint256 public constant MAXIMUM_REBATE_GAS_USED = 200_000;
+    /// @notice the maximum allowed gas fee for rebate
+    uint256 public constant MAXIMUM_REBATE_BASE_FEE = 200 gwei;
 
     uint32 public constant VERSION_1 = 1;
 

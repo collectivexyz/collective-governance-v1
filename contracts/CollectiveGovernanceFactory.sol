@@ -60,8 +60,8 @@ library CollectiveGovernanceFactory {
     /// @param _class the VoterClass for this project
     /// @param _storage The storage contract for this governance
     /// @param _timeLock The timelock for the contract
-    /// @param _gasUsedRefund The maximum refund for gas used
-    /// @param _baseFeeRefund The maximum base fee refund
+    /// @param _gasUsedRebate The maximum rebate for gas used
+    /// @param _baseFeeRebate The maximum base fee rebate
     /// @param _name The community name
     /// @param _url The Url for this project
     /// @param _description The community description
@@ -70,8 +70,8 @@ library CollectiveGovernanceFactory {
         VoterClass _class,
         Storage _storage,
         TimeLocker _timeLock,
-        uint256 _gasUsedRefund,
-        uint256 _baseFeeRefund,
+        uint256 _gasUsedRebate,
+        uint256 _baseFeeRebate,
         bytes32 _name,
         string memory _url,
         string memory _description
@@ -81,8 +81,8 @@ library CollectiveGovernanceFactory {
             _class,
             _storage,
             _timeLock,
-            _gasUsedRefund,
-            _baseFeeRefund,
+            _gasUsedRebate,
+            _baseFeeRebate,
             _name,
             _url,
             _description

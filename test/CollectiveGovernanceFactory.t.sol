@@ -41,8 +41,8 @@ contract CollectiveGovernanceFactoryTest is Test {
             _class,
             _storage,
             _timeLock,
-            Constant.MAXIMUM_REFUND_GAS_USED,
-            Constant.MAXIMUM_REFUND_BASE_FEE,
+            Constant.MAXIMUM_REBATE_GAS_USED,
+            Constant.MAXIMUM_REBATE_BASE_FEE,
             "",
             TestData.pi1kplus(),
             ""
@@ -55,8 +55,8 @@ contract CollectiveGovernanceFactoryTest is Test {
             _class,
             _storage,
             _timeLock,
-            Constant.MAXIMUM_REFUND_GAS_USED,
-            Constant.MAXIMUM_REFUND_BASE_FEE,
+            Constant.MAXIMUM_REBATE_GAS_USED,
+            Constant.MAXIMUM_REBATE_BASE_FEE,
             "",
             "",
             TestData.pi1kplus()
@@ -69,8 +69,8 @@ contract CollectiveGovernanceFactoryTest is Test {
             _class,
             _storage,
             _timeLock,
-            Constant.MAXIMUM_REFUND_GAS_USED,
-            Constant.MAXIMUM_REFUND_BASE_FEE,
+            Constant.MAXIMUM_REBATE_GAS_USED,
+            Constant.MAXIMUM_REBATE_BASE_FEE,
             "",
             "",
             ""
@@ -83,8 +83,8 @@ contract CollectiveGovernanceFactoryTest is Test {
             _class,
             _storage,
             _timeLock,
-            Constant.MAXIMUM_REFUND_GAS_USED - 1,
-            Constant.MAXIMUM_REFUND_BASE_FEE,
+            Constant.MAXIMUM_REBATE_GAS_USED - 1,
+            Constant.MAXIMUM_REBATE_BASE_FEE,
             "",
             "",
             ""
@@ -97,8 +97,8 @@ contract CollectiveGovernanceFactoryTest is Test {
             _class,
             _storage,
             _timeLock,
-            Constant.MAXIMUM_REFUND_GAS_USED,
-            Constant.MAXIMUM_REFUND_BASE_FEE - 1,
+            Constant.MAXIMUM_REBATE_GAS_USED,
+            Constant.MAXIMUM_REBATE_BASE_FEE - 1,
             "",
             "",
             ""
@@ -111,8 +111,8 @@ contract CollectiveGovernanceFactoryTest is Test {
             _class,
             _storage,
             _timeLock,
-            Constant.MAXIMUM_REFUND_GAS_USED,
-            Constant.MAXIMUM_REFUND_BASE_FEE,
+            Constant.MAXIMUM_REBATE_GAS_USED,
+            Constant.MAXIMUM_REBATE_BASE_FEE,
             "",
             "",
             ""
@@ -120,20 +120,20 @@ contract CollectiveGovernanceFactoryTest is Test {
         assertTrue(governance.supportsInterface(type(Governance).interfaceId));
     }
 
-    function testCreateNewGovernanceGasRefund() public {
+    function testCreateNewGovernanceGasRebate() public {
         Governance governance = CollectiveGovernanceFactory.create(
             _supervisorList,
             _class,
             _storage,
             _timeLock,
-            Constant.MAXIMUM_REFUND_GAS_USED + 1,
-            Constant.MAXIMUM_REFUND_BASE_FEE + 7,
+            Constant.MAXIMUM_REBATE_GAS_USED + 1,
+            Constant.MAXIMUM_REBATE_BASE_FEE + 7,
             "",
             "",
             ""
         );
         CollectiveGovernance cGovernance = CollectiveGovernance(payable(address(governance)));
-        assertEq(cGovernance._maximumGasUsedRefund(), Constant.MAXIMUM_REFUND_GAS_USED + 1);
-        assertEq(cGovernance._maximumBaseFeeRefund(), Constant.MAXIMUM_REFUND_BASE_FEE + 7);
+        assertEq(cGovernance._maximumGasUsedRebate(), Constant.MAXIMUM_REBATE_GAS_USED + 1);
+        assertEq(cGovernance._maximumBaseFeeRebate(), Constant.MAXIMUM_REBATE_BASE_FEE + 7);
     }
 }

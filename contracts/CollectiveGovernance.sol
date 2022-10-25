@@ -44,6 +44,7 @@
 pragma solidity ^0.8.15;
 
 import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
+import "@openzeppelin/contracts/utils/math/Math.sol";
 
 import "../contracts/Storage.sol";
 import "../contracts/Governance.sol";
@@ -78,9 +79,9 @@ contract CollectiveGovernance is Governance, VoteStrategy, ERC165 {
 
     address[] private _communitySupervisorList;
 
-    uint256 public immutable _maximumGasUsedRefund;
+    uint256 public immutable _maximumGasUsedRebate;
 
-    uint256 public immutable _maximumBaseFeeRefund;
+    uint256 public immutable _maximumBaseFeeRebate;
 
     bytes32 public immutable _communityName;
 
@@ -92,13 +93,13 @@ contract CollectiveGovernance is Governance, VoteStrategy, ERC165 {
     mapping(uint256 => bool) private isVoteOpenByProposalId;
 
     /// @notice create a new collective governance contract
-    /// @dev This should be invoked through the GovernanceBuilder.  Gas refund
+    /// @dev This should be invoked through the GovernanceBuilder.  Gas Rebate
     /// is contingent on contract being funded through a transfer.
     /// @param _supervisorList the list of supervisors for this project
     /// @param _class the VoterClass for this project
     /// @param _governanceStorage The storage contract for this governance
-    /// @param _gasUsedRefund The maximum refund for gas used
-    /// @param _baseFeeRefund The maximum base fee refund
+    /// @param _gasUsedRebate The maximum rebate for gas used
+    /// @param _baseFeeRebate The maximum base fee rebate
     /// @param _name The community name
     /// @param _url The Url for this project
     /// @param _description The community description
@@ -108,8 +109,8 @@ contract CollectiveGovernance is Governance, VoteStrategy, ERC165 {
         VoterClass _class,
         Storage _governanceStorage,
         TimeLocker _timeLocker,
-        uint256 _gasUsedRefund,
-        uint256 _baseFeeRefund,
+        uint256 _gasUsedRebate,
+        uint256 _baseFeeRebate,
         bytes32 _name,
         string memory _url,
         string memory _description
@@ -117,15 +118,15 @@ contract CollectiveGovernance is Governance, VoteStrategy, ERC165 {
         require(_supervisorList.length > 0, "Supervisor required");
         require(Constant.len(_url) <= Constant.STRING_DATA_LIMIT, "Url too large");
         require(Constant.len(_description) <= Constant.STRING_DATA_LIMIT, "Description too large");
-        require(_gasUsedRefund >= Constant.MAXIMUM_REFUND_GAS_USED, "Insufficient gas used refund");
-        require(_baseFeeRefund >= Constant.MAXIMUM_REFUND_BASE_FEE, "Insufficient base fee refund");
+        require(_gasUsedRebate >= Constant.MAXIMUM_REBATE_GAS_USED, "Insufficient gas used rebate");
+        require(_baseFeeRebate >= Constant.MAXIMUM_REBATE_BASE_FEE, "Insufficient base fee rebate");
 
         _voterClass = _class;
         _storage = _governanceStorage;
         _timeLock = _timeLocker;
         _communitySupervisorList = _supervisorList;
-        _maximumGasUsedRefund = _gasUsedRefund;
-        _maximumBaseFeeRefund = _baseFeeRefund;
+        _maximumGasUsedRebate = _gasUsedRebate;
+        _maximumBaseFeeRebate = _baseFeeRebate;
         _communityName = _name;
         _communityUrl = _url;
         _communityDescription = _description;
@@ -677,14 +678,21 @@ contract CollectiveGovernance is Governance, VoteStrategy, ERC165 {
         if (balance == 0) {
             return;
         }
+        // determine rebate and transfer
+        (uint256 rebate, uint256 gasUsed) = calculateGasRebate(startGas, balance);
+        payable(recipient).transfer(rebate);
+        emit RebatePaid(recipient, rebate, gasUsed);
+    }
+
+    function calculateGasRebate(uint256 startGas, uint256 balance) private view returns (uint256 rebate, uint256 gasUsed) {
+        uint256 permittedBaseFee = Math.min(block.basefee, _maximumBaseFeeRebate);
+        uint256 permittedGasPrice = Math.min(tx.gasprice, permittedBaseFee + Constant.MAXIMUM_REBATE_PRIORITY_FEE);
 
         uint256 totalGasUsed = startGas - gasleft();
-        uint256 basefee = min(block.basefee, _maximumBaseFeeRefund);
-        uint256 gasPrice = min(tx.gasprice, basefee + Constant.MAXIMUM_REFUND_PRIORITY_FEE);
-        uint256 gasUsed = min(totalGasUsed + Constant.REFUND_BASE_GAS, _maximumGasUsedRefund);
-        uint256 rebateQuantity = min(gasPrice * gasUsed, balance);
-        payable(recipient).transfer(rebateQuantity);
-        emit RebatePaid(recipient, rebateQuantity, totalGasUsed);
+
+        uint256 gasUsedForRebate = Math.min(totalGasUsed + Constant.REBATE_BASE_GAS, _maximumGasUsedRebate);
+        uint256 rebateQuantity = Math.min(permittedGasPrice * gasUsedForRebate, balance);
+        return (rebateQuantity, totalGasUsed);
     }
 
     function getBlockTimestamp() internal view returns (uint256) {
@@ -694,12 +702,5 @@ contract CollectiveGovernance is Governance, VoteStrategy, ERC165 {
 
     function getRebateBalance() internal view returns (uint256) {
         return address(this).balance;
-    }
-
-    function min(uint256 a, uint256 b) internal pure returns (uint256) {
-        if (a < b) {
-            return a;
-        }
-        return b;
     }
 }

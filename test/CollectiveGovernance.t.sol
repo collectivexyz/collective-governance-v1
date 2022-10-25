@@ -1376,7 +1376,7 @@ contract CollectiveGovernanceTest is Test {
         vm.prank(_VOTER1, _VOTER1);
         governance.voteFor(PROPOSAL_ID, TOKEN_ID1);
         assertTrue(_VOTER1.balance > 0);
-        assertEq(_VOTER1.balance, 8599396 gwei);
+        assertApproxEqAbs(_VOTER1.balance, 8604908 gwei, 500 gwei);
     }
 
     function testCastAgainstVoteWithRefund() public {
@@ -1393,10 +1393,10 @@ contract CollectiveGovernanceTest is Test {
         vm.prank(_VOTER1, _VOTER1);
         governance.voteAgainst(PROPOSAL_ID, TOKEN_ID1);
         assertTrue(_VOTER1.balance > 0);
-        assertEq(_VOTER1.balance, 7504536 gwei);
+        assertApproxEqAbs(_VOTER1.balance, 7510048 gwei, 500 gwei);
     }
 
-    function testCastAbstainVoteWithRefund() public {
+    function testAbstainWithRefund() public {
         vm.fee(50 gwei);
 
         vm.deal(_OWNER, 1 ether);
@@ -1410,7 +1410,7 @@ contract CollectiveGovernanceTest is Test {
         vm.prank(_VOTER1, _VOTER1);
         governance.abstainFrom(PROPOSAL_ID, TOKEN_ID1);
         assertTrue(_VOTER1.balance > 0);
-        assertEq(_VOTER1.balance, 8522748 gwei);
+        assertApproxEqAbs(_VOTER1.balance, 8528260 gwei, 500 gwei);
     }
 
     function testVoteAndUndoWithRefund() public {
@@ -1430,7 +1430,7 @@ contract CollectiveGovernanceTest is Test {
         governance.undoVote(PROPOSAL_ID, TOKEN_ID1);
         vm.stopPrank();
         assertTrue(_VOTER1.balance > 0);
-        assertEq(_VOTER1.balance, 11905244 gwei);
+        assertApproxEqAbs(_VOTER1.balance, 11916268 gwei, 500 gwei);
     }
 
     function testCastVoteWithMaximumRefund() public {
@@ -1447,9 +1447,9 @@ contract CollectiveGovernanceTest is Test {
         vm.prank(_VOTER1, _VOTER1);
         governance.voteFor(PROPOSAL_ID, TOKEN_ID1);
         assertTrue(_VOTER1.balance > 0);
-        uint256 expectRefund = 16702673 gwei;
-        assertEq(_VOTER1.balance, expectRefund);
-        assertEq(_governanceAddress.balance, 1 ether - expectRefund);
+        uint256 expectRefund = 16713379 gwei;
+        assertApproxEqAbs(_VOTER1.balance, expectRefund, 500 gwei);
+        assertApproxEqAbs(_governanceAddress.balance, 1 ether - expectRefund, 500 gwei);
     }
 
     function mintTokens() private returns (IERC721) {
