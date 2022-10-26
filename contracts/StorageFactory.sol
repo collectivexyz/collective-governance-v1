@@ -48,7 +48,7 @@ import "../contracts/GovernanceStorage.sol";
 /**
  * @title CollectiveStorage creational contract
  */
-library StorageFactory {
+contract StorageFactory {
     event StorageCreated(address _storage, address _owner);
 
     /// @notice create a new storage object with VoterClass as the voting population
@@ -64,6 +64,7 @@ library StorageFactory {
         uint256 _minimumDuration
     ) external returns (Storage) {
         GovernanceStorage _storage = new GovernanceStorage(_class, _minimumQuorum, _minimumDelay, _minimumDuration);
+        _storage.transferOwnership(msg.sender);
         emit StorageCreated(address(_storage), msg.sender);
         return _storage;
     }

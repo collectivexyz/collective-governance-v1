@@ -53,7 +53,7 @@ import "../contracts/CollectiveGovernance.sol";
  * CollectiveGovernance in the Builder.  The GovernanceBuilder should be preferred for creating a new
  * instance of the contract.
  */
-library CollectiveGovernanceFactory {
+contract CollectiveGovernanceFactory {
     /// @notice create a new collective governance contract
     /// @dev this should be invoked through the GovernanceBuilder
     /// @param _supervisorList the list of supervisors for this project

@@ -11,15 +11,17 @@ import "../contracts/VoterClassFactory.sol";
 
 contract StorageFactoryTest is Test {
     VoterClass private _class;
+    StorageFactory private _storageFactory;
 
     function setUp() public {
         VoterClassCreator _vcCreator = new VoterClassFactory();
         address vcAddress = _vcCreator.createOpenVote(1);
         _class = VoterClass(vcAddress);
+        _storageFactory = new StorageFactory();
     }
 
     function testSetupNewStorage() public {
-        Storage _storage = StorageFactory.create(
+        Storage _storage = _storageFactory.create(
             _class,
             Constant.MINIMUM_PROJECT_QUORUM,
             Constant.MINIMUM_VOTE_DELAY,
@@ -29,7 +31,7 @@ contract StorageFactoryTest is Test {
     }
 
     function testIsStorageOwner() public {
-        Storage _storage = StorageFactory.create(
+        Storage _storage = _storageFactory.create(
             _class,
             Constant.MINIMUM_PROJECT_QUORUM,
             Constant.MINIMUM_VOTE_DELAY,

@@ -33,17 +33,19 @@ contract GovernanceStorageTest is Test {
 
     address private immutable _cognate = address(this);
 
+    StorageFactory private _storageFactory;
     Storage private _storage;
     VoteStrategy private _strategy;
 
     function setUp() public {
         vm.clearMockedCalls();
+        _storageFactory = new StorageFactory();
         VoterClassVoterPool _voterClass = new VoterClassVoterPool(1);
         _voterClass.addVoter(_VOTER1);
         _voterClass.addVoter(_VOTER2);
         _voterClass.addVoter(_VOTER3);
         _voterClass.makeFinal();
-        _storage = StorageFactory.create(
+        _storage = _storageFactory.create(
             _voterClass,
             Constant.MINIMUM_PROJECT_QUORUM,
             Constant.MINIMUM_VOTE_DELAY,
@@ -56,7 +58,7 @@ contract GovernanceStorageTest is Test {
         VoterClassVoterPool _voterClass = new VoterClassVoterPool(1);
         _voterClass.addVoter(_VOTER1);
         _voterClass.makeFinal();
-        _storage = StorageFactory.create(_voterClass, Constant.MINIMUM_PROJECT_QUORUM, 333, Constant.MINIMUM_VOTE_DURATION);
+        _storage = _storageFactory.create(_voterClass, Constant.MINIMUM_PROJECT_QUORUM, 333, Constant.MINIMUM_VOTE_DURATION);
         assertEq(_storage.minimumVoteDelay(), 333);
     }
 
@@ -64,7 +66,7 @@ contract GovernanceStorageTest is Test {
         VoterClassVoterPool _voterClass = new VoterClassVoterPool(1);
         _voterClass.addVoter(_VOTER1);
         _voterClass.makeFinal();
-        _storage = StorageFactory.create(_voterClass, Constant.MINIMUM_PROJECT_QUORUM, Constant.MINIMUM_VOTE_DELAY, 22 days);
+        _storage = _storageFactory.create(_voterClass, Constant.MINIMUM_PROJECT_QUORUM, Constant.MINIMUM_VOTE_DELAY, 22 days);
         assertEq(_storage.minimumVoteDuration(), 22 days);
     }
 
@@ -72,7 +74,7 @@ contract GovernanceStorageTest is Test {
         VoterClassVoterPool _voterClass = new VoterClassVoterPool(1);
         _voterClass.addVoter(_VOTER1);
         _voterClass.makeFinal();
-        _storage = StorageFactory.create(_voterClass, 11111, Constant.MINIMUM_VOTE_DELAY, Constant.MINIMUM_VOTE_DURATION);
+        _storage = _storageFactory.create(_voterClass, 11111, Constant.MINIMUM_VOTE_DELAY, Constant.MINIMUM_VOTE_DURATION);
         assertEq(_storage.minimumProjectQuorum(), 11111);
     }
 

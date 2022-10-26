@@ -19,12 +19,13 @@ contract CollectiveGovernanceFactoryTest is Test {
     Storage private _storage;
     TimeLocker private _timeLock;
     address[] private _supervisorList;
+    CollectiveGovernanceFactory private _governanceFactory;
 
     function setUp() public {
         VoterClassCreator _vcCreator = new VoterClassFactory();
         address vcAddress = _vcCreator.createOpenVote(1);
         _class = VoterClass(vcAddress);
-        _storage = StorageFactory.create(
+        _storage = new StorageFactory().create(
             _class,
             Constant.MINIMUM_PROJECT_QUORUM,
             Constant.MINIMUM_VOTE_DELAY,
@@ -33,10 +34,11 @@ contract CollectiveGovernanceFactoryTest is Test {
         _timeLock = new TimeLock(Constant.TIMELOCK_MINIMUM_DELAY);
         _supervisorList = new address[](1);
         _supervisorList[0] = _OWNER;
+        _governanceFactory = new CollectiveGovernanceFactory();
     }
 
     function testFailUrlTooLarge() public {
-        CollectiveGovernanceFactory.create(
+        _governanceFactory.create(
             _supervisorList,
             _class,
             _storage,
@@ -50,7 +52,7 @@ contract CollectiveGovernanceFactoryTest is Test {
     }
 
     function testFailDescriptionTooLarge() public {
-        CollectiveGovernanceFactory.create(
+        _governanceFactory.create(
             _supervisorList,
             _class,
             _storage,
@@ -64,7 +66,7 @@ contract CollectiveGovernanceFactoryTest is Test {
     }
 
     function testFailSupervisorListIsEmpty() public {
-        CollectiveGovernanceFactory.create(
+        _governanceFactory.create(
             new address[](0),
             _class,
             _storage,
@@ -78,7 +80,7 @@ contract CollectiveGovernanceFactoryTest is Test {
     }
 
     function testFailGasUsedTooLow() public {
-        CollectiveGovernanceFactory.create(
+        _governanceFactory.create(
             _supervisorList,
             _class,
             _storage,
@@ -92,7 +94,7 @@ contract CollectiveGovernanceFactoryTest is Test {
     }
 
     function testFailBaseFeeTooLow() public {
-        CollectiveGovernanceFactory.create(
+        _governanceFactory.create(
             _supervisorList,
             _class,
             _storage,
@@ -106,7 +108,7 @@ contract CollectiveGovernanceFactoryTest is Test {
     }
 
     function testCreateNewGovernance() public {
-        Governance governance = CollectiveGovernanceFactory.create(
+        Governance governance = _governanceFactory.create(
             _supervisorList,
             _class,
             _storage,
@@ -121,7 +123,7 @@ contract CollectiveGovernanceFactoryTest is Test {
     }
 
     function testCreateNewGovernanceGasRebate() public {
-        Governance governance = CollectiveGovernanceFactory.create(
+        Governance governance = _governanceFactory.create(
             _supervisorList,
             _class,
             _storage,

@@ -63,10 +63,16 @@ contract GovernanceBuilder is GovernanceCreator, ERC165 {
     /// @dev implement the null object pattern requring voter class to be valid
     VoterClass private immutable _voterClassNull;
 
+    StorageFactory private immutable _storageFactory;
+
+    CollectiveGovernanceFactory private immutable _governanceFactory;
+
     mapping(address => bool) public _governanceContractRegistered;
 
     constructor() {
         _voterClassNull = new VoterClassNullObject();
+        _storageFactory = new StorageFactory();
+        _governanceFactory = new CollectiveGovernanceFactory();
     }
 
     /// @notice initialize and create a new builder context for this sender
@@ -189,7 +195,7 @@ contract GovernanceBuilder is GovernanceCreator, ERC165 {
         GovernanceProperties storage _properties = _buildMap[_creator];
         Storage _storage = createStorage(_properties);
         TimeLocker _timeLock = createTimelock(_storage);
-        Governance _governance = CollectiveGovernanceFactory.create(
+        Governance _governance = _governanceFactory.create(
             _properties.supervisorList,
             _properties.class,
             _storage,
@@ -258,7 +264,7 @@ contract GovernanceBuilder is GovernanceCreator, ERC165 {
     function createStorage(GovernanceProperties storage _properties) private returns (Storage) {
         require(address(_properties.class) != address(_voterClassNull), "Voter class required");
         require(_properties.minimumVoteDuration >= Constant.MINIMUM_VOTE_DURATION, "Longer minimum duration required");
-        Storage _storage = StorageFactory.create(
+        Storage _storage = _storageFactory.create(
             _properties.class,
             _properties.minimumProjectQuorum,
             _properties.minimumVoteDelay,
