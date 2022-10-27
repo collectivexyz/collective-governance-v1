@@ -43,8 +43,8 @@ Project Links
 * `GitHub`_
 * `JavaScript Reference`_
   
-.. _GitHub: https://github.com/momentranks/collective-governance-v1
-.. _JavaScript Reference: https://github.com/momentranks/collective_governance_js
+.. _GitHub: https://github.com/collectivexyz/collective-governance-v1
+.. _JavaScript Reference: https://github.com/collectivexyz/collective_governance_js
 .. _Constant: https://goerli.etherscan.io/address/0xb72FB606aF07D03f9D3075F72f7705F1148A5450
 .. _VoterClassFactory: https://goerli.etherscan.io/address/0xf5e8b52fc6d67fcd1600c23e6b4e21faedd577f3
 .. _GovernanceBuilder: https://goerli.etherscan.io/address/0x64678e5730FBcB2b587f8488915f4eFCe3b8A0B1

@@ -16,7 +16,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/momentranks/collective-governance-v1.git"
+    "url": "git+https://github.com/collectivexyz/collective-governance-v1.git"
   },
   "devDependencies": {
     "prettier": "2.7.1",
@@ -33,7 +33,7 @@
   "author": "collective",
   "license": "BSD-3-Clause",
   "bugs": {
-    "url": "https://github.com/momentranks/collective-governance-v1/issues"
+    "url": "https://github.com/collectivexyz/collective-governance-v1/issues"
   },
-  "homepage": "https://momentranks.github.io/collective-governance-v1"
+  "homepage": "https://collectivexyz.github.io/collective-governance-v1"
 }

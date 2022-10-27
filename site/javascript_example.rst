@@ -81,6 +81,6 @@ Finally just vote
     await governance.voteFor(proposalId);
 
 
-.. _GitHub: https://github.com/momentranks/collective-governance-v1
-.. _JavaScript Reference: https://github.com/momentranks/collective_governance_js
+.. _GitHub: https://github.com/collectivexyz/collective-governance-v1
+.. _JavaScript Reference: https://github.com/collectivexyz/collective_governance_js
 
