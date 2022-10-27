@@ -23,8 +23,9 @@ This smart contract enables a measure to be proposed, voted upon and successfull
 
 | Contract          | Ethereum Address | Version |
 | ----------------- | ---------------- | ------- |
-| VoterClassFactory | 0x1d93033e03da00dA6FfCbe1972dA0A1e60dA9341 | 0.8.5   |
-| GovernanceBuilder | 0xaA6E2605a1aE5CBFbceD6E8D92e976b6D449FBa4 | 0.8.5   |
+| Constant | 0xb72FB606aF07D03f9D3075F72f7705F1148A5450 | 0.9.1   |
+| VoterClassFactory | 0xf5e8b52fc6D67FcD1600c23E6B4e21faeDD577F3 | 0.9.1   |
+| GovernanceBuilder | 0x64678e5730FBcB2b587f8488915f4eFCe3b8A0B1 | 0.9.1   |
 
 ### Example deployment
 
@@ -33,7 +34,7 @@ Run forge create --contracts contracts/VoterClassFactory.sol --rpc-url ${DEVNET_
 Compiling 36 files with 0.8.17
 Solc 0.8.17 finished in 169.43s
 Compiler run successful
-Deployer: 0x6CEb0bF1f28ca4165d5C0A04f61DC733987eD6ad
+Deployer: 0xXXXXXXXXX
 Deployed to: 0x8d93427F76250773A943eE500490280149cA6bb7
 Transaction hash: 0xd5a76d8ad0ee30a780490aafba98a4294590498628b4477003a03934fb32da38
 Starting contract verification...
@@ -51,7 +52,7 @@ Contract successfully verified
 Compiling 36 files with 0.8.17
 Solc 0.8.17 finished in 169.10s
 Compiler run successful
-Deployer: 0x6CEb0bF1f28ca4165d5C0A04f61DC733987eD6ad
+Deployer: 0xXXXXXXXX
 Deployed to: 0x622d8f505bdcF4384efFD8EF9883aA37b9e358cf
 Transaction hash: 0x11029914dbca1bf905f346014b38f604ebfc8eda8c4a287d70609e42c7b07f63
 Starting contract verification...
