@@ -9,6 +9,8 @@ import "../contracts/Storage.sol";
 import "../contracts/StorageFactory.sol";
 import "../contracts/VoterClassFactory.sol";
 
+import "./TestData.sol";
+
 contract StorageFactoryTest is Test {
     VoterClass private _class;
     StorageFactory private _storageFactory;
@@ -25,7 +27,10 @@ contract StorageFactoryTest is Test {
             _class,
             Constant.MINIMUM_PROJECT_QUORUM,
             Constant.MINIMUM_VOTE_DELAY,
-            Constant.MINIMUM_VOTE_DURATION
+            Constant.MINIMUM_VOTE_DURATION,
+            "",
+            "",
+            ""
         );
         assertTrue(_storage.supportsInterface(type(Storage).interfaceId));
     }
@@ -35,9 +40,36 @@ contract StorageFactoryTest is Test {
             _class,
             Constant.MINIMUM_PROJECT_QUORUM,
             Constant.MINIMUM_VOTE_DELAY,
-            Constant.MINIMUM_VOTE_DURATION
+            Constant.MINIMUM_VOTE_DURATION,
+            "",
+            "",
+            ""
         );
         Ownable _ownable = Ownable(address(_storage));
         assertEq(_ownable.owner(), address(this));
+    }
+
+    function testFailUrlTooLarge() public {
+        _storageFactory.create(
+            _class,
+            Constant.MINIMUM_PROJECT_QUORUM,
+            Constant.MINIMUM_VOTE_DELAY,
+            Constant.MINIMUM_VOTE_DURATION,
+            "",
+            TestData.pi1kplus(),
+            ""
+        );
+    }
+
+    function testFailDescriptionTooLarge() public {
+        _storageFactory.create(
+            _class,
+            Constant.MINIMUM_PROJECT_QUORUM,
+            Constant.MINIMUM_VOTE_DELAY,
+            Constant.MINIMUM_VOTE_DURATION,
+            "",
+            "",
+            TestData.pi1kplus()
+        );
     }
 }

@@ -79,6 +79,12 @@ contract GovernanceStorage is Storage, ERC165, Ownable {
     /// @notice The total number of proposals
     uint256 private _proposalCount;
 
+    bytes32 public immutable _communityName;
+
+    string public _communityUrl;
+
+    string public _communityDescription;
+
     /// @notice global list of proposed issues by id
     mapping(uint256 => Proposal) public proposalMap;
 
@@ -90,20 +96,32 @@ contract GovernanceStorage is Storage, ERC165, Ownable {
     /// @param _minimumQuorum the least possible quorum for any vote
     /// @param _minimumDelay the least possible vote delay
     /// @param _minimumDuration the least possible voting duration
+    /// @param _community The community name
+    /// @param _url The Url for this community
+    /// @param _description The community description
     constructor(
         VoterClass _class,
         uint256 _minimumQuorum,
         uint256 _minimumDelay,
-        uint256 _minimumDuration
+        uint256 _minimumDuration,
+        bytes32 _community,
+        string memory _url,
+        string memory _description
     ) {
         require(_minimumDelay >= Constant.MINIMUM_VOTE_DELAY, "Delay not allowed");
         require(_minimumDuration >= Constant.MINIMUM_VOTE_DURATION, "Duration not allowed");
         require(_minimumQuorum >= Constant.MINIMUM_PROJECT_QUORUM, "Quorum invalid");
+        require(Constant.len(_url) <= Constant.STRING_DATA_LIMIT, "Url too large");
+        require(Constant.len(_description) <= Constant.STRING_DATA_LIMIT, "Description too large");
         require(_class.isFinal(), "Voter Class modifiable");
         _minimumVoteDelay = _minimumDelay;
         _minimumVoteDuration = _minimumDuration;
         _minimumProjectQuorum = _minimumQuorum;
         _voterClass = _class;
+        _communityName = _community;
+        _communityUrl = _url;
+        _communityDescription = _description;
+
         _proposalCount = 0;
     }
 
@@ -941,6 +959,24 @@ contract GovernanceStorage is Storage, ERC165, Ownable {
     /// @return uint256 the least quorum allowed for any vote
     function minimumProjectQuorum() public view returns (uint256) {
         return _minimumProjectQuorum;
+    }
+
+    /// @notice return the name of the community
+    /// @return bytes32 the community name
+    function community() external view returns (bytes32) {
+        return _communityName;
+    }
+
+    /// @notice return the community url
+    /// @return string memory representation of url
+    function url() external view returns (string memory) {
+        return _communityUrl;
+    }
+
+    /// @notice return community description
+    /// @return string memory representation of community description
+    function description() external view returns (string memory) {
+        return _communityDescription;
     }
 
     /// @notice return the name of this implementation

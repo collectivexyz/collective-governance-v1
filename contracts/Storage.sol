@@ -571,6 +571,18 @@ interface Storage is IERC165 {
     /// @return uint the least quorum allowed for any vote
     function minimumProjectQuorum() external view returns (uint256);
 
+    /// @notice return the name of the community
+    /// @return bytes32 the community name
+    function community() external view returns (bytes32);
+
+    /// @notice return the community url
+    /// @return string memory representation of url
+    function url() external view returns (string memory);
+
+    /// @notice return community description
+    /// @return string memory representation of community description
+    function description() external view returns (string memory);
+
     /// @notice return the name of this implementation
     /// @return string memory representation of name
     function name() external pure returns (string memory);

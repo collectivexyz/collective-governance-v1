@@ -82,6 +82,11 @@ interface Governance is IERC165 {
         uint256 scheduleTime,
         bytes32 txHash
     );
+
+    /// @notice ProposalMeta attached
+    event ProposalMeta(uint256 proposalId, bytes32 name, string value, address sender);
+    /// @notice The proposal description
+    event ProposalDescription(uint256 proposalId, string description, string url);
     /// @notice The proposal is now open for voting
     event ProposalOpen(uint256 proposalId);
     /// @notice Voting is now closed for voting
@@ -101,7 +106,7 @@ interface Governance is IERC165 {
 
     /// @notice Attach a transaction to the specified proposal.
     ///         If successfull, it will be executed when voting is ended.
-    /// @dev must be called prior to configuration
+    /// @dev required prior to calling configure
     /// @param _proposalId the id of the proposal
     /// @param _target the target address for this transaction
     /// @param _value the value to pass to the call
@@ -117,6 +122,29 @@ interface Governance is IERC165 {
         string memory _signature,
         bytes memory _calldata,
         uint256 _scheduleTime
+    ) external returns (uint256);
+
+    /// @notice describe a proposal
+    /// @param _proposalId the numeric id of the proposed vote
+    /// @param _description the description
+    /// @param _url for proposed vote
+    /// @dev required prior to calling configure
+    function describe(
+        uint256 _proposalId,
+        string memory _description,
+        string memory _url
+    ) external;
+
+    /// @notice attach arbitrary metadata to proposal
+    /// @dev requires supervisor
+    /// @param _proposalId the id of the proposal
+    /// @param _name the name of the metadata field
+    /// @param _value the value of the metadata
+    /// @return uint256 the metadata id
+    function addMeta(
+        uint256 _proposalId,
+        bytes32 _name,
+        string memory _value
     ) external returns (uint256);
 
     /// @notice cancel a proposal if it is not yet open

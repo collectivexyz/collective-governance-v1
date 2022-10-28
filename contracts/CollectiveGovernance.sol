@@ -83,12 +83,6 @@ contract CollectiveGovernance is Governance, VoteStrategy, ERC165 {
 
     uint256 public immutable _maximumBaseFeeRebate;
 
-    bytes32 public immutable _communityName;
-
-    string public _communityUrl;
-
-    string public _communityDescription;
-
     /// @notice voting is open or not
     mapping(uint256 => bool) private isVoteOpenByProposalId;
 
@@ -100,9 +94,6 @@ contract CollectiveGovernance is Governance, VoteStrategy, ERC165 {
     /// @param _governanceStorage The storage contract for this governance
     /// @param _gasUsedRebate The maximum rebate for gas used
     /// @param _baseFeeRebate The maximum base fee rebate
-    /// @param _name The community name
-    /// @param _url The Url for this project
-    /// @param _description The community description
     ///
     constructor(
         address[] memory _supervisorList,
@@ -110,14 +101,9 @@ contract CollectiveGovernance is Governance, VoteStrategy, ERC165 {
         Storage _governanceStorage,
         TimeLocker _timeLocker,
         uint256 _gasUsedRebate,
-        uint256 _baseFeeRebate,
-        bytes32 _name,
-        string memory _url,
-        string memory _description
+        uint256 _baseFeeRebate
     ) {
         require(_supervisorList.length > 0, "Supervisor required");
-        require(Constant.len(_url) <= Constant.STRING_DATA_LIMIT, "Url too large");
-        require(Constant.len(_description) <= Constant.STRING_DATA_LIMIT, "Description too large");
         require(_gasUsedRebate >= Constant.MAXIMUM_REBATE_GAS_USED, "Insufficient gas used rebate");
         require(_baseFeeRebate >= Constant.MAXIMUM_REBATE_BASE_FEE, "Insufficient base fee rebate");
 
@@ -127,9 +113,6 @@ contract CollectiveGovernance is Governance, VoteStrategy, ERC165 {
         _communitySupervisorList = _supervisorList;
         _maximumGasUsedRebate = _gasUsedRebate;
         _maximumBaseFeeRebate = _baseFeeRebate;
-        _communityName = _name;
-        _communityUrl = _url;
-        _communityDescription = _description;
     }
 
     modifier requireVoteReady(uint256 _proposalId) {
@@ -191,7 +174,7 @@ contract CollectiveGovernance is Governance, VoteStrategy, ERC165 {
 
     /// @notice Attach a transaction to the specified proposal.
     ///         If successfull, it will be executed when voting is ended.
-    /// @dev must be called prior to configuration
+    /// @dev required prior to calling configure
     /// @param _proposalId the id of the proposal
     /// @param _target the target address for this transaction
     /// @param _value the value to pass to the call
@@ -222,6 +205,38 @@ contract CollectiveGovernance is Governance, VoteStrategy, ERC165 {
         );
         emit ProposalTransactionAttached(msg.sender, _proposalId, transactionId, _target, _value, _scheduleTime, txHash);
         return transactionId;
+    }
+
+    /// @notice describe a proposal
+    /// @param _proposalId the numeric id of the proposed vote
+    /// @param _description the description
+    /// @param _url for proposed vote
+    /// @dev required prior to calling configure
+    function describe(
+        uint256 _proposalId,
+        string memory _description,
+        string memory _url
+    ) external {
+        require(_storage.getSender(_proposalId) == msg.sender, "Not sender");
+        _storage.setProposalDescription(_proposalId, _description, msg.sender);
+        _storage.setProposalUrl(_proposalId, _url, msg.sender);
+        emit ProposalDescription(_proposalId, _description, _url);
+    }
+
+    /// @notice attach arbitrary metadata to proposal
+    /// @dev required prior to calling configure
+    /// @param _proposalId the id of the proposal
+    /// @param _name the name of the metadata field
+    /// @param _value the value of the metadata
+    /// @return uint256 the metadata id
+    function addMeta(
+        uint256 _proposalId,
+        bytes32 _name,
+        string memory _value
+    ) external returns (uint256) {
+        uint256 metaId = _storage.addMeta(_proposalId, _name, _value, msg.sender);
+        emit ProposalMeta(_proposalId, _name, _value, msg.sender);
+        return metaId;
     }
 
     /// @notice configure an existing proposal by id
@@ -622,19 +637,19 @@ contract CollectiveGovernance is Governance, VoteStrategy, ERC165 {
     /// @notice return the name of the community
     /// @return bytes32 the community name
     function community() external view returns (bytes32) {
-        return _communityName;
+        return _storage.community();
     }
 
     /// @notice return the community url
     /// @return string memory representation of url
     function url() external view returns (string memory) {
-        return _communityUrl;
+        return _storage.url();
     }
 
     /// @notice return community description
     /// @return string memory representation of community description
     function description() external view returns (string memory) {
-        return _communityDescription;
+        return _storage.description();
     }
 
     function castVoteFor(uint256 _proposalId, uint256 _tokenId) private {

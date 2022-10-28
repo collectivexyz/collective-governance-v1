@@ -56,14 +56,28 @@ contract StorageFactory {
     /// @param _minimumQuorum the least possible quorum
     /// @param _minimumDelay the minimum voting delay for the project
     /// @param _minimumDuration the least possible voting duration
+    /// @param _community The community name
+    /// @param _url The Url for this community
+    /// @param _description The community description
     /// @return Storage the created instance
     function create(
         VoterClass _class,
         uint256 _minimumQuorum,
         uint256 _minimumDelay,
-        uint256 _minimumDuration
+        uint256 _minimumDuration,
+        bytes32 _community,
+        string memory _url,
+        string memory _description
     ) external returns (Storage) {
-        GovernanceStorage _storage = new GovernanceStorage(_class, _minimumQuorum, _minimumDelay, _minimumDuration);
+        GovernanceStorage _storage = new GovernanceStorage(
+            _class,
+            _minimumQuorum,
+            _minimumDelay,
+            _minimumDuration,
+            _community,
+            _url,
+            _description
+        );
         _storage.transferOwnership(msg.sender);
         emit StorageCreated(address(_storage), msg.sender);
         return _storage;

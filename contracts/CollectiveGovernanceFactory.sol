@@ -62,19 +62,13 @@ contract CollectiveGovernanceFactory {
     /// @param _timeLock The timelock for the contract
     /// @param _gasUsedRebate The maximum rebate for gas used
     /// @param _baseFeeRebate The maximum base fee rebate
-    /// @param _name The community name
-    /// @param _url The Url for this project
-    /// @param _description The community description
     function create(
         address[] memory _supervisorList,
         VoterClass _class,
         Storage _storage,
         TimeLocker _timeLock,
         uint256 _gasUsedRebate,
-        uint256 _baseFeeRebate,
-        bytes32 _name,
-        string memory _url,
-        string memory _description
+        uint256 _baseFeeRebate
     ) external returns (Governance) {
         Governance governance = new CollectiveGovernance(
             _supervisorList,
@@ -82,10 +76,7 @@ contract CollectiveGovernanceFactory {
             _storage,
             _timeLock,
             _gasUsedRebate,
-            _baseFeeRebate,
-            _name,
-            _url,
-            _description
+            _baseFeeRebate
         );
         return governance;
     }

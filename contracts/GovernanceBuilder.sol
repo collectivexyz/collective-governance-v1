@@ -201,10 +201,7 @@ contract GovernanceBuilder is GovernanceCreator, ERC165 {
             _storage,
             _timeLock,
             _properties.maxGasUsed,
-            _properties.maxBaseFee,
-            _properties.name,
-            _properties.url,
-            _properties.description
+            _properties.maxBaseFee
         );
         address payable _governanceAddress = payable(address(_governance));
         transferOwnership(_timeLock, _governanceAddress);
@@ -268,7 +265,10 @@ contract GovernanceBuilder is GovernanceCreator, ERC165 {
             _properties.class,
             _properties.minimumProjectQuorum,
             _properties.minimumVoteDelay,
-            _properties.minimumVoteDuration
+            _properties.minimumVoteDuration,
+            _properties.name,
+            _properties.url,
+            _properties.description
         );
         emit StorageCreated(address(_storage));
         return _storage;
