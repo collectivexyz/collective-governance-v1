@@ -235,7 +235,7 @@ contract CollectiveGovernance is Governance, VoteStrategy, ERC165 {
         string memory _value
     ) external returns (uint256) {
         uint256 metaId = _storage.addMeta(_proposalId, _name, _value, msg.sender);
-        emit ProposalMeta(_proposalId, _name, _value, msg.sender);
+        emit ProposalMeta(_proposalId, metaId, _name, _value, msg.sender);
         return metaId;
     }
 

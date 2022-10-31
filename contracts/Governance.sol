@@ -84,7 +84,7 @@ interface Governance is IERC165 {
     );
 
     /// @notice ProposalMeta attached
-    event ProposalMeta(uint256 proposalId, bytes32 name, string value, address sender);
+    event ProposalMeta(uint256 proposalId, uint256 metaId, bytes32 name, string value, address sender);
     /// @notice The proposal description
     event ProposalDescription(uint256 proposalId, string description, string url);
     /// @notice The proposal is now open for voting

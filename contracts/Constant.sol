@@ -44,7 +44,8 @@
 pragma solidity ^0.8.15;
 
 /**
-  @notice extract global manifest constants
+ * @notice extract global manifest constants
+ * @dev hash b28717930d5c821c80736e02d025efa7f9cb615e deployed to 0xaDFDc9ADe7B4199179E0eeF0ce8e67E12a92A50F
  */
 library Constant {
     uint256 public constant UINT_MAX = 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF;
