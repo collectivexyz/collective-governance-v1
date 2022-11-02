@@ -104,6 +104,12 @@ interface Governance is IERC165 {
     /// @return uint256 The id of the new proposal
     function propose() external returns (uint256);
 
+    /// @notice propose a choice vote for the community
+    /// @dev Only one new proposal is allowed per msg.sender
+    /// @param _choiceCount the number of choices for this vote
+    /// @return uint256 The id of the new proposal
+    function propose(uint256 _choiceCount) external returns (uint256);
+
     /// @notice Attach a transaction to the specified proposal.
     ///         If successfull, it will be executed when voting is ended.
     /// @dev required prior to calling configure

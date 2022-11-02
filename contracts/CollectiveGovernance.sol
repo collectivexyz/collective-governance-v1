@@ -160,15 +160,17 @@ contract CollectiveGovernance is Governance, VoteStrategy, ERC165 {
     /// @dev Only one new proposal is allowed per msg.sender
     /// @return uint256 The id of the new proposal
     function propose() external returns (uint256) {
-        address _sender = msg.sender;
-        uint256 proposalId = _storage.initializeProposal(_sender);
-        for (uint256 i = 0; i < _communitySupervisorList.length; i++) {
-            _storage.registerSupervisor(proposalId, _communitySupervisorList[i], true, _sender);
-        }
-        if (!_storage.isSupervisor(proposalId, _sender)) {
-            _storage.registerSupervisor(proposalId, _sender, _sender);
-        }
-        emit ProposalCreated(_sender, proposalId);
+        uint256 proposalId = configureNextVote(0, msg.sender);
+        return proposalId;
+    }
+
+    /// @notice propose a choice vote for the community
+    /// @dev Only one new proposal is allowed per msg.sender
+    /// @param _choiceCount the number of choices for this vote
+    /// @return uint256 The id of the new proposal
+    function propose(uint256 _choiceCount) external returns (uint256) {
+        require(_choiceCount > 0, "Not enough choices");
+        uint256 proposalId = configureNextVote(_choiceCount, msg.sender);
         return proposalId;
     }
 
@@ -708,6 +710,18 @@ contract CollectiveGovernance is Governance, VoteStrategy, ERC165 {
         uint256 gasUsedForRebate = Math.min(totalGasUsed + Constant.REBATE_BASE_GAS, _maximumGasUsedRebate);
         uint256 rebateQuantity = Math.min(permittedGasPrice * gasUsedForRebate, balance);
         return (rebateQuantity, totalGasUsed);
+    }
+
+    function configureNextVote(uint256 _choiceCount, address _sender) private returns (uint256) {
+        uint256 proposalId = _storage.initializeProposal(_choiceCount, _sender);
+        for (uint256 i = 0; i < _communitySupervisorList.length; i++) {
+            _storage.registerSupervisor(proposalId, _communitySupervisorList[i], true, _sender);
+        }
+        if (!_storage.isSupervisor(proposalId, _sender)) {
+            _storage.registerSupervisor(proposalId, _sender, _sender);
+        }
+        emit ProposalCreated(_sender, proposalId);
+        return proposalId;
     }
 
     function getBlockTimestamp() internal view returns (uint256) {

@@ -47,7 +47,7 @@ contract CollectiveGovernanceTest is Test {
     address payable private _governanceAddress;
 
     uint32 private version;
-    uint256 private pid;
+    uint256 private proposalId;
     uint256[] private _tokenIdList;
 
     function setUp() public {
@@ -60,8 +60,8 @@ contract CollectiveGovernanceTest is Test {
         _storage = Storage(governance.getStorageAddress());
         version = governance.version();
         vm.prank(_OWNER);
-        pid = governance.propose();
-        assertEq(pid, PROPOSAL_ID);
+        proposalId = governance.propose();
+        assertEq(proposalId, PROPOSAL_ID);
     }
 
     function testGetStorageAddress() public {
@@ -78,7 +78,7 @@ contract CollectiveGovernanceTest is Test {
     }
 
     function testPropose() public {
-        assertEq(pid, PROPOSAL_ID);
+        assertEq(proposalId, PROPOSAL_ID);
     }
 
     function testSupervisorPropose() public {
@@ -121,8 +121,8 @@ contract CollectiveGovernanceTest is Test {
         address projectAddress = address(_erc721);
         _governanceAddress = buildERC721(projectAddress, 10000, Constant.MINIMUM_VOTE_DELAY, Constant.MINIMUM_VOTE_DURATION);
         governance = CollectiveGovernance(_governanceAddress);
-        pid = governance.propose();
-        assertEq(pid, PROPOSAL_ID);
+        proposalId = governance.propose();
+        assertEq(proposalId, PROPOSAL_ID);
         vm.expectRevert("Quorum not allowed");
         vm.startPrank(_SUPERVISOR, _SUPERVISOR);
         governance.configure(PROPOSAL_ID, 9999, Constant.MINIMUM_VOTE_DELAY, Constant.MINIMUM_VOTE_DURATION);
@@ -133,8 +133,8 @@ contract CollectiveGovernanceTest is Test {
         _governanceAddress = buildERC721(projectAddress, 10000, Constant.MINIMUM_VOTE_DELAY, Constant.MINIMUM_VOTE_DURATION);
         governance = CollectiveGovernance(_governanceAddress);
         _storage = Storage(governance.getStorageAddress());
-        pid = governance.propose();
-        assertEq(pid, PROPOSAL_ID);
+        proposalId = governance.propose();
+        assertEq(proposalId, PROPOSAL_ID);
         vm.startPrank(_SUPERVISOR, _SUPERVISOR);
         governance.configure(PROPOSAL_ID, 10000, Constant.MINIMUM_VOTE_DELAY, Constant.MINIMUM_VOTE_DURATION);
         assertEq(_storage.minimumProjectQuorum(), 10000);
@@ -144,8 +144,8 @@ contract CollectiveGovernanceTest is Test {
         address projectAddress = address(_erc721);
         _governanceAddress = buildERC721(projectAddress, Constant.MINIMUM_PROJECT_QUORUM, Constant.MINIMUM_VOTE_DELAY, 6 days);
         governance = CollectiveGovernance(_governanceAddress);
-        pid = governance.propose();
-        assertEq(pid, PROPOSAL_ID);
+        proposalId = governance.propose();
+        assertEq(proposalId, PROPOSAL_ID);
         vm.expectRevert("Duration not allowed");
         vm.startPrank(_SUPERVISOR, _SUPERVISOR);
         governance.configure(PROPOSAL_ID, Constant.MINIMUM_PROJECT_QUORUM, Constant.MINIMUM_VOTE_DELAY, 5 days);
@@ -156,8 +156,8 @@ contract CollectiveGovernanceTest is Test {
         _governanceAddress = buildERC721(projectAddress, Constant.MINIMUM_PROJECT_QUORUM, Constant.MINIMUM_VOTE_DELAY, 6 days);
         governance = CollectiveGovernance(_governanceAddress);
         _storage = Storage(governance.getStorageAddress());
-        pid = governance.propose();
-        assertEq(pid, PROPOSAL_ID);
+        proposalId = governance.propose();
+        assertEq(proposalId, PROPOSAL_ID);
         vm.startPrank(_SUPERVISOR, _SUPERVISOR);
         governance.configure(PROPOSAL_ID, Constant.MINIMUM_PROJECT_QUORUM, Constant.MINIMUM_VOTE_DELAY, 8 days);
         assertEq(_storage.voteDuration(PROPOSAL_ID), 8 days);
@@ -168,8 +168,8 @@ contract CollectiveGovernanceTest is Test {
         _governanceAddress = buildERC721(projectAddress, Constant.MINIMUM_PROJECT_QUORUM, 1 days, Constant.MINIMUM_VOTE_DURATION);
         governance = CollectiveGovernance(_governanceAddress);
         _storage = Storage(governance.getStorageAddress());
-        pid = governance.propose();
-        assertEq(pid, PROPOSAL_ID);
+        proposalId = governance.propose();
+        assertEq(proposalId, PROPOSAL_ID);
         vm.startPrank(_SUPERVISOR, _SUPERVISOR);
         governance.configure(PROPOSAL_ID, Constant.MINIMUM_PROJECT_QUORUM, 10 days, Constant.MINIMUM_VOTE_DURATION);
         assertEq(_storage.voteDelay(PROPOSAL_ID), 10 days);
@@ -185,8 +185,8 @@ contract CollectiveGovernanceTest is Test {
         );
         governance = CollectiveGovernance(_governanceAddress);
         _storage = Storage(governance.getStorageAddress());
-        pid = governance.propose();
-        assertEq(pid, PROPOSAL_ID);
+        proposalId = governance.propose();
+        assertEq(proposalId, PROPOSAL_ID);
         vm.expectRevert("Delay not allowed");
         vm.startPrank(_SUPERVISOR, _SUPERVISOR);
         governance.configure(PROPOSAL_ID, Constant.MINIMUM_PROJECT_QUORUM, 10 days - 1, Constant.MINIMUM_VOTE_DURATION);
@@ -1394,7 +1394,7 @@ contract CollectiveGovernanceTest is Test {
         vm.prank(_VOTER1, _VOTER1);
         governance.voteAgainst(PROPOSAL_ID, TOKEN_ID1);
         assertTrue(_VOTER1.balance > 0);
-        assertApproxEqAbs(_VOTER1.balance, 7517640 gwei, 500 gwei);
+        assertApproxEqAbs(_VOTER1.balance, 7520240 gwei, 500 gwei);
     }
 
     function testAbstainWithRefund() public {
@@ -1411,7 +1411,7 @@ contract CollectiveGovernanceTest is Test {
         vm.prank(_VOTER1, _VOTER1);
         governance.abstainFrom(PROPOSAL_ID, TOKEN_ID1);
         assertTrue(_VOTER1.balance > 0);
-        assertApproxEqAbs(_VOTER1.balance, 8536996 gwei, 500 gwei);
+        assertApproxEqAbs(_VOTER1.balance, 8540740 gwei, 500 gwei);
     }
 
     function testVoteAndUndoWithRefund() public {
@@ -1431,7 +1431,7 @@ contract CollectiveGovernanceTest is Test {
         governance.undoVote(PROPOSAL_ID, TOKEN_ID1);
         vm.stopPrank();
         assertTrue(_VOTER1.balance > 0);
-        assertApproxEqAbs(_VOTER1.balance, 11920896 gwei, 500 gwei);
+        assertApproxEqAbs(_VOTER1.balance, 11923808 gwei, 500 gwei);
     }
 
     function testCastVoteWithMaximumRefund() public {
@@ -1448,7 +1448,7 @@ contract CollectiveGovernanceTest is Test {
         vm.prank(_VOTER1, _VOTER1);
         governance.voteFor(PROPOSAL_ID, TOKEN_ID1);
         assertTrue(_VOTER1.balance > 0);
-        uint256 expectRefund = 16717015 gwei;
+        uint256 expectRefund = 16717621 gwei;
         assertApproxEqAbs(_VOTER1.balance, expectRefund, 500 gwei);
         assertApproxEqAbs(_governanceAddress.balance, 1 ether - expectRefund, 500 gwei);
     }
@@ -1471,6 +1471,16 @@ contract CollectiveGovernanceTest is Test {
         (bytes32 _name, string memory _value) = _storage.getMeta(PROPOSAL_ID, mid);
         assertEq(_name, "e");
         assertEq(_value, "2.718281828459045235");
+    }
+
+    function testChoiceVoteConfigurationRequired() public {
+        vm.startPrank(_OWNER, _OWNER);
+        governance.cancel(PROPOSAL_ID);
+        vm.warp(block.timestamp + Constant.MINIMUM_VOTE_DURATION);
+        proposalId = governance.propose(7);
+        vm.expectRevert("Choice vote requires setup");
+        governance.configure(proposalId, 2);
+        vm.stopPrank();
     }
 
     function mintTokens() private returns (IERC721) {

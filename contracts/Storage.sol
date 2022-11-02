@@ -61,6 +61,7 @@ interface Storage is IERC165 {
     event SetVoteDuration(uint256 proposalId, uint256 voteDuration);
     event SetVoteUrl(uint256 proposalId, string url);
     event SetVoteDescription(uint256 proposalId, string description);
+    event SetChoice(uint256 proposalId, uint256 choiceId, bytes32 name, string description, uint256 transactionId);
     event UndoVoteEnabled(uint256 proposalId);
     event AddTransaction(
         uint256 proposalId,
@@ -89,6 +90,79 @@ interface Storage is IERC165 {
         CONFIG,
         FINAL,
         CANCELLED
+    }
+
+    /// @notice Struct describing the data required for a specific vote.
+    /// @dev proposal is only valid if id != 0 and proposal.id == id;
+    struct Proposal {
+        /// @notice Unique id for looking up a proposal
+        uint256 id;
+        /// @notice Creator of the proposal
+        address proposalSender;
+        /// @notice The number of votes in support of a proposal required in
+        /// order for a quorum to be reached and for a vote to succeed
+        uint256 quorumRequired;
+        /// @notice The number of blocks to delay the first vote from voting open
+        uint256 voteDelay;
+        /// @notice The number of blocks duration for the vote, last vote must be cast prior
+        uint256 voteDuration;
+        /// @notice The time when voting begins
+        uint256 startTime;
+        /// @notice The time when voting ends
+        uint256 endTime;
+        /// @notice Current number of votes in favor of this proposal
+        uint256 forVotes;
+        /// @notice Current number of votes in opposition to this proposal
+        uint256 againstVotes;
+        /// @notice Current number of votes for abstaining for this proposal
+        uint256 abstentionCount;
+        /// @notice number of attached transactions
+        uint256 transactionCount;
+        /// @notice number of attached metadata
+        uint256 metaCount;
+        /// @notice number of choices for this vote
+        /// zero indicates a for/against vote
+        uint256 choiceCount;
+        /// @notice Flag marking whether the proposal has been vetoed
+        bool isVeto;
+        /// @notice Flag marking whether the proposal has been executed
+        bool isExecuted;
+        /// @notice current status for this proposal
+        Status status;
+        /// @notice this proposal allows undo votes
+        bool isUndoEnabled;
+        /// @notice proposal description
+        string description;
+        /// @notice proposal url
+        string url;
+        /// @notice Receipts of ballots for the entire set of voters
+        mapping(uint256 => Receipt) voteReceipt;
+        /// @notice configured supervisors
+        mapping(address => Supervisor) supervisorPool;
+        /// @notice table of mapped transactions
+        mapping(uint256 => Transaction) transaction;
+        /// @notice mapping of id to user defined metadata
+        mapping(uint256 => Meta) metadata;
+        /// @notice mapping of id to Choice values
+        mapping(uint256 => Choice) choice;
+    }
+
+    /// @notice Ballot receipt record for a voter
+    struct Receipt {
+        /// @notice address of voting wallet
+        address wallet;
+        /// @notice id of reserved shares
+        uint256 shareId;
+        /// @notice number of votes cast for
+        uint256 shareFor;
+        /// @notice The number of votes the voter had, which were cast
+        uint256 votesCast;
+        /// @noitce choiceId in the case of multi choice voting
+        uint256 choiceId;
+        /// @notice did the voter abstain
+        bool abstention;
+        /// @notice has this share been reversed
+        bool undoCast;
     }
 
     /// @notice User defined metadata associated with a proposal
@@ -122,70 +196,14 @@ interface Storage is IERC165 {
         bytes32 txHash;
     }
 
-    /// @notice Struct describing the data required for a specific vote.
-    /// @dev proposal is only valid if id != 0 and proposal.id == id;
-    struct Proposal {
-        /// @notice Unique id for looking up a proposal
+    /// @notice choice for multiple choice voting
+    /// @dev choice voting is enabled by initializing the number of choices when the proposal is created
+    struct Choice {
         uint256 id;
-        /// @notice Creator of the proposal
-        address proposalSender;
-        /// @notice The number of votes in support of a proposal required in
-        /// order for a quorum to be reached and for a vote to succeed
-        uint256 quorumRequired;
-        /// @notice The number of blocks to delay the first vote from voting open
-        uint256 voteDelay;
-        /// @notice The number of blocks duration for the vote, last vote must be cast prior
-        uint256 voteDuration;
-        /// @notice The time when voting begins
-        uint256 startTime;
-        /// @notice The time when voting ends
-        uint256 endTime;
-        /// @notice Current number of votes in favor of this proposal
-        uint256 forVotes;
-        /// @notice Current number of votes in opposition to this proposal
-        uint256 againstVotes;
-        /// @notice Current number of votes for abstaining for this proposal
-        uint256 abstentionCount;
-        /// @notice number of attached transactions
-        uint256 transactionCount;
-        /// @notice number of attached metadata
-        uint256 metaCount;
-        /// @notice Flag marking whether the proposal has been vetoed
-        bool isVeto;
-        /// @notice Flag marking whether the proposal has been executed
-        bool isExecuted;
-        /// @notice current status for this proposal
-        Status status;
-        /// @notice this proposal allows undo votes
-        bool isUndoEnabled;
-        /// @notice proposal description
+        bytes32 name;
         string description;
-        /// @notice proposal url
-        string url;
-        /// @notice Receipts of ballots for the entire set of voters
-        mapping(uint256 => Receipt) voteReceipt;
-        /// @notice configured supervisors
-        mapping(address => Supervisor) supervisorPool;
-        /// @notice table of mapped transactions
-        mapping(uint256 => Transaction) transaction;
-        /// @notice mapping of id to user defined metadata
-        mapping(uint256 => Meta) metadata;
-    }
-
-    /// @notice Ballot receipt record for a voter
-    struct Receipt {
-        /// @notice address of voting wallet
-        address wallet;
-        /// @notice id of reserved shares
-        uint256 shareId;
-        /// @notice number of votes cast for
-        uint256 shareFor;
-        /// @notice The number of votes the voter had, which were cast
-        uint256 votesCast;
-        /// @notice did the voter abstain
-        bool abstention;
-        /// @notice has this share been reversed
-        bool undoCast;
+        uint256 transactionId;
+        uint256 voteCount;
     }
 
     /// @notice Register a new supervisor on the specified proposal.
@@ -316,10 +334,48 @@ interface Storage is IERC165 {
 
     /// @notice get arbitrary metadata from proposal
     /// @param _proposalId the id of the proposal
-    /// @param _mId the id of the metadata
+    /// @param _metaId the id of the metadata
     /// @return _name the name of the metadata field
     /// @return _value the value of the metadata field
-    function getMeta(uint256 _proposalId, uint256 _mId) external returns (bytes32 _name, string memory _value);
+    function getMeta(uint256 _proposalId, uint256 _metaId) external returns (bytes32 _name, string memory _value);
+
+    /// @notice get the number of attached choices
+    /// @param _proposalId the id of the proposal
+    /// @return uint current number of choices
+    function choiceCount(uint256 _proposalId) external view returns (uint256);
+
+    /// @notice set a choice by choice id
+    /// @dev requires supervisor
+    /// @param _proposalId the id of the proposal
+    /// @param _name the name of the metadata field
+    /// @param _description the detailed description of the choice
+    /// @param _transactionId The id of the transaction to execute
+    /// @param _sender The sender of the choice
+    function setChoice(
+        uint256 _proposalId,
+        uint256 _choiceId,
+        bytes32 _name,
+        string memory _description,
+        uint256 _transactionId,
+        address _sender
+    ) external;
+
+    /// @notice get the choice by id
+    /// @param _proposalId the id of the proposal
+    /// @param _choiceId the id of the metadata
+    /// @return _name the name of the metadata field
+    /// @return _description the value of the metadata field
+    /// @return _transactionId the value of the metadata field
+    /// @return _voteCount the current number of votes for this choice
+    function getChoice(uint256 _proposalId, uint256 _choiceId)
+        external
+        view
+        returns (
+            bytes32 _name,
+            string memory _description,
+            uint256 _transactionId,
+            uint256 _voteCount
+        );
 
     /// @notice get the address of the proposal sender
     /// @param _proposalId the id of the proposal
@@ -426,8 +482,10 @@ interface Storage is IERC165 {
     function voterClass() external view returns (VoterClass);
 
     /// @notice initialize a new proposal and return the id
+    /// @param _choiceCount The number of choices for this proposal
+    /// @param _sender the proposal sender
     /// @return uint256 the id of the proposal
-    function initializeProposal(address _sender) external returns (uint256);
+    function initializeProposal(uint256 _choiceCount, address _sender) external returns (uint256);
 
     /// @notice indicate the proposal is ready for voting and should be frozen
     /// @dev requires supervisor
@@ -456,6 +514,19 @@ interface Storage is IERC165 {
         uint256 _proposalId,
         address _wallet,
         uint256 _shareId
+    ) external returns (uint256);
+
+    /// @notice cast an affirmative vote for the specified share
+    /// @param _proposalId the id of the proposal
+    /// @param _wallet the wallet represented for the vote
+    /// @param _shareId the id of the share
+    /// @param _choiceId The choice to vote for
+    /// @return uint256 the number of votes cast
+    function voteForByShare(
+        uint256 _proposalId,
+        address _wallet,
+        uint256 _shareId,
+        uint256 _choiceId
     ) external returns (uint256);
 
     /// @notice cast an against vote for the specified share

@@ -211,6 +211,21 @@ contract GovernanceStorage is Storage, ERC165, Ownable {
         _;
     }
 
+    modifier requireChoiceVoteSetup(uint256 _proposalId) {
+        Proposal storage proposal = proposalMap[_proposalId];
+        for (uint256 id = 0; id < proposal.choiceCount; id++) {
+            Choice storage choice = proposal.choice[id];
+            require(choice.id == id && choice.name != 0x0, "Choice vote requires setup");
+        }
+        _;
+    }
+
+    modifier requireUpDownVote(uint256 _proposalId) {
+        Proposal storage proposal = proposalMap[_proposalId];
+        require(proposal.choiceCount == 0, "Choice not possible");
+        _;
+    }
+
     /// @notice Register a new supervisor on the specified proposal.
     /// The supervisor has rights to add or remove voters prior to start of voting
     /// in a Voter Pool. The supervisor also has the right to veto the outcome of the vote.
@@ -505,8 +520,10 @@ contract GovernanceStorage is Storage, ERC165, Ownable {
     }
 
     /// @notice initialize a new proposal and return the id
+    /// @param _choiceCount The number of choices for this proposal
+    /// @param _sender the proposal sender
     /// @return uint256 the id of the proposal
-    function initializeProposal(address _sender) external onlyOwner returns (uint256) {
+    function initializeProposal(uint256 _choiceCount, address _sender) external onlyOwner returns (uint256) {
         uint256 latestProposalId = _latestProposalId[_sender];
         if (latestProposalId != 0) {
             Proposal storage lastProposal = proposalMap[latestProposalId];
@@ -530,6 +547,7 @@ contract GovernanceStorage is Storage, ERC165, Ownable {
         proposal.abstentionCount = 0;
         proposal.transactionCount = 0;
         proposal.metaCount = 0;
+        proposal.choiceCount = _choiceCount;
         proposal.isVeto = false;
         proposal.status = Status.CONFIG;
         proposal.isUndoEnabled = false;
@@ -550,6 +568,7 @@ contract GovernanceStorage is Storage, ERC165, Ownable {
         requireValid(_proposalId)
         requireConfig(_proposalId)
         requireSupervisor(_proposalId, _sender)
+        requireChoiceVoteSetup(_proposalId)
     {
         Proposal storage proposal = proposalMap[_proposalId];
         proposal.startTime = getBlockTimestamp() + proposal.voteDelay;
@@ -611,6 +630,7 @@ contract GovernanceStorage is Storage, ERC165, Ownable {
         requireShareAvailable(_proposalId, _shareId)
         requireValid(_proposalId)
         requireVotingActive(_proposalId)
+        requireUpDownVote(_proposalId)
         returns (uint256)
     {
         Proposal storage proposal = proposalMap[_proposalId];
@@ -625,6 +645,19 @@ contract GovernanceStorage is Storage, ERC165, Ownable {
         emit VoteCast(_proposalId, _wallet, _shareId, _shareCount);
         return _shareCount;
     }
+
+    /// @notice cast an affirmative vote for the specified share
+    /// @param _proposalId the id of the proposal
+    /// @param _wallet the wallet represented for the vote
+    /// @param _shareId the id of the share
+    /// @param _choiceId The choice to vote for
+    /// @return uint256 the number of votes cast
+    function voteForByShare(
+        uint256 _proposalId,
+        address _wallet,
+        uint256 _shareId,
+        uint256 _choiceId
+    ) external returns (uint256) {}
 
     /// @notice cast an against vote for the specified share
     /// @param _proposalId the id of the proposal
@@ -641,6 +674,7 @@ contract GovernanceStorage is Storage, ERC165, Ownable {
         requireValid(_proposalId)
         requireShareAvailable(_proposalId, _shareId)
         requireVotingActive(_proposalId)
+        requireUpDownVote(_proposalId)
         returns (uint256)
     {
         Proposal storage proposal = proposalMap[_proposalId];
@@ -919,20 +953,77 @@ contract GovernanceStorage is Storage, ERC165, Ownable {
 
     /// @notice get arbitrary metadata from proposal
     /// @param _proposalId the id of the proposal
-    /// @param _mId the id of the metadata
+    /// @param _metaId the id of the metadata
     /// @return _name the name of the metadata field
     /// @return _value the value of the metadata field
-    function getMeta(uint256 _proposalId, uint256 _mId)
+    function getMeta(uint256 _proposalId, uint256 _metaId)
         external
         view
         requireValid(_proposalId)
         returns (bytes32 _name, string memory _value)
     {
         Proposal storage proposal = proposalMap[_proposalId];
-        require(_mId < proposal.metaCount, "Metadata id unknown");
-        Meta storage meta = proposal.metadata[_mId];
-        require(meta.id == _mId, "Metadata invalid");
+        require(_metaId < proposal.metaCount, "Metadata id unknown");
+        Meta storage meta = proposal.metadata[_metaId];
+        require(meta.id == _metaId, "Metadata invalid");
         return (meta.name, meta.value);
+    }
+
+    /// @notice get the number of attached choices
+    /// @param _proposalId the id of the proposal
+    /// @return uint current number of choices
+    function choiceCount(uint256 _proposalId) external view returns (uint256) {
+        Proposal storage proposal = proposalMap[_proposalId];
+        return proposal.choiceCount;
+    }
+
+    /// @notice set a choice by choice id
+    /// @dev requires supervisor
+    /// @param _proposalId the id of the proposal
+    /// @param _name the name of the metadata field
+    /// @param _description the detailed description of the choice
+    /// @param _transactionId The id of the transaction to execute
+    /// @param _sender The sender of the choice
+    function setChoice(
+        uint256 _proposalId,
+        uint256 _choiceId,
+        bytes32 _name,
+        string memory _description,
+        uint256 _transactionId,
+        address _sender
+    ) external onlyOwner requireValid(_proposalId) requireConfig(_proposalId) requireSupervisor(_proposalId, _sender) {
+        require(_name != 0, "Name is required");
+        require(Constant.len(_description) < Constant.STRING_DATA_LIMIT, "Description exceeds data limit");
+        Proposal storage proposal = proposalMap[_proposalId];
+        require(_transactionId == 0 || _transactionId < proposal.transactionCount, "TransactionId is invalid");
+        require(_choiceId < proposal.choiceCount, "Invalid choice id");
+        proposal.choice[_choiceId] = Choice(_choiceId, _name, _description, _transactionId, 0);
+        emit SetChoice(_proposalId, _choiceId, _name, _description, _transactionId);
+    }
+
+    /// @notice get the choice by id
+    /// @param _proposalId the id of the proposal
+    /// @param _choiceId the id of the metadata
+    /// @return _name the name of the metadata field
+    /// @return _description the value of the metadata field
+    /// @return _transactionId the value of the metadata field
+    /// @return _voteCount the current number of votes for this choice
+    function getChoice(uint256 _proposalId, uint256 _choiceId)
+        external
+        view
+        requireValid(_proposalId)
+        returns (
+            bytes32 _name,
+            string memory _description,
+            uint256 _transactionId,
+            uint256 _voteCount
+        )
+    {
+        Proposal storage proposal = proposalMap[_proposalId];
+        require(_choiceId < proposal.choiceCount, "Choice Id is unknown");
+        Choice storage choice = proposal.choice[_choiceId];
+        require(_choiceId == choice.id, "Choice is invalid");
+        return (choice.name, choice.description, choice.transactionId, choice.voteCount);
     }
 
     /// @notice see ERC-165
