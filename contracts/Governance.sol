@@ -85,6 +85,8 @@ interface Governance is IERC165 {
 
     /// @notice ProposalMeta attached
     event ProposalMeta(uint256 proposalId, uint256 metaId, bytes32 name, string value, address sender);
+    /// @notice ProposalChoice Set
+    event ProposalChoice(uint256 proposalId, uint256 choiceId, bytes32 name, string description, uint256 transactionId);
     /// @notice The proposal description
     event ProposalDescription(uint256 proposalId, string description, string url);
     /// @notice The proposal is now open for voting
@@ -99,6 +101,9 @@ interface Governance is IERC165 {
     event RebateFund(address sender, uint256 transfer, uint256 totalFund);
     /// @notice Gas rebate payment
     event RebatePaid(address recipient, uint256 rebate, uint256 gasPaid);
+
+    /// @notice Winning choice in choice vote
+    event WinningChoice(uint256 proposalId, bytes32 name, string description, uint256 transactionId, uint256 voteCount);
 
     /// @notice propose a vote for the community
     /// @return uint256 The id of the new proposal
@@ -139,6 +144,20 @@ interface Governance is IERC165 {
         uint256 _proposalId,
         string memory _description,
         string memory _url
+    ) external;
+
+    /// @notice set a choice by choice id
+    /// @dev requires supervisor
+    /// @param _proposalId the id of the proposal
+    /// @param _name the name of the metadata field
+    /// @param _description the detailed description of the choice
+    /// @param _transactionId The id of the transaction to execute
+    function setChoice(
+        uint256 _proposalId,
+        uint256 _choiceId,
+        bytes32 _name,
+        string memory _description,
+        uint256 _transactionId
     ) external;
 
     /// @notice attach arbitrary metadata to proposal

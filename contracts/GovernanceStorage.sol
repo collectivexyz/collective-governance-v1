@@ -59,7 +59,7 @@ import "../contracts/VoterClass.sol";
 /// is required for nearly all change operations
 contract GovernanceStorage is Storage, ERC165, Ownable {
     /// @notice contract name
-    string public constant NAME = "collective governance storage";
+    string public constant NAME = "collective storage";
 
     uint256 public constant MAXIMUM_QUORUM = Constant.UINT_MAX;
     uint256 public constant MAXIMUM_TIME = Constant.UINT_MAX;
@@ -134,7 +134,7 @@ contract GovernanceStorage is Storage, ERC165, Ownable {
     modifier requireVoteCast(uint256 _proposalId, uint256 _receiptId) {
         Proposal storage proposal = proposalMap[_proposalId];
         require(_receiptId > 0, "Receipt id is not valid");
-        Receipt storage receipt = proposal.voteReceipt[_receiptId];
+        Receipt memory receipt = proposal.voteReceipt[_receiptId];
         require(receipt.shareId == _receiptId, "No vote cast");
         require(receipt.votesCast > 0 && !receipt.abstention && !receipt.undoCast, "No affirmative vote");
         _;
@@ -146,7 +146,7 @@ contract GovernanceStorage is Storage, ERC165, Ownable {
         address _wallet
     ) {
         Proposal storage proposal = proposalMap[_proposalId];
-        Receipt storage receipt = proposal.voteReceipt[_receiptId];
+        Receipt memory receipt = proposal.voteReceipt[_receiptId];
         require(receipt.wallet == _wallet, "Not voter");
         _;
     }
@@ -154,7 +154,7 @@ contract GovernanceStorage is Storage, ERC165, Ownable {
     modifier requireValidReceipt(uint256 _proposalId, uint256 _receiptId) {
         Proposal storage proposal = proposalMap[_proposalId];
         require(_receiptId > 0, "Receipt id is not valid");
-        Receipt storage receipt = proposal.voteReceipt[_receiptId];
+        Receipt memory receipt = proposal.voteReceipt[_receiptId];
         require(receipt.shareId > 0, "Receipt not initialized");
         _;
     }
@@ -162,7 +162,7 @@ contract GovernanceStorage is Storage, ERC165, Ownable {
     modifier requireShareAvailable(uint256 _proposalId, uint256 _shareId) {
         Proposal storage proposal = proposalMap[_proposalId];
         require(_shareId > 0, "Share id is not valid");
-        Receipt storage receipt = proposal.voteReceipt[_shareId];
+        Receipt memory receipt = proposal.voteReceipt[_shareId];
         require(receipt.shareId == 0 && receipt.votesCast == 0 && !receipt.abstention && !receipt.undoCast, "Already voted");
         _;
     }
@@ -199,22 +199,22 @@ contract GovernanceStorage is Storage, ERC165, Ownable {
 
     modifier requireEditSupervisor(uint256 _proposalId, address _sender) {
         Proposal storage proposal = proposalMap[_proposalId];
-        Supervisor storage supervisor = proposal.supervisorPool[_sender];
+        Supervisor memory supervisor = proposal.supervisorPool[_sender];
         require(supervisor.isEnabled && !supervisor.isProject, "Supervisor change not permitted");
         _;
     }
 
     modifier requireSupervisor(uint256 _proposalId, address _sender) {
         Proposal storage proposal = proposalMap[_proposalId];
-        Supervisor storage supervisor = proposal.supervisorPool[_sender];
+        Supervisor memory supervisor = proposal.supervisorPool[_sender];
         require(supervisor.isEnabled, "Requires supervisor");
         _;
     }
 
-    modifier requireChoiceVoteSetup(uint256 _proposalId) {
+    modifier requireChoiceVoteReady(uint256 _proposalId) {
         Proposal storage proposal = proposalMap[_proposalId];
         for (uint256 id = 0; id < proposal.choiceCount; id++) {
-            Choice storage choice = proposal.choice[id];
+            Choice memory choice = proposal.choice[id];
             require(choice.id == id && choice.name != 0x0, "Choice vote requires setup");
         }
         _;
@@ -223,6 +223,18 @@ contract GovernanceStorage is Storage, ERC165, Ownable {
     modifier requireUpDownVote(uint256 _proposalId) {
         Proposal storage proposal = proposalMap[_proposalId];
         require(proposal.choiceCount == 0, "Choice not possible");
+        _;
+    }
+
+    modifier requireChoiceVote(uint256 _proposalId) {
+        Proposal storage proposal = proposalMap[_proposalId];
+        require(proposal.choiceCount > 0, "Choice required");
+        _;
+    }
+
+    modifier requireValidChoice(uint256 _proposalId, uint256 _choiceId) {
+        Proposal storage proposal = proposalMap[_proposalId];
+        require((proposal.choiceCount == 0 && _choiceId == 0) || _choiceId < proposal.choiceCount, "Choice invalid");
         _;
     }
 
@@ -304,7 +316,6 @@ contract GovernanceStorage is Storage, ERC165, Ownable {
     ) external onlyOwner requireValid(_proposalId) requireConfig(_proposalId) requireSupervisor(_proposalId, _sender) {
         require(_quorum >= minimumProjectQuorum(), "Quorum not allowed");
         Proposal storage proposal = proposalMap[_proposalId];
-
         proposal.quorumRequired = _quorum;
         emit SetQuorumRequired(_proposalId, _quorum);
     }
@@ -415,6 +426,23 @@ contract GovernanceStorage is Storage, ERC165, Ownable {
         return proposal.forVotes;
     }
 
+    /// @notice get the for vote count for a choice
+    /// @param _proposalId the id of the proposal
+    /// @param _choiceId the id of the choice
+    /// @return uint256 the number of votes in favor
+    function voteCount(uint256 _proposalId, uint256 _choiceId)
+        public
+        view
+        requireValid(_proposalId)
+        requireChoiceVote(_proposalId)
+        requireValidChoice(_proposalId, _choiceId)
+        returns (uint256)
+    {
+        Proposal storage proposal = proposalMap[_proposalId];
+        Choice storage choice = proposal.choice[_choiceId];
+        return choice.voteCount;
+    }
+
     /// @notice get the against vote count
     /// @param _proposalId the id of the proposal
     /// @return uint256 the number of against votes
@@ -490,27 +518,31 @@ contract GovernanceStorage is Storage, ERC165, Ownable {
     }
 
     /// @notice get the vote receipt
-    /// @return _shareId the share id for the vote
-    /// @return _shareFor the shares cast in favor
-    /// @return _votesCast the number of votes cast
-    /// @return _isAbstention true if vote was an abstention
-    /// @return _isUndo true if the vote was reversed
-    function voteReceipt(uint256 _proposalId, uint256 _shareId)
+    /// @param _proposalId the id of the proposal
+    /// @param _shareId the id of the share voted
+    /// @return shareId the share id for the vote
+    /// @return shareFor the shares cast in favor
+    /// @return votesCast the number of votes cast
+    /// @return choiceId the choice voted, 0 if not a choice vote
+    /// @return isAbstention true if vote was an abstention
+    /// @return isUndo true if the vote was reversed
+    function getVoteReceipt(uint256 _proposalId, uint256 _shareId)
         external
         view
         requireValid(_proposalId)
         requireValidReceipt(_proposalId, _shareId)
         returns (
-            uint256,
-            uint256,
-            uint256,
-            bool,
-            bool
+            uint256 shareId,
+            uint256 shareFor,
+            uint256 votesCast,
+            uint256 choiceId,
+            bool isAbstention,
+            bool isUndo
         )
     {
         Proposal storage proposal = proposalMap[_proposalId];
-        Receipt storage receipt = proposal.voteReceipt[_shareId];
-        return (receipt.shareId, receipt.shareFor, receipt.votesCast, receipt.abstention, receipt.undoCast);
+        Receipt memory receipt = proposal.voteReceipt[_shareId];
+        return (receipt.shareId, receipt.shareFor, receipt.votesCast, receipt.choiceId, receipt.abstention, receipt.undoCast);
     }
 
     /// @notice get the VoterClass used for this voting store
@@ -568,7 +600,7 @@ contract GovernanceStorage is Storage, ERC165, Ownable {
         requireValid(_proposalId)
         requireConfig(_proposalId)
         requireSupervisor(_proposalId, _sender)
-        requireChoiceVoteSetup(_proposalId)
+        requireChoiceVoteReady(_proposalId)
     {
         Proposal storage proposal = proposalMap[_proposalId];
         proposal.startTime = getBlockTimestamp() + proposal.voteDelay;
@@ -624,26 +656,8 @@ contract GovernanceStorage is Storage, ERC165, Ownable {
         uint256 _proposalId,
         address _wallet,
         uint256 _shareId
-    )
-        external
-        onlyOwner
-        requireShareAvailable(_proposalId, _shareId)
-        requireValid(_proposalId)
-        requireVotingActive(_proposalId)
-        requireUpDownVote(_proposalId)
-        returns (uint256)
-    {
-        Proposal storage proposal = proposalMap[_proposalId];
-        uint256 _shareCount = _voterClass.confirm(_wallet, _shareId);
-        require(_shareCount > 0, "Share not available");
-        Receipt storage receipt = proposal.voteReceipt[_shareId];
-        receipt.wallet = _wallet;
-        receipt.shareId = _shareId;
-        receipt.votesCast = _shareCount;
-        receipt.shareFor = _shareCount;
-        proposal.forVotes += _shareCount;
-        emit VoteCast(_proposalId, _wallet, _shareId, _shareCount);
-        return _shareCount;
+    ) external requireUpDownVote(_proposalId) returns (uint256) {
+        return voteForByShare(_proposalId, _wallet, _shareId, 0);
     }
 
     /// @notice cast an affirmative vote for the specified share
@@ -657,7 +671,37 @@ contract GovernanceStorage is Storage, ERC165, Ownable {
         address _wallet,
         uint256 _shareId,
         uint256 _choiceId
-    ) external returns (uint256) {}
+    )
+        public
+        onlyOwner
+        requireShareAvailable(_proposalId, _shareId)
+        requireValid(_proposalId)
+        requireVotingActive(_proposalId)
+        requireValidChoice(_proposalId, _choiceId)
+        returns (uint256)
+    {
+        Proposal storage proposal = proposalMap[_proposalId];
+        uint256 _shareCount = _voterClass.confirm(_wallet, _shareId);
+        require(_shareCount > 0, "Share not available");
+        Receipt storage receipt = proposal.voteReceipt[_shareId];
+        receipt.wallet = _wallet;
+        receipt.shareId = _shareId;
+        receipt.shareFor = _shareCount;
+        receipt.votesCast = _shareCount;
+        receipt.choiceId = _choiceId;
+        receipt.abstention = false;
+        receipt.undoCast = false;
+        proposal.forVotes += _shareCount;
+        if (isChoiceVote(_proposalId)) {
+            Choice storage choice = proposal.choice[_choiceId];
+            choice.voteCount += _shareCount;
+            emit VoteCast(_proposalId, _wallet, _shareId, _choiceId, _shareCount);
+        } else {
+            emit VoteCast(_proposalId, _wallet, _shareId, _shareCount);
+        }
+
+        return _shareCount;
+    }
 
     /// @notice cast an against vote for the specified share
     /// @param _proposalId the id of the proposal
@@ -683,8 +727,10 @@ contract GovernanceStorage is Storage, ERC165, Ownable {
         Receipt storage receipt = proposal.voteReceipt[_shareId];
         receipt.wallet = _wallet;
         receipt.shareId = _shareId;
+        receipt.shareFor = 0;
         receipt.votesCast = _shareCount;
         receipt.abstention = false;
+        receipt.undoCast = false;
         proposal.againstVotes += _shareCount;
         emit VoteCast(_proposalId, _wallet, _shareId, _shareCount);
         return _shareCount;
@@ -739,6 +785,10 @@ contract GovernanceStorage is Storage, ERC165, Ownable {
         uint256 undoVotes = receipt.shareFor;
         receipt.undoCast = true;
         proposal.forVotes -= undoVotes;
+        if (proposal.choiceCount > 0) {
+            Choice memory choice = proposal.choice[receipt.choiceId];
+            choice.voteCount -= undoVotes;
+        }
         emit UndoVote(_proposalId, _wallet, _receiptId, undoVotes);
         return undoVotes;
     }
@@ -803,7 +853,7 @@ contract GovernanceStorage is Storage, ERC165, Ownable {
     {
         Proposal storage proposal = proposalMap[_proposalId];
         require(_transactionId < proposal.transactionCount, "Invalid transaction");
-        Transaction storage transaction = proposal.transaction[_transactionId];
+        Transaction memory transaction = proposal.transaction[_transactionId];
         return (
             transaction.target,
             transaction.value,
@@ -964,7 +1014,7 @@ contract GovernanceStorage is Storage, ERC165, Ownable {
     {
         Proposal storage proposal = proposalMap[_proposalId];
         require(_metaId < proposal.metaCount, "Metadata id unknown");
-        Meta storage meta = proposal.metadata[_metaId];
+        Meta memory meta = proposal.metadata[_metaId];
         require(meta.id == _metaId, "Metadata invalid");
         return (meta.name, meta.value);
     }
@@ -1003,10 +1053,10 @@ contract GovernanceStorage is Storage, ERC165, Ownable {
 
     /// @notice get the choice by id
     /// @param _proposalId the id of the proposal
-    /// @param _choiceId the id of the metadata
-    /// @return _name the name of the metadata field
-    /// @return _description the value of the metadata field
-    /// @return _transactionId the value of the metadata field
+    /// @param _choiceId the id of the choice
+    /// @return _name the name of the choice field
+    /// @return _description the string choice description
+    /// @return _transactionId the transactionId to execute for this choice
     /// @return _voteCount the current number of votes for this choice
     function getChoice(uint256 _proposalId, uint256 _choiceId)
         external
@@ -1021,9 +1071,53 @@ contract GovernanceStorage is Storage, ERC165, Ownable {
     {
         Proposal storage proposal = proposalMap[_proposalId];
         require(_choiceId < proposal.choiceCount, "Choice Id is unknown");
-        Choice storage choice = proposal.choice[_choiceId];
+        Choice memory choice = proposal.choice[_choiceId];
         require(_choiceId == choice.id, "Choice is invalid");
         return (choice.name, choice.description, choice.transactionId, choice.voteCount);
+    }
+
+    /// @notice get the choice description by id
+    /// @param _proposalId the id of the proposal
+    /// @param _choiceId the id of the metadata
+    /// @return string the description
+    function getChoiceDescription(uint256 _proposalId, uint256 _choiceId)
+        external
+        view
+        requireValid(_proposalId)
+        returns (string memory)
+    {
+        Proposal storage proposal = proposalMap[_proposalId];
+        require(_choiceId < proposal.choiceCount, "Choice Id is unknown");
+        Choice memory choice = proposal.choice[_choiceId];
+        require(_choiceId == choice.id, "Choice is invalid");
+        return choice.description;
+    }
+
+    /// @notice return the choice with the highest vote count
+    /// @dev quorum is ignored for this caluclation
+    /// @param _proposalId the id of the proposal
+    /// @return uint The winning choice
+    function getWinningChoice(uint256 _proposalId) external view returns (uint256) {
+        uint256 winningChoice = 0;
+        uint256 highestVoteCount = 0;
+        Proposal storage proposal = proposalMap[_proposalId];
+        require(proposal.choiceCount > 0, "No choice");
+        for (uint256 cid = 0; cid < proposal.choiceCount; cid++) {
+            Choice memory choice = proposal.choice[cid];
+            if (choice.voteCount > highestVoteCount) {
+                winningChoice = cid;
+                highestVoteCount = choice.voteCount;
+            }
+        }
+        return winningChoice;
+    }
+
+    /// @notice test if proposal is a choice vote
+    /// @param _proposalId the id of the proposal
+    /// @return bool true if proposal is a choice vote
+    function isChoiceVote(uint256 _proposalId) public view requireValid(_proposalId) returns (bool) {
+        Proposal storage proposal = proposalMap[_proposalId];
+        return proposal.choiceCount > 0;
     }
 
     /// @notice see ERC-165

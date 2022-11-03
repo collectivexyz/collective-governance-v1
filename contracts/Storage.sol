@@ -76,6 +76,7 @@ interface Storage is IERC165 {
     event AddMeta(uint256 proposalId, uint256 metaId, bytes32 name, string value);
 
     event VoteCast(uint256 proposalId, address voter, uint256 shareId, uint256 totalVotesCast);
+    event VoteCast(uint256 proposalId, address voter, uint256 shareId, uint256 choiceId, uint256 totalVotesCast);
     event UndoVote(uint256 proposalId, address voter, uint256 shareId, uint256 votesUndone);
     event VoteVeto(uint256 proposalId, address supervisor);
     event VoteReady(uint256 proposalId, uint256 startTime, uint256 endTime);
@@ -362,10 +363,10 @@ interface Storage is IERC165 {
 
     /// @notice get the choice by id
     /// @param _proposalId the id of the proposal
-    /// @param _choiceId the id of the metadata
-    /// @return _name the name of the metadata field
-    /// @return _description the value of the metadata field
-    /// @return _transactionId the value of the metadata field
+    /// @param _choiceId the id of the choice
+    /// @return _name the name of the choice field
+    /// @return _description the string choice description
+    /// @return _transactionId the transactionId to execute for this choice
     /// @return _voteCount the current number of votes for this choice
     function getChoice(uint256 _proposalId, uint256 _choiceId)
         external
@@ -376,6 +377,12 @@ interface Storage is IERC165 {
             uint256 _transactionId,
             uint256 _voteCount
         );
+
+    /// @notice return the choice with the highest vote count
+    /// @dev quorum is ignored for this caluclation
+    /// @param _proposalId the id of the proposal
+    /// @return uint256 The winning choice
+    function getWinningChoice(uint256 _proposalId) external view returns (uint256);
 
     /// @notice get the address of the proposal sender
     /// @param _proposalId the id of the proposal
@@ -413,6 +420,12 @@ interface Storage is IERC165 {
     /// @param _proposalId the id of the proposal
     /// @return uint256 the number of votes in favor
     function forVotes(uint256 _proposalId) external view returns (uint256);
+
+    /// @notice get the vote count for a choice
+    /// @param _proposalId the id of the proposal
+    /// @param _choiceId the id of the choice
+    /// @return uint256 the number of votes in favor
+    function voteCount(uint256 _proposalId, uint256 _choiceId) external view returns (uint256);
 
     /// @notice get the against vote count
     /// @param _proposalId the id of the proposal
@@ -456,25 +469,34 @@ interface Storage is IERC165 {
     /// @return bool true if the proposal is marked veto
     function isVeto(uint256 _proposalId) external view returns (bool);
 
+    /// @notice test if proposal is a choice vote
+    /// @param _proposalId the id of the proposal
+    /// @return bool true if proposal is a choice vote
+    function isChoiceVote(uint256 _proposalId) external view returns (bool);
+
     /// @notice get the id of the last proposal for sender
     /// @return uint256 the id of the most recent proposal for sender
     function latestProposal(address _sender) external view returns (uint256);
 
     /// @notice get the vote receipt
-    /// @return _shareId the share id for the vote
-    /// @return _shareFor the shares cast in favor
-    /// @return _votesCast the number of votes cast
-    /// @return _isAbstention true if vote was an abstention
-    /// @return _isUndo true if the vote was reversed
-    function voteReceipt(uint256 _proposalId, uint256 shareId)
+    /// @param _proposalId the id of the proposal
+    /// @param _shareId the id of the share voted
+    /// @return shareId the share id for the vote
+    /// @return shareFor the shares cast in favor
+    /// @return votesCast the number of votes cast
+    /// @return choiceId the choice voted, 0 if not a choice vote
+    /// @return isAbstention true if vote was an abstention
+    /// @return isUndo true if the vote was reversed
+    function getVoteReceipt(uint256 _proposalId, uint256 _shareId)
         external
         view
         returns (
-            uint256 _shareId,
-            uint256 _shareFor,
-            uint256 _votesCast,
-            bool _isAbstention,
-            bool _isUndo
+            uint256 shareId,
+            uint256 shareFor,
+            uint256 votesCast,
+            uint256 choiceId,
+            bool isAbstention,
+            bool isUndo
         );
 
     /// @notice get the VoterClass used for this voting store

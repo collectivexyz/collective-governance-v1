@@ -225,6 +225,24 @@ contract CollectiveGovernance is Governance, VoteStrategy, ERC165 {
         emit ProposalDescription(_proposalId, _description, _url);
     }
 
+    /// @notice set a choice by choice id
+    /// @dev requires supervisor
+    /// @param _proposalId the id of the proposal
+    /// @param _name the name of the metadata field
+    /// @param _description the detailed description of the choice
+    /// @param _transactionId The id of the transaction to execute
+    function setChoice(
+        uint256 _proposalId,
+        uint256 _choiceId,
+        bytes32 _name,
+        string memory _description,
+        uint256 _transactionId
+    ) external {
+        require(_storage.getSender(_proposalId) == msg.sender, "Not sender");
+        _storage.setChoice(_proposalId, _choiceId, _name, _description, _transactionId, msg.sender);
+        emit ProposalChoice(_proposalId, _choiceId, _name, _description, _transactionId);
+    }
+
     /// @notice attach arbitrary metadata to proposal
     /// @dev required prior to calling configure
     /// @param _proposalId the id of the proposal
@@ -337,28 +355,47 @@ contract CollectiveGovernance is Governance, VoteStrategy, ERC165 {
 
     /// @notice cast an affirmative vote for the measure by id
     /// @param _proposalId The numeric id of the proposed vote
-    /// @dev Auto discovery is attempted and if possible the method will proceed using the discovered shares
-    function voteFor(uint256 _proposalId) external requireOrigin requireVoteOpen(_proposalId) requireVoteAllowed(_proposalId) {
+    /// @param _choiceId The choice to vote for
+    function voteChoice(uint256 _proposalId, uint256 _choiceId)
+        public
+        requireOrigin
+        requireVoteOpen(_proposalId)
+        requireVoteAllowed(_proposalId)
+    {
         uint256 startGas = gasleft();
         uint256[] memory _shareList = _voterClass.discover(msg.sender);
         for (uint256 i = 0; i < _shareList.length; i++) {
-            castVoteFor(_proposalId, _shareList[i]);
+            castVoteFor(_proposalId, _shareList[i], _choiceId);
         }
         sendGasRebate(msg.sender, startGas);
     }
 
     /// @notice cast an affirmative vote for the measure by id
     /// @param _proposalId The numeric id of the proposed vote
+    /// @dev Auto discovery is attempted and if possible the method will proceed using the discovered shares
+    function voteFor(uint256 _proposalId) external {
+        voteChoice(_proposalId, 0);
+    }
+
+    /// @notice cast an affirmative vote for the measure by id
+    /// @param _proposalId The numeric id of the proposed vote
     /// @param _shareList A array of tokens or shares that confer the right to vote
-    function voteFor(uint256 _proposalId, uint256[] memory _shareList)
-        external
-        requireOrigin
-        requireVoteOpen(_proposalId)
-        requireVoteAllowed(_proposalId)
-    {
+    function voteFor(uint256 _proposalId, uint256[] memory _shareList) external {
+        voteFor(_proposalId, _shareList, 0);
+    }
+
+    /// @notice cast an affirmative vote for the measure by id
+    /// @param _proposalId The numeric id of the proposed vote
+    /// @param _tokenIdList A array of tokens or shares that confer the right to vote
+    /// @param _choiceId The choice to vote for
+    function voteFor(
+        uint256 _proposalId,
+        uint256[] memory _tokenIdList,
+        uint256 _choiceId
+    ) public requireOrigin requireVoteOpen(_proposalId) requireVoteAllowed(_proposalId) {
         uint256 startGas = gasleft();
-        for (uint256 i = 0; i < _shareList.length; i++) {
-            castVoteFor(_proposalId, _shareList[i]);
+        for (uint256 i = 0; i < _tokenIdList.length; i++) {
+            castVoteFor(_proposalId, _tokenIdList[i], _choiceId);
         }
         sendGasRebate(msg.sender, startGas);
     }
@@ -366,14 +403,21 @@ contract CollectiveGovernance is Governance, VoteStrategy, ERC165 {
     /// @notice cast an affirmative vote for the measure by id
     /// @param _proposalId The numeric id of the proposed vote
     /// @param _tokenId The id of a token or share representing the right to vote
-    function voteFor(uint256 _proposalId, uint256 _tokenId)
-        external
-        requireOrigin
-        requireVoteOpen(_proposalId)
-        requireVoteAllowed(_proposalId)
-    {
+    function voteFor(uint256 _proposalId, uint256 _tokenId) external {
+        voteFor(_proposalId, _tokenId, 0);
+    }
+
+    /// @notice cast an affirmative vote for the measure by id
+    /// @param _proposalId The numeric id of the proposed vote
+    /// @param _tokenId The id of a token or share representing the right to vote
+    /// @param _choiceId The choice to vote for
+    function voteFor(
+        uint256 _proposalId,
+        uint256 _tokenId,
+        uint256 _choiceId
+    ) public requireOrigin requireVoteOpen(_proposalId) requireVoteAllowed(_proposalId) {
         uint256 startGas = gasleft();
-        castVoteFor(_proposalId, _tokenId);
+        castVoteFor(_proposalId, _tokenId, _choiceId);
         sendGasRebate(msg.sender, startGas);
     }
 
@@ -540,7 +584,9 @@ contract CollectiveGovernance is Governance, VoteStrategy, ERC165 {
     {
         uint256 totalVotesCast = _storage.quorum(_proposalId);
         bool quorumRequirementMet = totalVotesCast >= _storage.quorumRequired(_proposalId);
-        return quorumRequirementMet && _storage.forVotes(_proposalId) > _storage.againstVotes(_proposalId);
+        return
+            quorumRequirementMet &&
+            ((_storage.forVotes(_proposalId) > _storage.againstVotes(_proposalId)) || _storage.isChoiceVote(_proposalId));
     }
 
     /// @notice see ERC-165
@@ -585,23 +631,40 @@ contract CollectiveGovernance is Governance, VoteStrategy, ERC165 {
         uint256 transactionCount = _storage.transactionCount(_proposalId);
         uint256 executedCount = 0;
         if (transactionCount > 0) {
+            require(!_storage.isExecuted(_proposalId), "Transaction executed");
             _storage.setExecuted(_proposalId, msg.sender);
-            for (uint256 tid = 0; tid < transactionCount; tid++) {
-                (
-                    address target,
-                    uint256 value,
-                    string memory signature,
-                    bytes memory _calldata,
-                    uint256 scheduleTime,
-                    bytes32 txHash
-                ) = _storage.getTransaction(_proposalId, tid);
-                if (txHash.length > 0 && _timeLock.queuedTransaction(txHash)) {
-                    _timeLock.executeTransaction(target, value, signature, _calldata, scheduleTime);
-                    emit ProposalTransactionExecuted(_proposalId, tid, target, value, scheduleTime, txHash);
+            if (_storage.isChoiceVote(_proposalId)) {
+                uint256 winningChoice = _storage.getWinningChoice(_proposalId);
+                require(winningChoice < _storage.choiceCount(_proposalId), "Invalid choice found");
+                (bytes32 _name, string memory _description, uint256 transactionId, uint256 voteCount) = _storage.getChoice(
+                    _proposalId,
+                    winningChoice
+                );
+                executeTransaction(_proposalId, transactionId);
+                executedCount++;
+                emit WinningChoice(_proposalId, _name, _description, transactionId, voteCount);
+            } else {
+                for (uint256 transactionId = 0; transactionId < transactionCount; transactionId++) {
+                    executeTransaction(_proposalId, transactionId);
                     executedCount++;
                 }
             }
             emit ProposalExecuted(_proposalId, executedCount);
+        }
+    }
+
+    function executeTransaction(uint256 _proposalId, uint256 _transactionId) private {
+        (
+            address target,
+            uint256 value,
+            string memory signature,
+            bytes memory _calldata,
+            uint256 scheduleTime,
+            bytes32 txHash
+        ) = _storage.getTransaction(_proposalId, _transactionId);
+        if (txHash.length > 0 && _timeLock.queuedTransaction(txHash)) {
+            _timeLock.executeTransaction(target, value, signature, _calldata, scheduleTime);
+            emit ProposalTransactionExecuted(_proposalId, _transactionId, target, value, scheduleTime, txHash);
         }
     }
 
@@ -654,10 +717,15 @@ contract CollectiveGovernance is Governance, VoteStrategy, ERC165 {
         return _storage.description();
     }
 
-    function castVoteFor(uint256 _proposalId, uint256 _tokenId) private {
-        uint256 count = _storage.voteForByShare(_proposalId, msg.sender, _tokenId);
-        if (count > 0) {
-            emit VoteCount(_proposalId, msg.sender, _tokenId, count, 0);
+    function castVoteFor(
+        uint256 _proposalId,
+        uint256 _tokenId,
+        uint256 _choiceId
+    ) private {
+        uint256 voteCount = 0;
+        voteCount = _storage.voteForByShare(_proposalId, msg.sender, _tokenId, _choiceId);
+        if (voteCount > 0) {
+            emit VoteCount(_proposalId, msg.sender, _tokenId, voteCount, 0);
         } else {
             revert("Not voter");
         }
