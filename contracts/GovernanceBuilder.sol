@@ -52,9 +52,9 @@ import "../contracts/CollectiveGovernanceFactory.sol";
 import "../contracts/VoterClass.sol";
 import "../contracts/GovernanceCreator.sol";
 import "../contracts/Storage.sol";
-import "../contracts/MetaStorage.sol";
-import "../contracts/CollectiveMetaStorage.sol";
 import "../contracts/StorageFactory.sol";
+import "../contracts/MetaStorage.sol";
+import "../contracts/MetaStorageFactory.sol";
 
 /// @title Governance GovernanceCreator implementation
 /// @notice This builder supports creating new instances of the Collective Governance Contract
@@ -68,6 +68,8 @@ contract GovernanceBuilder is GovernanceCreator, ERC165 {
 
     StorageFactory private immutable _storageFactory;
 
+    MetaStorageFactory private immutable _metaStorageFactory;
+
     CollectiveGovernanceFactory private immutable _governanceFactory;
 
     mapping(address => bool) public _governanceContractRegistered;
@@ -75,6 +77,7 @@ contract GovernanceBuilder is GovernanceCreator, ERC165 {
     constructor() {
         _voterClassNull = new VoterClassNullObject();
         _storageFactory = new StorageFactory();
+        _metaStorageFactory = new MetaStorageFactory();
         _governanceFactory = new CollectiveGovernanceFactory();
     }
 
@@ -198,7 +201,7 @@ contract GovernanceBuilder is GovernanceCreator, ERC165 {
         GovernanceProperties storage _properties = _buildMap[_creator];
         Storage _storage = createStorage(_properties);
         TimeLocker _timeLock = createTimelock(_storage);
-        MetaStorage _metaStore = new CollectiveMetaStorage(_properties.name, _properties.url, _properties.description);
+        MetaStorage _metaStore = _metaStorageFactory.createMeta(_properties.name, _properties.url, _properties.description);
         Governance _governance = _governanceFactory.create(
             _properties.supervisorList,
             _properties.class,

@@ -6,7 +6,7 @@ import "@openzeppelin/contracts/interfaces/IERC165.sol";
 import "forge-std/Test.sol";
 
 import "../contracts/MetaStorage.sol";
-import "../contracts/CollectiveMetaStorage.sol";
+import "../contracts/MetaStorageFactory.sol";
 import "./TestData.sol";
 
 contract MetaStorageTest is Test {
@@ -17,7 +17,7 @@ contract MetaStorageTest is Test {
 
     function setUp() public {
         vm.clearMockedCalls();
-        _storage = new CollectiveMetaStorage(
+        _storage = new MetaStorageFactory().createMeta(
             "acme inc",
             "https://github.com/collectivexyz/collective-governance-v1",
             "Universal Exports"
