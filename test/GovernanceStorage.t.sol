@@ -46,10 +46,7 @@ contract GovernanceStorageTest is Test {
             _voterClass,
             Constant.MINIMUM_PROJECT_QUORUM,
             Constant.MINIMUM_VOTE_DELAY,
-            Constant.MINIMUM_VOTE_DURATION,
-            "",
-            "",
-            ""
+            Constant.MINIMUM_VOTE_DURATION
         );
         _proposalId = _storage.initializeProposal(0, _OWNER);
         assertEq(_proposalId, PROPOSAL_ID);
@@ -59,15 +56,7 @@ contract GovernanceStorageTest is Test {
         VoterClassVoterPool _voterClass = new VoterClassVoterPool(1);
         _voterClass.addVoter(_VOTER1);
         _voterClass.makeFinal();
-        _storage = _storageFactory.create(
-            _voterClass,
-            Constant.MINIMUM_PROJECT_QUORUM,
-            333,
-            Constant.MINIMUM_VOTE_DURATION,
-            "",
-            "",
-            ""
-        );
+        _storage = _storageFactory.create(_voterClass, Constant.MINIMUM_PROJECT_QUORUM, 333, Constant.MINIMUM_VOTE_DURATION);
         assertEq(_storage.minimumVoteDelay(), 333);
     }
 
@@ -75,15 +64,7 @@ contract GovernanceStorageTest is Test {
         VoterClassVoterPool _voterClass = new VoterClassVoterPool(1);
         _voterClass.addVoter(_VOTER1);
         _voterClass.makeFinal();
-        _storage = _storageFactory.create(
-            _voterClass,
-            Constant.MINIMUM_PROJECT_QUORUM,
-            Constant.MINIMUM_VOTE_DELAY,
-            22 days,
-            "",
-            "",
-            ""
-        );
+        _storage = _storageFactory.create(_voterClass, Constant.MINIMUM_PROJECT_QUORUM, Constant.MINIMUM_VOTE_DELAY, 22 days);
         assertEq(_storage.minimumVoteDuration(), 22 days);
     }
 
@@ -91,15 +72,7 @@ contract GovernanceStorageTest is Test {
         VoterClassVoterPool _voterClass = new VoterClassVoterPool(1);
         _voterClass.addVoter(_VOTER1);
         _voterClass.makeFinal();
-        _storage = _storageFactory.create(
-            _voterClass,
-            11111,
-            Constant.MINIMUM_VOTE_DELAY,
-            Constant.MINIMUM_VOTE_DURATION,
-            "",
-            "",
-            ""
-        );
+        _storage = _storageFactory.create(_voterClass, 11111, Constant.MINIMUM_VOTE_DELAY, Constant.MINIMUM_VOTE_DURATION);
         assertEq(_storage.minimumProjectQuorum(), 11111);
     }
 
@@ -114,7 +87,7 @@ contract GovernanceStorageTest is Test {
         VoterClassVoterPool _voterClass = new VoterClassVoterPool(1);
         _voterClass.addVoter(_VOTER1);
         _voterClass.makeFinal();
-        new GovernanceStorage(_voterClass, Constant.MINIMUM_PROJECT_QUORUM, 0, Constant.MINIMUM_VOTE_DURATION, "", "", "");
+        new GovernanceStorage(_voterClass, Constant.MINIMUM_PROJECT_QUORUM, 0, Constant.MINIMUM_VOTE_DURATION);
     }
 
     function testFailMinimumDurationRequired() public {
@@ -123,10 +96,7 @@ contract GovernanceStorageTest is Test {
             _voterClass,
             Constant.MINIMUM_PROJECT_QUORUM,
             Constant.MINIMUM_VOTE_DELAY,
-            Constant.MINIMUM_VOTE_DURATION - 1,
-            "",
-            "",
-            ""
+            Constant.MINIMUM_VOTE_DURATION - 1
         );
     }
 
@@ -136,10 +106,7 @@ contract GovernanceStorageTest is Test {
             _voterClass,
             Constant.MINIMUM_PROJECT_QUORUM - 1,
             Constant.MINIMUM_VOTE_DELAY,
-            Constant.MINIMUM_VOTE_DURATION,
-            "",
-            "",
-            ""
+            Constant.MINIMUM_VOTE_DURATION
         );
     }
 
@@ -149,10 +116,7 @@ contract GovernanceStorageTest is Test {
             _class,
             Constant.MINIMUM_PROJECT_QUORUM,
             Constant.MINIMUM_VOTE_DELAY,
-            Constant.MINIMUM_VOTE_DURATION,
-            "",
-            "",
-            ""
+            Constant.MINIMUM_VOTE_DURATION
         );
     }
 
@@ -540,10 +504,7 @@ contract GovernanceStorageTest is Test {
             new VoterClassOpenVote(1),
             Constant.MINIMUM_PROJECT_QUORUM,
             Constant.MINIMUM_VOTE_DELAY,
-            Constant.MINIMUM_VOTE_DURATION,
-            "",
-            "",
-            ""
+            Constant.MINIMUM_VOTE_DURATION
         );
         _storage.initializeProposal(0, _OWNER);
         _storage.registerSupervisor(_proposalId, _SUPERVISOR, _OWNER);
@@ -561,10 +522,7 @@ contract GovernanceStorageTest is Test {
             new VoterClassERC721(address(token), 1),
             Constant.MINIMUM_PROJECT_QUORUM,
             Constant.MINIMUM_VOTE_DELAY,
-            Constant.MINIMUM_VOTE_DURATION,
-            "",
-            "",
-            ""
+            Constant.MINIMUM_VOTE_DURATION
         );
         _storage.initializeProposal(0, _OWNER);
         _storage.registerSupervisor(_proposalId, _SUPERVISOR, _OWNER);
@@ -693,10 +651,7 @@ contract GovernanceStorageTest is Test {
             _storage.voterClass(),
             Constant.MINIMUM_VOTE_DELAY,
             Constant.MINIMUM_VOTE_DURATION,
-            Constant.MINIMUM_PROJECT_QUORUM,
-            "",
-            "",
-            ""
+            Constant.MINIMUM_PROJECT_QUORUM
         );
         vm.prank(_SUPERVISOR);
         _gStorage.transferOwnership(_SUPERVISOR);
@@ -813,117 +768,6 @@ contract GovernanceStorageTest is Test {
         _storage.setExecuted(_proposalId, _SUPERVISOR);
     }
 
-    function testSetProposalUrl() public {
-        _storage.registerSupervisor(_proposalId, _SUPERVISOR, _OWNER);
-        _storage.setProposalUrl(_proposalId, "https://collective.xyz", _SUPERVISOR);
-        assertEq(_storage.url(_proposalId), "https://collective.xyz");
-    }
-
-    function testSetProposalUrlIfFinal() public {
-        _storage.registerSupervisor(_proposalId, _SUPERVISOR, _OWNER);
-        _storage.makeFinal(_proposalId, _SUPERVISOR);
-        vm.expectRevert("Vote not modifiable");
-        _storage.setProposalUrl(_proposalId, "https://collective.xyz", _SUPERVISOR);
-    }
-
-    function testSetProposalUrlNotSupervisor() public {
-        _storage.registerSupervisor(_proposalId, _SUPERVISOR, _OWNER);
-        vm.expectRevert("Requires supervisor");
-        _storage.setProposalUrl(_proposalId, "https://collective.xyz", _VOTER1);
-    }
-
-    function testSetProposalUrlNotOwner() public {
-        _storage.registerSupervisor(_proposalId, _SUPERVISOR, _OWNER);
-        vm.expectRevert("Ownable: caller is not the owner");
-        vm.prank(_VOTER1);
-        _storage.setProposalUrl(_proposalId, "https://collective.xyz", _SUPERVISOR);
-    }
-
-    function testFailSetProposalUrlTooLarge() public {
-        _storage.registerSupervisor(_proposalId, _SUPERVISOR, _OWNER);
-        _storage.setProposalUrl(_proposalId, TestData.pi1kplus(), _SUPERVISOR);
-    }
-
-    function testSetProposalDescription() public {
-        _storage.registerSupervisor(_proposalId, _SUPERVISOR, _OWNER);
-        _storage.setProposalDescription(_proposalId, "A project to build governance for all communities", _SUPERVISOR);
-        assertEq(_storage.description(_proposalId), "A project to build governance for all communities");
-    }
-
-    function testSetProposalDescriptionIfFinal() public {
-        _storage.registerSupervisor(_proposalId, _SUPERVISOR, _OWNER);
-        _storage.makeFinal(_proposalId, _SUPERVISOR);
-        vm.expectRevert("Vote not modifiable");
-        _storage.setProposalDescription(_proposalId, "A project to build governance for all communities", _SUPERVISOR);
-    }
-
-    function testSetProposalDescriptionNotSupervisor() public {
-        _storage.registerSupervisor(_proposalId, _SUPERVISOR, _OWNER);
-        vm.expectRevert("Requires supervisor");
-        _storage.setProposalDescription(_proposalId, "A project to build governance for all communities", _VOTER1);
-    }
-
-    function testSetProposalDescriptionNotOwner() public {
-        _storage.registerSupervisor(_proposalId, _SUPERVISOR, _OWNER);
-        vm.expectRevert("Ownable: caller is not the owner");
-        vm.prank(_VOTER1);
-        _storage.setProposalDescription(_proposalId, "Url", _SUPERVISOR);
-    }
-
-    function testFailSetProposalDescriptionTooLarge() public {
-        _storage.registerSupervisor(_proposalId, _SUPERVISOR, _OWNER);
-        _storage.setProposalDescription(_proposalId, TestData.pi1kplus(), _SUPERVISOR);
-    }
-
-    function testMetaCountInitialValue() public {
-        assertEq(_storage.metaCount(_proposalId), 0);
-    }
-
-    function testMetaCount() public {
-        _storage.registerSupervisor(_proposalId, _SUPERVISOR, _OWNER);
-        for (uint256 i = 0; i < 10; i++) {
-            _storage.addMeta(_proposalId, "a", "1", _SUPERVISOR);
-        }
-        assertEq(_storage.metaCount(_proposalId), 10);
-    }
-
-    function testAddMeta() public {
-        _storage.registerSupervisor(_proposalId, _SUPERVISOR, _OWNER);
-        uint256 m1 = _storage.addMeta(_proposalId, "a", "1", _SUPERVISOR);
-        uint256 m2 = _storage.addMeta(_proposalId, "b", "2", _SUPERVISOR);
-        _storage.makeFinal(_proposalId, _SUPERVISOR);
-        (bytes32 m1name, string memory m1value) = _storage.getMeta(_proposalId, m1);
-        assertEq(m1name, "a");
-        assertEq(m1value, "1");
-        (bytes32 m2name, string memory m2value) = _storage.getMeta(_proposalId, m2);
-        assertEq(m2name, "b");
-        assertEq(m2value, "2");
-    }
-
-    function testAddMetaIfFinal() public {
-        _storage.registerSupervisor(_proposalId, _SUPERVISOR, _OWNER);
-        _storage.makeFinal(_proposalId, _SUPERVISOR);
-        vm.expectRevert("Vote not modifiable");
-        _storage.addMeta(_proposalId, "a", "1", _SUPERVISOR);
-    }
-
-    function testAddMetaNotOwner() public {
-        _storage.registerSupervisor(_proposalId, _SUPERVISOR, _OWNER);
-        vm.expectRevert("Ownable: caller is not the owner");
-        vm.prank(_SUPERVISOR);
-        _storage.addMeta(_proposalId, "a", "1", _SUPERVISOR);
-    }
-
-    function testAddMetaNotSupervisor() public {
-        vm.expectRevert("Requires supervisor");
-        _storage.addMeta(_proposalId, "a", "1", _VOTER1);
-    }
-
-    function testFailAddMetaValueTooLarge() public {
-        _storage.registerSupervisor(_proposalId, _SUPERVISOR, _OWNER);
-        _storage.addMeta(_proposalId, "a", TestData.pi1kplus(), _SUPERVISOR);
-    }
-
     function testGetWinnerForNoChoice() public {
         vm.expectRevert("No choice");
         _storage.getWinningChoice(_proposalId);
@@ -956,10 +800,7 @@ contract GovernanceStorageChoiceVoteTest is Test {
             _voterClass,
             Constant.MINIMUM_PROJECT_QUORUM,
             Constant.MINIMUM_VOTE_DELAY,
-            Constant.MINIMUM_VOTE_DURATION,
-            "",
-            "",
-            ""
+            Constant.MINIMUM_VOTE_DURATION
         );
         _proposalId = _storage.initializeProposal(_NCHOICE, _OWNER);
     }

@@ -47,9 +47,10 @@ import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
 
 import "../contracts/Constant.sol";
 import "../contracts/VoterClass.sol";
+import "../contracts/access/AlwaysImmutable.sol";
 
 /// @notice OpenVote VoterClass allows every wallet to participate in an open vote
-contract VoterClassOpenVote is VoterClass, ERC165 {
+contract VoterClassOpenVote is VoterClass, AlwaysImmutable, ERC165 {
     string public constant NAME = "collective VoterClassOpenVote";
     uint32 public constant VERSION_1 = 1;
 
@@ -68,13 +69,6 @@ contract VoterClassOpenVote is VoterClass, ERC165 {
     modifier requireValidShare(address _wallet, uint256 _shareId) {
         require(_shareId > 0 && _shareId == uint160(_wallet), "Not a valid share");
         _;
-    }
-
-    /// @notice OpenVote VoterClass is always final
-    /// @dev always returns true
-    /// @return bool true if final
-    function isFinal() external pure returns (bool) {
-        return true;
     }
 
     /// @notice return true for all wallets
@@ -107,7 +101,10 @@ contract VoterClassOpenVote is VoterClass, ERC165 {
 
     /// @notice see ERC-165
     function supportsInterface(bytes4 interfaceId) public view virtual override(IERC165, ERC165) returns (bool) {
-        return interfaceId == type(VoterClass).interfaceId || super.supportsInterface(interfaceId);
+        return
+            interfaceId == type(VoterClass).interfaceId ||
+            interfaceId == type(Mutable).interfaceId ||
+            super.supportsInterface(interfaceId);
     }
 
     /// @notice return the name of this implementation

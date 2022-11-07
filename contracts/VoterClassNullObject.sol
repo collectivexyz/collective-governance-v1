@@ -45,22 +45,17 @@ pragma solidity ^0.8.15;
 
 import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
 
-import "./VoterClass.sol";
+import "../contracts/VoterClass.sol";
+import "../contracts/access/AlwaysImmutable.sol";
 
 /// @notice Null Object Pattern for VoterClass
 /// @dev No voter is allowed.
-contract VoterClassNullObject is VoterClass, ERC165 {
+contract VoterClassNullObject is VoterClass, AlwaysImmutable, ERC165 {
     string public constant NAME = "collective VoterClassNullObject";
 
     modifier requireValidAddress(address _wallet) {
         require(_wallet != address(0), "Not a valid wallet");
         _;
-    }
-
-    /// @notice always final
-    /// @return bool always returns true
-    function isFinal() external pure returns (bool) {
-        return true;
     }
 
     /// @notice no voter is allowed
@@ -88,7 +83,10 @@ contract VoterClassNullObject is VoterClass, ERC165 {
     }
 
     function supportsInterface(bytes4 interfaceId) public view virtual override(IERC165, ERC165) returns (bool) {
-        return interfaceId == type(VoterClass).interfaceId || super.supportsInterface(interfaceId);
+        return
+            interfaceId == type(VoterClass).interfaceId ||
+            interfaceId == type(Mutable).interfaceId ||
+            super.supportsInterface(interfaceId);
     }
 
     /// @notice return the name of this implementation

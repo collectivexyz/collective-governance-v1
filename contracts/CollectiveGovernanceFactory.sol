@@ -44,6 +44,7 @@
 pragma solidity ^0.8.15;
 
 import "../contracts/Governance.sol";
+import "../contracts/MetaStorage.sol";
 import "../contracts/CollectiveGovernance.sol";
 
 /**
@@ -59,6 +60,7 @@ contract CollectiveGovernanceFactory {
     /// @param _supervisorList the list of supervisors for this project
     /// @param _class the VoterClass for this project
     /// @param _storage The storage contract for this governance
+    /// @param _metaStore The metadata storage
     /// @param _timeLock The timelock for the contract
     /// @param _gasUsedRebate The maximum rebate for gas used
     /// @param _baseFeeRebate The maximum base fee rebate
@@ -66,6 +68,7 @@ contract CollectiveGovernanceFactory {
         address[] memory _supervisorList,
         VoterClass _class,
         Storage _storage,
+        MetaStorage _metaStore,
         TimeLocker _timeLock,
         uint256 _gasUsedRebate,
         uint256 _baseFeeRebate
@@ -74,6 +77,7 @@ contract CollectiveGovernanceFactory {
             _supervisorList,
             _class,
             _storage,
+            _metaStore,
             _timeLock,
             _gasUsedRebate,
             _baseFeeRebate

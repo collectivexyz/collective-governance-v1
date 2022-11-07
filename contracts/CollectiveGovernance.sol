@@ -47,6 +47,7 @@ import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
 import "@openzeppelin/contracts/utils/math/Math.sol";
 
 import "../contracts/Storage.sol";
+import "../contracts/MetaStorage.sol";
 import "../contracts/Governance.sol";
 import "../contracts/VoteStrategy.sol";
 import "../contracts/VoterClass.sol";
@@ -73,7 +74,9 @@ contract CollectiveGovernance is Governance, VoteStrategy, ERC165 {
 
     VoterClass private immutable _voterClass;
 
-    Storage private immutable _storage;
+    Storage public immutable _storage;
+
+    MetaStorage public immutable meta;
 
     TimeLocker private immutable _timeLock;
 
@@ -99,6 +102,7 @@ contract CollectiveGovernance is Governance, VoteStrategy, ERC165 {
         address[] memory _supervisorList,
         VoterClass _class,
         Storage _governanceStorage,
+        MetaStorage _metaStore,
         TimeLocker _timeLocker,
         uint256 _gasUsedRebate,
         uint256 _baseFeeRebate
@@ -109,14 +113,20 @@ contract CollectiveGovernance is Governance, VoteStrategy, ERC165 {
 
         _voterClass = _class;
         _storage = _governanceStorage;
+        meta = _metaStore;
         _timeLock = _timeLocker;
         _communitySupervisorList = _supervisorList;
         _maximumGasUsedRebate = _gasUsedRebate;
         _maximumBaseFeeRebate = _baseFeeRebate;
     }
 
-    modifier requireVoteReady(uint256 _proposalId) {
-        require(_storage.isFinal(_proposalId), "Voting is not ready");
+    modifier requireNotFinal(uint256 _proposalId) {
+        require(!_storage.isFinal(_proposalId), "Vote is final");
+        _;
+    }
+
+    modifier requireVoteFinal(uint256 _proposalId) {
+        require(_storage.isFinal(_proposalId), "Vote is not final");
         _;
     }
 
@@ -218,11 +228,27 @@ contract CollectiveGovernance is Governance, VoteStrategy, ERC165 {
         uint256 _proposalId,
         string memory _description,
         string memory _url
-    ) external {
+    ) external requireNotFinal(_proposalId) {
         require(_storage.getSender(_proposalId) == msg.sender, "Not sender");
-        _storage.setProposalDescription(_proposalId, _description, msg.sender);
-        _storage.setProposalUrl(_proposalId, _url, msg.sender);
+        meta.describe(_proposalId, _url, _description);
         emit ProposalDescription(_proposalId, _description, _url);
+    }
+
+    /// @notice attach arbitrary metadata to proposal
+    /// @dev required prior to calling configure
+    /// @param _proposalId the id of the proposal
+    /// @param _name the name of the metadata field
+    /// @param _value the value of the metadata
+    /// @return uint256 the metadata id
+    function addMeta(
+        uint256 _proposalId,
+        bytes32 _name,
+        string memory _value
+    ) external requireNotFinal(_proposalId) returns (uint256) {
+        require(_storage.getSender(_proposalId) == msg.sender, "Not sender");
+        uint256 metaId = meta.addMeta(_proposalId, _name, _value);
+        emit ProposalMeta(_proposalId, metaId, _name, _value, msg.sender);
+        return metaId;
     }
 
     /// @notice set a choice by choice id
@@ -241,22 +267,6 @@ contract CollectiveGovernance is Governance, VoteStrategy, ERC165 {
         require(_storage.getSender(_proposalId) == msg.sender, "Not sender");
         _storage.setChoice(_proposalId, _choiceId, _name, _description, _transactionId, msg.sender);
         emit ProposalChoice(_proposalId, _choiceId, _name, _description, _transactionId);
-    }
-
-    /// @notice attach arbitrary metadata to proposal
-    /// @dev required prior to calling configure
-    /// @param _proposalId the id of the proposal
-    /// @param _name the name of the metadata field
-    /// @param _value the value of the metadata
-    /// @return uint256 the metadata id
-    function addMeta(
-        uint256 _proposalId,
-        bytes32 _name,
-        string memory _value
-    ) external returns (uint256) {
-        uint256 metaId = _storage.addMeta(_proposalId, _name, _value, msg.sender);
-        emit ProposalMeta(_proposalId, metaId, _name, _value, msg.sender);
-        return metaId;
     }
 
     /// @notice configure an existing proposal by id
@@ -291,7 +301,7 @@ contract CollectiveGovernance is Governance, VoteStrategy, ERC165 {
     function startVote(uint256 _proposalId)
         external
         requireSupervisor(_proposalId)
-        requireVoteReady(_proposalId)
+        requireVoteFinal(_proposalId)
         requireVoteAllowed(_proposalId)
     {
         require(_storage.quorumRequired(_proposalId) < Constant.UINT_MAX, "Quorum required");
@@ -702,19 +712,19 @@ contract CollectiveGovernance is Governance, VoteStrategy, ERC165 {
     /// @notice return the name of the community
     /// @return bytes32 the community name
     function community() external view returns (bytes32) {
-        return _storage.community();
+        return meta.community();
     }
 
     /// @notice return the community url
     /// @return string memory representation of url
     function url() external view returns (string memory) {
-        return _storage.url();
+        return meta.url();
     }
 
     /// @notice return community description
     /// @return string memory representation of community description
     function description() external view returns (string memory) {
-        return _storage.description();
+        return meta.description();
     }
 
     function castVoteFor(

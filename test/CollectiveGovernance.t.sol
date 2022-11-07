@@ -387,7 +387,7 @@ contract CollectiveGovernanceTest is Test {
     function testOpenVoteRequiresReady() public {
         vm.prank(_governanceAddress);
         _storage.setQuorumRequired(proposalId, 2, _SUPERVISOR);
-        vm.expectRevert("Voting is not ready");
+        vm.expectRevert("Vote is not final");
         vm.prank(_SUPERVISOR);
         governance.startVote(proposalId);
     }
@@ -1404,7 +1404,7 @@ contract CollectiveGovernanceTest is Test {
         vm.prank(_VOTER1, _VOTER1);
         governance.voteFor(proposalId, TOKEN_ID1);
         assertTrue(_VOTER1.balance > 0);
-        assertApproxEqAbs(_VOTER1.balance, 8809268 gwei, 500 gwei);
+        assertApproxEqAbs(_VOTER1.balance, 8806356 gwei, 500 gwei);
     }
 
     function testCastAgainstVoteWithRefund() public {
@@ -1421,7 +1421,7 @@ contract CollectiveGovernanceTest is Test {
         vm.prank(_VOTER1, _VOTER1);
         governance.voteAgainst(proposalId, TOKEN_ID1);
         assertTrue(_VOTER1.balance > 0);
-        assertApproxEqAbs(_VOTER1.balance, 7774104 gwei, 500 gwei);
+        assertApproxEqAbs(_VOTER1.balance, 7765420 gwei, 500 gwei);
     }
 
     function testAbstainWithRefund() public {
@@ -1438,7 +1438,7 @@ contract CollectiveGovernanceTest is Test {
         vm.prank(_VOTER1, _VOTER1);
         governance.abstainFrom(proposalId, TOKEN_ID1);
         assertTrue(_VOTER1.balance > 0);
-        assertApproxEqAbs(_VOTER1.balance, 8546460 gwei, 500 gwei);
+        assertApproxEqAbs(_VOTER1.balance, 8531692 gwei, 500 gwei);
     }
 
     function testVoteAndUndoWithRefund() public {
@@ -1458,7 +1458,7 @@ contract CollectiveGovernanceTest is Test {
         governance.undoVote(proposalId, TOKEN_ID1);
         vm.stopPrank();
         assertTrue(_VOTER1.balance > 0);
-        assertApproxEqAbs(_VOTER1.balance, 12200552 gwei, 500 gwei);
+        assertApproxEqAbs(_VOTER1.balance, 12192804 gwei, 500 gwei);
     }
 
     function testCastVoteWithMaximumRefund() public {
@@ -1475,7 +1475,7 @@ contract CollectiveGovernanceTest is Test {
         vm.prank(_VOTER1, _VOTER1);
         governance.voteFor(proposalId, TOKEN_ID1);
         assertTrue(_VOTER1.balance > 0);
-        uint256 expectRefund = 17110309 gwei;
+        uint256 expectRefund = 17104653 gwei;
         assertApproxEqAbs(_VOTER1.balance, expectRefund, 500 gwei);
         assertApproxEqAbs(_governanceAddress.balance, 1 ether - expectRefund, 500 gwei);
     }
@@ -1486,8 +1486,16 @@ contract CollectiveGovernanceTest is Test {
         governance.configure(proposalId, 2);
         vm.stopPrank();
 
-        assertEq(_storage.description(proposalId), "A test vote");
-        assertEq(_storage.url(proposalId), "https://https://collectivexyz.github.io/collective-governance-v1/");
+        assertEq(governance.meta().description(proposalId), "A test vote");
+        assertEq(governance.meta().url(proposalId), "https://https://collectivexyz.github.io/collective-governance-v1/");
+    }
+
+    function testConfigureWithDescriptionAndUrlIfFinal() public {
+        vm.startPrank(_OWNER, _OWNER);
+        governance.configure(proposalId, 2);
+        vm.expectRevert("Vote is final");
+        governance.describe(proposalId, "A test vote", "https://https://collectivexyz.github.io/collective-governance-v1/");
+        vm.stopPrank();
     }
 
     function testConfigureWithMeta() public {
@@ -1495,7 +1503,7 @@ contract CollectiveGovernanceTest is Test {
         uint256 mid = governance.addMeta(proposalId, "e", "2.718281828459045235");
         governance.configure(proposalId, 2);
         vm.stopPrank();
-        (bytes32 _name, string memory _value) = _storage.getMeta(proposalId, mid);
+        (bytes32 _name, string memory _value) = governance.meta().getMeta(proposalId, mid);
         assertEq(_name, "e");
         assertEq(_value, "2.718281828459045235");
     }

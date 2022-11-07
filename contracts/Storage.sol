@@ -59,8 +59,6 @@ interface Storage is IERC165 {
     event SetQuorumRequired(uint256 proposalId, uint256 passThreshold);
     event SetVoteDelay(uint256 proposalId, uint256 voteDelay);
     event SetVoteDuration(uint256 proposalId, uint256 voteDuration);
-    event SetVoteUrl(uint256 proposalId, string url);
-    event SetVoteDescription(uint256 proposalId, string description);
     event SetChoice(uint256 proposalId, uint256 choiceId, bytes32 name, string description, uint256 transactionId);
     event UndoVoteEnabled(uint256 proposalId);
     event AddTransaction(
@@ -73,7 +71,6 @@ interface Storage is IERC165 {
     );
     event ClearTransaction(uint256 proposalId, uint256 transactionId, uint256 scheduleTime, bytes32 txHash);
     event Executed(uint256 proposalId);
-    event AddMeta(uint256 proposalId, uint256 metaId, bytes32 name, string value);
 
     event VoteCast(uint256 proposalId, address voter, uint256 shareId, uint256 totalVotesCast);
     event VoteCast(uint256 proposalId, address voter, uint256 shareId, uint256 choiceId, uint256 totalVotesCast);
@@ -119,10 +116,7 @@ interface Storage is IERC165 {
         uint256 abstentionCount;
         /// @notice number of attached transactions
         uint256 transactionCount;
-        /// @notice number of attached metadata
-        uint256 metaCount;
-        /// @notice number of choices for this vote
-        /// zero indicates a for/against vote
+        /// @notice number of choices for this vote, zero indicates a for/against vote
         uint256 choiceCount;
         /// @notice Flag marking whether the proposal has been vetoed
         bool isVeto;
@@ -132,18 +126,12 @@ interface Storage is IERC165 {
         Status status;
         /// @notice this proposal allows undo votes
         bool isUndoEnabled;
-        /// @notice proposal description
-        string description;
-        /// @notice proposal url
-        string url;
         /// @notice Receipts of ballots for the entire set of voters
         mapping(uint256 => Receipt) voteReceipt;
         /// @notice configured supervisors
         mapping(address => Supervisor) supervisorPool;
         /// @notice table of mapped transactions
         mapping(uint256 => Transaction) transaction;
-        /// @notice mapping of id to user defined metadata
-        mapping(uint256 => Meta) metadata;
         /// @notice mapping of id to Choice values
         mapping(uint256 => Choice) choice;
     }
@@ -164,16 +152,6 @@ interface Storage is IERC165 {
         bool abstention;
         /// @notice has this share been reversed
         bool undoCast;
-    }
-
-    /// @notice User defined metadata associated with a proposal
-    struct Meta {
-        /// @notice metadata id
-        uint256 id;
-        /// @notice metadata key or name
-        bytes32 name;
-        /// @notice metadata value
-        string value;
     }
 
     struct Supervisor {
@@ -284,61 +262,6 @@ interface Storage is IERC165 {
         uint256 _voteDuration,
         address _sender
     ) external;
-
-    /// @notice set proposal url
-    /// @dev requires supervisor
-    /// @param _proposalId the id of the proposal
-    /// @param _url the url
-    function setProposalUrl(
-        uint256 _proposalId,
-        string memory _url,
-        address _sender
-    ) external;
-
-    /// @notice get the proposal url
-    /// @param _proposalId the id of the proposal
-    /// @return string the url
-    function url(uint256 _proposalId) external returns (string memory);
-
-    /// @notice set proposal description
-    /// @dev requires supervisor
-    /// @param _proposalId the id of the proposal
-    /// @param _description the description
-    function setProposalDescription(
-        uint256 _proposalId,
-        string memory _description,
-        address _sender
-    ) external;
-
-    /// @notice get the proposal description
-    /// @param _proposalId the id of the proposal
-    /// @return string the url
-    function description(uint256 _proposalId) external returns (string memory);
-
-    /// @notice get the number of attached metadata
-    /// @param _proposalId the id of the proposal
-    /// @return uint256 current number of meta elements
-    function metaCount(uint256 _proposalId) external view returns (uint256);
-
-    /// @notice attach arbitrary metadata to proposal
-    /// @dev requires supervisor
-    /// @param _proposalId the id of the proposal
-    /// @param _name the name of the metadata field
-    /// @param _value the value of the metadata
-    /// @return uint256 the metadata id
-    function addMeta(
-        uint256 _proposalId,
-        bytes32 _name,
-        string memory _value,
-        address _sender
-    ) external returns (uint256);
-
-    /// @notice get arbitrary metadata from proposal
-    /// @param _proposalId the id of the proposal
-    /// @param _metaId the id of the metadata
-    /// @return _name the name of the metadata field
-    /// @return _value the value of the metadata field
-    function getMeta(uint256 _proposalId, uint256 _metaId) external returns (bytes32 _name, string memory _value);
 
     /// @notice get the number of attached choices
     /// @param _proposalId the id of the proposal
@@ -663,18 +586,6 @@ interface Storage is IERC165 {
     /// @notice get the project quorum requirement
     /// @return uint the least quorum allowed for any vote
     function minimumProjectQuorum() external view returns (uint256);
-
-    /// @notice return the name of the community
-    /// @return bytes32 the community name
-    function community() external view returns (bytes32);
-
-    /// @notice return the community url
-    /// @return string memory representation of url
-    function url() external view returns (string memory);
-
-    /// @notice return community description
-    /// @return string memory representation of community description
-    function description() external view returns (string memory);
 
     /// @notice return the name of this implementation
     /// @return string memory representation of name

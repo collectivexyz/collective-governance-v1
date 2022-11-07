@@ -45,18 +45,15 @@ pragma solidity ^0.8.15;
 
 import "@openzeppelin/contracts/interfaces/IERC165.sol";
 
+import "../contracts/access/Mutable.sol";
+
 /// @title VoterClass interface
 /// @notice The VoterClass interface defines the requirements for specifying a
 /// population or grouping of acceptable voting wallets
 /// @dev The VoterClass is stateless and therefore does not require any special
 /// privledges.   It can be called by anyone.
 /// @custom:type interface
-interface VoterClass is IERC165 {
-    /// @notice test if voterclass is modifiable such as to add or remove voters from a pool
-    /// @dev class must be final to be used in a Governance contract
-    /// @return bool true if class is final
-    function isFinal() external view returns (bool);
-
+interface VoterClass is Mutable, IERC165 {
     /// @notice test if wallet represents an allowed voter for this class
     /// @return bool true if wallet is a voter
     function isVoter(address _wallet) external view returns (bool);

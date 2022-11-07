@@ -49,6 +49,7 @@ import "@openzeppelin/contracts/token/ERC721/extensions/IERC721Enumerable.sol";
 
 import "../contracts/Constant.sol";
 import "../contracts/VoterClass.sol";
+import "../contracts/access/AlwaysImmutable.sol";
 
 /// @title ERC721 Implementation of VoterClass
 /// @notice This contract implements a voter pool based on ownership of an ERC-721 token.
@@ -56,7 +57,7 @@ import "../contracts/VoterClass.sol";
 /// ownerOf a token of the specified address
 /// @dev ERC721Enumerable is supported for discovery, however if the token contract does not support enumeration
 /// then vote by specific tokenId is still supported
-contract VoterClassERC721 is VoterClass, ERC165 {
+contract VoterClassERC721 is VoterClass, AlwaysImmutable, ERC165 {
     string public constant NAME = "collective VoterClassERC721";
 
     address private immutable _contractAddress;
@@ -78,13 +79,6 @@ contract VoterClassERC721 is VoterClass, ERC165 {
     modifier requireValidShare(uint256 _shareId) {
         require(_shareId != 0, "Share not valid");
         _;
-    }
-
-    /// @notice ERC-721 VoterClass is always final
-    /// @dev always returns true
-    /// @return bool true if final
-    function isFinal() external pure returns (bool) {
-        return true;
     }
 
     /// @notice determine if wallet holds at least one token from the ERC-721 contract
@@ -138,7 +132,10 @@ contract VoterClassERC721 is VoterClass, ERC165 {
 
     /// @notice see ERC-165
     function supportsInterface(bytes4 interfaceId) public view virtual override(IERC165, ERC165) returns (bool) {
-        return interfaceId == type(VoterClass).interfaceId || super.supportsInterface(interfaceId);
+        return
+            interfaceId == type(VoterClass).interfaceId ||
+            interfaceId == type(Mutable).interfaceId ||
+            super.supportsInterface(interfaceId);
     }
 
     /// @notice return the name of this implementation

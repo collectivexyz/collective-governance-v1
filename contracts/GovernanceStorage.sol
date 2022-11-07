@@ -79,13 +79,7 @@ contract GovernanceStorage is Storage, ERC165, Ownable {
     /// @notice The total number of proposals
     uint256 private _proposalCount;
 
-    bytes32 public immutable _communityName;
-
-    string public _communityUrl;
-
-    string public _communityDescription;
-
-    /// @notice global list of proposed issues by id
+    /// @notice global map of proposed issues by id
     mapping(uint256 => Proposal) public proposalMap;
 
     /// @notice The last contest for each sender
@@ -96,32 +90,20 @@ contract GovernanceStorage is Storage, ERC165, Ownable {
     /// @param _minimumQuorum the least possible quorum for any vote
     /// @param _minimumDelay the least possible vote delay
     /// @param _minimumDuration the least possible voting duration
-    /// @param _community The community name
-    /// @param _url The Url for this community
-    /// @param _description The community description
     constructor(
         VoterClass _class,
         uint256 _minimumQuorum,
         uint256 _minimumDelay,
-        uint256 _minimumDuration,
-        bytes32 _community,
-        string memory _url,
-        string memory _description
+        uint256 _minimumDuration
     ) {
         require(_minimumDelay >= Constant.MINIMUM_VOTE_DELAY, "Delay not allowed");
         require(_minimumDuration >= Constant.MINIMUM_VOTE_DURATION, "Duration not allowed");
         require(_minimumQuorum >= Constant.MINIMUM_PROJECT_QUORUM, "Quorum invalid");
-        require(Constant.len(_url) <= Constant.STRING_DATA_LIMIT, "Url too large");
-        require(Constant.len(_description) <= Constant.STRING_DATA_LIMIT, "Description too large");
         require(_class.isFinal(), "Voter Class modifiable");
         _minimumVoteDelay = _minimumDelay;
         _minimumVoteDuration = _minimumDuration;
         _minimumProjectQuorum = _minimumQuorum;
         _voterClass = _class;
-        _communityName = _community;
-        _communityUrl = _url;
-        _communityDescription = _description;
-
         _proposalCount = 0;
     }
 
@@ -578,13 +560,10 @@ contract GovernanceStorage is Storage, ERC165, Ownable {
         proposal.againstVotes = 0;
         proposal.abstentionCount = 0;
         proposal.transactionCount = 0;
-        proposal.metaCount = 0;
         proposal.choiceCount = _choiceCount;
         proposal.isVeto = false;
         proposal.status = Status.CONFIG;
         proposal.isUndoEnabled = false;
-        proposal.url = "";
-        proposal.description = "";
 
         emit InitializeProposal(proposalId, _sender);
         return proposalId;
@@ -920,105 +899,6 @@ contract GovernanceStorage is Storage, ERC165, Ownable {
         return proposal.transactionCount;
     }
 
-    /// @notice get the number of attached metadata
-    /// @param _proposalId the id of the proposal
-    /// @return uint256 current number of meta elements
-    function metaCount(uint256 _proposalId) external view requireValid(_proposalId) returns (uint256) {
-        Proposal storage proposal = proposalMap[_proposalId];
-        return proposal.metaCount;
-    }
-
-    /// @notice set proposal url
-    /// @dev requires supervisor
-    /// @param _proposalId the id of the proposal
-    /// @param _url the url
-    function setProposalUrl(
-        uint256 _proposalId,
-        string memory _url,
-        address _sender
-    ) external onlyOwner requireValid(_proposalId) requireConfig(_proposalId) requireSupervisor(_proposalId, _sender) {
-        require(Constant.len(_url) < Constant.STRING_DATA_LIMIT, "Url exceeds limit");
-        Proposal storage proposal = proposalMap[_proposalId];
-        proposal.url = _url;
-        emit SetVoteUrl(_proposalId, proposal.url);
-    }
-
-    /// @notice get the proposal url
-    /// @param _proposalId the id of the proposal
-    /// @return string the url
-    function url(uint256 _proposalId) external view requireValid(_proposalId) returns (string memory) {
-        Proposal storage proposal = proposalMap[_proposalId];
-        return proposal.url;
-    }
-
-    /// @notice set proposal description
-    /// @dev requires supervisor
-    /// @param _proposalId the id of the proposal
-    /// @param _description the description
-    function setProposalDescription(
-        uint256 _proposalId,
-        string memory _description,
-        address _sender
-    ) external onlyOwner requireValid(_proposalId) requireConfig(_proposalId) requireSupervisor(_proposalId, _sender) {
-        require(Constant.len(_description) < Constant.STRING_DATA_LIMIT, "Description exceeds limit");
-        Proposal storage proposal = proposalMap[_proposalId];
-        proposal.description = _description;
-        emit SetVoteDescription(_proposalId, proposal.description);
-    }
-
-    /// @notice get the proposal description
-    /// @param _proposalId the id of the proposal
-    /// @return string the description
-    function description(uint256 _proposalId) external view requireValid(_proposalId) returns (string memory) {
-        Proposal storage proposal = proposalMap[_proposalId];
-        return proposal.description;
-    }
-
-    /// @notice attach arbitrary metadata to proposal
-    /// @dev requires supervisor
-    /// @param _proposalId the id of the proposal
-    /// @param _name the name of the metadata field
-    /// @param _value the value of the metadata
-    /// @return uint256 the metadata id
-    function addMeta(
-        uint256 _proposalId,
-        bytes32 _name,
-        string memory _value,
-        address _sender
-    )
-        external
-        onlyOwner
-        requireValid(_proposalId)
-        requireConfig(_proposalId)
-        requireSupervisor(_proposalId, _sender)
-        returns (uint256)
-    {
-        require(Constant.len(_value) < Constant.STRING_DATA_LIMIT, "Value exceeds limit");
-        Proposal storage proposal = proposalMap[_proposalId];
-        uint256 metadataId = proposal.metaCount++;
-        proposal.metadata[metadataId] = Meta(metadataId, _name, _value);
-        emit AddMeta(_proposalId, metadataId, _name, _value);
-        return metadataId;
-    }
-
-    /// @notice get arbitrary metadata from proposal
-    /// @param _proposalId the id of the proposal
-    /// @param _metaId the id of the metadata
-    /// @return _name the name of the metadata field
-    /// @return _value the value of the metadata field
-    function getMeta(uint256 _proposalId, uint256 _metaId)
-        external
-        view
-        requireValid(_proposalId)
-        returns (bytes32 _name, string memory _value)
-    {
-        Proposal storage proposal = proposalMap[_proposalId];
-        require(_metaId < proposal.metaCount, "Metadata id unknown");
-        Meta memory meta = proposal.metadata[_metaId];
-        require(meta.id == _metaId, "Metadata invalid");
-        return (meta.name, meta.value);
-    }
-
     /// @notice get the number of attached choices
     /// @param _proposalId the id of the proposal
     /// @return uint current number of choices
@@ -1144,24 +1024,6 @@ contract GovernanceStorage is Storage, ERC165, Ownable {
     /// @return uint256 the least quorum allowed for any vote
     function minimumProjectQuorum() public view returns (uint256) {
         return _minimumProjectQuorum;
-    }
-
-    /// @notice return the name of the community
-    /// @return bytes32 the community name
-    function community() external view returns (bytes32) {
-        return _communityName;
-    }
-
-    /// @notice return the community url
-    /// @return string memory representation of url
-    function url() external view returns (string memory) {
-        return _communityUrl;
-    }
-
-    /// @notice return community description
-    /// @return string memory representation of community description
-    function description() external view returns (string memory) {
-        return _communityDescription;
     }
 
     /// @notice return the name of this implementation

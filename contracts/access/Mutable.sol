@@ -43,29 +43,13 @@
  */
 pragma solidity ^0.8.15;
 
-import "../contracts/GovernanceStorage.sol";
+/// @title Interface for mutable objects
+/// @notice used to determine if a class is modifiable
+/// @custom:type interface
+interface Mutable {
+    error NotMutable();
+    error NotFinal();
 
-/**
- * @title CollectiveStorage creational contract
- */
-contract StorageFactory {
-    event StorageCreated(address _storage, address _owner);
-
-    /// @notice create a new storage object with VoterClass as the voting population
-    /// @param _class the contract that defines the popluation
-    /// @param _minimumQuorum the least possible quorum
-    /// @param _minimumDelay the minimum voting delay for the project
-    /// @param _minimumDuration the least possible voting duration
-    /// @return Storage the created instance
-    function create(
-        VoterClass _class,
-        uint256 _minimumQuorum,
-        uint256 _minimumDelay,
-        uint256 _minimumDuration
-    ) external returns (Storage) {
-        GovernanceStorage _storage = new GovernanceStorage(_class, _minimumQuorum, _minimumDelay, _minimumDuration);
-        _storage.transferOwnership(msg.sender);
-        emit StorageCreated(address(_storage), msg.sender);
-        return _storage;
-    }
+    /// @return bool True if this object is final
+    function isFinal() external view returns (bool);
 }

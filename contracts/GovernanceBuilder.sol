@@ -51,6 +51,9 @@ import "../contracts/Constant.sol";
 import "../contracts/CollectiveGovernanceFactory.sol";
 import "../contracts/VoterClass.sol";
 import "../contracts/GovernanceCreator.sol";
+import "../contracts/Storage.sol";
+import "../contracts/MetaStorage.sol";
+import "../contracts/CollectiveMetaStorage.sol";
 import "../contracts/StorageFactory.sol";
 
 /// @title Governance GovernanceCreator implementation
@@ -195,17 +198,20 @@ contract GovernanceBuilder is GovernanceCreator, ERC165 {
         GovernanceProperties storage _properties = _buildMap[_creator];
         Storage _storage = createStorage(_properties);
         TimeLocker _timeLock = createTimelock(_storage);
+        MetaStorage _metaStore = new CollectiveMetaStorage(_properties.name, _properties.url, _properties.description);
         Governance _governance = _governanceFactory.create(
             _properties.supervisorList,
             _properties.class,
             _storage,
+            _metaStore,
             _timeLock,
             _properties.maxGasUsed,
             _properties.maxBaseFee
         );
         address payable _governanceAddress = payable(address(_governance));
-        transferOwnership(_timeLock, _governanceAddress);
-        transferOwnership(_storage, _governanceAddress);
+        transferOwnership(address(_metaStore), _governanceAddress);
+        transferOwnership(address(_timeLock), _governanceAddress);
+        transferOwnership(address(_storage), _governanceAddress);
         _governanceContractRegistered[_governanceAddress] = true;
         emit GovernanceContractCreated(_creator, _properties.name, address(_storage), _governanceAddress);
         return _governanceAddress;
@@ -241,13 +247,8 @@ contract GovernanceBuilder is GovernanceCreator, ERC165 {
         return Constant.VERSION_1;
     }
 
-    function transferOwnership(TimeLocker _timeLock, address _targetOwner) private {
-        Ownable _ownableStorage = Ownable(address(_timeLock));
-        _ownableStorage.transferOwnership(_targetOwner);
-    }
-
-    function transferOwnership(Storage _storage, address _targetOwner) private {
-        Ownable _ownableStorage = Ownable(address(_storage));
+    function transferOwnership(address _ownedObject, address _targetOwner) private {
+        Ownable _ownableStorage = Ownable(_ownedObject);
         _ownableStorage.transferOwnership(_targetOwner);
     }
 
@@ -265,10 +266,7 @@ contract GovernanceBuilder is GovernanceCreator, ERC165 {
             _properties.class,
             _properties.minimumProjectQuorum,
             _properties.minimumVoteDelay,
-            _properties.minimumVoteDuration,
-            _properties.name,
-            _properties.url,
-            _properties.description
+            _properties.minimumVoteDuration
         );
         emit StorageCreated(address(_storage));
         return _storage;

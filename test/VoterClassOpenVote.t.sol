@@ -56,4 +56,11 @@ contract VoterClassOpenVoteTest is Test {
     function testFinal() public {
         assertTrue(_class.isFinal());
     }
+
+    function testSupportsInterface() public {
+        IERC165 _erc165 = IERC165(address(_class));
+        assertTrue(_erc165.supportsInterface(type(VoterClass).interfaceId));
+        assertTrue(_erc165.supportsInterface(type(Mutable).interfaceId));
+        assertTrue(_erc165.supportsInterface(type(IERC165).interfaceId));
+    }
 }

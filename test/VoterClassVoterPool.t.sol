@@ -66,6 +66,11 @@ contract VoterClassVoterPoolTest is Test {
         _class.confirm(_notvoter, uint160(_notvoter));
     }
 
+    function testFailMakeFinalNotOwner() public {
+        vm.prank(_voter);
+        _class.makeFinal();
+    }
+
     function testFailConfirmNotFinal() public view {
         _class.confirm(_voter, uint160(_voter));
     }
@@ -89,5 +94,14 @@ contract VoterClassVoterPoolTest is Test {
         _class.addVoter(_voter);
         _class.makeFinal();
         _class.removeVoter(_voter);
+    }
+
+    function testSupportsInterface() public {
+        IERC165 _erc165 = IERC165(address(_class));
+        assertTrue(_erc165.supportsInterface(type(VoterPool).interfaceId));
+        assertTrue(_erc165.supportsInterface(type(VoterClass).interfaceId));
+        assertTrue(_erc165.supportsInterface(type(Mutable).interfaceId));
+        assertTrue(_erc165.supportsInterface(type(Ownable).interfaceId));
+        assertTrue(_erc165.supportsInterface(type(IERC165).interfaceId));
     }
 }

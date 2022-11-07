@@ -7,6 +7,8 @@ import "forge-std/Test.sol";
 
 import "../contracts/Storage.sol";
 import "../contracts/StorageFactory.sol";
+import "../contracts/MetaStorage.sol";
+import "../contracts/CollectiveMetaStorage.sol";
 import "../contracts/VoterClassFactory.sol";
 import "../contracts/CollectiveGovernanceFactory.sol";
 
@@ -15,6 +17,7 @@ contract CollectiveGovernanceFactoryTest is Test {
 
     VoterClass private _class;
     Storage private _storage;
+    MetaStorage private _metaStorage;
     TimeLocker private _timeLock;
     address[] private _supervisorList;
     CollectiveGovernanceFactory private _governanceFactory;
@@ -23,14 +26,16 @@ contract CollectiveGovernanceFactoryTest is Test {
         VoterClassCreator _vcCreator = new VoterClassFactory();
         address vcAddress = _vcCreator.createOpenVote(1);
         _class = VoterClass(vcAddress);
+        _metaStorage = new CollectiveMetaStorage(
+            "collective",
+            "https://github.com/collectivexyz/collective-governance-v1",
+            "Collective Governance"
+        );
         _storage = new StorageFactory().create(
             _class,
             Constant.MINIMUM_PROJECT_QUORUM,
             Constant.MINIMUM_VOTE_DELAY,
-            Constant.MINIMUM_VOTE_DURATION,
-            "",
-            "",
-            ""
+            Constant.MINIMUM_VOTE_DURATION
         );
         _timeLock = new TimeLock(Constant.TIMELOCK_MINIMUM_DELAY);
         _supervisorList = new address[](1);
@@ -43,6 +48,7 @@ contract CollectiveGovernanceFactoryTest is Test {
             new address[](0),
             _class,
             _storage,
+            _metaStorage,
             _timeLock,
             Constant.MAXIMUM_REBATE_GAS_USED,
             Constant.MAXIMUM_REBATE_BASE_FEE
@@ -54,6 +60,7 @@ contract CollectiveGovernanceFactoryTest is Test {
             _supervisorList,
             _class,
             _storage,
+            _metaStorage,
             _timeLock,
             Constant.MAXIMUM_REBATE_GAS_USED - 1,
             Constant.MAXIMUM_REBATE_BASE_FEE
@@ -65,6 +72,7 @@ contract CollectiveGovernanceFactoryTest is Test {
             _supervisorList,
             _class,
             _storage,
+            _metaStorage,
             _timeLock,
             Constant.MAXIMUM_REBATE_GAS_USED,
             Constant.MAXIMUM_REBATE_BASE_FEE - 1
@@ -76,6 +84,7 @@ contract CollectiveGovernanceFactoryTest is Test {
             _supervisorList,
             _class,
             _storage,
+            _metaStorage,
             _timeLock,
             Constant.MAXIMUM_REBATE_GAS_USED,
             Constant.MAXIMUM_REBATE_BASE_FEE
@@ -88,6 +97,7 @@ contract CollectiveGovernanceFactoryTest is Test {
             _supervisorList,
             _class,
             _storage,
+            _metaStorage,
             _timeLock,
             Constant.MAXIMUM_REBATE_GAS_USED + 1,
             Constant.MAXIMUM_REBATE_BASE_FEE + 7

@@ -46,6 +46,8 @@ pragma solidity ^0.8.15;
 import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
+import "../contracts/access/Mutable.sol";
+import "../contracts/access/ConfigurableMutable.sol";
 import "../contracts/Constant.sol";
 import "../contracts/VoterClass.sol";
 
@@ -73,15 +75,13 @@ interface VoterPool {
 /// @notice This contract supports voting for a specific list of wallet addresses.   Each address must be added
 /// to the contract prior to voting at which time the pool must be marked as final so that it becomes impossible
 /// to modify
-contract VoterClassVoterPool is VoterClass, ERC165, Ownable {
+contract VoterClassVoterPool is VoterClass, ConfigurableMutable, Ownable, ERC165 {
     event RegisterVoter(address voter);
     event BurnVoter(address voter);
 
     string public constant NAME = "collective VoterClassVoterPool";
 
     uint256 private immutable _weight;
-
-    bool private _isPoolFinal;
 
     uint256 private _poolCount = 0;
 
@@ -91,7 +91,6 @@ contract VoterClassVoterPool is VoterClass, ERC165, Ownable {
     /// @param _voteWeight The integral weight to apply to each token held by the wallet
     constructor(uint256 _voteWeight) {
         _weight = _voteWeight;
-        _isPoolFinal = false;
     }
 
     modifier requireValidAddress(address _wallet) {
@@ -104,16 +103,6 @@ contract VoterClassVoterPool is VoterClass, ERC165, Ownable {
         _;
     }
 
-    modifier requireNotFinal() {
-        require(!_isPoolFinal, "Voter pool is not modifiable");
-        _;
-    }
-
-    modifier requireFinal() {
-        require(_isPoolFinal, "Voter pool is modifiable");
-        _;
-    }
-
     modifier requireVoter(address _wallet) {
         require(_voterPool[_wallet], "Not voter");
         _;
@@ -122,7 +111,7 @@ contract VoterClassVoterPool is VoterClass, ERC165, Ownable {
     /// @notice add a voter to the voter pool
     /// @dev only possible if not final
     /// @param _wallet the address to add
-    function addVoter(address _wallet) external requireValidAddress(_wallet) onlyOwner requireNotFinal {
+    function addVoter(address _wallet) external requireValidAddress(_wallet) onlyOwner onlyMutable {
         if (!_voterPool[_wallet]) {
             _voterPool[_wallet] = true;
             _poolCount++;
@@ -135,7 +124,7 @@ contract VoterClassVoterPool is VoterClass, ERC165, Ownable {
     /// @notice remove a voter from the voter pool
     /// @dev only possible if not final
     /// @param _wallet the address to add
-    function removeVoter(address _wallet) external requireValidAddress(_wallet) onlyOwner requireNotFinal {
+    function removeVoter(address _wallet) external requireValidAddress(_wallet) onlyOwner onlyMutable {
         if (_voterPool[_wallet]) {
             _voterPool[_wallet] = false;
             _poolCount--;
@@ -143,12 +132,6 @@ contract VoterClassVoterPool is VoterClass, ERC165, Ownable {
         } else {
             revert("Voter not registered");
         }
-    }
-
-    /// @notice test if voterclass is modifiable such as to add or remove voters from a pool
-    /// @return bool true if class is final
-    function isFinal() external view returns (bool) {
-        return _isPoolFinal;
     }
 
     /// @notice test if wallet represents an allowed voter for this class
@@ -159,7 +142,7 @@ contract VoterClassVoterPool is VoterClass, ERC165, Ownable {
 
     /// @notice discover an array of shareIds associated with the specified wallet
     /// @return uint256[] array in memory of share ids
-    function discover(address _wallet) external view requireVoter(_wallet) requireFinal returns (uint256[] memory) {
+    function discover(address _wallet) external view requireVoter(_wallet) onlyFinal returns (uint256[] memory) {
         uint256[] memory shareList = new uint256[](1);
         shareList[0] = uint160(_wallet);
         return shareList;
@@ -170,7 +153,7 @@ contract VoterClassVoterPool is VoterClass, ERC165, Ownable {
     function confirm(address _wallet, uint256 _shareId)
         external
         view
-        requireFinal
+        onlyFinal
         requireVoter(_wallet)
         requireValidShare(_wallet, _shareId)
         returns (uint256)
@@ -184,9 +167,9 @@ contract VoterClassVoterPool is VoterClass, ERC165, Ownable {
     }
 
     /// @notice set the voterpool final.   No further changes may be made to the voting pool.
-    function makeFinal() external requireNotFinal {
-        require(_poolCount > 0, "No voters");
-        _isPoolFinal = true;
+    function makeFinal() public override onlyOwner {
+        require(_poolCount > 0, "Empty pool");
+        super.makeFinal();
     }
 
     /// @notice see ERC-165
@@ -195,6 +178,7 @@ contract VoterClassVoterPool is VoterClass, ERC165, Ownable {
             interfaceId == type(VoterPool).interfaceId ||
             interfaceId == type(VoterClass).interfaceId ||
             interfaceId == type(Ownable).interfaceId ||
+            interfaceId == type(Mutable).interfaceId ||
             super.supportsInterface(interfaceId);
     }
 
