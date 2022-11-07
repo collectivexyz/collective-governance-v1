@@ -11,6 +11,7 @@ import "forge-std/Test.sol";
 import "../contracts/Constant.sol";
 import "../contracts/VoterClass.sol";
 import "../contracts/VoterClassVoterPool.sol";
+import "../contracts/VoterClassOpenVote.sol";
 import "../contracts/VoterClassERC721.sol";
 import "../contracts/Storage.sol";
 import "../contracts/GovernanceStorage.sol";
@@ -1324,52 +1325,6 @@ contract CollectiveGovernanceTest is Test {
         vm.warp(block.timestamp + Constant.MINIMUM_VOTE_DURATION);
         vm.prank(_OWNER);
         governance.endVote(proposalId);
-    }
-
-    function testCastVoteNotOrigin() public {
-        vm.startPrank(_SUPERVISOR, _SUPERVISOR);
-        governance.configure(proposalId, 2);
-        governance.startVote(proposalId);
-        vm.stopPrank();
-        vm.expectRevert("Not origin");
-        vm.prank(_VOTER1);
-        governance.voteFor(proposalId, TOKEN_ID1);
-    }
-
-    function testCastAgainstVoteNotOrigin() public {
-        vm.startPrank(_SUPERVISOR, _SUPERVISOR);
-        governance.configure(proposalId, 2);
-        governance.startVote(proposalId);
-        vm.stopPrank();
-        vm.expectRevert("Not origin");
-        vm.prank(_VOTER1);
-        governance.voteAgainst(proposalId, TOKEN_ID1);
-    }
-
-    function testCastAbstainNotOrigin() public {
-        vm.startPrank(_SUPERVISOR, _SUPERVISOR);
-        governance.configure(proposalId, 2);
-        governance.startVote(proposalId);
-        vm.stopPrank();
-        vm.expectRevert("Not origin");
-        vm.prank(_VOTER1);
-        governance.abstainFrom(proposalId, TOKEN_ID1);
-    }
-
-    function testFailCastVoteAndUndoNotOrigin() public {
-        vm.prank(_governanceAddress);
-        _storage.enableUndoVote(proposalId, _SUPERVISOR);
-        vm.startPrank(_SUPERVISOR, _SUPERVISOR);
-        governance.configure(proposalId, 2);
-        governance.startVote(proposalId);
-        vm.stopPrank();
-        // solhint-disable-next-line avoid-tx-origin
-        address origOrigin = tx.origin;
-        vm.prank(_VOTER1, _VOTER1);
-        governance.voteFor(proposalId, TOKEN_ID1);
-        vm.expectRevert("Not origin");
-        vm.prank(_VOTER1, origOrigin);
-        governance.undoVote(proposalId, TOKEN_ID1);
     }
 
     function testCastVoteButContractNotFullyCapitalized() public {

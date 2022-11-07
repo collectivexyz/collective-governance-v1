@@ -43,6 +43,8 @@
  */
 pragma solidity ^0.8.15;
 
+import "@openzeppelin/contracts/utils/math/Math.sol";
+
 /**
  * @notice extract global manifest constants
  * @dev hash b28717930d5c821c80736e02d025efa7f9cb615e deployed to 0xaDFDc9ADe7B4199179E0eeF0ce8e67E12a92A50F

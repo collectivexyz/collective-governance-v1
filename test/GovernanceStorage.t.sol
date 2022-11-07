@@ -13,6 +13,7 @@ import "../contracts/VoteStrategy.sol";
 import "../contracts/VoterClass.sol";
 import "../contracts/VoterClassVoterPool.sol";
 import "../contracts/VoterClassERC721.sol";
+import "../contracts/VoterClassOpenVote.sol";
 import "./TestData.sol";
 
 import "./MockERC721.sol";
