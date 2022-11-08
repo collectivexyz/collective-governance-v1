@@ -51,6 +51,17 @@ import "@openzeppelin/contracts/interfaces/IERC165.sol";
 /// @custom:type interface
 interface Governance is IERC165 {
     error NotPermitted(address sender);
+    error SupervisorListEmpty();
+    error SupervisorRequired(uint256 proposalId, address sender);
+    error VoteIsOpen(uint256 proposalId);
+    error VoteIsClosed(uint256 proposalId);
+    error VoteCancelled(uint256 proposalId);
+    error VoteVetoed(uint256 proposalId);
+    error VoteFinal(uint256 proposalId);
+    error VoteNotFinal(uint256 proposalId);
+    error GasUsedRebateMustBeLarger(uint256 gasUsedRebate, uint256 minimumRebate);
+    error BaseFeeRebateMustBeLarger(uint256 baseFee, uint256 minimumBaseFee);
+    error ProposalSenderRequired(uint256 proposalId, address sender);
 
     /// @notice A new proposal was created
     event ProposalCreated(address sender, uint256 proposalId);

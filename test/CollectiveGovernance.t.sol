@@ -388,7 +388,7 @@ contract CollectiveGovernanceTest is Test {
     function testOpenVoteRequiresReady() public {
         vm.prank(_governanceAddress);
         _storage.setQuorumRequired(proposalId, 2, _SUPERVISOR);
-        vm.expectRevert("Vote is not final");
+        vm.expectRevert(abi.encodeWithSelector(Governance.VoteNotFinal.selector, proposalId));
         vm.prank(_SUPERVISOR);
         governance.startVote(proposalId);
     }
@@ -438,7 +438,7 @@ contract CollectiveGovernanceTest is Test {
         vm.stopPrank();
         vm.prank(_SUPERVISOR);
         governance.startVote(proposalId);
-        vm.expectRevert("Already open");
+        vm.expectRevert(abi.encodeWithSelector(Governance.VoteIsOpen.selector, proposalId));
         vm.prank(_SUPERVISOR);
         governance.startVote(proposalId);
     }
@@ -448,7 +448,7 @@ contract CollectiveGovernanceTest is Test {
         _storage.setQuorumRequired(proposalId, 2, _SUPERVISOR);
         _storage.makeFinal(proposalId, _SUPERVISOR);
         vm.stopPrank();
-        vm.expectRevert("Voting is closed");
+        vm.expectRevert(abi.encodeWithSelector(Governance.VoteIsClosed.selector, proposalId));
         vm.prank(_SUPERVISOR);
         governance.endVote(proposalId);
     }
@@ -494,7 +494,7 @@ contract CollectiveGovernanceTest is Test {
         _storage.setQuorumRequired(proposalId, 2, _SUPERVISOR);
         _storage.makeFinal(proposalId, _SUPERVISOR);
         vm.stopPrank();
-        vm.expectRevert("Voting is closed");
+        vm.expectRevert(abi.encodeWithSelector(Governance.VoteIsClosed.selector, proposalId));
         vm.prank(_VOTER1, _VOTER1);
         governance.voteFor(proposalId);
     }
@@ -520,7 +520,7 @@ contract CollectiveGovernanceTest is Test {
         governance = CollectiveGovernance(_governanceAddress);
         governance.propose();
         _storage = Storage(governance.getStorageAddress());
-        vm.expectRevert("Voting is closed");
+        vm.expectRevert(abi.encodeWithSelector(Governance.VoteNotFinal.selector, proposalId));
         vm.prank(_VOTER1, _VOTER1);
         governance.voteFor(proposalId);
     }
@@ -567,7 +567,7 @@ contract CollectiveGovernanceTest is Test {
         _storage.setQuorumRequired(proposalId, 2, _SUPERVISOR);
         _storage.makeFinal(proposalId, _SUPERVISOR);
         vm.stopPrank();
-        vm.expectRevert("Voting is closed");
+        vm.expectRevert(abi.encodeWithSelector(Governance.VoteIsClosed.selector, proposalId));
         vm.prank(_VOTER1, _VOTER1);
         governance.undoVote(proposalId);
     }
@@ -791,7 +791,7 @@ contract CollectiveGovernanceTest is Test {
         vm.stopPrank();
         vm.prank(_SUPERVISOR);
         governance.startVote(proposalId);
-        vm.expectRevert("Vote is not closed");
+        vm.expectRevert(abi.encodeWithSelector(Governance.VoteIsOpen.selector, proposalId));
         governance.getVoteSucceeded(proposalId);
     }
 
@@ -824,7 +824,7 @@ contract CollectiveGovernanceTest is Test {
         vm.warp(blockTimestamp + 2);
         vm.prank(_SUPERVISOR);
         governance.endVote(proposalId);
-        vm.expectRevert("Vote cancelled");
+        vm.expectRevert(abi.encodeWithSelector(Governance.VoteVetoed.selector, proposalId));
         governance.getVoteSucceeded(proposalId);
     }
 
@@ -855,7 +855,7 @@ contract CollectiveGovernanceTest is Test {
         vm.warp(blockTimestamp + Constant.MINIMUM_VOTE_DURATION);
         vm.prank(_SUPERVISOR);
         governance.endVote(proposalId);
-        vm.expectRevert("Voting is closed");
+        vm.expectRevert(abi.encodeWithSelector(Governance.VoteIsClosed.selector, proposalId));
         vm.prank(_SUPERVISOR);
         governance.veto(proposalId);
     }
@@ -869,7 +869,7 @@ contract CollectiveGovernanceTest is Test {
         _storage.setQuorumRequired(proposalId, 2, _SUPERVISOR);
         _storage.makeFinal(proposalId, _SUPERVISOR);
         vm.stopPrank();
-        vm.expectRevert("Voting is closed");
+        vm.expectRevert(abi.encodeWithSelector(Governance.VoteIsClosed.selector, proposalId));
         vm.prank(_VOTER1, _VOTER1);
         governance.voteAgainst(proposalId);
     }
@@ -883,7 +883,7 @@ contract CollectiveGovernanceTest is Test {
         _storage.setQuorumRequired(proposalId, 2, _SUPERVISOR);
         _storage.makeFinal(proposalId, _SUPERVISOR);
         vm.stopPrank();
-        vm.expectRevert("Voting is closed");
+        vm.expectRevert(abi.encodeWithSelector(Governance.VoteIsClosed.selector, proposalId));
         vm.prank(_VOTER1, _VOTER1);
         governance.abstainFrom(proposalId);
     }
@@ -1101,7 +1101,7 @@ contract CollectiveGovernanceTest is Test {
         vm.startPrank(_SUPERVISOR, _SUPERVISOR);
         governance.configure(proposalId, 2);
         governance.cancel(proposalId);
-        vm.expectRevert("Vote cancelled");
+        vm.expectRevert(abi.encodeWithSelector(Governance.VoteCancelled.selector, proposalId));
         governance.startVote(proposalId);
         vm.stopPrank();
     }
@@ -1189,7 +1189,7 @@ contract CollectiveGovernanceTest is Test {
         assertFalse(flag.isSet());
         vm.prank(_OWNER);
         governance.endVote(proposalId);
-        vm.expectRevert("Voting is closed");
+        vm.expectRevert(abi.encodeWithSelector(Governance.VoteIsClosed.selector, proposalId));
         vm.prank(_OWNER);
         governance.endVote(proposalId);
     }
@@ -1448,7 +1448,7 @@ contract CollectiveGovernanceTest is Test {
     function testConfigureWithDescriptionAndUrlIfFinal() public {
         vm.startPrank(_OWNER, _OWNER);
         governance.configure(proposalId, 2);
-        vm.expectRevert("Vote is final");
+        vm.expectRevert(abi.encodeWithSelector(Governance.VoteFinal.selector, proposalId));
         governance.describe(proposalId, "A test vote", "https://https://collectivexyz.github.io/collective-governance-v1/");
         vm.stopPrank();
     }
