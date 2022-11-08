@@ -52,6 +52,9 @@ import "../contracts/VoteStrategy.sol";
 /// @notice provides the requirements for Storage contract implementation
 /// @custom:type interface
 interface Storage is IERC165 {
+    error SupervisorRequired(uint256 proposal, address wallet);
+    error SupervisorAlreadyRegistered(uint256 proposalId, address supervisor, address sender);
+    error AlreadyVetoed(uint256 _proposalId, address sender);
     // event section
     event InitializeProposal(uint256 proposalId, address owner);
     event AddSupervisor(uint256 proposalId, address supervisor, bool isProject);

@@ -76,6 +76,7 @@ interface VoterPool {
 /// to the contract prior to voting at which time the pool must be marked as final so that it becomes impossible
 /// to modify
 contract VoterClassVoterPool is VoterClass, ConfigurableMutable, Ownable, ERC165 {
+    error DuplicateRegistration(address voter);
     event RegisterVoter(address voter);
     event BurnVoter(address voter);
 
@@ -117,7 +118,7 @@ contract VoterClassVoterPool is VoterClass, ConfigurableMutable, Ownable, ERC165
             _poolCount++;
             emit RegisterVoter(_wallet);
         } else {
-            revert("Voter already registered");
+            revert DuplicateRegistration(_wallet);
         }
     }
 
@@ -130,7 +131,7 @@ contract VoterClassVoterPool is VoterClass, ConfigurableMutable, Ownable, ERC165
             _poolCount--;
             emit BurnVoter(_wallet);
         } else {
-            revert("Voter not registered");
+            revert NotAVoter(_wallet);
         }
     }
 

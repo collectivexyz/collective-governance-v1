@@ -66,7 +66,7 @@ contract VoterClassNullObject is VoterClass, AlwaysImmutable, ERC165 {
 
     /// @notice always reverts
     function discover(address _wallet) external pure requireValidAddress(_wallet) returns (uint256[] memory) {
-        revert("Not a voter");
+        revert NotAVoter(_wallet);
     }
 
     /// @notice always returns 0

@@ -737,7 +737,7 @@ contract CollectiveGovernance is Governance, VoteStrategy, ERC165 {
         if (voteCount > 0) {
             emit VoteCount(_proposalId, msg.sender, _tokenId, voteCount, 0);
         } else {
-            revert("Not voter");
+            revert NotVoter(_proposalId, msg.sender);
         }
     }
 
@@ -746,7 +746,7 @@ contract CollectiveGovernance is Governance, VoteStrategy, ERC165 {
         if (count > 0) {
             emit VoteCount(_proposalId, msg.sender, _tokenId, 0, count);
         } else {
-            revert("Not voter");
+            revert NotVoter(_proposalId, msg.sender);
         }
     }
 
@@ -755,7 +755,7 @@ contract CollectiveGovernance is Governance, VoteStrategy, ERC165 {
         if (count > 0) {
             emit VoteCount(_proposalId, msg.sender, _tokenId, 0, 0);
         } else {
-            revert("Not voter");
+            revert NotVoter(_proposalId, msg.sender);
         }
     }
 
@@ -764,7 +764,7 @@ contract CollectiveGovernance is Governance, VoteStrategy, ERC165 {
         if (count > 0) {
             emit VoteUndo(_proposalId, msg.sender, count);
         } else {
-            revert("Not voter");
+            revert NotVoter(_proposalId, msg.sender);
         }
     }
 

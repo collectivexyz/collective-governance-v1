@@ -255,7 +255,7 @@ contract GovernanceStorage is Storage, ERC165, Ownable {
             proposal.supervisorPool[_supervisor] = Supervisor(true, _isProject);
             emit AddSupervisor(_proposalId, _supervisor, _isProject);
         } else {
-            revert("Already enabled");
+            revert SupervisorAlreadyRegistered(_proposalId, _supervisor, _sender);
         }
     }
 
@@ -282,7 +282,7 @@ contract GovernanceStorage is Storage, ERC165, Ownable {
             supervisor.isEnabled = false;
             emit BurnSupervisor(_proposalId, _supervisor);
         } else {
-            revert("Supervisor is not enabled.");
+            revert SupervisorRequired(_proposalId, _supervisor);
         }
     }
 
@@ -620,9 +620,9 @@ contract GovernanceStorage is Storage, ERC165, Ownable {
         Proposal storage proposal = proposalMap[_proposalId];
         if (!proposal.isVeto) {
             proposal.isVeto = true;
-            emit VoteVeto(_proposalId, msg.sender);
+            emit VoteVeto(_proposalId, _sender);
         } else {
-            revert("Already vetoed");
+            revert AlreadyVetoed(_proposalId, _sender);
         }
     }
 
