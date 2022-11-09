@@ -320,7 +320,48 @@
       },
       {
         "internalType": "uint256",
+        "name": "_choiceId",
+        "type": "uint256"
+      }
+    ],
+    "name": "voteChoice",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_proposalId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
         "name": "_tokenId",
+        "type": "uint256"
+      }
+    ],
+    "name": "voteFor",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_proposalId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_tokenId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_choiceId",
         "type": "uint256"
       }
     ],
@@ -340,6 +381,29 @@
         "internalType": "uint256[]",
         "name": "_tokenIdList",
         "type": "uint256[]"
+      }
+    ],
+    "name": "voteFor",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_proposalId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256[]",
+        "name": "_tokenIdList",
+        "type": "uint256[]"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_choiceId",
+        "type": "uint256"
       }
     ],
     "name": "voteFor",
