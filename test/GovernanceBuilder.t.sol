@@ -27,16 +27,19 @@ contract GovernanceBuilderTest is Test {
 
     function testWithSupervisor() public {
         VoterClass _class = new VoterClassNullObject();
-        address _governance = _builder.aGovernance().withSupervisor(_SUPERVISOR).withVoterClass(_class).build();
+        (address payable _governance, address _storage, ) = _builder
+            .aGovernance()
+            .withSupervisor(_SUPERVISOR)
+            .withVoterClass(_class)
+            .build();
         Governance _gov = Governance(_governance);
         _gov.propose();
-        address _storage = _gov.getStorageAddress();
         assertTrue(Storage(_storage).isSupervisor(1, _SUPERVISOR));
     }
 
     function testWithVoteDuration() public {
         VoterClass _class = new VoterClassNullObject();
-        address _governance = _builder
+        (address payable _governance, address _storage, ) = _builder
             .aGovernance()
             .withMinimumDuration(2 * Constant.MINIMUM_VOTE_DURATION)
             .withSupervisor(_SUPERVISOR)
@@ -44,16 +47,18 @@ contract GovernanceBuilderTest is Test {
             .build();
         Governance _gov = Governance(_governance);
         _gov.propose();
-        address _storage = _gov.getStorageAddress();
         assertEq(Storage(_storage).minimumVoteDuration(), 2 * Constant.MINIMUM_VOTE_DURATION);
     }
 
     function testWithoutVoteDurationOrQuorum() public {
         VoterClass _class = new VoterClassNullObject();
-        address _governance = _builder.aGovernance().withSupervisor(_SUPERVISOR).withVoterClass(_class).build();
+        (address payable _governance, address _storage, ) = _builder
+            .aGovernance()
+            .withSupervisor(_SUPERVISOR)
+            .withVoterClass(_class)
+            .build();
         Governance _gov = Governance(_governance);
         _gov.propose();
-        address _storage = _gov.getStorageAddress();
         assertEq(Storage(_storage).minimumVoteDuration(), Constant.MINIMUM_VOTE_DURATION);
         assertEq(Storage(_storage).minimumProjectQuorum(), Constant.MINIMUM_PROJECT_QUORUM);
     }
@@ -80,7 +85,7 @@ contract GovernanceBuilderTest is Test {
 
     function testWithProjectQuorum() public {
         VoterClass _class = new VoterClassNullObject();
-        address _governance = _builder
+        (address payable _governance, address _storage, ) = _builder
             .aGovernance()
             .withProjectQuorum(10000)
             .withSupervisor(_SUPERVISOR)
@@ -88,16 +93,18 @@ contract GovernanceBuilderTest is Test {
             .build();
         Governance _gov = Governance(_governance);
         _gov.propose();
-        address _storage = _gov.getStorageAddress();
         assertEq(Storage(_storage).minimumProjectQuorum(), 10000);
     }
 
     function testWithOpenVote() public {
         VoterClass _class = new VoterClassOpenVote(1);
-        address _governance = _builder.aGovernance().withSupervisor(_SUPERVISOR).withVoterClass(_class).build();
+        (address payable _governance, address _storage, ) = _builder
+            .aGovernance()
+            .withSupervisor(_SUPERVISOR)
+            .withVoterClass(_class)
+            .build();
         Governance _gov = Governance(_governance);
         _gov.propose();
-        address _storage = _gov.getStorageAddress();
         assertTrue(Storage(_storage).isVoter(1, _VOTER1));
     }
 
@@ -105,10 +112,13 @@ contract GovernanceBuilderTest is Test {
         VoterClassVoterPool _class = new VoterClassVoterPool(1);
         _class.addVoter(_VOTER1);
         _class.makeFinal();
-        address _governance = _builder.aGovernance().withSupervisor(_SUPERVISOR).withVoterClass(_class).build();
+        (address payable _governance, address _storage, ) = _builder
+            .aGovernance()
+            .withSupervisor(_SUPERVISOR)
+            .withVoterClass(_class)
+            .build();
         Governance _gov = Governance(_governance);
         _gov.propose();
-        address _storage = _gov.getStorageAddress();
         assertTrue(Storage(_storage).isVoter(1, _VOTER1));
     }
 
@@ -116,11 +126,22 @@ contract GovernanceBuilderTest is Test {
         MockERC721 merc721 = new MockERC721();
         merc721.mintTo(_VOTER1, 0x10);
         VoterClass _class = new VoterClassERC721(address(merc721), 1);
-        address _governance = _builder.aGovernance().withSupervisor(_SUPERVISOR).withVoterClass(_class).build();
+        (address payable _governance, address _storage, ) = _builder
+            .aGovernance()
+            .withSupervisor(_SUPERVISOR)
+            .withVoterClass(_class)
+            .build();
         Governance _gov = Governance(_governance);
         uint256 pid = _gov.propose();
-        address _storage = _gov.getStorageAddress();
         assertTrue(Storage(_storage).isVoter(pid, _VOTER1));
+    }
+
+    function testMetaStoreIsReturned() public {
+        MockERC721 merc721 = new MockERC721();
+        merc721.mintTo(_VOTER1, 0x10);
+        VoterClass _class = new VoterClassERC721(address(merc721), 1);
+        (, , address _metaStore) = _builder.aGovernance().withSupervisor(_SUPERVISOR).withVoterClass(_class).build();
+        assertTrue(_metaStore != address(0x0));
     }
 
     function testFailSupervisorIsRequired() public {
@@ -141,7 +162,7 @@ contract GovernanceBuilderTest is Test {
 
     function testWithName() public {
         VoterClass _class = new VoterClassNullObject();
-        address _governance = _builder
+        (address payable _governance, , ) = _builder
             .aGovernance()
             .withSupervisor(_SUPERVISOR)
             .withVoterClass(_class)
@@ -153,7 +174,7 @@ contract GovernanceBuilderTest is Test {
 
     function testWithUrl() public {
         VoterClass _class = new VoterClassNullObject();
-        address _governance = _builder
+        (address payable _governance, , ) = _builder
             .aGovernance()
             .withSupervisor(_SUPERVISOR)
             .withVoterClass(_class)
@@ -166,7 +187,7 @@ contract GovernanceBuilderTest is Test {
     function testWithDescription() public {
         string memory desc = "A unique project to build on chain governance for all web3 communities";
         VoterClass _class = new VoterClassNullObject();
-        address _governance = _builder
+        (address payable _governance, , ) = _builder
             .aGovernance()
             .withSupervisor(_SUPERVISOR)
             .withVoterClass(_class)
@@ -178,7 +199,7 @@ contract GovernanceBuilderTest is Test {
 
     function testWithGasRebate() public {
         VoterClass _class = new VoterClassNullObject();
-        address _governance = _builder
+        (address payable _governance, , ) = _builder
             .aGovernance()
             .withGasRebate(Constant.MAXIMUM_REBATE_GAS_USED + 0x7, Constant.MAXIMUM_REBATE_BASE_FEE + 0x13)
             .withSupervisor(_SUPERVISOR)

@@ -52,7 +52,14 @@ import "../contracts/VoterClass.sol";
 /// @custom:type interface
 interface GovernanceCreator is IERC165 {
     /// @notice new contract created
-    event GovernanceContractCreated(address creator, bytes32 name, address _storage, address governance);
+    event GovernanceContractCreated(
+        address creator,
+        bytes32 name,
+        address _storage,
+        address metaStorage,
+        address timeLock,
+        address governance
+    );
     /// @notice initialized local state for sender
     event GovernanceContractInitialized(address creator);
     /// @notice add supervisor
@@ -74,9 +81,6 @@ interface GovernanceCreator is IERC165 {
 
     /// @notice The timelock created
     event TimeLockCreated(address timeLock, uint256 lockTime);
-
-    /// @notice The storage
-    event StorageCreated(address _storage);
 
     /// @notice settings state used by builder for creating Governance contract
     struct GovernanceProperties {
@@ -172,8 +176,16 @@ interface GovernanceCreator is IERC165 {
     /// @notice build the specified contract
     /// @dev Contructs a new contract and may require a large gas fee.  Build does not reinitialize context.
     /// If you wish to reset the settings call reset or aGovernance directly.
-    /// @return the address of the new Governance contract
-    function build() external returns (address payable);
+    /// @return governanceAddress address of the new Governance contract
+    /// @return storageAddress address of the storage contract
+    /// @return metaAddress address of the meta contract
+    function build()
+        external
+        returns (
+            address payable governanceAddress,
+            address storageAddress,
+            address metaAddress
+        );
 
     /// @notice clear and reset resources associated with sender build requests
     function reset() external;

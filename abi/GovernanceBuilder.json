@@ -28,6 +28,18 @@
       {
         "indexed": false,
         "internalType": "address",
+        "name": "metaStorage",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "timeLock",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
         "name": "governance",
         "type": "address"
       }
@@ -218,19 +230,6 @@
       {
         "indexed": false,
         "internalType": "address",
-        "name": "_storage",
-        "type": "address"
-      }
-    ],
-    "name": "StorageCreated",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "address",
         "name": "timeLock",
         "type": "address"
       },
@@ -295,7 +294,17 @@
     "outputs": [
       {
         "internalType": "address payable",
-        "name": "",
+        "name": "governanceAddress",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "storageAddress",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "metaAddress",
         "type": "address"
       }
     ],

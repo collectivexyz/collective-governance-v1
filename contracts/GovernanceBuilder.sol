@@ -195,8 +195,17 @@ contract GovernanceBuilder is GovernanceCreator, ERC165 {
 
     /// @notice build the specified contract
     /// @dev contructs a new contract and may require a large gas fee, does not reinitialize context
-    /// @return the address of the new Governance contract
-    function build() external returns (address payable) {
+    /// @return governanceAddress address of the new Governance contract
+    /// @return storageAddress address of the storage contract
+    /// @return metaAddress address of the meta contract
+    function build()
+        external
+        returns (
+            address payable governanceAddress,
+            address storageAddress,
+            address metaAddress
+        )
+    {
         address _creator = msg.sender;
         GovernanceProperties storage _properties = _buildMap[_creator];
         Storage _storage = createStorage(_properties);
@@ -216,8 +225,18 @@ contract GovernanceBuilder is GovernanceCreator, ERC165 {
         transferOwnership(address(_timeLock), _governanceAddress);
         transferOwnership(address(_storage), _governanceAddress);
         _governanceContractRegistered[_governanceAddress] = true;
-        emit GovernanceContractCreated(_creator, _properties.name, address(_storage), _governanceAddress);
-        return _governanceAddress;
+        address _storageAddress = address(_storage);
+        address _metaAddress = address(_metaStore);
+        address _timeAddress = address(_timeLock);
+        emit GovernanceContractCreated(
+            _creator,
+            _properties.name,
+            _storageAddress,
+            _metaAddress,
+            _timeAddress,
+            _governanceAddress
+        );
+        return (_governanceAddress, _storageAddress, _metaAddress);
     }
 
     /// @notice identify a contract that was created by this builder
@@ -271,7 +290,6 @@ contract GovernanceBuilder is GovernanceCreator, ERC165 {
             _properties.minimumVoteDelay,
             _properties.minimumVoteDuration
         );
-        emit StorageCreated(address(_storage));
         return _storage;
     }
 

@@ -163,8 +163,7 @@ contract CollectiveGovernance is Governance, VoteStrategy, ERC165 {
     /// @dev Only one new proposal is allowed per msg.sender
     /// @return uint256 The id of the new proposal
     function propose() external returns (uint256) {
-        uint256 proposalId = configureNextVote(0, msg.sender);
-        return proposalId;
+        return _proposeVote(0, msg.sender);
     }
 
     /// @notice propose a choice vote for the community
@@ -173,8 +172,7 @@ contract CollectiveGovernance is Governance, VoteStrategy, ERC165 {
     /// @return uint256 The id of the new proposal
     function propose(uint256 _choiceCount) external returns (uint256) {
         require(_choiceCount > 0, "Not enough choices");
-        uint256 proposalId = configureNextVote(_choiceCount, msg.sender);
-        return proposalId;
+        return _proposeVote(_choiceCount, msg.sender);
     }
 
     /// @notice Attach a transaction to the specified proposal.
@@ -607,12 +605,6 @@ contract CollectiveGovernance is Governance, VoteStrategy, ERC165 {
             super.supportsInterface(interfaceId);
     }
 
-    /// @notice return the address of the internal vote data store
-    /// @return address The address of the store
-    function getStorageAddress() external view returns (address) {
-        return address(_storage);
-    }
-
     /// @notice cancel a proposal if it is not yet open
     /// @dev proposal must be finalized and ready but voting must not yet be open
     /// @param _proposalId The numeric id of the proposed vote
@@ -779,7 +771,7 @@ contract CollectiveGovernance is Governance, VoteStrategy, ERC165 {
         emit RebatePaid(recipient, rebate, gasUsed);
     }
 
-    function configureNextVote(uint256 _choiceCount, address _sender) private returns (uint256) {
+    function _proposeVote(uint256 _choiceCount, address _sender) private returns (uint256) {
         uint256 proposalId = _storage.initializeProposal(_choiceCount, _sender);
         for (uint256 i = 0; i < _communitySupervisorList.length; i++) {
             _storage.registerSupervisor(proposalId, _communitySupervisorList[i], true, _sender);

@@ -49,8 +49,6 @@ import "../contracts/CollectiveMetaStorage.sol";
  * @title CollectiveStorage creational contract
  */
 contract MetaStorageFactory {
-    event MetaCreated(address _storage, address _owner);
-
     /// @notice create meta storage
     /// @param _community The community name
     /// @param _url The Url for this community
@@ -63,7 +61,6 @@ contract MetaStorageFactory {
     ) external returns (MetaStorage) {
         CollectiveMetaStorage _metaStore = new CollectiveMetaStorage(_community, _url, _description);
         _metaStore.transferOwnership(msg.sender);
-        emit MetaCreated(address(_metaStore), msg.sender);
         return _metaStore;
     }
 }

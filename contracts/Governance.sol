@@ -51,7 +51,7 @@ import "@openzeppelin/contracts/interfaces/IERC165.sol";
 /// @custom:type interface
 interface Governance is IERC165 {
     error NotPermitted(address sender);
-    error NotVoter(uint proposalId, address sender);
+    error NotVoter(uint256 proposalId, address sender);
     error SupervisorListEmpty();
     error SupervisorRequired(uint256 proposalId, address sender);
     error VoteIsOpen(uint256 proposalId);
@@ -204,10 +204,6 @@ interface Governance is IERC165 {
         uint256 _requiredDelay,
         uint256 _requiredDuration
     ) external;
-
-    /// @notice return the address of the internal vote data store
-    /// @return address The address of the store
-    function getStorageAddress() external view returns (address);
 
     /// @notice return the name of this implementation
     /// @return string memory representation of name

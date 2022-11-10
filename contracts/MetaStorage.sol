@@ -102,7 +102,7 @@ interface MetaStorage is IERC165 {
     function url(uint256 _metaId) external returns (string memory);
 
     /// @notice set metadata
-    /// @dev requires supervisor
+    /// @dev requires owner
     /// @param _metaId the id of the metadata
     /// @param _url the url
     /// @param _description the description
@@ -123,7 +123,7 @@ interface MetaStorage is IERC165 {
     function metaCount(uint256 _metaId) external view returns (uint256);
 
     /// @notice attach arbitrary metadata to metadata
-    /// @dev requires supervisor
+    /// @dev requires ownera
     /// @param _metaId the id of the metadata
     /// @param _name the name of the metadata field
     /// @param _value the value of the metadata
