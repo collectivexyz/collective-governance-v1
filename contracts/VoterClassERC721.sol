@@ -120,7 +120,7 @@ contract VoterClassERC721 is VoterClass, AlwaysImmutable, ERC165 {
     /// @return uint256 The number of weighted votes confirmed
     function confirm(address _wallet, uint256 _tokenId) external view requireValidShare(_tokenId) returns (uint256) {
         uint256 voteCount = this.votesAvailable(_wallet, _tokenId);
-        require(voteCount > 0, "Not owner");
+        if(voteCount == 0) revert NotOwner(_contractAddress, _wallet);
         return _weight * voteCount;
     }
 

@@ -93,27 +93,41 @@ contract CollectiveGovernanceTest is Test {
     }
 
     function testConfigureWrongProposalId() public {
-        vm.expectRevert("Invalid proposal");
+        vm.expectRevert(abi.encodeWithSelector(Storage.InvalidProposal.selector, proposalId + 1));
         vm.startPrank(_SUPERVISOR, _SUPERVISOR);
         governance.configure(proposalId + 1, 2);
     }
 
     function testConfigureDurationWrongProposalId() public {
-        vm.expectRevert("Invalid proposal");
+        vm.expectRevert(abi.encodeWithSelector(Storage.InvalidProposal.selector, proposalId + 1));
         vm.startPrank(_SUPERVISOR, _SUPERVISOR);
-        governance.configure(proposalId + 1, 2, Constant.MINIMUM_VOTE_DELAY, Constant.MINIMUM_VOTE_DURATION);
+        governance.configureWithDelay(proposalId + 1, 2, Constant.MINIMUM_VOTE_DELAY, Constant.MINIMUM_VOTE_DURATION);
     }
 
     function testConfigureInvalidDuration() public {
-        vm.expectRevert("Duration not allowed");
+        vm.expectRevert(
+            abi.encodeWithSelector(
+                Storage.DurationNotPermitted.selector,
+                proposalId,
+                Constant.MINIMUM_VOTE_DURATION - 1,
+                Constant.MINIMUM_VOTE_DURATION
+            )
+        );
         vm.startPrank(_SUPERVISOR, _SUPERVISOR);
-        governance.configure(proposalId, 2, Constant.MINIMUM_VOTE_DELAY, Constant.MINIMUM_VOTE_DURATION - 1);
+        governance.configureWithDelay(proposalId, 2, Constant.MINIMUM_VOTE_DELAY, Constant.MINIMUM_VOTE_DURATION - 1);
     }
 
     function testConfigureInvalidQuorum() public {
         vm.startPrank(_SUPERVISOR, _SUPERVISOR);
-        vm.expectRevert("Quorum not allowed");
-        governance.configure(
+        vm.expectRevert(
+            abi.encodeWithSelector(
+                Storage.QuorumNotPermitted.selector,
+                proposalId,
+                Constant.MINIMUM_PROJECT_QUORUM - 1,
+                Constant.MINIMUM_PROJECT_QUORUM
+            )
+        );
+        governance.configureWithDelay(
             proposalId,
             Constant.MINIMUM_PROJECT_QUORUM - 1,
             Constant.MINIMUM_VOTE_DELAY,
@@ -132,9 +146,9 @@ contract CollectiveGovernanceTest is Test {
         governance = CollectiveGovernance(_governanceAddress);
         proposalId = governance.propose();
         assertEq(proposalId, proposalId);
-        vm.expectRevert("Quorum not allowed");
+        vm.expectRevert(abi.encodeWithSelector(Storage.QuorumNotPermitted.selector, proposalId, 9999, 10000));
         vm.startPrank(_SUPERVISOR, _SUPERVISOR);
-        governance.configure(proposalId, 9999, Constant.MINIMUM_VOTE_DELAY, Constant.MINIMUM_VOTE_DURATION);
+        governance.configureWithDelay(proposalId, 9999, Constant.MINIMUM_VOTE_DELAY, Constant.MINIMUM_VOTE_DURATION);
     }
 
     function testConfigureProjectMinimumQuorum() public {
@@ -150,7 +164,7 @@ contract CollectiveGovernanceTest is Test {
         proposalId = governance.propose();
         assertEq(proposalId, proposalId);
         vm.startPrank(_SUPERVISOR, _SUPERVISOR);
-        governance.configure(proposalId, 10000, Constant.MINIMUM_VOTE_DELAY, Constant.MINIMUM_VOTE_DURATION);
+        governance.configureWithDelay(proposalId, 10000, Constant.MINIMUM_VOTE_DELAY, Constant.MINIMUM_VOTE_DURATION);
         assertEq(_storage.minimumProjectQuorum(), 10000);
     }
 
@@ -165,9 +179,9 @@ contract CollectiveGovernanceTest is Test {
         governance = CollectiveGovernance(_governanceAddress);
         proposalId = governance.propose();
         assertEq(proposalId, proposalId);
-        vm.expectRevert("Duration not allowed");
+        vm.expectRevert(abi.encodeWithSelector(Storage.DurationNotPermitted.selector, proposalId, 5 days, 6 days));
         vm.startPrank(_SUPERVISOR, _SUPERVISOR);
-        governance.configure(proposalId, Constant.MINIMUM_PROJECT_QUORUM, Constant.MINIMUM_VOTE_DELAY, 5 days);
+        governance.configureWithDelay(proposalId, Constant.MINIMUM_PROJECT_QUORUM, Constant.MINIMUM_VOTE_DELAY, 5 days);
     }
 
     function testConfigureProjectMinimumDuration() public {
@@ -183,7 +197,7 @@ contract CollectiveGovernanceTest is Test {
         proposalId = governance.propose();
         assertEq(proposalId, proposalId);
         vm.startPrank(_SUPERVISOR, _SUPERVISOR);
-        governance.configure(proposalId, Constant.MINIMUM_PROJECT_QUORUM, Constant.MINIMUM_VOTE_DELAY, 8 days);
+        governance.configureWithDelay(proposalId, Constant.MINIMUM_PROJECT_QUORUM, Constant.MINIMUM_VOTE_DELAY, 8 days);
         assertEq(_storage.voteDuration(proposalId), 8 days);
     }
 
@@ -200,7 +214,7 @@ contract CollectiveGovernanceTest is Test {
         proposalId = governance.propose();
         assertEq(proposalId, proposalId);
         vm.startPrank(_SUPERVISOR, _SUPERVISOR);
-        governance.configure(proposalId, Constant.MINIMUM_PROJECT_QUORUM, 10 days, Constant.MINIMUM_VOTE_DURATION);
+        governance.configureWithDelay(proposalId, Constant.MINIMUM_PROJECT_QUORUM, 10 days, Constant.MINIMUM_VOTE_DURATION);
         assertEq(_storage.voteDelay(proposalId), 10 days);
     }
 
@@ -216,9 +230,9 @@ contract CollectiveGovernanceTest is Test {
         _storage = Storage(_storageAddress);
         proposalId = governance.propose();
         assertEq(proposalId, proposalId);
-        vm.expectRevert("Delay not allowed");
+        vm.expectRevert(abi.encodeWithSelector(Storage.DelayNotPermitted.selector, proposalId, 10 days - 1, 10 days));
         vm.startPrank(_SUPERVISOR, _SUPERVISOR);
-        governance.configure(proposalId, Constant.MINIMUM_PROJECT_QUORUM, 10 days - 1, Constant.MINIMUM_VOTE_DURATION);
+        governance.configureWithDelay(proposalId, Constant.MINIMUM_PROJECT_QUORUM, 10 days - 1, Constant.MINIMUM_VOTE_DURATION);
     }
 
     function testConfigure721() public {
@@ -234,7 +248,7 @@ contract CollectiveGovernanceTest is Test {
     function testOpenVoteWrongProposal() public {
         vm.startPrank(_SUPERVISOR, _SUPERVISOR);
         governance.configure(proposalId, 2);
-        vm.expectRevert("Invalid proposal");
+        vm.expectRevert(abi.encodeWithSelector(Storage.InvalidProposal.selector, proposalId + 1));
         governance.startVote(proposalId + 1);
         vm.stopPrank();
     }
@@ -255,7 +269,7 @@ contract CollectiveGovernanceTest is Test {
         governance.startVote(proposalId);
         vm.stopPrank();
         vm.prank(_VOTER1, _VOTER1);
-        vm.expectRevert("Share id is not valid");
+        vm.expectRevert(abi.encodeWithSelector(Storage.TokenIdIsNotValid.selector, proposalId, NONE));
         governance.voteFor(proposalId, NONE);
     }
 
@@ -325,7 +339,7 @@ contract CollectiveGovernanceTest is Test {
         governance.configure(proposalId, 2);
         governance.startVote(proposalId);
         vm.stopPrank();
-        vm.expectRevert("Invalid proposal");
+        vm.expectRevert(abi.encodeWithSelector(Storage.InvalidProposal.selector, proposalId + 1));
         vm.prank(_VOTER1, _VOTER1);
         governance.voteFor(proposalId + 1, TOKEN_ID1);
     }
@@ -335,7 +349,7 @@ contract CollectiveGovernanceTest is Test {
         governance.configure(proposalId, 2);
         governance.startVote(proposalId);
         vm.stopPrank();
-        vm.expectRevert("Invalid proposal");
+        vm.expectRevert(abi.encodeWithSelector(Storage.InvalidProposal.selector, proposalId + 1));
         vm.prank(_VOTER1, _VOTER1);
         governance.voteAgainst(proposalId + 1, TOKEN_ID1);
     }
@@ -345,7 +359,7 @@ contract CollectiveGovernanceTest is Test {
         governance.configure(proposalId, 2);
         governance.startVote(proposalId);
         vm.stopPrank();
-        vm.expectRevert("Invalid proposal");
+        vm.expectRevert(abi.encodeWithSelector(Storage.InvalidProposal.selector, proposalId + 1));
         vm.prank(_VOTER1, _VOTER1);
         governance.abstainFrom(proposalId + 1, TOKEN_ID1);
     }
@@ -355,7 +369,7 @@ contract CollectiveGovernanceTest is Test {
         governance.configure(proposalId, 2);
         governance.startVote(proposalId);
         vm.stopPrank();
-        vm.expectRevert("Not owner");
+        vm.expectRevert(abi.encodeWithSelector(VoterClass.NotOwner.selector, address(_erc721), _NOT_VOTER));
         vm.prank(_NOT_VOTER, _NOT_VOTER);
         governance.voteFor(proposalId, TOKEN_ID1);
     }
@@ -375,7 +389,7 @@ contract CollectiveGovernanceTest is Test {
         governance.configure(proposalId, 2);
         governance.startVote(proposalId);
         vm.stopPrank();
-        vm.expectRevert("Not owner");
+        vm.expectRevert(abi.encodeWithSelector(VoterClass.NotOwner.selector, address(_erc721), _NOT_VOTER));
         vm.prank(_NOT_VOTER, _NOT_VOTER);
         governance.voteAgainst(proposalId, TOKEN_ID1);
     }
@@ -395,8 +409,8 @@ contract CollectiveGovernanceTest is Test {
         governance.configure(proposalId, 2);
         governance.startVote(proposalId);
         vm.stopPrank();
+        vm.expectRevert(abi.encodeWithSelector(VoterClass.NotOwner.selector, address(_erc721), _NOT_VOTER));
         vm.prank(_NOT_VOTER, _NOT_VOTER);
-        vm.expectRevert("Not owner");
         governance.abstainFrom(proposalId, TOKEN_ID1);
     }
 
@@ -451,8 +465,8 @@ contract CollectiveGovernanceTest is Test {
         vm.prank(_SUPERVISOR);
         governance.startVote(proposalId);
         assertTrue(governance.isOpen(proposalId));
+        vm.expectRevert(abi.encodeWithSelector(Governance.VoteInProgress.selector, proposalId));
         vm.prank(_OWNER);
-        vm.expectRevert("Vote in progress");
         governance.endVote(proposalId);
     }
 
@@ -487,7 +501,7 @@ contract CollectiveGovernanceTest is Test {
         governance.configure(proposalId, 2);
         vm.prank(_SUPERVISOR);
         governance.startVote(proposalId);
-        vm.expectRevert("Not voter");
+        vm.expectRevert(abi.encodeWithSelector(VoterClass.NotVoter.selector, proposalId));
         vm.prank(_OWNER, _OWNER);
         governance.voteFor(proposalId);
     }
@@ -505,7 +519,7 @@ contract CollectiveGovernanceTest is Test {
         vm.stopPrank();
         vm.prank(_SUPERVISOR);
         governance.startVote(proposalId);
-        vm.expectRevert("Not voter");
+        vm.expectRevert(abi.encodeWithSelector(VoterClass.NotVoter.selector, _SUPERVISOR));
         vm.prank(_SUPERVISOR, _SUPERVISOR);
         governance.voteFor(proposalId);
     }
@@ -563,7 +577,7 @@ contract CollectiveGovernanceTest is Test {
         governance.startVote(proposalId);
         vm.prank(_VOTER1, _VOTER1);
         governance.voteFor(proposalId);
-        vm.expectRevert("Already voted");
+        vm.expectRevert(abi.encodeWithSelector(Storage.TokenVoted.selector, proposalId, _VOTER1, uint160(_VOTER1)));
         vm.prank(_VOTER1, _VOTER1);
         governance.voteFor(proposalId);
     }
@@ -577,7 +591,7 @@ contract CollectiveGovernanceTest is Test {
         governance.voteFor(proposalId, TOKEN_ID1);
         vm.prank(_VOTER1, _VOTER1);
         _erc721.transferFrom(_VOTER1, _VOTER2, TOKEN_ID1);
-        vm.expectRevert("Already voted");
+        vm.expectRevert(abi.encodeWithSelector(Storage.TokenVoted.selector, proposalId, _VOTER2, TOKEN_ID1));
         vm.prank(_VOTER2, _VOTER2);
         governance.voteFor(proposalId, TOKEN_ID1);
     }
@@ -609,7 +623,7 @@ contract CollectiveGovernanceTest is Test {
         vm.stopPrank();
         vm.prank(_SUPERVISOR);
         governance.startVote(proposalId);
-        vm.expectRevert("No vote cast");
+        vm.expectRevert(abi.encodeWithSelector(Storage.NeverVoted.selector, proposalId, _VOTER1));
         vm.prank(_VOTER1, _VOTER1);
         governance.undoVote(proposalId);
     }
@@ -626,7 +640,7 @@ contract CollectiveGovernanceTest is Test {
         governance.voteFor(proposalId, TOKEN_ID1);
         vm.prank(_VOTER1, _VOTER1);
         _erc721.transferFrom(_VOTER1, _VOTER2, TOKEN_ID1);
-        vm.expectRevert("Not voter");
+        vm.expectRevert(abi.encodeWithSelector(Storage.NotVoter.selector, proposalId, TOKEN_ID1, _VOTER2));
         vm.prank(_VOTER2, _VOTER2);
         governance.undoVote(proposalId, TOKEN_ID1);
     }
@@ -644,7 +658,7 @@ contract CollectiveGovernanceTest is Test {
         governance.startVote(proposalId);
         vm.prank(_VOTER1, _VOTER1);
         governance.voteFor(proposalId);
-        vm.expectRevert("Undo not enabled");
+        vm.expectRevert(abi.encodeWithSelector(Storage.UndoNotEnabled.selector, proposalId));
         vm.prank(_VOTER1, _VOTER1);
         governance.undoVote(proposalId);
     }
@@ -662,7 +676,7 @@ contract CollectiveGovernanceTest is Test {
         governance.startVote(proposalId);
         vm.prank(_VOTER1, _VOTER1);
         governance.voteFor(proposalId);
-        vm.expectRevert("Not voter");
+        vm.expectRevert(abi.encodeWithSelector(VoterClass.NotVoter.selector, _SUPERVISOR));
         vm.prank(_SUPERVISOR, _SUPERVISOR);
         governance.undoVote(proposalId);
     }
@@ -681,7 +695,7 @@ contract CollectiveGovernanceTest is Test {
         vm.stopPrank();
         vm.prank(_VOTER1, _VOTER1);
         governance.voteFor(proposalId);
-        vm.expectRevert("Not voter");
+        vm.expectRevert(abi.encodeWithSelector(VoterClass.NotVoter.selector, _OWNER));
         vm.prank(_OWNER, _OWNER);
         governance.undoVote(proposalId);
     }
@@ -701,18 +715,24 @@ contract CollectiveGovernanceTest is Test {
         vm.mockCall(storageMock, abi.encodeWithSelector(Storage.quorum.selector), abi.encode(quorum));
         uint256 quorumRequired = 399;
         vm.mockCall(storageMock, abi.encodeWithSelector(Storage.quorumRequired.selector), abi.encode(quorumRequired));
-        vm.mockCall(storageMock, abi.encodeWithSelector(Storage.startTime.selector), abi.encode(block.timestamp - 2));
-        vm.mockCall(storageMock, abi.encodeWithSelector(Storage.endTime.selector), abi.encode(block.timestamp - 1));
+        vm.mockCall(storageMock, abi.encodeWithSelector(Storage.startTime.selector), abi.encode(block.timestamp));
+        vm.mockCall(
+            storageMock,
+            abi.encodeWithSelector(Storage.endTime.selector),
+            abi.encode(block.timestamp + Constant.MINIMUM_VOTE_DURATION + 1)
+        );
         vm.mockCall(storageMock, abi.encodeWithSelector(Storage.isFinal.selector), abi.encode(true));
         vm.mockCall(storageMock, abi.encodeWithSelector(Storage.isVeto.selector), abi.encode(false));
         vm.mockCall(storageMock, abi.encodeWithSelector(Storage.isSupervisor.selector), abi.encode(true));
         vm.mockCall(storageMock, abi.encodeWithSelector(Storage.transactionCount.selector), abi.encode(0));
 
-        vm.prank(_SUPERVISOR);
+        vm.startPrank(_SUPERVISOR, _SUPERVISOR);
+        governance.configure(proposalId, 3);
         governance.startVote(proposalId);
-        vm.prank(_SUPERVISOR);
+        vm.stopPrank();
+        vm.warp(block.timestamp + Constant.MINIMUM_VOTE_DURATION + 1);
+        vm.prank(_OWNER, _OWNER);
         governance.endVote(proposalId);
-
         assertTrue(governance.getVoteSucceeded(proposalId));
     }
 
@@ -864,6 +884,7 @@ contract CollectiveGovernanceTest is Test {
         _builder.withSupervisor(_SUPERVISOR);
         (_governanceAddress, _storageAddress, ) = _builder.build();
         governance = CollectiveGovernance(_governanceAddress);
+        vm.prank(_SUPERVISOR, _SUPERVISOR);
         governance.propose();
         vm.startPrank(_governanceAddress);
         _storage = Storage(_storageAddress);
@@ -878,7 +899,7 @@ contract CollectiveGovernanceTest is Test {
         vm.prank(_VOTER2, _VOTER2);
         governance.voteFor(proposalId);
         vm.warp(blockTimestamp + Constant.MINIMUM_VOTE_DURATION);
-        vm.prank(_SUPERVISOR);
+        vm.prank(_SUPERVISOR, _SUPERVISOR);
         governance.endVote(proposalId);
         vm.expectRevert(abi.encodeWithSelector(Governance.VoteIsClosed.selector, proposalId));
         vm.prank(_SUPERVISOR);
@@ -914,21 +935,29 @@ contract CollectiveGovernanceTest is Test {
     }
 
     function testVoteDelayPreventsVote(uint256 blockStep) public {
-        vm.assume(blockStep >= 1 && blockStep < 100);
+        vm.assume(blockStep >= 1 && blockStep < 1 days);
         (_governanceAddress, _storageAddress, ) = buildVoterPool();
         governance = CollectiveGovernance(_governanceAddress);
         governance.propose();
         vm.startPrank(_governanceAddress);
         _storage = Storage(_storageAddress);
         _storage.setQuorumRequired(proposalId, 1, _SUPERVISOR);
-        _storage.setVoteDelay(proposalId, 100, _SUPERVISOR);
+        _storage.setVoteDelay(proposalId, 1 days, _SUPERVISOR);
         _storage.makeFinal(proposalId, _SUPERVISOR);
         vm.stopPrank();
         uint256 startTime = block.timestamp;
         vm.prank(_SUPERVISOR);
         governance.startVote(proposalId);
         vm.warp(startTime + blockStep);
-        vm.expectRevert("Vote not active");
+        vm.expectRevert(
+            abi.encodeWithSelector(
+                Storage.VoteNotActive.selector,
+                proposalId,
+                1 days + 1,
+                1 days + 1 + Constant.MINIMUM_VOTE_DURATION,
+                block.timestamp
+            )
+        );
         vm.prank(_VOTER1, _VOTER1);
         governance.voteFor(proposalId);
     }
@@ -948,7 +977,15 @@ contract CollectiveGovernanceTest is Test {
         vm.prank(_SUPERVISOR);
         governance.startVote(proposalId);
         vm.warp(startTime + blockStep);
-        vm.expectRevert("Vote not active");
+        vm.expectRevert(
+            abi.encodeWithSelector(
+                Storage.VoteNotActive.selector,
+                proposalId,
+                1,
+                Constant.MINIMUM_VOTE_DURATION + 1,
+                block.timestamp
+            )
+        );
         vm.prank(_VOTER1, _VOTER1);
         governance.voteFor(proposalId);
     }
@@ -971,7 +1008,7 @@ contract CollectiveGovernanceTest is Test {
         vm.prank(_SUPERVISOR);
         governance.startVote(proposalId);
         vm.warp(startTime + voteDelay + blockStep);
-        vm.expectRevert("Vote in progress");
+        vm.expectRevert(abi.encodeWithSelector(Governance.VoteInProgress.selector, proposalId));
         vm.prank(_SUPERVISOR);
         governance.endVote(proposalId);
     }
@@ -1116,7 +1153,7 @@ contract CollectiveGovernanceTest is Test {
     function testConfigureAfterCancel() public {
         vm.startPrank(_SUPERVISOR, _SUPERVISOR);
         governance.cancel(proposalId);
-        vm.expectRevert("Vote not modifiable");
+        vm.expectRevert(abi.encodeWithSelector(Storage.VoteFinal.selector, proposalId));
         governance.configure(proposalId, 2);
         vm.stopPrank();
     }
@@ -1136,7 +1173,18 @@ contract CollectiveGovernanceTest is Test {
         governance.configure(proposalId, 2);
         governance.startVote(proposalId);
         vm.warp(blockTimestamp + 2);
-        vm.expectRevert("Not possible");
+        vm.expectRevert(abi.encodeWithSelector(Governance.CancelNotPossible.selector, proposalId, _SUPERVISOR));
+        governance.cancel(proposalId);
+        vm.stopPrank();
+    }
+
+    function testCancelAfterStartTime() public {
+        vm.startPrank(_SUPERVISOR, _SUPERVISOR);
+        governance.configure(proposalId, 2);
+        governance.startVote(proposalId);
+        uint256 startTime = _storage.startTime(proposalId);
+        vm.warp(startTime + 1);
+        vm.expectRevert(abi.encodeWithSelector(Governance.CancelNotPossible.selector, proposalId, _SUPERVISOR));
         governance.cancel(proposalId);
         vm.stopPrank();
     }
@@ -1148,7 +1196,7 @@ contract CollectiveGovernanceTest is Test {
         governance.startVote(proposalId);
         vm.warp(blockTimestamp + Constant.MINIMUM_VOTE_DURATION);
         governance.endVote(proposalId);
-        vm.expectRevert("Not possible");
+        vm.expectRevert(abi.encodeWithSelector(Governance.CancelNotPossible.selector, proposalId, _SUPERVISOR));
         governance.cancel(proposalId);
         vm.stopPrank();
     }
@@ -1166,7 +1214,7 @@ contract CollectiveGovernanceTest is Test {
         vm.startPrank(_SUPERVISOR, _SUPERVISOR);
         governance.configure(proposalId, 2);
         governance.startVote(proposalId);
-        vm.expectRevert("Invalid proposal");
+        vm.expectRevert(abi.encodeWithSelector(Storage.InvalidProposal.selector, proposalId + 1));
         governance.veto(proposalId + 1);
         vm.stopPrank();
     }
@@ -1383,7 +1431,7 @@ contract CollectiveGovernanceTest is Test {
         vm.prank(_VOTER1, _VOTER1);
         governance.voteFor(proposalId, TOKEN_ID1);
         assertTrue(_VOTER1.balance > 0);
-        assertApproxEqAbs(_VOTER1.balance, 8806356 gwei, 500 gwei);
+        assertApproxEqAbs(_VOTER1.balance, 8794604 gwei, 500 gwei);
     }
 
     function testCastAgainstVoteWithRefund() public {
@@ -1400,7 +1448,7 @@ contract CollectiveGovernanceTest is Test {
         vm.prank(_VOTER1, _VOTER1);
         governance.voteAgainst(proposalId, TOKEN_ID1);
         assertTrue(_VOTER1.balance > 0);
-        assertApproxEqAbs(_VOTER1.balance, 7765420 gwei, 500 gwei);
+        assertApproxEqAbs(_VOTER1.balance, 7756840 gwei, 500 gwei);
     }
 
     function testAbstainWithRefund() public {
@@ -1417,7 +1465,7 @@ contract CollectiveGovernanceTest is Test {
         vm.prank(_VOTER1, _VOTER1);
         governance.abstainFrom(proposalId, TOKEN_ID1);
         assertTrue(_VOTER1.balance > 0);
-        assertApproxEqAbs(_VOTER1.balance, 8531692 gwei, 500 gwei);
+        assertApproxEqAbs(_VOTER1.balance, 8784880 gwei, 500 gwei);
     }
 
     function testVoteAndUndoWithRefund() public {
@@ -1437,7 +1485,7 @@ contract CollectiveGovernanceTest is Test {
         governance.undoVote(proposalId, TOKEN_ID1);
         vm.stopPrank();
         assertTrue(_VOTER1.balance > 0);
-        assertApproxEqAbs(_VOTER1.balance, 12192804 gwei, 500 gwei);
+        assertApproxEqAbs(_VOTER1.balance, 12228320 gwei, 500 gwei);
     }
 
     function testCastVoteWithMaximumRefund() public {
@@ -1454,7 +1502,7 @@ contract CollectiveGovernanceTest is Test {
         vm.prank(_VOTER1, _VOTER1);
         governance.voteFor(proposalId, TOKEN_ID1);
         assertTrue(_VOTER1.balance > 0);
-        uint256 expectRefund = 17104653 gwei;
+        uint256 expectRefund = 17081827 gwei;
         assertApproxEqAbs(_VOTER1.balance, expectRefund, 500 gwei);
         assertApproxEqAbs(_governanceAddress.balance, 1 ether - expectRefund, 500 gwei);
     }
@@ -1492,7 +1540,7 @@ contract CollectiveGovernanceTest is Test {
         governance.cancel(proposalId);
         vm.warp(block.timestamp + Constant.MINIMUM_VOTE_DURATION);
         proposalId = governance.propose(7);
-        vm.expectRevert("Choice vote requires setup");
+        vm.expectRevert(abi.encodeWithSelector(Storage.ChoiceVoteRequiresSetup.selector, proposalId));
         governance.configure(proposalId, 2);
         vm.stopPrank();
     }

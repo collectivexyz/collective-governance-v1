@@ -95,7 +95,6 @@ contract CollectiveGovernance is Governance, VoteStrategy, ERC165 {
     /// @param _governanceStorage The storage contract for this governance
     /// @param _gasUsedRebate The maximum rebate for gas used
     /// @param _baseFeeRebate The maximum base fee rebate
-    ///
     constructor(
         address[] memory _supervisorList,
         VoterClass _class,
@@ -150,6 +149,16 @@ contract CollectiveGovernance is Governance, VoteStrategy, ERC165 {
         _;
     }
 
+    modifier requireSender(uint256 _proposalId, address _sender) {
+        if (_storage.getSender(_proposalId) != _sender) revert Storage.SenderRequired(_proposalId, _sender);
+        _;
+    }
+
+    modifier requireExecuited(uint256 _proposalId) {
+        _;
+        if (!_storage.isExecuted(_proposalId)) revert NotExecuted(_proposalId);
+    }
+
     receive() external payable {
         emit RebateFund(msg.sender, msg.value, getRebateBalance());
     }
@@ -171,7 +180,7 @@ contract CollectiveGovernance is Governance, VoteStrategy, ERC165 {
     /// @param _choiceCount the number of choices for this vote
     /// @return uint256 The id of the new proposal
     function propose(uint256 _choiceCount) external returns (uint256) {
-        require(_choiceCount > 0, "Not enough choices");
+        if (_choiceCount == 0) revert NotEnoughChoices();
         return _proposeVote(_choiceCount, msg.sender);
     }
 
@@ -193,8 +202,7 @@ contract CollectiveGovernance is Governance, VoteStrategy, ERC165 {
         string memory _signature,
         bytes memory _calldata,
         uint256 _scheduleTime
-    ) external returns (uint256) {
-        require(_storage.getSender(_proposalId) == msg.sender, "Not sender");
+    ) external requireSender(_proposalId, msg.sender) returns (uint256) {
         bytes32 txHash = _timeLock.queueTransaction(_target, _value, _signature, _calldata, _scheduleTime);
         uint256 transactionId = _storage.addTransaction(
             _proposalId,
@@ -219,8 +227,7 @@ contract CollectiveGovernance is Governance, VoteStrategy, ERC165 {
         uint256 _proposalId,
         string memory _description,
         string memory _url
-    ) external requireNotFinal(_proposalId) {
-        require(_storage.getSender(_proposalId) == msg.sender, "Not sender");
+    ) external requireSender(_proposalId, msg.sender) requireNotFinal(_proposalId) {
         meta.describe(_proposalId, _url, _description);
         emit ProposalDescription(_proposalId, _description, _url);
     }
@@ -235,8 +242,7 @@ contract CollectiveGovernance is Governance, VoteStrategy, ERC165 {
         uint256 _proposalId,
         bytes32 _name,
         string memory _value
-    ) external requireNotFinal(_proposalId) returns (uint256) {
-        require(_storage.getSender(_proposalId) == msg.sender, "Not sender");
+    ) external requireSender(_proposalId, msg.sender) requireNotFinal(_proposalId) returns (uint256) {
         uint256 metaId = meta.addMeta(_proposalId, _name, _value);
         emit ProposalMeta(_proposalId, metaId, _name, _value, msg.sender);
         return metaId;
@@ -254,8 +260,7 @@ contract CollectiveGovernance is Governance, VoteStrategy, ERC165 {
         bytes32 _name,
         string memory _description,
         uint256 _transactionId
-    ) external {
-        require(_storage.getSender(_proposalId) == msg.sender, "Not sender");
+    ) external requireSender(_proposalId, msg.sender) {
         _storage.setChoice(_proposalId, _choiceId, _name, _description, _transactionId, msg.sender);
         emit ProposalChoice(_proposalId, _choiceId, _name, _description, _transactionId);
     }
@@ -275,7 +280,7 @@ contract CollectiveGovernance is Governance, VoteStrategy, ERC165 {
     /// @param _quorumRequired The threshold of participation that is required for a successful conclusion of voting
     /// @param _requiredDelay The minimum time required before the start of voting
     /// @param _requiredDuration The minimum time for voting to proceed before ending the vote is allowed
-    function configure(
+    function configureWithDelay(
         uint256 _proposalId,
         uint256 _quorumRequired,
         uint256 _requiredDelay,
@@ -295,7 +300,7 @@ contract CollectiveGovernance is Governance, VoteStrategy, ERC165 {
         requireVoteFinal(_proposalId)
         requireVoteAccepted(_proposalId)
     {
-        require(_storage.quorumRequired(_proposalId) < Constant.UINT_MAX, "Quorum required");
+        if (_storage.quorumRequired(_proposalId) == Constant.UINT_MAX) revert QuorumNotConfigured(_proposalId);
         if (!isVoteOpenByProposalId[_proposalId]) {
             isVoteOpenByProposalId[_proposalId] = true;
             emit VoteOpen(_proposalId);
@@ -339,10 +344,9 @@ contract CollectiveGovernance is Governance, VoteStrategy, ERC165 {
     /// @dev it is not possible to end voting until the required duration has elapsed
     function endVote(uint256 _proposalId) public requireSupervisor(_proposalId) requireVoteOpen(_proposalId) {
         uint256 _endTime = _storage.endTime(_proposalId);
-        require(
-            _endTime <= getBlockTimestamp() || _storage.isVeto(_proposalId) || _storage.isCancel(_proposalId),
-            "Vote in progress"
-        );
+        if (_endTime > getBlockTimestamp() && !_storage.isVeto(_proposalId) && !_storage.isCancel(_proposalId))
+            revert VoteInProgress(_proposalId);
+
         isVoteOpenByProposalId[_proposalId] = false;
 
         if (!_storage.isVeto(_proposalId) && getVoteSucceeded(_proposalId)) {
@@ -610,7 +614,8 @@ contract CollectiveGovernance is Governance, VoteStrategy, ERC165 {
     /// @param _proposalId The numeric id of the proposed vote
     function cancel(uint256 _proposalId) public requireSupervisor(_proposalId) {
         uint256 _startTime = _storage.startTime(_proposalId);
-        require(!isVoteOpenByProposalId[_proposalId] && getBlockTimestamp() <= _startTime, "Not possible");
+        if (isVoteOpenByProposalId[_proposalId] || getBlockTimestamp() > _startTime)
+            revert CancelNotPossible(_proposalId, msg.sender);
         uint256 transactionCount = _storage.transactionCount(_proposalId);
         for (uint256 tid = 0; tid < transactionCount; tid++) {
             (
@@ -632,12 +637,12 @@ contract CollectiveGovernance is Governance, VoteStrategy, ERC165 {
     function executeTransaction(uint256 _proposalId) private {
         uint256 transactionCount = _storage.transactionCount(_proposalId);
         uint256 executedCount = 0;
+        if (_storage.isExecuted(_proposalId)) revert TransactionExecuted(_proposalId);
+        _storage.setExecuted(_proposalId, msg.sender);
         if (transactionCount > 0) {
-            require(!_storage.isExecuted(_proposalId), "Transaction executed");
-            _storage.setExecuted(_proposalId, msg.sender);
             if (_storage.isChoiceVote(_proposalId)) {
                 uint256 winningChoice = _storage.getWinningChoice(_proposalId);
-                require(winningChoice < _storage.choiceCount(_proposalId), "Invalid choice found");
+                if (winningChoice >= _storage.choiceCount(_proposalId)) revert InvalidChoice(_proposalId, winningChoice);
                 (bytes32 _name, string memory _description, uint256 transactionId, uint256 voteCount) = _storage.getChoice(
                     _proposalId,
                     winningChoice

@@ -19,6 +19,22 @@
     "inputs": [
       {
         "internalType": "uint256",
+        "name": "proposalId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "sender",
+        "type": "address"
+      }
+    ],
+    "name": "CancelNotPossible",
+    "type": "error"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
         "name": "gasUsedRebate",
         "type": "uint256"
       },
@@ -673,17 +689,7 @@
       },
       {
         "internalType": "uint256",
-        "name": "_quorumThreshold",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_requiredDelay",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_requiredDuration",
+        "name": "_quorumRequired",
         "type": "uint256"
       }
     ],
@@ -701,11 +707,21 @@
       },
       {
         "internalType": "uint256",
-        "name": "_quorumRequired",
+        "name": "_quorumThreshold",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_requiredDelay",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_requiredDuration",
         "type": "uint256"
       }
     ],
-    "name": "configure",
+    "name": "configureWithDelay",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

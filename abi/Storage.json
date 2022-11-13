@@ -3,7 +3,7 @@
     "inputs": [
       {
         "internalType": "uint256",
-        "name": "_proposalId",
+        "name": "proposalId",
         "type": "uint256"
       },
       {
@@ -13,6 +13,65 @@
       }
     ],
     "name": "AlreadyVetoed",
+    "type": "error"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "delay",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "minimumDelay",
+        "type": "uint256"
+      }
+    ],
+    "name": "DelayLessThanMinimum",
+    "type": "error"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "duration",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "minimumDuration",
+        "type": "uint256"
+      }
+    ],
+    "name": "DurationLessThanMinimum",
+    "type": "error"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "proposalId",
+        "type": "uint256"
+      }
+    ],
+    "name": "InvalidProposal",
+    "type": "error"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "quorum",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "minimumProjectQuorum",
+        "type": "uint256"
+      }
+    ],
+    "name": "QuorumLessThanMinimum",
     "type": "error"
   },
   {
@@ -50,6 +109,22 @@
       }
     ],
     "name": "SupervisorRequired",
+    "type": "error"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "string",
+        "name": "name",
+        "type": "string"
+      },
+      {
+        "internalType": "uint256",
+        "name": "version",
+        "type": "uint256"
+      }
+    ],
+    "name": "VoterClassNotFinal",
     "type": "error"
   },
   {

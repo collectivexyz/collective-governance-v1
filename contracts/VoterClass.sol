@@ -54,7 +54,8 @@ import "../contracts/access/Mutable.sol";
 /// privledges.   It can be called by anyone.
 /// @custom:type interface
 interface VoterClass is Mutable, IERC165 {
-    error NotAVoter(address _wallet);
+    error NotVoter(address wallet);
+    error NotOwner(address tokenContract, address wallet);
 
     /// @notice test if wallet represents an allowed voter for this class
     /// @return bool true if wallet is a voter

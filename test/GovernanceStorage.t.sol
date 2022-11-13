@@ -148,14 +148,14 @@ contract GovernanceStorageTest is Test {
     }
 
     function testRegisterSupervisorBadProposal() public {
-        vm.expectRevert("Invalid proposal");
+        vm.expectRevert(abi.encodeWithSelector(Storage.InvalidProposal.selector, 0));
         _storage.registerSupervisor(0, _SUPERVISOR, _OWNER);
     }
 
     function testRegisterSupervisorIfOpen() public {
         _storage.registerSupervisor(_proposalId, _SUPERVISOR, _OWNER);
         _storage.makeFinal(_proposalId, _SUPERVISOR);
-        vm.expectRevert("Vote not modifiable");
+        vm.expectRevert(abi.encodeWithSelector(Storage.VoteFinal.selector, _proposalId));
         _storage.registerSupervisor(_proposalId, _NOTSUPERVISOR, _OWNER);
     }
 
@@ -166,7 +166,7 @@ contract GovernanceStorageTest is Test {
 
     function testBurnProjectSupervisor() public {
         _storage.registerSupervisor(_proposalId, _SUPERVISOR, true, _OWNER);
-        vm.expectRevert("Supervisor change not permitted");
+        vm.expectRevert(abi.encodeWithSelector(Storage.ProjectSupervisor.selector, _proposalId, _SUPERVISOR));
         _storage.burnSupervisor(_proposalId, _SUPERVISOR, _OWNER);
     }
 
@@ -186,7 +186,7 @@ contract GovernanceStorageTest is Test {
     function testReadyByBurnedSupervisor() public {
         _storage.registerSupervisor(_proposalId, _SUPERVISOR, _OWNER);
         _storage.burnSupervisor(_proposalId, _SUPERVISOR, _OWNER);
-        vm.expectRevert("Requires supervisor");
+        vm.expectRevert(abi.encodeWithSelector(Storage.SupervisorRequired.selector, _proposalId, _SUPERVISOR));
         _storage.makeFinal(_proposalId, _SUPERVISOR);
     }
 
@@ -206,7 +206,7 @@ contract GovernanceStorageTest is Test {
     function testSetQuorumRequiredIfReady() public {
         _storage.registerSupervisor(_proposalId, _SUPERVISOR, _OWNER);
         _storage.makeFinal(_proposalId, _SUPERVISOR);
-        vm.expectRevert("Vote not modifiable");
+        vm.expectRevert(abi.encodeWithSelector(Storage.VoteFinal.selector, _proposalId));
         _storage.setQuorumRequired(_proposalId, 100, _SUPERVISOR);
     }
 
@@ -225,7 +225,7 @@ contract GovernanceStorageTest is Test {
         _storage.setVoteDelay(_proposalId, 100, _SUPERVISOR);
     }
 
-    function testSetVoteDelayRequiresSupervisor() public {
+    function testSetVoteDelaySupervisorRequired() public {
         _storage.registerSupervisor(_proposalId, _SUPERVISOR, _OWNER);
         vm.expectRevert("Ownable: caller is not the owner");
         vm.prank(_OWNER);
@@ -235,7 +235,7 @@ contract GovernanceStorageTest is Test {
     function testSetVoteDelayIfReady() public {
         _storage.registerSupervisor(_proposalId, _SUPERVISOR, _OWNER);
         _storage.makeFinal(_proposalId, _SUPERVISOR);
-        vm.expectRevert("Vote not modifiable");
+        vm.expectRevert(abi.encodeWithSelector(Storage.VoteFinal.selector, _proposalId));
         _storage.setVoteDelay(_proposalId, 3600, _SUPERVISOR);
     }
 
@@ -256,26 +256,35 @@ contract GovernanceStorageTest is Test {
 
     function testSetMinimumVoteDurationNonZero() public {
         _storage.registerSupervisor(_proposalId, _SUPERVISOR, _OWNER);
-        vm.expectRevert("Duration not allowed");
+        vm.expectRevert(
+            abi.encodeWithSelector(Storage.DurationNotPermitted.selector, _proposalId, 0, Constant.MINIMUM_VOTE_DURATION)
+        );
         _storage.setVoteDuration(_proposalId, 0, _SUPERVISOR);
     }
 
     function testSetMinimumVoteDurationShort() public {
         _storage.registerSupervisor(_proposalId, _SUPERVISOR, _OWNER);
-        vm.expectRevert("Duration not allowed");
+        vm.expectRevert(
+            abi.encodeWithSelector(
+                Storage.DurationNotPermitted.selector,
+                _proposalId,
+                Constant.MINIMUM_VOTE_DURATION - 1,
+                Constant.MINIMUM_VOTE_DURATION
+            )
+        );
         _storage.setVoteDuration(_proposalId, Constant.MINIMUM_VOTE_DURATION - 1, _SUPERVISOR);
     }
 
     function testSetMinimumVoteDurationIfReady() public {
         _storage.registerSupervisor(_proposalId, _SUPERVISOR, _OWNER);
         _storage.makeFinal(_proposalId, _SUPERVISOR);
-        vm.expectRevert("Vote not modifiable");
+        vm.expectRevert(abi.encodeWithSelector(Storage.VoteFinal.selector, _proposalId));
         _storage.setVoteDuration(_proposalId, 1, _SUPERVISOR);
     }
 
-    function testSetMinimumVoteDurationRequiredSupervisor() public {
+    function testSetMinimumVoteDurationSupervisorRequired() public {
         _storage.registerSupervisor(_proposalId, _SUPERVISOR, _OWNER);
-        vm.expectRevert("Requires supervisor");
+        vm.expectRevert(abi.encodeWithSelector(Storage.SupervisorRequired.selector, _proposalId, _OWNER));
         _storage.setVoteDuration(_proposalId, Constant.MINIMUM_VOTE_DURATION, _OWNER);
     }
 
@@ -295,13 +304,13 @@ contract GovernanceStorageTest is Test {
     function testMakeReadyDoubleCall() public {
         _storage.registerSupervisor(_proposalId, _SUPERVISOR, _OWNER);
         _storage.makeFinal(_proposalId, _SUPERVISOR);
-        vm.expectRevert("Vote not modifiable");
+        vm.expectRevert(abi.encodeWithSelector(Storage.VoteFinal.selector, _proposalId));
         _storage.makeFinal(_proposalId, _SUPERVISOR);
     }
 
     function testMakeReadyRequireSupervisor() public {
         _storage.registerSupervisor(_proposalId, _SUPERVISOR, _OWNER);
-        vm.expectRevert("Requires supervisor");
+        vm.expectRevert(abi.encodeWithSelector(Storage.SupervisorRequired.selector, _proposalId, _OWNER));
         _storage.makeFinal(_proposalId, _OWNER);
     }
 
@@ -321,13 +330,13 @@ contract GovernanceStorageTest is Test {
 
     function testOwnerMayNotVeto() public {
         _storage.registerSupervisor(_proposalId, _SUPERVISOR, _OWNER);
-        vm.expectRevert("Requires supervisor");
+        vm.expectRevert(abi.encodeWithSelector(Storage.SupervisorRequired.selector, _proposalId, _OWNER));
         _storage.veto(_proposalId, _OWNER);
     }
 
     function testVoterMayNotVeto() public {
         _storage.registerSupervisor(_proposalId, _SUPERVISOR, _OWNER);
-        vm.expectRevert("Requires supervisor");
+        vm.expectRevert(abi.encodeWithSelector(Storage.SupervisorRequired.selector, _proposalId, _VOTER1));
         _storage.veto(_proposalId, _VOTER1);
     }
 
@@ -380,11 +389,11 @@ contract GovernanceStorageTest is Test {
         assertEq(_storage.quorum(_proposalId), 1);
     }
 
-    function testCastChoiceVote() public {
+    function testCastVoteNotChoiceVote() public {
         _storage.registerSupervisor(_proposalId, _SUPERVISOR, _OWNER);
         _storage.setQuorumRequired(_proposalId, 2, _SUPERVISOR);
         _storage.makeFinal(_proposalId, _SUPERVISOR);
-        vm.expectRevert("Choice invalid");
+        vm.expectRevert(abi.encodeWithSelector(Storage.NotChoiceVote.selector, _proposalId));
         _storage.voteForByShare(_proposalId, _VOTER1, uint160(_VOTER1), 1);
     }
 
@@ -429,9 +438,10 @@ contract GovernanceStorageTest is Test {
         _storage.enableUndoVote(_proposalId, _SUPERVISOR);
         _storage.setQuorumRequired(_proposalId, 2, _SUPERVISOR);
         _storage.makeFinal(_proposalId, _SUPERVISOR);
-        _storage.voteAgainstByShare(_proposalId, _VOTER1, uint160(_VOTER1));
-        vm.expectRevert("Vote not affirmative");
-        _storage.undoVoteById(_proposalId, _VOTER1, uint160(_VOTER1));
+        uint160 tokenId = uint160(_VOTER1);
+        _storage.voteAgainstByShare(_proposalId, _VOTER1, tokenId);
+        vm.expectRevert(abi.encodeWithSelector(Storage.AffirmativeVoteRequired.selector, _proposalId, tokenId));
+        _storage.undoVoteById(_proposalId, _VOTER1, tokenId);
     }
 
     function testAbstainWithUndo() public {
@@ -439,9 +449,10 @@ contract GovernanceStorageTest is Test {
         _storage.enableUndoVote(_proposalId, _SUPERVISOR);
         _storage.setQuorumRequired(_proposalId, 2, _SUPERVISOR);
         _storage.makeFinal(_proposalId, _SUPERVISOR);
-        _storage.abstainForShare(_proposalId, _VOTER1, uint160(_VOTER1));
-        vm.expectRevert("No affirmative vote");
-        _storage.undoVoteById(_proposalId, _VOTER1, uint160(_VOTER1));
+        uint160 tokenId = uint160(_VOTER1);
+        _storage.abstainForShare(_proposalId, _VOTER1, tokenId);
+        vm.expectRevert(abi.encodeWithSelector(Storage.VoteRescinded.selector, _proposalId, tokenId));
+        _storage.undoVoteById(_proposalId, _VOTER1, tokenId);
     }
 
     function testVoteAgainstReceipt() public {
@@ -563,10 +574,11 @@ contract GovernanceStorageTest is Test {
         _storage.enableUndoVote(_proposalId, _SUPERVISOR);
         _storage.setQuorumRequired(_proposalId, 2, _SUPERVISOR);
         _storage.makeFinal(_proposalId, _SUPERVISOR);
-        _storage.voteForByShare(_proposalId, _VOTER1, uint160(_VOTER1));
-        _storage.undoVoteById(_proposalId, _VOTER1, uint160(_VOTER1));
-        vm.expectRevert("No affirmative vote");
-        _storage.undoVoteById(_proposalId, _VOTER1, uint160(_VOTER1));
+        uint160 tokenId = uint160(_VOTER1);
+        _storage.voteForByShare(_proposalId, _VOTER1, tokenId);
+        _storage.undoVoteById(_proposalId, _VOTER1, tokenId);
+        vm.expectRevert(abi.encodeWithSelector(Storage.VoteRescinded.selector, _proposalId, tokenId));
+        _storage.undoVoteById(_proposalId, _VOTER1, tokenId);
     }
 
     function testName() public {
@@ -602,8 +614,8 @@ contract GovernanceStorageTest is Test {
     }
 
     function testLatestRevertIfNone() public {
-        vm.expectRevert("No proposal");
-        _storage.latestProposal(_SUPERVISOR);
+        vm.expectRevert(abi.encodeWithSelector(Storage.NoProposal.selector, _VOTER3));
+        _storage.latestProposal(_VOTER3);
     }
 
     function testAllowProposalIfFinal() public {
@@ -617,12 +629,12 @@ contract GovernanceStorageTest is Test {
     function testNotExemptFromDelayIfCancelled() public {
         _storage.registerSupervisor(_proposalId, _SUPERVISOR, _OWNER);
         _storage.cancel(_proposalId, _SUPERVISOR);
-        vm.expectRevert("Too many proposals");
+        vm.expectRevert(abi.encodeWithSelector(Storage.TooManyProposals.selector, _OWNER, _proposalId));
         _storage.initializeProposal(0, _OWNER);
     }
 
     function testRevertOnSecondProposal() public {
-        vm.expectRevert("Too many proposals");
+        vm.expectRevert(abi.encodeWithSelector(Storage.TooManyProposals.selector, _OWNER, _proposalId));
         _storage.initializeProposal(0, _OWNER);
     }
 
@@ -643,7 +655,7 @@ contract GovernanceStorageTest is Test {
     function testCancelFailIfNotSupervisor() public {
         _storage.registerSupervisor(_proposalId, _SUPERVISOR, _OWNER);
         _storage.makeFinal(_proposalId, _SUPERVISOR);
-        vm.expectRevert("Requires supervisor");
+        vm.expectRevert(abi.encodeWithSelector(Storage.SupervisorRequired.selector, _proposalId, _NOTSUPERVISOR));
         _storage.cancel(_proposalId, _NOTSUPERVISOR);
     }
 
@@ -671,7 +683,7 @@ contract GovernanceStorageTest is Test {
     function testAddTransactionNotOwner() public {
         uint256 scheduleTime = block.timestamp + 7 days;
         _storage.registerSupervisor(_proposalId, _SUPERVISOR, _OWNER);
-        vm.expectRevert("Not creator");
+        vm.expectRevert(abi.encodeWithSelector(Storage.SenderRequired.selector, _proposalId, _SUPERVISOR));
         _storage.addTransaction(_proposalId, address(0x1), 0x10, "", "", scheduleTime, "", _SUPERVISOR);
     }
 
@@ -679,7 +691,7 @@ contract GovernanceStorageTest is Test {
         uint256 scheduleTime = block.timestamp + 7 days;
         _storage.registerSupervisor(_proposalId, _SUPERVISOR, _OWNER);
         _storage.makeFinal(_proposalId, _SUPERVISOR);
-        vm.expectRevert("Vote not modifiable");
+        vm.expectRevert(abi.encodeWithSelector(Storage.VoteFinal.selector, _proposalId));
         _storage.addTransaction(_proposalId, address(0x1), 0x10, "", "", scheduleTime, "", _OWNER);
     }
 
@@ -688,7 +700,7 @@ contract GovernanceStorageTest is Test {
         _storage.registerSupervisor(_proposalId, _SUPERVISOR, _OWNER);
         uint256 tid = _storage.addTransaction(_proposalId, address(0x1), 0x10, "", "", scheduleTime, "", _OWNER);
         _storage.makeFinal(_proposalId, _SUPERVISOR);
-        vm.expectRevert("Vote not modifiable");
+        vm.expectRevert(abi.encodeWithSelector(Storage.VoteFinal.selector, _proposalId));
         _storage.clearTransaction(_proposalId, tid, _OWNER);
     }
 
@@ -765,12 +777,12 @@ contract GovernanceStorageTest is Test {
     function testSetExecutedNotOwner() public {
         _storage.registerSupervisor(_proposalId, _SUPERVISOR, _OWNER);
         _storage.makeFinal(_proposalId, _SUPERVISOR);
-        vm.expectRevert("Not creator");
+        vm.expectRevert(abi.encodeWithSelector(Storage.SenderRequired.selector, _proposalId, _SUPERVISOR));
         _storage.setExecuted(_proposalId, _SUPERVISOR);
     }
 
     function testGetWinnerForNoChoice() public {
-        vm.expectRevert("No choice");
+        vm.expectRevert(abi.encodeWithSelector(Storage.NotChoiceVote.selector, _proposalId));
         _storage.getWinningChoice(_proposalId);
     }
 }
@@ -824,7 +836,7 @@ contract GovernanceStorageChoiceVoteTest is Test {
 
     function testSetChoiceProposalReqValidProposal() public {
         _storage.registerSupervisor(_proposalId, _SUPERVISOR, _OWNER);
-        vm.expectRevert("Invalid proposal");
+        vm.expectRevert(abi.encodeWithSelector(Storage.InvalidProposal.selector, _proposalId + 1));
         _storage.setChoice(_proposalId + 1, 0, "name", "description", 0, _SUPERVISOR);
     }
 
@@ -834,32 +846,41 @@ contract GovernanceStorageChoiceVoteTest is Test {
             _storage.setChoice(_proposalId, i, "name", "description", 0, _SUPERVISOR);
         }
         _storage.makeFinal(_proposalId, _SUPERVISOR);
-        vm.expectRevert("Vote not modifiable");
+        vm.expectRevert(abi.encodeWithSelector(Storage.VoteFinal.selector, _proposalId));
         _storage.setChoice(_proposalId, 0, "name", "description", 0, _SUPERVISOR);
     }
 
-    function testSetChoiceRequiresSupervisor() public {
+    function testSetChoiceSupervisorRequired() public {
         _storage.registerSupervisor(_proposalId, _SUPERVISOR, _OWNER);
-        vm.expectRevert("Requires supervisor");
+        vm.expectRevert(abi.encodeWithSelector(Storage.SupervisorRequired.selector, _proposalId, _OWNER));
         _storage.setChoice(_proposalId, 0, "name", "description", 0, _OWNER);
     }
 
     function testSetChoiceRequiresName() public {
         _storage.registerSupervisor(_proposalId, _SUPERVISOR, _OWNER);
-        vm.expectRevert("Name is required");
+        vm.expectRevert(abi.encodeWithSelector(Storage.ChoiceNameRequired.selector, _proposalId, 0));
         _storage.setChoice(_proposalId, 0, 0x0, "description", 0, _SUPERVISOR);
     }
 
     function testSetChoiceDescriptionWrongChoiceId() public {
         _storage.registerSupervisor(_proposalId, _SUPERVISOR, _OWNER);
-        vm.expectRevert("Invalid choice id");
+        vm.expectRevert(abi.encodeWithSelector(Storage.ChoiceIdInvalid.selector, _proposalId, _NCHOICE));
         _storage.setChoice(_proposalId, _NCHOICE, "NAME", "description", 0, _SUPERVISOR);
     }
 
     function testSetChoiceDescriptionExceedsLimit() public {
         _storage.registerSupervisor(_proposalId, _SUPERVISOR, _OWNER);
         string memory limitedString = TestData.pi1kplus();
-        vm.expectRevert("Description exceeds data limit");
+        uint256 descLen = Constant.len(limitedString);
+        vm.expectRevert(
+            abi.encodeWithSelector(
+                Storage.ChoiceDescriptionExceedsDataLimit.selector,
+                _proposalId,
+                0,
+                descLen,
+                Constant.STRING_DATA_LIMIT
+            )
+        );
         _storage.setChoice(_proposalId, 0, "NAME", limitedString, 0, _SUPERVISOR);
     }
 
@@ -913,7 +934,7 @@ contract GovernanceStorageChoiceVoteTest is Test {
             _storage.setChoice(_proposalId, i, "name", "description", 0, _SUPERVISOR);
         }
         _storage.makeFinal(_proposalId, _SUPERVISOR);
-        vm.expectRevert("Choice not possible");
+        vm.expectRevert(abi.encodeWithSelector(Storage.ChoiceRequired.selector, _proposalId));
         _storage.voteForByShare(_proposalId, _VOTER1, uint160(_VOTER1));
     }
 
@@ -923,7 +944,7 @@ contract GovernanceStorageChoiceVoteTest is Test {
             _storage.setChoice(_proposalId, i, "name", "description", 0, _SUPERVISOR);
         }
         _storage.makeFinal(_proposalId, _SUPERVISOR);
-        vm.expectRevert("Choice not possible");
+        vm.expectRevert(abi.encodeWithSelector(Storage.ChoiceRequired.selector, _proposalId));
         _storage.voteAgainstByShare(_proposalId, _VOTER1, uint160(_VOTER1));
     }
 
@@ -941,6 +962,16 @@ contract GovernanceStorageChoiceVoteTest is Test {
             }
         }
         assertEq(_storage.quorum(_proposalId), 1);
+    }
+
+    function testCastVoteWithoutChoice() public {
+        _storage.registerSupervisor(_proposalId, _SUPERVISOR, _OWNER);
+        for (uint256 i = 0; i < _NCHOICE; i++) {
+            _storage.setChoice(_proposalId, i, "name", "description", 0, _SUPERVISOR);
+        }
+        _storage.makeFinal(_proposalId, _SUPERVISOR);
+        vm.expectRevert(abi.encodeWithSelector(Storage.ChoiceRequired.selector, _proposalId));
+        _storage.voteForByShare(_proposalId, _VOTER1, uint160(_VOTER1));
     }
 
     function testCastMultiVote() public {
@@ -991,18 +1022,20 @@ contract GovernanceStorageChoiceVoteTest is Test {
             _storage.setChoice(_proposalId, i, "name", "description", 0, _SUPERVISOR);
         }
         _storage.makeFinal(_proposalId, _SUPERVISOR);
-        vm.expectRevert("Invalid proposal");
+        vm.expectRevert(abi.encodeWithSelector(Storage.InvalidProposal.selector, _proposalId + 1));
         _storage.voteForByShare(_proposalId + 1, _VOTER1, uint160(_VOTER1), 1);
     }
 
-    function testCastVoteVoteEnded() public {
+    function testCastVoteEnded() public {
         _storage.registerSupervisor(_proposalId, _SUPERVISOR, _OWNER);
         for (uint256 i = 0; i < _NCHOICE; i++) {
             _storage.setChoice(_proposalId, i, "name", "description", 0, _SUPERVISOR);
         }
         _storage.makeFinal(_proposalId, _SUPERVISOR);
-        vm.warp(_storage.endTime(_proposalId));
-        vm.expectRevert("Vote not active");
+        uint256 startTime = _storage.startTime(_proposalId);
+        uint256 endTime = _storage.endTime(_proposalId);
+        vm.warp(endTime + 1);
+        vm.expectRevert(abi.encodeWithSelector(Storage.VoteNotActive.selector, _proposalId, startTime, endTime, block.timestamp));
         _storage.voteForByShare(_proposalId, _VOTER1, uint160(_VOTER1), 1);
     }
 

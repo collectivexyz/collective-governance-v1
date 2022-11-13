@@ -105,7 +105,7 @@ contract VoterClassVoterPool is VoterClass, ConfigurableMutable, Ownable, ERC165
     }
 
     modifier requireVoter(address _wallet) {
-        require(_voterPool[_wallet], "Not voter");
+        if (!_voterPool[_wallet]) revert NotVoter(_wallet);
         _;
     }
 
@@ -131,7 +131,7 @@ contract VoterClassVoterPool is VoterClass, ConfigurableMutable, Ownable, ERC165
             _poolCount--;
             emit BurnVoter(_wallet);
         } else {
-            revert NotAVoter(_wallet);
+            revert NotVoter(_wallet);
         }
     }
 

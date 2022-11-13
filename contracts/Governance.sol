@@ -50,7 +50,9 @@ import "@openzeppelin/contracts/interfaces/IERC165.sol";
 /// @notice Requirements for Governance implementation
 /// @custom:type interface
 interface Governance is IERC165 {
+    error NotEnoughChoices();
     error NotPermitted(address sender);
+    error CancelNotPossible(uint256 proposalId, address sender);
     error NotVoter(uint256 proposalId, address sender);
     error SupervisorListEmpty();
     error SupervisorRequired(uint256 proposalId, address sender);
@@ -63,6 +65,11 @@ interface Governance is IERC165 {
     error GasUsedRebateMustBeLarger(uint256 gasUsedRebate, uint256 minimumRebate);
     error BaseFeeRebateMustBeLarger(uint256 baseFee, uint256 minimumBaseFee);
     error ProposalSenderRequired(uint256 proposalId, address sender);
+    error QuorumNotConfigured(uint256 proposalId);
+    error VoteInProgress(uint256 proposalId);
+    error TransactionExecuted(uint256 proposalId);
+    error NotExecuted(uint256 proposalId);
+    error InvalidChoice(uint256 proposalId, uint256 choiceId);
 
     /// @notice A new proposal was created
     event ProposalCreated(address sender, uint256 proposalId);
@@ -198,7 +205,7 @@ interface Governance is IERC165 {
     /// @param _quorumThreshold The threshold of participation that is required for a successful conclusion of voting
     /// @param _requiredDelay The minimum time required before the start of voting
     /// @param _requiredDuration The minimum time for voting to proceed before ending the vote is allowed
-    function configure(
+    function configureWithDelay(
         uint256 _proposalId,
         uint256 _quorumThreshold,
         uint256 _requiredDelay,
