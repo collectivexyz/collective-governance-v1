@@ -102,7 +102,7 @@ contract TimeLock is TimeLocker, Ownable {
         bytes calldata _calldata,
         uint256 _scheduleTime
     ) external onlyOwner returns (bytes32) {
-        bytes32 txHash = getTxHash(_target, _value, _signature, _calldata, _scheduleTime);
+        bytes32 txHash = Constant.getTxHash(_target, _value, _signature, _calldata, _scheduleTime);
         uint256 blockTime = getBlockTimestamp();
         if (_scheduleTime < (blockTime + _lockTime) || _scheduleTime > (blockTime + _lockTime + Constant.TIMELOCK_GRACE_PERIOD)) {
             revert TimestampNotInLockRange(txHash, blockTime, _scheduleTime);
@@ -128,7 +128,7 @@ contract TimeLock is TimeLocker, Ownable {
         bytes calldata _calldata,
         uint256 _scheduleTime
     ) external onlyOwner returns (bytes32) {
-        bytes32 txHash = getTxHash(_target, _value, _signature, _calldata, _scheduleTime);
+        bytes32 txHash = Constant.getTxHash(_target, _value, _signature, _calldata, _scheduleTime);
         if (!_queuedTransaction[txHash]) revert NotInQueue(txHash);
         clearQueue(txHash);
         emit CancelTransaction(txHash, _target, _value, _signature, _calldata, _scheduleTime);
@@ -152,7 +152,7 @@ contract TimeLock is TimeLocker, Ownable {
         bytes calldata _calldata,
         uint256 _scheduleTime
     ) external payable onlyOwner returns (bytes memory) {
-        bytes32 txHash = getTxHash(_target, _value, _signature, _calldata, _scheduleTime);
+        bytes32 txHash = Constant.getTxHash(_target, _value, _signature, _calldata, _scheduleTime);
         if (!_queuedTransaction[txHash]) {
             revert NotInQueue(txHash);
         }
@@ -175,31 +175,8 @@ contract TimeLock is TimeLocker, Ownable {
         // solhint-disable-next-line avoid-low-level-calls
         (bool ok, bytes memory returnData) = _target.call{value: _value}(callData);
         if (!ok) revert ExecutionFailed(txHash);
-
         emit ExecuteTransaction(txHash, _target, _value, _signature, _calldata, _scheduleTime);
-
         return returnData;
-    }
-
-    /**
-     * Calculate the hash code of the specified transaction.  This is used as the transaction id
-     * for marking the transaction as queued.
-     * @param _target the target address for this transaction
-     * @param _value the value to pass to the call
-     * @param _signature the tranaction signature
-     * @param _calldata the call data to pass to the call
-     * @param _scheduleTime the expected time when the _target should be available to call
-     * @return bytes32 The 32 byte hash of the transaction
-     */
-    function getTxHash(
-        address _target,
-        uint256 _value,
-        string calldata _signature,
-        bytes calldata _calldata,
-        uint256 _scheduleTime
-    ) public pure returns (bytes32) {
-        bytes32 txHash = keccak256(abi.encode(_target, _value, _signature, _calldata, _scheduleTime));
-        return txHash;
     }
 
     /**

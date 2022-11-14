@@ -233,7 +233,10 @@ contract GovernanceStorage is Storage, ERC165, Ownable {
         _;
     }
 
-    modifier requireValidShare(uint256 _shareId) {
+    modifier requireValidTransaction(uint256 _proposalId, uint256 _transactionId) {
+        Proposal storage proposal = proposalMap[_proposalId];
+        if (_transactionId == 0 || _transactionId > proposal.transactionCount)
+            revert InvalidTransaction(_proposalId, _transactionId);
         _;
     }
 
@@ -561,7 +564,7 @@ contract GovernanceStorage is Storage, ERC165, Ownable {
             if (!isFinal(latestProposalId) || getBlockTimestamp() < lastProposal.endTime)
                 revert TooManyProposals(_sender, latestProposalId);
         }
-        _proposalCount++;
+        _proposalCount++; // 1, 2, 3, ...
         uint256 proposalId = _proposalCount;
         _latestProposalId[_sender] = proposalId;
 
@@ -825,8 +828,10 @@ contract GovernanceStorage is Storage, ERC165, Ownable {
         requireProposalSender(_proposalId, _sender)
         returns (uint256)
     {
+        if (_txHash == 0x0) revert TransactionHashInvalid(_proposalId, _txHash);
         Proposal storage proposal = proposalMap[_proposalId];
-        uint256 transactionId = proposal.transactionCount++;
+        proposal.transactionCount++; // 1, 2, 3, ...
+        uint256 transactionId = proposal.transactionCount;
         proposal.transaction[transactionId] = Transaction(_target, _value, _signature, _calldata, _scheduleTime, _txHash);
         emit AddTransaction(_proposalId, transactionId, _target, _value, _scheduleTime, _txHash);
         return transactionId;
@@ -846,6 +851,7 @@ contract GovernanceStorage is Storage, ERC165, Ownable {
         external
         view
         requireValid(_proposalId)
+        requireValidTransaction(_proposalId, _transactionId)
         returns (
             address _target,
             uint256 _value,
@@ -856,7 +862,6 @@ contract GovernanceStorage is Storage, ERC165, Ownable {
         )
     {
         Proposal storage proposal = proposalMap[_proposalId];
-        if (_transactionId >= proposal.transactionCount) revert InvalidTransaction(_proposalId, _transactionId);
         Transaction memory transaction = proposal.transaction[_transactionId];
         return (
             transaction.target,
@@ -876,9 +881,15 @@ contract GovernanceStorage is Storage, ERC165, Ownable {
         uint256 _proposalId,
         uint256 _transactionId,
         address _sender
-    ) external onlyOwner requireConfig(_proposalId) requireValid(_proposalId) requireProposalSender(_proposalId, _sender) {
+    )
+        external
+        onlyOwner
+        requireConfig(_proposalId)
+        requireValid(_proposalId)
+        requireValidTransaction(_proposalId, _transactionId)
+        requireProposalSender(_proposalId, _sender)
+    {
         Proposal storage proposal = proposalMap[_proposalId];
-        if (_transactionId >= proposal.transactionCount) revert InvalidTransaction(_proposalId, _transactionId);
         Transaction storage transaction = proposal.transaction[_transactionId];
         (uint256 scheduleTime, bytes32 txHash) = (transaction.scheduleTime, transaction.txHash);
 
@@ -960,10 +971,11 @@ contract GovernanceStorage is Storage, ERC165, Ownable {
             revert ChoiceDescriptionExceedsDataLimit(_proposalId, _choiceId, descLen, Constant.STRING_DATA_LIMIT);
         Proposal storage proposal = proposalMap[_proposalId];
         if (_choiceId >= proposal.choiceCount) revert ChoiceIdInvalid(_proposalId, _choiceId);
-        if (_transactionId != 0 && _transactionId >= proposal.transactionCount)
+        if (_transactionId != 0 && _transactionId > proposal.transactionCount)
             revert ChoiceTransactionIdInvalid(_proposalId, _choiceId, _transactionId);
-        proposal.choice[_choiceId] = Choice(_choiceId, _name, _description, _transactionId, 0);
-        emit SetChoice(_proposalId, _choiceId, _name, _description, _transactionId);
+        Transaction memory transaction = proposal.transaction[_transactionId];
+        proposal.choice[_choiceId] = Choice(_choiceId, _name, _description, _transactionId, transaction.txHash, 0);
+        emit SetChoice(_proposalId, _choiceId, _name, _description, _transactionId, transaction.txHash);
     }
 
     /// @notice get the choice by id
@@ -972,6 +984,7 @@ contract GovernanceStorage is Storage, ERC165, Ownable {
     /// @return _name the name of the choice field
     /// @return _description the string choice description
     /// @return _transactionId the transactionId to execute for this choice
+    /// @return _txHash the hash of the specified transaction
     /// @return _voteCount the current number of votes for this choice
     function getChoice(uint256 _proposalId, uint256 _choiceId)
         external
@@ -982,6 +995,7 @@ contract GovernanceStorage is Storage, ERC165, Ownable {
             bytes32 _name,
             string memory _description,
             uint256 _transactionId,
+            bytes32 _txHash,
             uint256 _voteCount
         )
     {
@@ -989,7 +1003,7 @@ contract GovernanceStorage is Storage, ERC165, Ownable {
         if (_choiceId >= proposal.choiceCount) revert ChoiceIdInvalid(_proposalId, _choiceId);
         Choice memory choice = proposal.choice[_choiceId];
         if (_choiceId != choice.id) revert ChoiceNotInitialized(_proposalId, _choiceId);
-        return (choice.name, choice.description, choice.transactionId, choice.voteCount);
+        return (choice.name, choice.description, choice.transactionId, choice.txHash, choice.voteCount);
     }
 
     /// @notice get the choice description by id

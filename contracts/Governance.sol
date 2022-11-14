@@ -70,6 +70,7 @@ interface Governance is IERC165 {
     error TransactionExecuted(uint256 proposalId);
     error NotExecuted(uint256 proposalId);
     error InvalidChoice(uint256 proposalId, uint256 choiceId);
+    error TransactionSignatureNotMatching(uint256 proposalId, uint256 transactionId);
 
     /// @notice A new proposal was created
     event ProposalCreated(address sender, uint256 proposalId);

@@ -1274,11 +1274,9 @@ contract CollectiveGovernanceTest is Test {
         uint256 scheduleTime = block.timestamp + 2 days;
         for (uint256 i = 0; i < 3; i++) {
             vm.prank(_OWNER);
-            governance.attachTransaction(proposalId, address(0x10), i, "", "", scheduleTime + i);
-        }
-        for (uint256 i = 0; i < 3; i++) {
+            uint256 tid = governance.attachTransaction(proposalId, address(0x10), i, "", "", scheduleTime + i);
             vm.prank(address(governance));
-            _storage.clearTransaction(proposalId, i, _OWNER);
+            _storage.clearTransaction(proposalId, tid, _OWNER);
         }
         vm.prank(_OWNER);
         governance.attachTransaction(proposalId, flagMock, 0, "", data, scheduleTime);
@@ -1391,8 +1389,7 @@ contract CollectiveGovernanceTest is Test {
         vm.stopPrank();
         vm.prank(_VOTER1, _VOTER1);
         governance.voteFor(proposalId, TOKEN_ID1);
-        TimeLocker locker = new TimeLock(Constant.TIMELOCK_MINIMUM_DELAY);
-        bytes32 txHash = locker.getTxHash(address(0x7fff), 0, "", "save()", etaOfLock);
+        bytes32 txHash = Constant.getTxHash(address(0x7fff), 0, "", "save()", etaOfLock);
         vm.expectRevert(abi.encodeWithSelector(TimeLocker.TransactionLocked.selector, txHash, etaOfLock));
         vm.warp(block.timestamp + Constant.MINIMUM_VOTE_DURATION);
         vm.prank(_OWNER);

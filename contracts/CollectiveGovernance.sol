@@ -643,16 +643,14 @@ contract CollectiveGovernance is Governance, VoteStrategy, ERC165 {
             if (_storage.isChoiceVote(_proposalId)) {
                 uint256 winningChoice = _storage.getWinningChoice(_proposalId);
                 if (winningChoice >= _storage.choiceCount(_proposalId)) revert InvalidChoice(_proposalId, winningChoice);
-                (bytes32 _name, string memory _description, uint256 transactionId, uint256 voteCount) = _storage.getChoice(
-                    _proposalId,
-                    winningChoice
-                );
-                executeTransaction(_proposalId, transactionId);
+                (bytes32 _name, string memory _description, uint256 transactionId, bytes32 txHash, uint256 voteCount) = _storage
+                    .getChoice(_proposalId, winningChoice);
+                executeTransaction(_proposalId, transactionId, txHash);
                 executedCount++;
                 emit WinningChoice(_proposalId, _name, _description, transactionId, voteCount);
             } else {
-                for (uint256 transactionId = 0; transactionId < transactionCount; transactionId++) {
-                    executeTransaction(_proposalId, transactionId);
+                for (uint256 transactionId = 1; transactionId <= transactionCount; transactionId++) {
+                    executeTransaction(_proposalId, transactionId, "");
                     executedCount++;
                 }
             }
@@ -660,7 +658,11 @@ contract CollectiveGovernance is Governance, VoteStrategy, ERC165 {
         }
     }
 
-    function executeTransaction(uint256 _proposalId, uint256 _transactionId) private {
+    function executeTransaction(
+        uint256 _proposalId,
+        uint256 _transactionId,
+        bytes32 _txHash
+    ) private {
         (
             address target,
             uint256 value,
@@ -669,6 +671,7 @@ contract CollectiveGovernance is Governance, VoteStrategy, ERC165 {
             uint256 scheduleTime,
             bytes32 txHash
         ) = _storage.getTransaction(_proposalId, _transactionId);
+        if (_txHash != 0x0 && txHash != _txHash) revert TransactionSignatureNotMatching(_proposalId, _transactionId);
         if (txHash.length > 0 && _timeLock.queuedTransaction(txHash)) {
             _timeLock.executeTransaction(target, value, signature, _calldata, scheduleTime);
             emit ProposalTransactionExecuted(_proposalId, _transactionId, target, value, scheduleTime, txHash);
@@ -678,7 +681,7 @@ contract CollectiveGovernance is Governance, VoteStrategy, ERC165 {
     function cancelTransaction(uint256 _proposalId) private {
         uint256 transactionCount = _storage.transactionCount(_proposalId);
         if (transactionCount > 0) {
-            for (uint256 tid = 0; tid < transactionCount; tid++) {
+            for (uint256 tid = 1; tid <= transactionCount; tid++) {
                 (
                     address target,
                     uint256 value,

@@ -73,6 +73,7 @@ interface Storage is IERC165 {
     error InvalidTokenId(uint256 proposalId, address sender, uint256 tokenId);
     error TokenVoted(uint256 proposalId, address sender, uint256 tokenId);
     error InvalidTransaction(uint256 proposalId, uint256 transactionId);
+    error TransactionHashInvalid(uint256 proposalId, bytes32 txHash);
     error MarkedExecuted(uint256 proposalId);
     error TokenIdIsNotValid(uint256 proposalId, uint256 tokenId);
     error VoteFinal(uint256 proposalId);
@@ -99,7 +100,14 @@ interface Storage is IERC165 {
     event SetQuorumRequired(uint256 proposalId, uint256 passThreshold);
     event SetVoteDelay(uint256 proposalId, uint256 voteDelay);
     event SetVoteDuration(uint256 proposalId, uint256 voteDuration);
-    event SetChoice(uint256 proposalId, uint256 choiceId, bytes32 name, string description, uint256 transactionId);
+    event SetChoice(
+        uint256 proposalId,
+        uint256 choiceId,
+        bytes32 name,
+        string description,
+        uint256 transactionId,
+        bytes32 txHash
+    );
     event UndoVoteEnabled(uint256 proposalId);
     event AddTransaction(
         uint256 proposalId,
@@ -222,6 +230,7 @@ interface Storage is IERC165 {
         bytes32 name;
         string description;
         uint256 transactionId;
+        bytes32 txHash;
         uint256 voteCount;
     }
 
@@ -330,6 +339,7 @@ interface Storage is IERC165 {
     /// @return _name the name of the choice field
     /// @return _description the string choice description
     /// @return _transactionId the transactionId to execute for this choice
+    /// @return _txHash the hash of the specified transaction
     /// @return _voteCount the current number of votes for this choice
     function getChoice(uint256 _proposalId, uint256 _choiceId)
         external
@@ -338,6 +348,7 @@ interface Storage is IERC165 {
             bytes32 _name,
             string memory _description,
             uint256 _transactionId,
+            bytes32 _txHash,
             uint256 _voteCount
         );
 

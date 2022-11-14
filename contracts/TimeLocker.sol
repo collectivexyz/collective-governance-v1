@@ -157,24 +157,6 @@ interface TimeLocker {
     ) external payable returns (bytes memory);
 
     /**
-     * @notice Calculate the hash code of the specified transaction.  This is used as the transaction id
-     * for marking the transaction as queued.
-     * @param _target the target address for this transaction
-     * @param _value the value to pass to the call
-     * @param _signature the tranaction signature
-     * @param _calldata the call data to pass to the call
-     * @param _scheduleTime the expected time when the _target should be available to call
-     * @return bytes32 The 32 byte hash of the transaction
-     */
-    function getTxHash(
-        address _target,
-        uint256 _value,
-        string calldata _signature,
-        bytes calldata _calldata,
-        uint256 _scheduleTime
-    ) external returns (bytes32);
-
-    /**
      * @notice get a queued transaction
      * @param _txHash Transaction hash to check
      * @return bool True if transaction is queued and false otherwise

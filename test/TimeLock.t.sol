@@ -55,7 +55,7 @@ contract TimeLockTest is Test {
 
     function testTransactionEarlyForTimeLock(uint256 timeDelta) public {
         vm.assume(timeDelta > 1 && timeDelta < _WEEK_DELAY);
-        bytes32 txHash = _timeLock.getTxHash(_FUNCTION, 7, "abc", "data", block.timestamp + _WEEK_DELAY - timeDelta);
+        bytes32 txHash = Constant.getTxHash(_FUNCTION, 7, "abc", "data", block.timestamp + _WEEK_DELAY - timeDelta);
         vm.expectRevert(
             abi.encodeWithSelector(
                 TimeLocker.TimestampNotInLockRange.selector,
@@ -70,7 +70,7 @@ contract TimeLockTest is Test {
 
     function testTransactionLateForTimeLock(uint256 timeDelta) public {
         vm.assume(timeDelta > 0 && timeDelta < (Constant.UINT_MAX - _WEEK_DELAY - Constant.TIMELOCK_GRACE_PERIOD));
-        bytes32 txHash = _timeLock.getTxHash(
+        bytes32 txHash = Constant.getTxHash(
             _FUNCTION,
             7,
             "abc",
