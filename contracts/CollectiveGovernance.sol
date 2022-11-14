@@ -645,8 +645,11 @@ contract CollectiveGovernance is Governance, VoteStrategy, ERC165 {
                 if (winningChoice >= _storage.choiceCount(_proposalId)) revert InvalidChoice(_proposalId, winningChoice);
                 (bytes32 _name, string memory _description, uint256 transactionId, bytes32 txHash, uint256 voteCount) = _storage
                     .getChoice(_proposalId, winningChoice);
-                executeTransaction(_proposalId, transactionId, txHash);
-                executedCount++;
+                if (transactionId > 0) {
+                    executeTransaction(_proposalId, transactionId, txHash);
+                    executedCount++;
+                }
+
                 emit WinningChoice(_proposalId, _name, _description, transactionId, voteCount);
             } else {
                 for (uint256 transactionId = 1; transactionId <= transactionCount; transactionId++) {

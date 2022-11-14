@@ -1569,6 +1569,62 @@ contract CollectiveGovernanceTest is Test {
         assertTrue(_storage.isExecuted(proposalId));
     }
 
+    function testChoiceVoteTransactionNotAttached() public {
+        vm.startPrank(_OWNER, _OWNER);
+        governance.cancel(proposalId);
+        vm.warp(block.timestamp + Constant.MINIMUM_VOTE_DURATION);
+        FlagSet flag = new FlagSet();
+        address flagMock = address(flag);
+        bytes memory data = abi.encodeWithSelector(flag.set.selector);
+        uint256 scheduleTime = block.timestamp + 2 days;
+        proposalId = governance.propose(3);
+        governance.attachTransaction(proposalId, flagMock, 0, "", data, scheduleTime);
+        governance.setChoice(proposalId, 2, "choice", "a choice for this vote", 0);
+        for (uint256 i = 0; i < 2; i++) {
+            governance.setChoice(proposalId, i, "choice", "a choice for this vote", 0);
+        }
+        governance.configure(proposalId, 1);
+        governance.startVote(proposalId);
+        vm.stopPrank();
+        vm.prank(_VOTER1, _VOTER1);
+        governance.voteFor(proposalId, TOKEN_ID1, 2);
+        vm.warp(scheduleTime);
+        vm.prank(_OWNER, _OWNER);
+        governance.endVote(proposalId);
+        assertFalse(flag.isSet());
+        assertTrue(_storage.isExecuted(proposalId));
+    }
+
+    function testChoiceVoteFlipTheTransaction() public {
+        vm.startPrank(_OWNER, _OWNER);
+        governance.cancel(proposalId);
+        vm.warp(block.timestamp + Constant.MINIMUM_VOTE_DURATION);
+        FlagSet flag = new FlagSet();
+        address flagMock = address(flag);
+        bytes memory data = abi.encodeWithSelector(flag.set.selector);
+        uint256 scheduleTime = block.timestamp + 2 days;
+        proposalId = governance.propose(3);
+        uint256 tid = governance.attachTransaction(proposalId, flagMock, 0, "", data, scheduleTime);
+        governance.setChoice(proposalId, 2, "choice", "a choice for this vote", tid);
+        for (uint256 i = 0; i < 2; i++) {
+            governance.setChoice(proposalId, i, "choice", "a choice for this vote", 0);
+        }
+        vm.stopPrank();
+        vm.prank(_governanceAddress);
+        // hack the transaction
+        _storage.clearTransaction(proposalId, tid, _OWNER);
+        vm.startPrank(_OWNER, _OWNER);
+        governance.configure(proposalId, 1);
+        governance.startVote(proposalId);
+        vm.stopPrank();
+        vm.prank(_VOTER1, _VOTER1);
+        governance.voteFor(proposalId, TOKEN_ID1, 2);
+        vm.warp(scheduleTime);
+        vm.prank(_OWNER, _OWNER);
+        vm.expectRevert(abi.encodeWithSelector(Governance.TransactionSignatureNotMatching.selector, proposalId, tid));
+        governance.endVote(proposalId);
+    }
+
     function testChoiceVoteQuorumNotReached() public {
         vm.startPrank(_OWNER, _OWNER);
         governance.cancel(proposalId);

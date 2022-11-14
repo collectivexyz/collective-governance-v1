@@ -235,8 +235,12 @@ contract GovernanceStorage is Storage, ERC165, Ownable {
 
     modifier requireValidTransaction(uint256 _proposalId, uint256 _transactionId) {
         Proposal storage proposal = proposalMap[_proposalId];
-        if (_transactionId == 0 || _transactionId > proposal.transactionCount)
-            revert InvalidTransaction(_proposalId, _transactionId);
+        if (proposal.transactionCount > 0) {
+            if (_transactionId == 0 || _transactionId > proposal.transactionCount)
+                revert InvalidTransaction(_proposalId, _transactionId);
+        } else {
+            if (_transactionId != 0) revert InvalidTransaction(_proposalId, _transactionId);
+        }
         _;
     }
 
@@ -972,7 +976,7 @@ contract GovernanceStorage is Storage, ERC165, Ownable {
         Proposal storage proposal = proposalMap[_proposalId];
         if (_choiceId >= proposal.choiceCount) revert ChoiceIdInvalid(_proposalId, _choiceId);
         if (_transactionId != 0 && _transactionId > proposal.transactionCount)
-            revert ChoiceTransactionIdInvalid(_proposalId, _choiceId, _transactionId);
+            revert InvalidTransaction(_proposalId, _transactionId);
         Transaction memory transaction = proposal.transaction[_transactionId];
         proposal.choice[_choiceId] = Choice(_choiceId, _name, _description, _transactionId, transaction.txHash, 0);
         emit SetChoice(_proposalId, _choiceId, _name, _description, _transactionId, transaction.txHash);

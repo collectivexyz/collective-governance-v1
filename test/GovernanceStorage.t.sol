@@ -827,6 +827,12 @@ contract GovernanceStorageTest is Test {
         vm.expectRevert(abi.encodeWithSelector(Storage.NotChoiceVote.selector, _proposalId));
         _storage.getWinningChoice(_proposalId);
     }
+
+    function testSetChoiceNotProposal() public {
+        _storage.registerSupervisor(_proposalId, _SUPERVISOR, _OWNER);
+        vm.expectRevert(abi.encodeWithSelector(Storage.NotChoiceVote.selector, _proposalId));
+        _storage.setChoice(_proposalId, 0, "name", "description", 0, _SUPERVISOR);
+    }
 }
 
 contract GovernanceStorageChoiceVoteTest is Test {
@@ -984,6 +990,25 @@ contract GovernanceStorageChoiceVoteTest is Test {
             (, , , , , bytes32 _txHash) = _storage.getTransaction(_proposalId, tid);
             assertEq(txHash, _txHash);
         }
+    }
+
+    function testChoiceWithInvalidTransaction() public {
+        _storage.registerSupervisor(_proposalId, _SUPERVISOR, _OWNER);
+
+        for (uint256 i = 0; i < _NCHOICE; i++) {
+            (address target, uint256 value, string memory _signature, bytes memory _calldata, uint256 scheduleTime) = (
+                address(0x113e),
+                i + 1,
+                "",
+                "",
+                block.timestamp
+            );
+            bytes32 calculatedHash = Constant.getTxHash(target, value, _signature, _calldata, scheduleTime);
+            _storage.addTransaction(_proposalId, target, value, _signature, _calldata, scheduleTime, calculatedHash, _OWNER);
+            vm.warp(block.timestamp + 1);
+        }
+        vm.expectRevert(abi.encodeWithSelector(Storage.InvalidTransaction.selector, _proposalId, _NCHOICE + 1));
+        _storage.setChoice(_proposalId, 0, "name", "description", _NCHOICE + 1, _SUPERVISOR);
     }
 
     function testChoiceProposalVoteRequiresChoiceId() public {

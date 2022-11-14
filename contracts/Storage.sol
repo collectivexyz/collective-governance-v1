@@ -91,7 +91,6 @@ interface Storage is IERC165 {
     error ChoiceIdInvalid(uint256 proposalId, uint256 choiceId);
     error ChoiceNotInitialized(uint256 proposalId, uint256 choiceId);
     error ChoiceDescriptionExceedsDataLimit(uint256 proposalId, uint256 choiceId, uint256 length, uint256 limit);
-    error ChoiceTransactionIdInvalid(uint256 proposalId, uint256 choiceId, uint256 transactionId);
 
     // event section
     event InitializeProposal(uint256 proposalId, address owner);
