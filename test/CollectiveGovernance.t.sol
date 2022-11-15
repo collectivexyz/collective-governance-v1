@@ -1294,27 +1294,6 @@ contract CollectiveGovernanceTest is Test {
         assertTrue(_storage.isExecuted(proposalId));
     }
 
-    function testAttachTransactionWithSuccessfulOutcomeButDoNotExecute() public {
-        FlagSet flag = new FlagSet();
-        address flagMock = address(flag);
-        bytes memory data = abi.encodeWithSelector(flag.set.selector);
-        uint256 scheduleTime = block.timestamp + 2 days;
-        vm.prank(_OWNER);
-        governance.attachTransaction(proposalId, flagMock, 0, "", data, scheduleTime);
-        vm.startPrank(_SUPERVISOR, _SUPERVISOR);
-        governance.configure(proposalId, 1);
-        governance.startVote(proposalId);
-        vm.stopPrank();
-        vm.prank(_VOTER1, _VOTER1);
-        governance.voteFor(proposalId, TOKEN_ID1);
-        vm.warp(scheduleTime + 7 days);
-        assertFalse(flag.isSet());
-        vm.prank(_OWNER);
-        governance.endVoteAndCancelTransaction(proposalId);
-        assertFalse(flag.isSet());
-        assertFalse(_storage.isExecuted(proposalId));
-    }
-
     function testAttachTransactionButVeto() public {
         FlagSet flag = new FlagSet();
         address flagMock = address(flag);

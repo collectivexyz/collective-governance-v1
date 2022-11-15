@@ -154,11 +154,6 @@ contract CollectiveGovernance is Governance, VoteStrategy, ERC165 {
         _;
     }
 
-    modifier requireExecuited(uint256 _proposalId) {
-        _;
-        if (!_storage.isExecuted(_proposalId)) revert NotExecuted(_proposalId);
-    }
-
     receive() external payable {
         emit RebateFund(msg.sender, msg.value, getRebateBalance());
     }
@@ -316,27 +311,6 @@ contract CollectiveGovernance is Governance, VoteStrategy, ERC165 {
         uint256 endTime = _storage.endTime(_proposalId);
         bool voteProceeding = !_storage.isCancel(_proposalId) && !_storage.isVeto(_proposalId);
         return isVoteOpenByProposalId[_proposalId] && getBlockTimestamp() < endTime && voteProceeding;
-    }
-
-    /// @notice End voting on an existing proposal by id.  All scheduled transactions are cancelled and nothing is executed.
-    /// @param _proposalId The numeric id of the proposed vote
-    /// @dev It is not possible to end voting until the required duration has elapsed.
-    function endVoteAndCancelTransaction(uint256 _proposalId)
-        external
-        requireSupervisor(_proposalId)
-        requireVoteFinal(_proposalId)
-        requireVoteOpen(_proposalId)
-    {
-        uint256 _endTime = _storage.endTime(_proposalId);
-        if (getBlockTimestamp() < _endTime && !_storage.isVeto(_proposalId) && !_storage.isCancel(_proposalId))
-            revert VoteIsOpen(_proposalId);
-
-        isVoteOpenByProposalId[_proposalId] = false;
-
-        cancelTransaction(_proposalId);
-
-        emit VoteClosed(_proposalId);
-        emit ProposalClosed(_proposalId);
     }
 
     /// @notice end voting on an existing proposal by id

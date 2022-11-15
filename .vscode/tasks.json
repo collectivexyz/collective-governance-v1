@@ -91,6 +91,23 @@
       }
     },
     {
+      "label": "verifybuilder",
+      "type": "shell",
+      "command": "forge verify-contract ${CONTRACT_ADDRESS} contracts/GovernanceBuilder.sol:GovernanceBuilder --chain-id ${CHAIN_ID} --watch ${ETHERSCAN_API_KEY}",
+      "options": {
+        "cwd": "${workspaceFolder}",
+        "env": {
+          "CONTRACT_ADDRESS": "0x50Bee8889D2c52D49b19e7728242186D444e3f1D",
+          "CHAIN_ID": "5"
+        }
+      },
+      "dependsOn": "production",
+      "group": {
+        "kind": "test",
+        "isDefault": false
+      },
+    },
+    {
       "label": "deployconstant",
       "type": "shell",
       "command": "forge create --contracts contracts/Constant.sol --rpc-url ${DEVNET_RPC_URL} --private-key ${ETH_DEV_PRIVATE} --etherscan-api-key ${ETHERSCAN_API_KEY} --verify Constant",
@@ -123,7 +140,7 @@
       "options": {
         "cwd": "${workspaceFolder}",
         "env": {
-          "CONSTANT_LIB_ADDRESS": "0xaDFDc9ADe7B4199179E0eeF0ce8e67E12a92A50F"
+          "CONSTANT_LIB_ADDRESS": "0xA5f38eb8d0e4bbd9dDce33B6e08C9119D4Cc2182"
         }
       },
       "dependsOn": "production",

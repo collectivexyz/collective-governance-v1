@@ -122,27 +122,6 @@
         "internalType": "uint256",
         "name": "proposalId",
         "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "choiceId",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "transactionId",
-        "type": "uint256"
-      }
-    ],
-    "name": "ChoiceTransactionIdInvalid",
-    "type": "error"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "proposalId",
-        "type": "uint256"
       }
     ],
     "name": "ChoiceVoteRequiresSetup",
@@ -537,6 +516,22 @@
         "internalType": "uint256",
         "name": "proposalId",
         "type": "uint256"
+      },
+      {
+        "internalType": "bytes32",
+        "name": "txHash",
+        "type": "bytes32"
+      }
+    ],
+    "name": "TransactionHashInvalid",
+    "type": "error"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "proposalId",
+        "type": "uint256"
       }
     ],
     "name": "UndoNotEnabled",
@@ -815,6 +810,12 @@
         "internalType": "uint256",
         "name": "transactionId",
         "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "bytes32",
+        "name": "txHash",
+        "type": "bytes32"
       }
     ],
     "name": "SetChoice",
@@ -1341,6 +1342,11 @@
         "internalType": "uint256",
         "name": "_transactionId",
         "type": "uint256"
+      },
+      {
+        "internalType": "bytes32",
+        "name": "_txHash",
+        "type": "bytes32"
       },
       {
         "internalType": "uint256",
