@@ -1095,7 +1095,7 @@ contract GovernanceStorageChoiceVoteTest is Test {
             _storage.setChoice(_proposalId, i, "name", "description", 0, _SUPERVISOR);
         }
         _storage.makeFinal(_proposalId, _SUPERVISOR);
-        vm.expectRevert("Not a valid share");
+        vm.expectRevert(abi.encodeWithSelector(VoterClass.UnknownToken.selector, uint160(_VOTER2)));
         _storage.voteForByShare(_proposalId, _VOTER1, uint160(_VOTER2), 1);
     }
 

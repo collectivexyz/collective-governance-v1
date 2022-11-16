@@ -53,19 +53,14 @@ import "../contracts/access/AlwaysImmutable.sol";
 contract VoterClassNullObject is VoterClass, AlwaysImmutable, ERC165 {
     string public constant NAME = "collective VoterClassNullObject";
 
-    modifier requireValidAddress(address _wallet) {
-        require(_wallet != address(0), "Not a valid wallet");
-        _;
-    }
-
     /// @notice no voter is allowed
     /// @return bool always returns false
-    function isVoter(address _wallet) external pure requireValidAddress(_wallet) returns (bool) {
+    function isVoter(address) external pure returns (bool) {
         return false;
     }
 
     /// @notice always reverts
-    function discover(address _wallet) external pure requireValidAddress(_wallet) returns (uint256[] memory) {
+    function discover(address _wallet) external pure returns (uint256[] memory) {
         revert NotVoter(_wallet);
     }
 

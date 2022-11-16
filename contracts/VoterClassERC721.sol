@@ -58,6 +58,8 @@ import "../contracts/access/AlwaysImmutable.sol";
 /// @dev ERC721Enumerable is supported for discovery, however if the token contract does not support enumeration
 /// then vote by specific tokenId is still supported
 contract VoterClassERC721 is VoterClass, AlwaysImmutable, ERC165 {
+    error ERC721EnumerableRequired(address contractAddress);
+
     string public constant NAME = "collective VoterClassERC721";
 
     address private immutable _contractAddress;
@@ -71,26 +73,21 @@ contract VoterClassERC721 is VoterClass, AlwaysImmutable, ERC165 {
         _weight = _voteWeight;
     }
 
-    modifier requireValidAddress(address _wallet) {
-        require(_wallet != address(0), "Not a valid wallet");
-        _;
-    }
-
-    modifier requireValidShare(uint256 _shareId) {
-        require(_shareId != 0, "Share not valid");
+    modifier requireValidToken(uint256 _shareId) {
+        if (_shareId == 0) revert UnknownToken(_shareId);
         _;
     }
 
     /// @notice determine if wallet holds at least one token from the ERC-721 contract
     /// @return bool true if wallet can sign for votes on this class
-    function isVoter(address _wallet) external view requireValidAddress(_wallet) returns (bool) {
+    function isVoter(address _wallet) external view returns (bool) {
         return IERC721(_contractAddress).balanceOf(_wallet) > 0;
     }
 
     /// @notice tabulate the number of votes available for the specific wallet and tokenId
     /// @param _wallet The wallet to test for ownership
     /// @param _tokenId The id of the token associated with the ERC-721 contract
-    function votesAvailable(address _wallet, uint256 _tokenId) external view requireValidAddress(_wallet) returns (uint256) {
+    function votesAvailable(address _wallet, uint256 _tokenId) external view returns (uint256) {
         address tokenOwner = IERC721(_contractAddress).ownerOf(_tokenId);
         if (_wallet == tokenOwner) {
             return 1;
@@ -101,13 +98,13 @@ contract VoterClassERC721 is VoterClass, AlwaysImmutable, ERC165 {
     /// @notice discover an array of tokenIds associated with the specified wallet
     /// @dev discovery requires support for ERC721Enumerable, otherwise execution will revert
     /// @return uint256[] array in memory of share ids
-    function discover(address _wallet) external view requireValidAddress(_wallet) returns (uint256[] memory) {
+    function discover(address _wallet) external view returns (uint256[] memory) {
         bytes4 interfaceId721 = type(IERC721Enumerable).interfaceId;
-        require(IERC721(_contractAddress).supportsInterface(interfaceId721), "ERC-721 Enumerable required");
+        if (!IERC721(_contractAddress).supportsInterface(interfaceId721)) revert ERC721EnumerableRequired(_contractAddress);
         IERC721Enumerable enumContract = IERC721Enumerable(_contractAddress);
         IERC721 _nft = IERC721(_contractAddress);
         uint256 tokenBalance = _nft.balanceOf(_wallet);
-        require(tokenBalance > 0, "Token owner required");
+        if (tokenBalance == 0) revert NotOwner(_contractAddress, _wallet);
         uint256[] memory tokenIdList = new uint256[](tokenBalance);
         for (uint256 i = 0; i < tokenBalance; i++) {
             tokenIdList[i] = enumContract.tokenOfOwnerByIndex(_wallet, i);
@@ -118,9 +115,9 @@ contract VoterClassERC721 is VoterClass, AlwaysImmutable, ERC165 {
     /// @notice confirm tokenId is associated with wallet for voting
     /// @dev does not require IERC721Enumerable, tokenId ownership is checked directly using ERC-721
     /// @return uint256 The number of weighted votes confirmed
-    function confirm(address _wallet, uint256 _tokenId) external view requireValidShare(_tokenId) returns (uint256) {
+    function confirm(address _wallet, uint256 _tokenId) external view requireValidToken(_tokenId) returns (uint256) {
         uint256 voteCount = this.votesAvailable(_wallet, _tokenId);
-        if(voteCount == 0) revert NotOwner(_contractAddress, _wallet);
+        if (voteCount == 0) revert NotOwner(_contractAddress, _wallet);
         return _weight * voteCount;
     }
 

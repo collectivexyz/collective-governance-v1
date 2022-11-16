@@ -91,12 +91,39 @@
       }
     },
     {
-      "label": "verifybuilder",
+      "label": "test",
       "type": "shell",
-      "command": "forge verify-contract ${CONTRACT_ADDRESS} contracts/GovernanceBuilder.sol:GovernanceBuilder --chain-id ${CHAIN_ID} --watch ${ETHERSCAN_API_KEY}",
+      "command": "forge test -vvv",
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "dependsOn": "hint",
+      "group": {
+        "kind": "test",
+        "isDefault": true
+      }
+    },
+    {
+      "label": "gastest",
+      "type": "shell",
+      "command": "forge test -vvv --gas-report",
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "dependsOn": "hint",
+      "group": {
+        "kind": "test",
+        "isDefault": false
+      }
+    },
+    {
+      "label": "verifycontract",
+      "type": "shell",
+      "command": "forge verify-contract ${CONTRACT_ADDRESS} contracts/${CONTRACT_NAME}.sol:${CONTRACT_NAME} --chain-id ${CHAIN_ID} --watch ${ETHERSCAN_API_KEY}",
       "options": {
         "cwd": "${workspaceFolder}",
         "env": {
+          "CONTRACT_NAME": "GovernanceBuilder",
           "CONTRACT_ADDRESS": "0x50Bee8889D2c52D49b19e7728242186D444e3f1D",
           "CHAIN_ID": "5"
         }
@@ -105,7 +132,7 @@
       "group": {
         "kind": "test",
         "isDefault": false
-      },
+      }
     },
     {
       "label": "deployconstant",
@@ -144,32 +171,6 @@
         }
       },
       "dependsOn": "production",
-      "group": {
-        "kind": "test",
-        "isDefault": false
-      }
-    },
-    {
-      "label": "test",
-      "type": "shell",
-      "command": "forge test -vvv",
-      "options": {
-        "cwd": "${workspaceFolder}"
-      },
-      "dependsOn": "hint",
-      "group": {
-        "kind": "test",
-        "isDefault": true
-      }
-    },
-    {
-      "label": "gastest",
-      "type": "shell",
-      "command": "forge test -vvv --gas-report",
-      "options": {
-        "cwd": "${workspaceFolder}"
-      },
-      "dependsOn": "hint",
       "group": {
         "kind": "test",
         "isDefault": false

@@ -94,13 +94,8 @@ contract VoterClassVoterPool is VoterClass, ConfigurableMutable, Ownable, ERC165
         _weight = _voteWeight;
     }
 
-    modifier requireValidAddress(address _wallet) {
-        require(_wallet != address(0), "Not a valid wallet");
-        _;
-    }
-
     modifier requireValidShare(address _wallet, uint256 _shareId) {
-        require(_shareId > 0 && _shareId == uint160(_wallet), "Not a valid share");
+        if (_shareId == 0 || _shareId != uint160(_wallet)) revert UnknownToken(_shareId);
         _;
     }
 
@@ -112,7 +107,7 @@ contract VoterClassVoterPool is VoterClass, ConfigurableMutable, Ownable, ERC165
     /// @notice add a voter to the voter pool
     /// @dev only possible if not final
     /// @param _wallet the address to add
-    function addVoter(address _wallet) external requireValidAddress(_wallet) onlyOwner onlyMutable {
+    function addVoter(address _wallet) external onlyOwner onlyMutable {
         if (!_voterPool[_wallet]) {
             _voterPool[_wallet] = true;
             _poolCount++;
@@ -125,7 +120,7 @@ contract VoterClassVoterPool is VoterClass, ConfigurableMutable, Ownable, ERC165
     /// @notice remove a voter from the voter pool
     /// @dev only possible if not final
     /// @param _wallet the address to add
-    function removeVoter(address _wallet) external requireValidAddress(_wallet) onlyOwner onlyMutable {
+    function removeVoter(address _wallet) external onlyOwner onlyMutable {
         if (_voterPool[_wallet]) {
             _voterPool[_wallet] = false;
             _poolCount--;
@@ -137,7 +132,7 @@ contract VoterClassVoterPool is VoterClass, ConfigurableMutable, Ownable, ERC165
 
     /// @notice test if wallet represents an allowed voter for this class
     /// @return bool true if wallet is a voter
-    function isVoter(address _wallet) external view requireValidAddress(_wallet) returns (bool) {
+    function isVoter(address _wallet) external view returns (bool) {
         return _voterPool[_wallet];
     }
 

@@ -26,7 +26,7 @@ contract VoterClassERC721Test is Test {
     }
 
     function testDiscovery() public {
-        vm.expectRevert("ERC-721 Enumerable required");
+        vm.expectRevert(abi.encodeWithSelector(VoterClassERC721.ERC721EnumerableRequired.selector, address(_tokenContract)));
         _class.discover(_OWNER);
     }
 

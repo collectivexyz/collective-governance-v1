@@ -1407,7 +1407,7 @@ contract CollectiveGovernanceTest is Test {
         vm.prank(_VOTER1, _VOTER1);
         governance.voteFor(proposalId, TOKEN_ID1);
         assertTrue(_VOTER1.balance > 0);
-        assertApproxEqAbs(_VOTER1.balance, 8794604 gwei, 500 gwei);
+        assertApproxEqAbs(_VOTER1.balance, 8791120 gwei, 500 gwei);
     }
 
     function testCastAgainstVoteWithRefund() public {
@@ -1424,7 +1424,7 @@ contract CollectiveGovernanceTest is Test {
         vm.prank(_VOTER1, _VOTER1);
         governance.voteAgainst(proposalId, TOKEN_ID1);
         assertTrue(_VOTER1.balance > 0);
-        assertApproxEqAbs(_VOTER1.balance, 7756840 gwei, 500 gwei);
+        assertApproxEqAbs(_VOTER1.balance, 7753356 gwei, 500 gwei);
     }
 
     function testAbstainWithRefund() public {
@@ -1441,7 +1441,7 @@ contract CollectiveGovernanceTest is Test {
         vm.prank(_VOTER1, _VOTER1);
         governance.abstainFrom(proposalId, TOKEN_ID1);
         assertTrue(_VOTER1.balance > 0);
-        assertApproxEqAbs(_VOTER1.balance, 8784880 gwei, 500 gwei);
+        assertApproxEqAbs(_VOTER1.balance, 8781396 gwei, 500 gwei);
     }
 
     function testVoteAndUndoWithRefund() public {
@@ -1461,7 +1461,7 @@ contract CollectiveGovernanceTest is Test {
         governance.undoVote(proposalId, TOKEN_ID1);
         vm.stopPrank();
         assertTrue(_VOTER1.balance > 0);
-        assertApproxEqAbs(_VOTER1.balance, 12228320 gwei, 500 gwei);
+        assertApproxEqAbs(_VOTER1.balance, 12225096 gwei, 500 gwei);
     }
 
     function testCastVoteWithMaximumRefund() public {
@@ -1478,7 +1478,7 @@ contract CollectiveGovernanceTest is Test {
         vm.prank(_VOTER1, _VOTER1);
         governance.voteFor(proposalId, TOKEN_ID1);
         assertTrue(_VOTER1.balance > 0);
-        uint256 expectRefund = 17081827 gwei;
+        uint256 expectRefund = 17075060 gwei;
         assertApproxEqAbs(_VOTER1.balance, expectRefund, 500 gwei);
         assertApproxEqAbs(_governanceAddress.balance, 1 ether - expectRefund, 500 gwei);
     }
