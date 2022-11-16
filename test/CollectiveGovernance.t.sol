@@ -101,7 +101,7 @@ contract CollectiveGovernanceTest is Test {
     function testConfigureDurationWrongProposalId() public {
         vm.expectRevert(abi.encodeWithSelector(Storage.InvalidProposal.selector, proposalId + 1));
         vm.startPrank(_SUPERVISOR, _SUPERVISOR);
-        governance.configureWithDelay(proposalId + 1, 2, Constant.MINIMUM_VOTE_DELAY, Constant.MINIMUM_VOTE_DURATION);
+        governance.configure(proposalId + 1, 2, Constant.MINIMUM_VOTE_DELAY, Constant.MINIMUM_VOTE_DURATION);
     }
 
     function testConfigureInvalidDuration() public {
@@ -114,7 +114,7 @@ contract CollectiveGovernanceTest is Test {
             )
         );
         vm.startPrank(_SUPERVISOR, _SUPERVISOR);
-        governance.configureWithDelay(proposalId, 2, Constant.MINIMUM_VOTE_DELAY, Constant.MINIMUM_VOTE_DURATION - 1);
+        governance.configure(proposalId, 2, Constant.MINIMUM_VOTE_DELAY, Constant.MINIMUM_VOTE_DURATION - 1);
     }
 
     function testConfigureInvalidQuorum() public {
@@ -127,7 +127,7 @@ contract CollectiveGovernanceTest is Test {
                 Constant.MINIMUM_PROJECT_QUORUM
             )
         );
-        governance.configureWithDelay(
+        governance.configure(
             proposalId,
             Constant.MINIMUM_PROJECT_QUORUM - 1,
             Constant.MINIMUM_VOTE_DELAY,
@@ -148,7 +148,7 @@ contract CollectiveGovernanceTest is Test {
         assertEq(proposalId, proposalId);
         vm.expectRevert(abi.encodeWithSelector(Storage.QuorumNotPermitted.selector, proposalId, 9999, 10000));
         vm.startPrank(_SUPERVISOR, _SUPERVISOR);
-        governance.configureWithDelay(proposalId, 9999, Constant.MINIMUM_VOTE_DELAY, Constant.MINIMUM_VOTE_DURATION);
+        governance.configure(proposalId, 9999, Constant.MINIMUM_VOTE_DELAY, Constant.MINIMUM_VOTE_DURATION);
     }
 
     function testConfigureProjectMinimumQuorum() public {
@@ -164,7 +164,7 @@ contract CollectiveGovernanceTest is Test {
         proposalId = governance.propose();
         assertEq(proposalId, proposalId);
         vm.startPrank(_SUPERVISOR, _SUPERVISOR);
-        governance.configureWithDelay(proposalId, 10000, Constant.MINIMUM_VOTE_DELAY, Constant.MINIMUM_VOTE_DURATION);
+        governance.configure(proposalId, 10000, Constant.MINIMUM_VOTE_DELAY, Constant.MINIMUM_VOTE_DURATION);
         assertEq(_storage.minimumProjectQuorum(), 10000);
     }
 
@@ -181,7 +181,7 @@ contract CollectiveGovernanceTest is Test {
         assertEq(proposalId, proposalId);
         vm.expectRevert(abi.encodeWithSelector(Storage.DurationNotPermitted.selector, proposalId, 5 days, 6 days));
         vm.startPrank(_SUPERVISOR, _SUPERVISOR);
-        governance.configureWithDelay(proposalId, Constant.MINIMUM_PROJECT_QUORUM, Constant.MINIMUM_VOTE_DELAY, 5 days);
+        governance.configure(proposalId, Constant.MINIMUM_PROJECT_QUORUM, Constant.MINIMUM_VOTE_DELAY, 5 days);
     }
 
     function testConfigureProjectMinimumDuration() public {
@@ -197,7 +197,7 @@ contract CollectiveGovernanceTest is Test {
         proposalId = governance.propose();
         assertEq(proposalId, proposalId);
         vm.startPrank(_SUPERVISOR, _SUPERVISOR);
-        governance.configureWithDelay(proposalId, Constant.MINIMUM_PROJECT_QUORUM, Constant.MINIMUM_VOTE_DELAY, 8 days);
+        governance.configure(proposalId, Constant.MINIMUM_PROJECT_QUORUM, Constant.MINIMUM_VOTE_DELAY, 8 days);
         assertEq(_storage.voteDuration(proposalId), 8 days);
     }
 
@@ -214,7 +214,7 @@ contract CollectiveGovernanceTest is Test {
         proposalId = governance.propose();
         assertEq(proposalId, proposalId);
         vm.startPrank(_SUPERVISOR, _SUPERVISOR);
-        governance.configureWithDelay(proposalId, Constant.MINIMUM_PROJECT_QUORUM, 10 days, Constant.MINIMUM_VOTE_DURATION);
+        governance.configure(proposalId, Constant.MINIMUM_PROJECT_QUORUM, 10 days, Constant.MINIMUM_VOTE_DURATION);
         assertEq(_storage.voteDelay(proposalId), 10 days);
     }
 
@@ -232,7 +232,7 @@ contract CollectiveGovernanceTest is Test {
         assertEq(proposalId, proposalId);
         vm.expectRevert(abi.encodeWithSelector(Storage.DelayNotPermitted.selector, proposalId, 10 days - 1, 10 days));
         vm.startPrank(_SUPERVISOR, _SUPERVISOR);
-        governance.configureWithDelay(proposalId, Constant.MINIMUM_PROJECT_QUORUM, 10 days - 1, Constant.MINIMUM_VOTE_DURATION);
+        governance.configure(proposalId, Constant.MINIMUM_PROJECT_QUORUM, 10 days - 1, Constant.MINIMUM_VOTE_DURATION);
     }
 
     function testConfigure721() public {

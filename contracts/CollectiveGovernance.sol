@@ -275,7 +275,7 @@ contract CollectiveGovernance is Governance, VoteStrategy, ERC165 {
     /// @param _quorumRequired The threshold of participation that is required for a successful conclusion of voting
     /// @param _requiredDelay The minimum time required before the start of voting
     /// @param _requiredDuration The minimum time for voting to proceed before ending the vote is allowed
-    function configureWithDelay(
+    function configure(
         uint256 _proposalId,
         uint256 _quorumRequired,
         uint256 _requiredDelay,
