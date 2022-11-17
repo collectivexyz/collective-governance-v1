@@ -80,7 +80,7 @@ contract CollectiveMetaStorage is MetaStorage, ERC165, Ownable {
 
     modifier requireValid(uint256 _metadataId) {
         MetaStore storage metaStore = metaStoreMap[_metadataId];
-        if (metaStore.id != _metadataId) revert InvalidMetadataId(_metadataId);
+        if (_metadataId == 0 || metaStore.id != _metadataId) revert InvalidMetadataId(_metadataId);
         _;
     }
 
@@ -93,7 +93,7 @@ contract CollectiveMetaStorage is MetaStorage, ERC165, Ownable {
     }
 
     /// @notice set metadata
-    /// @dev requires supervisor
+    /// @dev requires owner
     /// @param _metadataId the id of the metadata
     /// @param _url the url
     /// @param _description the description
@@ -102,18 +102,17 @@ contract CollectiveMetaStorage is MetaStorage, ERC165, Ownable {
         string memory _url,
         string memory _description
     ) external onlyOwner {
+        if (_metadataId == 0) revert InvalidMetadataId(_metadataId);
         if (Constant.len(_url) > Constant.STRING_DATA_LIMIT) revert UrlExceedsDataLimit(_metadataId);
         if (Constant.len(_description) > Constant.STRING_DATA_LIMIT) revert DescriptionExceedsDataLimit(_metadataId);
         MetaStore storage metaStore = metaStoreMap[_metadataId];
-        if (metaStore.id != _metadataId) {
-            metaStore.id = _metadataId;
-        }
+        metaStore.id = _metadataId;
         metaStore.url = _url;
         metaStore.description = _description;
         emit Describe(_metadataId, _url, _description);
     }
 
-    /// @notice get the url
+    /// @notice get the url by id
     /// @param _metadataId the id of the metadata
     /// @return string the url
     function url(uint256 _metadataId) external view requireValid(_metadataId) returns (string memory) {
@@ -121,7 +120,7 @@ contract CollectiveMetaStorage is MetaStorage, ERC165, Ownable {
         return metaStore.url;
     }
 
-    /// @notice get the metadata description
+    /// @notice get the metadata description by id
     /// @param _metadataId the id of the metadata
     /// @return string the description
     function description(uint256 _metadataId) external view requireValid(_metadataId) returns (string memory) {
@@ -129,33 +128,30 @@ contract CollectiveMetaStorage is MetaStorage, ERC165, Ownable {
         return metaStore.description;
     }
 
-    /// @notice attach arbitrary metadata to metadata
-    /// @dev requires supervisor
-    /// @param _metadataId the id of the metadata
+    /// @notice attach arbitrary metadata
+    /// @dev requires owner
+    /// @param _metadataId the id of the metadata to modify
     /// @param _name the name of the metadata field
     /// @param _value the value of the metadata
-    /// @return uint256 the metadata id
+    /// @return uint256 the id of the attached element
     function addMeta(
         uint256 _metadataId,
         bytes32 _name,
         string memory _value
-    ) external onlyOwner returns (uint256) {
+    ) external onlyOwner requireValid(_metadataId) returns (uint256) {
         if (Constant.len(_value) > Constant.STRING_DATA_LIMIT) revert ValueExceedsDataLimit(_metadataId);
         MetaStore storage metaStore = metaStoreMap[_metadataId];
-        if (metaStore.id != _metadataId) {
-            metaStore.id = _metadataId;
-        }
         uint256 metaId = metaStore.metaCount++;
         metaStore.metadata[metaId] = Meta(metaId, _name, _value);
         emit AddMeta(_metadataId, metaId, _name, _value);
         return metaId;
     }
 
-    /// @notice get arbitrary metadata from metadata
+    /// @notice get arbitrary metadata element
     /// @param _metadataId the id of the metadata
-    /// @param _metaId the id of the metadata
-    /// @return _name the name of the metadata field
-    /// @return _value the value of the metadata field
+    /// @param _metaId the id of the element
+    /// @return _name the name of the element
+    /// @return _value the value of the element
     function getMeta(uint256 _metadataId, uint256 _metaId)
         external
         view

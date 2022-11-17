@@ -164,7 +164,7 @@ contract VoterClassVoterPool is VoterClass, ConfigurableMutable, Ownable, ERC165
 
     /// @notice set the voterpool final.   No further changes may be made to the voting pool.
     function makeFinal() public override onlyOwner {
-        require(_poolCount > 0, "Empty pool");
+        if (_poolCount == 0) revert EmptyClass();
         super.makeFinal();
     }
 

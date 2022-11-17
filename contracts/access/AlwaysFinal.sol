@@ -45,13 +45,12 @@ pragma solidity ^0.8.15;
 
 import "../../contracts/access/Mutable.sol";
 
-/// @title ConfigurableMutable
-/// @notice Allow configuration during a period of mutability that ends
-/// when finalized
-contract AlwaysImmutable is Mutable {
+/// @title AlwaysFinal
+/// @notice Marker indicating this contract is never mutable
+contract AlwaysFinal is Mutable {
     /// @notice call to confirm mutability during configuration
     modifier onlyMutable() {
-        revert NotMutable();
+        revert ContractFinal();
         _;
     }
 
@@ -67,7 +66,5 @@ contract AlwaysImmutable is Mutable {
     /// @notice set the control object to final.
     /// @dev always reverts
     // solhint-disable-next-line no-empty-blocks
-    function makeFinal() public virtual {
-        revert NotMutable();
-    }
+    function makeFinal() public virtual onlyMutable {}
 }

@@ -245,6 +245,11 @@ contract CollectiveGovernanceTest is Test {
         assertTrue(governance.isOpen(proposalId));
     }
 
+    function testIsOpenBadProposal() public {
+        vm.expectRevert(abi.encodeWithSelector(Storage.InvalidProposal.selector, proposalId + 1));
+        governance.isOpen(proposalId + 1);
+    }
+
     function testOpenVoteWrongProposal() public {
         vm.startPrank(_SUPERVISOR, _SUPERVISOR);
         governance.configure(proposalId, 2);
@@ -1153,7 +1158,7 @@ contract CollectiveGovernanceTest is Test {
     function testConfigureAfterCancel() public {
         vm.startPrank(_SUPERVISOR, _SUPERVISOR);
         governance.cancel(proposalId);
-        vm.expectRevert(abi.encodeWithSelector(Storage.VoteFinal.selector, proposalId));
+        vm.expectRevert(abi.encodeWithSelector(Storage.VoteIsFinal.selector, proposalId));
         governance.configure(proposalId, 2);
         vm.stopPrank();
     }
@@ -1503,6 +1508,7 @@ contract CollectiveGovernanceTest is Test {
 
     function testConfigureWithMeta() public {
         vm.startPrank(_OWNER, _OWNER);
+        governance.describe(proposalId, "A test vote", "https://https://collectivexyz.github.io/collective-governance-v1/");
         uint256 mid = governance.addMeta(proposalId, "e", "2.718281828459045235");
         governance.configure(proposalId, 2);
         vm.stopPrank();

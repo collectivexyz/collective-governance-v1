@@ -47,8 +47,8 @@ pragma solidity ^0.8.15;
 /// @notice used to determine if a class is modifiable
 /// @custom:type interface
 interface Mutable {
-    error NotMutable();
     error NotFinal();
+    error ContractFinal();
 
     /// @return bool True if this object is final
     function isFinal() external view returns (bool);

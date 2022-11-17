@@ -6,7 +6,7 @@ import "forge-std/Test.sol";
 
 import "../../contracts/access/Mutable.sol";
 import "../../contracts/access/ConfigurableMutable.sol";
-import "../../contracts/access/AlwaysImmutable.sol";
+import "../../contracts/access/AlwaysFinal.sol";
 
 contract MutableTest is Test {
     ConfigMutable private _config;
@@ -35,7 +35,7 @@ contract MutableTest is Test {
     }
 
     function testImmutableRead() public {
-        NeverMutable _never = new NeverMutable();
+        AlwaysImmutable _never = new AlwaysImmutable();
         _never.read();
     }
 }
@@ -46,6 +46,6 @@ contract ConfigMutable is ConfigurableMutable {
     function read() external onlyFinal {}
 }
 
-contract NeverMutable is AlwaysImmutable {
+contract AlwaysImmutable is AlwaysFinal {
     function read() external onlyFinal {}
 }

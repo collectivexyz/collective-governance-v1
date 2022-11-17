@@ -96,11 +96,12 @@ contract GovernanceStorage is Storage, ERC165, Ownable {
         uint256 _minimumDelay,
         uint256 _minimumDuration
     ) {
-        if (_minimumDelay < Constant.MINIMUM_VOTE_DELAY) revert DelayLessThanMinimum(_minimumDelay, Constant.MINIMUM_VOTE_DELAY);
+        if (_minimumDelay < Constant.MINIMUM_VOTE_DELAY)
+            revert MinimumDelayNotPermitted(_minimumDelay, Constant.MINIMUM_VOTE_DELAY);
         if (_minimumDuration < Constant.MINIMUM_VOTE_DURATION)
-            revert DurationLessThanMinimum(_minimumDuration, Constant.MINIMUM_VOTE_DURATION);
+            revert MinimumDurationNotPermitted(_minimumDuration, Constant.MINIMUM_VOTE_DURATION);
         if (_minimumQuorum < Constant.MINIMUM_PROJECT_QUORUM)
-            revert QuorumLessThanMinimum(_minimumQuorum, Constant.MINIMUM_PROJECT_QUORUM);
+            revert MinimumQuorumNotPermitted(_minimumQuorum, Constant.MINIMUM_PROJECT_QUORUM);
         if (!_class.isFinal()) revert VoterClassNotFinal(_class.name(), _class.version());
 
         _minimumVoteDelay = _minimumDelay;
@@ -158,13 +159,13 @@ contract GovernanceStorage is Storage, ERC165, Ownable {
 
     modifier requireProposalSender(uint256 _proposalId, address _sender) {
         Proposal storage proposal = proposalMap[_proposalId];
-        if (proposal.proposalSender != _sender) revert SenderRequired(_proposalId, _sender);
+        if (proposal.proposalSender != _sender) revert NotSender(_proposalId, _sender);
         _;
     }
 
     modifier requireConfig(uint256 _proposalId) {
         Proposal storage proposal = proposalMap[_proposalId];
-        if (proposal.status != Status.CONFIG) revert VoteFinal(_proposalId);
+        if (proposal.status != Status.CONFIG) revert VoteIsFinal(_proposalId);
         _;
     }
 
@@ -176,8 +177,9 @@ contract GovernanceStorage is Storage, ERC165, Ownable {
 
     modifier requireVotingActive(uint256 _proposalId) {
         Proposal storage proposal = proposalMap[_proposalId];
-        if (proposal.startTime > getBlockTimestamp() || proposal.endTime < getBlockTimestamp())
+        if (proposal.startTime > getBlockTimestamp() || proposal.endTime < getBlockTimestamp()) {
             revert VoteNotActive(_proposalId, proposal.startTime, proposal.endTime, getBlockTimestamp());
+        }
         _;
     }
 
@@ -198,11 +200,11 @@ contract GovernanceStorage is Storage, ERC165, Ownable {
     modifier requireSupervisor(uint256 _proposalId, address _sender) {
         Proposal storage proposal = proposalMap[_proposalId];
         Supervisor memory supervisor = proposal.supervisorPool[_sender];
-        if (!supervisor.isEnabled) revert SupervisorRequired(_proposalId, _sender);
+        if (!supervisor.isEnabled) revert NotSupervisor(_proposalId, _sender);
         _;
     }
 
-    modifier requireChoiceVoteReady(uint256 _proposalId) {
+    modifier requireChoiceVoteFinal(uint256 _proposalId) {
         Proposal storage proposal = proposalMap[_proposalId];
         for (uint256 id = 0; id < proposal.choiceCount; id++) {
             Choice memory choice = proposal.choice[id];
@@ -235,11 +237,11 @@ contract GovernanceStorage is Storage, ERC165, Ownable {
 
     modifier requireValidTransaction(uint256 _proposalId, uint256 _transactionId) {
         Proposal storage proposal = proposalMap[_proposalId];
-        if (proposal.transactionCount > 0) {
+        if (proposal.transactionCount == 0) {
+            if (_transactionId != 0) revert InvalidTransaction(_proposalId, _transactionId);
+        } else {
             if (_transactionId == 0 || _transactionId > proposal.transactionCount)
                 revert InvalidTransaction(_proposalId, _transactionId);
-        } else {
-            if (_transactionId != 0) revert InvalidTransaction(_proposalId, _transactionId);
         }
         _;
     }
@@ -302,12 +304,8 @@ contract GovernanceStorage is Storage, ERC165, Ownable {
     {
         Proposal storage proposal = proposalMap[_proposalId];
         Supervisor storage supervisor = proposal.supervisorPool[_supervisor];
-        if (supervisor.isEnabled) {
-            supervisor.isEnabled = false;
-            emit BurnSupervisor(_proposalId, _supervisor);
-        } else {
-            revert SupervisorRequired(_proposalId, _supervisor);
-        }
+        supervisor.isEnabled = false;
+        emit BurnSupervisor(_proposalId, _supervisor);
     }
 
     /// @notice set the minimum number of participants for a successful outcome
@@ -445,7 +443,7 @@ contract GovernanceStorage is Storage, ERC165, Ownable {
         returns (uint256)
     {
         Proposal storage proposal = proposalMap[_proposalId];
-        Choice storage choice = proposal.choice[_choiceId];
+        Choice memory choice = proposal.choice[_choiceId];
         return choice.voteCount;
     }
 
@@ -478,7 +476,7 @@ contract GovernanceStorage is Storage, ERC165, Ownable {
     /// @return bool true if the address is a supervisor
     function isSupervisor(uint256 _proposalId, address _supervisor) external view requireValid(_proposalId) returns (bool) {
         Proposal storage proposal = proposalMap[_proposalId];
-        Supervisor storage supervisor = proposal.supervisorPool[_supervisor];
+        Supervisor memory supervisor = proposal.supervisorPool[_supervisor];
         return supervisor.isEnabled;
     }
 
@@ -511,7 +509,6 @@ contract GovernanceStorage is Storage, ERC165, Ownable {
     /// @return bool true if the proposal is marked veto
     function isVeto(uint256 _proposalId) external view requireValid(_proposalId) returns (bool) {
         Proposal storage proposal = proposalMap[_proposalId];
-        if (_proposalId == 0 || _proposalId > _proposalCount) revert InvalidProposal(_proposalId);
         return proposal.isVeto;
     }
 
@@ -604,13 +601,13 @@ contract GovernanceStorage is Storage, ERC165, Ownable {
         requireValid(_proposalId)
         requireConfig(_proposalId)
         requireSupervisor(_proposalId, _sender)
-        requireChoiceVoteReady(_proposalId)
+        requireChoiceVoteFinal(_proposalId)
     {
         Proposal storage proposal = proposalMap[_proposalId];
         proposal.startTime = getBlockTimestamp() + proposal.voteDelay;
         proposal.endTime = proposal.startTime + proposal.voteDuration;
         proposal.status = Status.FINAL;
-        emit VoteReady(_proposalId, proposal.startTime, proposal.endTime);
+        emit VoteFinal(_proposalId, proposal.startTime, proposal.endTime);
     }
 
     /// @notice cancel the proposal if it is not yet started

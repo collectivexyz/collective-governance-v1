@@ -42,6 +42,18 @@ contract MetaStorageTest is Test {
         assertEq(_storage.description(META_ID), "description");
     }
 
+    function testDescribeBadId() public {
+        _storage.describe(META_ID, "https://collective.xyz", "description");
+        vm.expectRevert(abi.encodeWithSelector(MetaStorage.InvalidMetadataId.selector, META_ID + 1));
+        _storage.description(META_ID + 1);
+    }
+
+    function testUrlBadID() public {
+        _storage.describe(META_ID, "https://collective.xyz", "description");
+        vm.expectRevert(abi.encodeWithSelector(MetaStorage.InvalidMetadataId.selector, META_ID + 1));
+        _storage.url(META_ID + 1);
+    }
+
     function testSetMetaNotOwner() public {
         vm.expectRevert("Ownable: caller is not the owner");
         vm.prank(NOT_OWNER);
@@ -66,6 +78,7 @@ contract MetaStorageTest is Test {
     }
 
     function testMetaCount() public {
+        _storage.describe(META_ID, "", "");
         for (uint256 i = 0; i < 10; i++) {
             _storage.addMeta(META_ID, "a", "1");
         }
@@ -73,6 +86,7 @@ contract MetaStorageTest is Test {
     }
 
     function testAddMeta() public {
+        _storage.describe(META_ID, "", "");
         uint256 m1 = _storage.addMeta(META_ID, "a", "1");
         uint256 m2 = _storage.addMeta(META_ID, "b", "2");
         (bytes32 m1name, string memory m1value) = _storage.getMeta(META_ID, m1);
@@ -83,6 +97,16 @@ contract MetaStorageTest is Test {
         assertEq(m2value, "2");
     }
 
+    function testAddMetaRequiresDescribe() public {
+        vm.expectRevert(abi.encodeWithSelector(MetaStorage.InvalidMetadataId.selector, META_ID));
+        _storage.addMeta(META_ID, "a", "1");
+    }
+
+    function testZeroNotAllowedForMetaId() public {
+        vm.expectRevert(abi.encodeWithSelector(MetaStorage.InvalidMetadataId.selector, 0));
+        _storage.describe(0, "aaa", "1111");
+    }
+
     function testAddMetaNotOwner() public {
         vm.expectRevert("Ownable: caller is not the owner");
         vm.prank(NOT_OWNER);
@@ -90,6 +114,7 @@ contract MetaStorageTest is Test {
     }
 
     function testAddMetaValueTooLarge() public {
+        _storage.describe(META_ID, "", "");
         string memory _TEST_STRING = TestData.pi1kplus();
         vm.expectRevert(abi.encodeWithSelector(MetaStorage.ValueExceedsDataLimit.selector, META_ID));
         _storage.addMeta(META_ID, "a", _TEST_STRING);

@@ -103,6 +103,22 @@
         "type": "address"
       }
     ],
+    "name": "NotSupervisor",
+    "type": "error"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "proposalId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "sender",
+        "type": "address"
+      }
+    ],
     "name": "NotVoter",
     "type": "error"
   },
@@ -119,7 +135,7 @@
         "type": "address"
       }
     ],
-    "name": "ProposalSenderRequired",
+    "name": "ProposalNotSender",
     "type": "error"
   },
   {
@@ -136,22 +152,6 @@
   {
     "inputs": [],
     "name": "SupervisorListEmpty",
-    "type": "error"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "proposalId",
-        "type": "uint256"
-      },
-      {
-        "internalType": "address",
-        "name": "sender",
-        "type": "address"
-      }
-    ],
-    "name": "SupervisorRequired",
     "type": "error"
   },
   {
@@ -300,19 +300,6 @@
     "inputs": [
       {
         "indexed": false,
-        "internalType": "uint256",
-        "name": "proposalId",
-        "type": "uint256"
-      }
-    ],
-    "name": "ProposalClosed",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
         "internalType": "address",
         "name": "sender",
         "type": "address"
@@ -325,6 +312,25 @@
       }
     ],
     "name": "ProposalCreated",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "voteDelay",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "voteDuration",
+        "type": "uint256"
+      }
+    ],
+    "name": "ProposalDelay",
     "type": "event"
   },
   {
@@ -383,6 +389,25 @@
       {
         "indexed": false,
         "internalType": "uint256",
+        "name": "quorum",
+        "type": "uint256"
+      }
+    ],
+    "name": "ProposalFinal",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "proposalId",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
         "name": "metaId",
         "type": "uint256"
       },
@@ -406,19 +431,6 @@
       }
     ],
     "name": "ProposalMeta",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "proposalId",
-        "type": "uint256"
-      }
-    ],
-    "name": "ProposalOpen",
     "type": "event"
   },
   {
@@ -770,7 +782,17 @@
       },
       {
         "internalType": "uint256",
-        "name": "_quorumRequired",
+        "name": "_quorumThreshold",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_requiredDelay",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_requiredDuration",
         "type": "uint256"
       }
     ],
@@ -788,21 +810,11 @@
       },
       {
         "internalType": "uint256",
-        "name": "_quorumThreshold",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_requiredDelay",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_requiredDuration",
+        "name": "_quorumRequired",
         "type": "uint256"
       }
     ],
-    "name": "configureWithDelay",
+    "name": "configure",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

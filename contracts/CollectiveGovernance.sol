@@ -76,13 +76,13 @@ contract CollectiveGovernance is Governance, VoteStrategy, ERC165 {
 
     MetaStorage public immutable meta;
 
-    TimeLocker private immutable _timeLock;
-
-    address[] private _communitySupervisorList;
+    TimeLocker public immutable _timeLock;
 
     uint256 public immutable _maximumGasUsedRebate;
 
     uint256 public immutable _maximumBaseFeeRebate;
+
+    address[] private _communitySupervisorList;
 
     /// @notice voting is open or not
     mapping(uint256 => bool) private isVoteOpenByProposalId;
@@ -113,9 +113,9 @@ contract CollectiveGovernance is Governance, VoteStrategy, ERC165 {
         _storage = _governanceStorage;
         meta = _metaStore;
         _timeLock = _timeLocker;
-        _communitySupervisorList = _supervisorList;
         _maximumGasUsedRebate = _gasUsedRebate;
         _maximumBaseFeeRebate = _baseFeeRebate;
+        _communitySupervisorList = _supervisorList;
     }
 
     modifier requireNotFinal(uint256 _proposalId) {
@@ -145,15 +145,16 @@ contract CollectiveGovernance is Governance, VoteStrategy, ERC165 {
     }
 
     modifier requireSupervisor(uint256 _proposalId) {
-        if (!_storage.isSupervisor(_proposalId, msg.sender)) revert SupervisorRequired(_proposalId, msg.sender);
+        if (!_storage.isSupervisor(_proposalId, msg.sender)) revert NotSupervisor(_proposalId, msg.sender);
         _;
     }
 
-    modifier requireSender(uint256 _proposalId, address _sender) {
-        if (_storage.getSender(_proposalId) != _sender) revert Storage.SenderRequired(_proposalId, _sender);
+    modifier requireSender(uint256 _proposalId) {
+        if (_storage.getSender(_proposalId) != msg.sender) revert Storage.NotSender(_proposalId, msg.sender);
         _;
     }
 
+    // @dev recieve funds for the purpose of offering a rebate on gas fees
     receive() external payable {
         emit RebateFund(msg.sender, msg.value, getRebateBalance());
     }
@@ -197,7 +198,7 @@ contract CollectiveGovernance is Governance, VoteStrategy, ERC165 {
         string memory _signature,
         bytes memory _calldata,
         uint256 _scheduleTime
-    ) external requireSender(_proposalId, msg.sender) returns (uint256) {
+    ) external requireSender(_proposalId) returns (uint256) {
         bytes32 txHash = _timeLock.queueTransaction(_target, _value, _signature, _calldata, _scheduleTime);
         uint256 transactionId = _storage.addTransaction(
             _proposalId,
@@ -222,7 +223,7 @@ contract CollectiveGovernance is Governance, VoteStrategy, ERC165 {
         uint256 _proposalId,
         string memory _description,
         string memory _url
-    ) external requireSender(_proposalId, msg.sender) requireNotFinal(_proposalId) {
+    ) external requireSupervisor(_proposalId) requireNotFinal(_proposalId) {
         meta.describe(_proposalId, _url, _description);
         emit ProposalDescription(_proposalId, _description, _url);
     }
@@ -237,7 +238,7 @@ contract CollectiveGovernance is Governance, VoteStrategy, ERC165 {
         uint256 _proposalId,
         bytes32 _name,
         string memory _value
-    ) external requireSender(_proposalId, msg.sender) requireNotFinal(_proposalId) returns (uint256) {
+    ) external requireSupervisor(_proposalId) requireNotFinal(_proposalId) returns (uint256) {
         uint256 metaId = meta.addMeta(_proposalId, _name, _value);
         emit ProposalMeta(_proposalId, metaId, _name, _value, msg.sender);
         return metaId;
@@ -255,7 +256,7 @@ contract CollectiveGovernance is Governance, VoteStrategy, ERC165 {
         bytes32 _name,
         string memory _description,
         uint256 _transactionId
-    ) external requireSender(_proposalId, msg.sender) {
+    ) external requireSender(_proposalId) {
         _storage.setChoice(_proposalId, _choiceId, _name, _description, _transactionId, msg.sender);
         emit ProposalChoice(_proposalId, _choiceId, _name, _description, _transactionId);
     }
@@ -267,7 +268,7 @@ contract CollectiveGovernance is Governance, VoteStrategy, ERC165 {
         address _sender = msg.sender;
         _storage.setQuorumRequired(_proposalId, _quorumRequired, _sender);
         _storage.makeFinal(_proposalId, _sender);
-        emit ProposalOpen(_proposalId);
+        emit ProposalFinal(_proposalId, _quorumRequired);
     }
 
     /// @notice configure an existing proposal by id
@@ -285,6 +286,7 @@ contract CollectiveGovernance is Governance, VoteStrategy, ERC165 {
         _storage.setVoteDelay(_proposalId, _requiredDelay, _sender);
         _storage.setVoteDuration(_proposalId, _requiredDuration, _sender);
         configure(_proposalId, _quorumRequired);
+        emit ProposalDelay(_requiredDelay, _requiredDuration);
     }
 
     /// @notice start the voting process by proposal id
@@ -296,12 +298,9 @@ contract CollectiveGovernance is Governance, VoteStrategy, ERC165 {
         requireVoteAccepted(_proposalId)
     {
         if (_storage.quorumRequired(_proposalId) == Constant.UINT_MAX) revert QuorumNotConfigured(_proposalId);
-        if (!isVoteOpenByProposalId[_proposalId]) {
-            isVoteOpenByProposalId[_proposalId] = true;
-            emit VoteOpen(_proposalId);
-        } else {
-            revert VoteIsOpen(_proposalId);
-        }
+        if (isVoteOpenByProposalId[_proposalId]) revert VoteIsOpen(_proposalId);
+        isVoteOpenByProposalId[_proposalId] = true;
+        emit VoteOpen(_proposalId);
     }
 
     /// @notice test if an existing proposal is open
@@ -320,16 +319,13 @@ contract CollectiveGovernance is Governance, VoteStrategy, ERC165 {
         uint256 _endTime = _storage.endTime(_proposalId);
         if (_endTime > getBlockTimestamp() && !_storage.isVeto(_proposalId) && !_storage.isCancel(_proposalId))
             revert VoteInProgress(_proposalId);
-
         isVoteOpenByProposalId[_proposalId] = false;
-
         if (!_storage.isVeto(_proposalId) && getVoteSucceeded(_proposalId)) {
             executeTransaction(_proposalId);
         } else {
             cancelTransaction(_proposalId);
         }
         emit VoteClosed(_proposalId);
-        emit ProposalClosed(_proposalId);
     }
 
     /// @notice cast an affirmative vote for the measure by id
@@ -605,15 +601,14 @@ contract CollectiveGovernance is Governance, VoteStrategy, ERC165 {
             emit ProposalTransactionCancelled(_proposalId, tid, target, value, scheduleTime, txHash);
         }
         _storage.cancel(_proposalId, msg.sender);
-        emit ProposalClosed(_proposalId);
     }
 
     function executeTransaction(uint256 _proposalId) private {
-        uint256 transactionCount = _storage.transactionCount(_proposalId);
-        uint256 executedCount = 0;
         if (_storage.isExecuted(_proposalId)) revert TransactionExecuted(_proposalId);
         _storage.setExecuted(_proposalId, msg.sender);
+        uint256 transactionCount = _storage.transactionCount(_proposalId);
         if (transactionCount > 0) {
+            uint256 executedCount = 0;
             if (_storage.isChoiceVote(_proposalId)) {
                 uint256 winningChoice = _storage.getWinningChoice(_proposalId);
                 if (winningChoice >= _storage.choiceCount(_proposalId)) revert InvalidChoice(_proposalId, winningChoice);

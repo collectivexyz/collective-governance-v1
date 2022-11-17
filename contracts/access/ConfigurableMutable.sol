@@ -49,27 +49,27 @@ import "../../contracts/access/Mutable.sol";
 /// @notice Allow configuration during a period of mutability that ends
 /// when finalized
 contract ConfigurableMutable is Mutable {
-    bool internal contractMutable = true;
+    bool internal contractFinal = false;
 
     /// @notice call to confirm mutability during configuration
     modifier onlyMutable() {
-        if (!contractMutable) revert NotMutable();
+        if (contractFinal) revert ContractFinal();
         _;
     }
 
     modifier onlyFinal() {
-        if (contractMutable) revert NotFinal();
+        if (!contractFinal) revert NotFinal();
         _;
     }
 
     /// @return bool True if this object is final
     function isFinal() external view returns (bool) {
-        return !contractMutable;
+        return contractFinal;
     }
 
     /// @notice set the control object to final.
     /// no further change is allowed via onlyMutable
     function makeFinal() public virtual onlyMutable {
-        contractMutable = false;
+        contractFinal = true;
     }
 }

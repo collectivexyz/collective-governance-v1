@@ -119,12 +119,12 @@
     {
       "label": "verifycontract",
       "type": "shell",
-      "command": "forge verify-contract ${CONTRACT_ADDRESS} contracts/${CONTRACT_NAME}.sol:${CONTRACT_NAME} --chain-id ${CHAIN_ID} --watch ${ETHERSCAN_API_KEY}",
+      "command": "forge verify-contract -f --delay 30 ${CONTRACT_ADDRESS} contracts/${CONTRACT_NAME}.sol:${CONTRACT_NAME} --chain-id ${CHAIN_ID} --watch ${ETHERSCAN_API_KEY}",
       "options": {
         "cwd": "${workspaceFolder}",
         "env": {
           "CONTRACT_NAME": "GovernanceBuilder",
-          "CONTRACT_ADDRESS": "0x50Bee8889D2c52D49b19e7728242186D444e3f1D",
+          "CONTRACT_ADDRESS": "0x02dA9682cb0AEdD8e1f50F88E01eCFcdC44c6b9b",
           "CHAIN_ID": "5"
         }
       },

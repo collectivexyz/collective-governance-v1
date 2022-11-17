@@ -56,6 +56,7 @@ import "../contracts/access/Mutable.sol";
 interface VoterClass is Mutable, IERC165 {
     error NotVoter(address wallet);
     error NotOwner(address tokenContract, address wallet);
+    error EmptyClass();
     error UnknownToken(uint256 tokenId);
 
     /// @notice test if wallet represents an allowed voter for this class

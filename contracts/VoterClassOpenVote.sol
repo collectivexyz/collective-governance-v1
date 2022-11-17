@@ -47,10 +47,10 @@ import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
 
 import "../contracts/Constant.sol";
 import "../contracts/VoterClass.sol";
-import "../contracts/access/AlwaysImmutable.sol";
+import "../contracts/access/AlwaysFinal.sol";
 
 /// @notice OpenVote VoterClass allows every wallet to participate in an open vote
-contract VoterClassOpenVote is VoterClass, AlwaysImmutable, ERC165 {
+contract VoterClassOpenVote is VoterClass, AlwaysFinal, ERC165 {
     string public constant NAME = "collective VoterClassOpenVote";
     uint32 public constant VERSION_1 = 1;
 

@@ -131,22 +131,6 @@
     "inputs": [
       {
         "internalType": "uint256",
-        "name": "delay",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "minimumDelay",
-        "type": "uint256"
-      }
-    ],
-    "name": "DelayLessThanMinimum",
-    "type": "error"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
         "name": "proposalId",
         "type": "uint256"
       },
@@ -162,22 +146,6 @@
       }
     ],
     "name": "DelayNotPermitted",
-    "type": "error"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "duration",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "minimumDuration",
-        "type": "uint256"
-      }
-    ],
-    "name": "DurationLessThanMinimum",
     "type": "error"
   },
   {
@@ -280,6 +248,54 @@
     "inputs": [
       {
         "internalType": "uint256",
+        "name": "delay",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "minimumDelay",
+        "type": "uint256"
+      }
+    ],
+    "name": "MinimumDelayNotPermitted",
+    "type": "error"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "duration",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "minimumDuration",
+        "type": "uint256"
+      }
+    ],
+    "name": "MinimumDurationNotPermitted",
+    "type": "error"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "quorum",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "minimumProjectQuorum",
+        "type": "uint256"
+      }
+    ],
+    "name": "MinimumQuorumNotPermitted",
+    "type": "error"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
         "name": "proposalId",
         "type": "uint256"
       },
@@ -312,6 +328,22 @@
       }
     ],
     "name": "NotChoiceVote",
+    "type": "error"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "proposalId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "sender",
+        "type": "address"
+      }
+    ],
+    "name": "NotSender",
     "type": "error"
   },
   {
@@ -371,22 +403,6 @@
     "inputs": [
       {
         "internalType": "uint256",
-        "name": "quorum",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "minimumProjectQuorum",
-        "type": "uint256"
-      }
-    ],
-    "name": "QuorumLessThanMinimum",
-    "type": "error"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
         "name": "proposalId",
         "type": "uint256"
       },
@@ -413,22 +429,6 @@
       },
       {
         "internalType": "address",
-        "name": "sender",
-        "type": "address"
-      }
-    ],
-    "name": "SenderRequired",
-    "type": "error"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "proposalId",
-        "type": "uint256"
-      },
-      {
-        "internalType": "address",
         "name": "supervisor",
         "type": "address"
       },
@@ -439,22 +439,6 @@
       }
     ],
     "name": "SupervisorAlreadyRegistered",
-    "type": "error"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "proposal",
-        "type": "uint256"
-      },
-      {
-        "internalType": "address",
-        "name": "wallet",
-        "type": "address"
-      }
-    ],
-    "name": "SupervisorRequired",
     "type": "error"
   },
   {
@@ -545,7 +529,7 @@
         "type": "uint256"
       }
     ],
-    "name": "VoteFinal",
+    "name": "VoteInProgress",
     "type": "error"
   },
   {
@@ -556,7 +540,7 @@
         "type": "uint256"
       }
     ],
-    "name": "VoteInProgress",
+    "name": "VoteIsFinal",
     "type": "error"
   },
   {
@@ -1031,7 +1015,7 @@
         "type": "uint256"
       }
     ],
-    "name": "VoteReady",
+    "name": "VoteFinal",
     "type": "event"
   },
   {

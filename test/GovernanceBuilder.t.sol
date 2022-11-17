@@ -63,7 +63,7 @@ contract GovernanceBuilderTest is Test {
         assertEq(Storage(_storage).minimumProjectQuorum(), Constant.MINIMUM_PROJECT_QUORUM);
     }
 
-    function testFailWithVoteDurationThatIsTooShort() public {
+    function testFailWithVoteDurationNotPermitted() public {
         VoterClass _class = new VoterClassNullObject();
         _builder
             .aGovernance()
@@ -73,7 +73,7 @@ contract GovernanceBuilderTest is Test {
             .build();
     }
 
-    function testFailWithInvalidQuorum() public {
+    function testFailWithQuorumNotPermitted() public {
         VoterClass _class = new VoterClassNullObject();
         _builder
             .aGovernance()

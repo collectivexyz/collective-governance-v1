@@ -46,11 +46,11 @@ pragma solidity ^0.8.15;
 import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
 
 import "../contracts/VoterClass.sol";
-import "../contracts/access/AlwaysImmutable.sol";
+import "../contracts/access/AlwaysFinal.sol";
 
 /// @notice Null Object Pattern for VoterClass
 /// @dev No voter is allowed.
-contract VoterClassNullObject is VoterClass, AlwaysImmutable, ERC165 {
+contract VoterClassNullObject is VoterClass, AlwaysFinal, ERC165 {
     string public constant NAME = "collective VoterClassNullObject";
 
     /// @notice no voter is allowed

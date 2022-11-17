@@ -52,14 +52,15 @@ import "../contracts/VoteStrategy.sol";
 /// @notice provides the requirements for Storage contract implementation
 /// @custom:type interface
 interface Storage is IERC165 {
-    error SupervisorRequired(uint256 proposal, address wallet);
+    error NotSupervisor(uint256 proposalId, address supervisor);
+    error NotSender(uint256 proposalId, address sender);
     error SupervisorAlreadyRegistered(uint256 proposalId, address supervisor, address sender);
     error AlreadyVetoed(uint256 proposalId, address sender);
-    error DelayLessThanMinimum(uint256 delay, uint256 minimumDelay);
+    error MinimumDelayNotPermitted(uint256 delay, uint256 minimumDelay);
     error DelayNotPermitted(uint256 proposalId, uint256 quorum, uint256 minimumProjectQuorum);
-    error DurationLessThanMinimum(uint256 duration, uint256 minimumDuration);
+    error MinimumDurationNotPermitted(uint256 duration, uint256 minimumDuration);
     error DurationNotPermitted(uint256 proposalId, uint256 quorum, uint256 minimumProjectQuorum);
-    error QuorumLessThanMinimum(uint256 quorum, uint256 minimumProjectQuorum);
+    error MinimumQuorumNotPermitted(uint256 quorum, uint256 minimumProjectQuorum);
     error QuorumNotPermitted(uint256 proposalId, uint256 quorum, uint256 minimumProjectQuorum);
     error VoterClassNotFinal(string name, uint256 version);
     error NoProposal(address _wallet);
@@ -76,11 +77,9 @@ interface Storage is IERC165 {
     error TransactionHashInvalid(uint256 proposalId, bytes32 txHash);
     error MarkedExecuted(uint256 proposalId);
     error TokenIdIsNotValid(uint256 proposalId, uint256 tokenId);
-    error VoteFinal(uint256 proposalId);
+    error VoteIsFinal(uint256 proposalId);
     error VoteNotFinal(uint256 proposalId);
-    error SenderRequired(uint256 proposalId, address sender);
     error UndoNotEnabled(uint256 proposalId);
-    error NotSupervisor(uint256 proposalId, address supervisor);
     error ProjectSupervisor(uint256 proposalId, address supervisor);
     error VoteInProgress(uint256 proposalId);
     error VoteNotActive(uint256 proposalId, uint256 startTime, uint256 endTime, uint256 blockTime);
@@ -123,7 +122,7 @@ interface Storage is IERC165 {
     event VoteCast(uint256 proposalId, address voter, uint256 shareId, uint256 choiceId, uint256 totalVotesCast);
     event UndoVote(uint256 proposalId, address voter, uint256 shareId, uint256 votesUndone);
     event VoteVeto(uint256 proposalId, address supervisor);
-    event VoteReady(uint256 proposalId, uint256 startTime, uint256 endTime);
+    event VoteFinal(uint256 proposalId, uint256 startTime, uint256 endTime);
     event VoteCancel(uint256 proposalId, address supervisor);
 
     /// @notice The current state of a proposal.

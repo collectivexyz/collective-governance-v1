@@ -55,7 +55,7 @@ interface Governance is IERC165 {
     error CancelNotPossible(uint256 proposalId, address sender);
     error NotVoter(uint256 proposalId, address sender);
     error SupervisorListEmpty();
-    error SupervisorRequired(uint256 proposalId, address sender);
+    error NotSupervisor(uint256 proposalId, address sender);
     error VoteIsOpen(uint256 proposalId);
     error VoteIsClosed(uint256 proposalId);
     error VoteCancelled(uint256 proposalId);
@@ -64,7 +64,7 @@ interface Governance is IERC165 {
     error VoteNotFinal(uint256 proposalId);
     error GasUsedRebateMustBeLarger(uint256 gasUsedRebate, uint256 minimumRebate);
     error BaseFeeRebateMustBeLarger(uint256 baseFee, uint256 minimumBaseFee);
-    error ProposalSenderRequired(uint256 proposalId, address sender);
+    error ProposalNotSender(uint256 proposalId, address sender);
     error QuorumNotConfigured(uint256 proposalId);
     error VoteInProgress(uint256 proposalId);
     error TransactionExecuted(uint256 proposalId);
@@ -109,10 +109,11 @@ interface Governance is IERC165 {
     event ProposalChoice(uint256 proposalId, uint256 choiceId, bytes32 name, string description, uint256 transactionId);
     /// @notice The proposal description
     event ProposalDescription(uint256 proposalId, string description, string url);
-    /// @notice The proposal is now open for voting
-    event ProposalOpen(uint256 proposalId);
-    /// @notice Voting is now closed for voting
-    event ProposalClosed(uint256 proposalId);
+    /// @notice The proposal is final - vote is ready
+    event ProposalFinal(uint256 proposalId, uint256 quorum);
+    /// @notice Timing information
+    event ProposalDelay(uint256 voteDelay, uint256 voteDuration);
+
     /// @notice The attached transactions are executed
     event ProposalExecuted(uint256 proposalId, uint256 executedTransactionCount);
     /// @notice The proposal has been vetoed
