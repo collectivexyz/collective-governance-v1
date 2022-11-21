@@ -1,6 +1,6 @@
 {
   "name": "collective-governance-v1",
-  "version": "0.9.3",
+  "version": "0.9.4",
   "description": "Open Source Community Governance Smart Contract",
   "main": "index.js",
   "directories": {
