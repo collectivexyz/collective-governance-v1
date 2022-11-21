@@ -66,5 +66,7 @@ contract AlwaysFinal is Mutable {
     /// @notice set the control object to final.
     /// @dev always reverts
     // solhint-disable-next-line no-empty-blocks
-    function makeFinal() public virtual onlyMutable {}
+    function makeFinal() public virtual {
+        revert ContractFinal();
+    }
 }

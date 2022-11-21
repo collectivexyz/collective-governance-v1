@@ -33,9 +33,9 @@ _____________
 =====================  ==========================================  =========== ===========================
 Contract               Ethereum Address                            Version     Description
 =====================  ==========================================  =========== ===========================
-`Constant`             0x0dbb7551C86e9d49189dB263de033b9dE1C05933   0.9.2      Constant library
-`VoterClassFactory`    0x344136Fe6B4eFBC8fA4Df48200EF8F6DE8A7F20E   0.9.2      VoterClass Factory
-`GovernanceBuilder`    0x60B596CaD69652C35AaE2C3b2F6Ae86Aca560Dd9   0.9.2      Governance Contract Builder
+`Constant`             0x5dE2AD4822Bb16cBA6cd7dE571f271B4E12F2ebF   0.9.3      Constant library
+`VoterClassFactory`    0x37A04ef0C710C60E3BE6834919dFB4BC009A2799   0.9.3      VoterClass Factory
+`GovernanceBuilder`    0x0085aD6b8f16Fa9294D83c5CEb53F82C2e024010   0.9.3      Governance Contract Builder
 =====================  ==========================================  =========== ===========================
 
 Project Links
@@ -45,9 +45,9 @@ Project Links
   
 .. _GitHub: https://github.com/collectivexyz/collective-governance-v1
 .. _JavaScript Reference: https://github.com/collectivexyz/collective_governance_js
-.. _Constant: https://goerli.etherscan.io/address/0x0dbb7551C86e9d49189dB263de033b9dE1C05933 
-.. _VoterClassFactory: https://goerli.etherscan.io/address/0x344136Fe6B4eFBC8fA4Df48200EF8F6DE8A7F20E  
-.. _GovernanceBuilder: https://goerli.etherscan.io/address/0x60B596CaD69652C35AaE2C3b2F6Ae86Aca560Dd9   
+.. _Constant: https://goerli.etherscan.io/address/0x5dE2AD4822Bb16cBA6cd7dE571f271B4E12F2ebF 
+.. _VoterClassFactory: https://goerli.etherscan.io/address/0x37A04ef0C710C60E3BE6834919dFB4BC009A2799  
+.. _GovernanceBuilder: https://goerli.etherscan.io/address/0x0085aD6b8f16Fa9294D83c5CEb53F82C2e024010   
 
 Indices and tables
 ==================
