@@ -47,11 +47,12 @@ import "@openzeppelin/contracts/interfaces/IERC165.sol";
 
 import "../contracts/VoterClass.sol";
 import "../contracts/VoteStrategy.sol";
+import "../contracts/access/Upgradeable.sol";
 
 /// @title Storage interface
 /// @notice provides the requirements for Storage contract implementation
 /// @custom:type interface
-interface Storage is IERC165 {
+interface Storage is Upgradeable, IERC165 {
     error NotSupervisor(uint256 proposalId, address supervisor);
     error NotSender(uint256 proposalId, address sender);
     error SupervisorAlreadyRegistered(uint256 proposalId, address supervisor, address sender);
@@ -639,8 +640,4 @@ interface Storage is IERC165 {
     /// @notice return the name of this implementation
     /// @return string memory representation of name
     function name() external pure returns (string memory);
-
-    /// @notice return the version of this implementation
-    /// @return uint32 version number
-    function version() external pure returns (uint32);
 }

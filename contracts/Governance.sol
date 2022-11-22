@@ -46,10 +46,12 @@ pragma solidity ^0.8.15;
 
 import "@openzeppelin/contracts/interfaces/IERC165.sol";
 
+import "../contracts/access/Upgradeable.sol";
+
 /// @title Governance interface
 /// @notice Requirements for Governance implementation
 /// @custom:type interface
-interface Governance is IERC165 {
+interface Governance is Upgradeable, IERC165 {
     error NotEnoughChoices();
     error NotPermitted(address sender);
     error CancelNotPossible(uint256 proposalId, address sender);
@@ -217,10 +219,6 @@ interface Governance is IERC165 {
     /// @notice return the name of this implementation
     /// @return string memory representation of name
     function name() external pure returns (string memory);
-
-    /// @notice return the version of this implementation
-    /// @return uint32 version number
-    function version() external pure returns (uint32);
 
     /// @notice return the name of the community
     /// @return bytes32 the community name

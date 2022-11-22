@@ -47,9 +47,10 @@ import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
 import "@openzeppelin/contracts/interfaces/IERC165.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
-import "../contracts/Constant.sol";
 import "../contracts/Storage.sol";
 import "../contracts/VoterClass.sol";
+import "../contracts/access/Upgradeable.sol";
+import "../contracts/access/UpgradeableContract.sol";
 
 /// @title GovernanceStorage implementation
 /// @notice GovernanceStorage implements the necesscary infrastructure for
@@ -57,7 +58,7 @@ import "../contracts/VoterClass.sol";
 /// @dev The creator of the contract, typically the Governance contract itself,
 /// privledged with respect to write opperations in this contract.   The creator
 /// is required for nearly all change operations
-contract GovernanceStorage is Storage, ERC165, Ownable {
+contract GovernanceStorage is Storage, UpgradeableContract, ERC165, Ownable {
     /// @notice contract name
     string public constant NAME = "collective storage";
 
@@ -1055,6 +1056,7 @@ contract GovernanceStorage is Storage, ERC165, Ownable {
         return
             interfaceId == type(Storage).interfaceId ||
             interfaceId == type(Ownable).interfaceId ||
+            interfaceId == type(Upgradeable).interfaceId ||
             super.supportsInterface(interfaceId);
     }
 
@@ -1080,12 +1082,6 @@ contract GovernanceStorage is Storage, ERC165, Ownable {
     /// @return string memory representation of name
     function name() external pure virtual returns (string memory) {
         return NAME;
-    }
-
-    /// @notice return the version of this implementation
-    /// @return uint32 version number
-    function version() public pure virtual returns (uint32) {
-        return Constant.VERSION_1;
     }
 
     function getBlockTimestamp() internal view returns (uint256) {

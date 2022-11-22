@@ -46,11 +46,18 @@ pragma solidity ^0.8.15;
 import "@openzeppelin/contracts/interfaces/IERC165.sol";
 
 import "../contracts/VoterClass.sol";
+import "../contracts/access/Upgradeable.sol";
 
 /// @title Governance GovernanceCreator interface
 /// @notice Requirements for Governance GovernanceCreator implementation
 /// @custom:type interface
-interface GovernanceCreator is IERC165 {
+interface GovernanceCreator is Upgradeable, IERC165 {
+    error StorageFactoryRequired(address _storage);
+    error MetaStorageFactoryRequired(address _meta);
+    error GovernanceFactoryRequired(address _governance);
+    error StorageVersionMismatch(address _storage, uint32 expected, uint32 provided);
+    error MetaVersionMismatch(address meta, uint32 expected, uint32 provided);
+
     /// @notice new contract created
     event GovernanceContractCreated(
         address creator,
@@ -109,10 +116,6 @@ interface GovernanceCreator is IERC165 {
     /// @notice return the name of this implementation
     /// @return string memory representation of name
     function name() external pure returns (string memory);
-
-    /// @notice return the version of this implementation
-    /// @return uint32 version number
-    function version() external pure returns (uint32);
 
     /// @notice initialize and create a new builder context for this sender
     /// @return GovernanceCreator this contract
@@ -193,4 +196,12 @@ interface GovernanceCreator is IERC165 {
     /// @notice identify a contract that was created by this builder
     /// @return bool True if contract was created by this builder
     function contractRegistered(address _contract) external view returns (bool);
+
+    /// @notice upgrade factories
+    /// @dev owner required
+    function upgrade(
+        address _governance,
+        address _storage,
+        address _meta
+    ) external;
 }

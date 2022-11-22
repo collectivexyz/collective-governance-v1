@@ -43,15 +43,20 @@
  */
 pragma solidity ^0.8.15;
 
+import "@openzeppelin/contracts/interfaces/IERC165.sol";
+import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
+
 import "../contracts/VoterClass.sol";
 import "../contracts/VoterClassOpenVote.sol";
 import "../contracts/VoterClassVoterPool.sol";
 import "../contracts/VoterClassERC721.sol";
 import "../contracts/VoterClassCreator.sol";
+import "../contracts/access/Upgradeable.sol";
+import "../contracts/access/UpgradeableContract.sol";
 
 /// @title Creator for VoterClass implementations
 /// @notice A simple factory for VoterClass instances.
-contract VoterClassFactory is VoterClassCreator {
+contract VoterClassFactory is VoterClassCreator, UpgradeableContract, ERC165 {
     /// @notice create a VoterClass for open voting
     /// @param _weight The weight associated with each vote
     /// @return address The address of the resulting voter class
@@ -81,5 +86,13 @@ contract VoterClassFactory is VoterClassCreator {
         address _classAddr = address(_class);
         emit VoterClassCreated(_classAddr, _erc721);
         return _classAddr;
+    }
+
+    /// @notice see ERC-165
+    function supportsInterface(bytes4 interfaceId) public view virtual override(IERC165, ERC165) returns (bool) {
+        return
+            interfaceId == type(VoterClassCreator).interfaceId ||
+            interfaceId == type(Upgradeable).interfaceId ||
+            super.supportsInterface(interfaceId);
     }
 }

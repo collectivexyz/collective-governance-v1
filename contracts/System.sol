@@ -43,39 +43,6 @@
  */
 pragma solidity ^0.8.15;
 
-import "@openzeppelin/contracts/interfaces/IERC165.sol";
-import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
-
-import "../contracts/MetaStorage.sol";
-import "../contracts/MetaProxyCreator.sol";
-import "../contracts/CollectiveMetaStorage.sol";
-import "../contracts/access/Upgradeable.sol";
-import "../contracts/access/UpgradeableContract.sol";
-
-/**
- * @title CollectiveStorage creational contract
- */
-contract MetaStorageFactory is MetaProxyCreator, UpgradeableContract, ERC165 {
-    /// @notice create meta storage
-    /// @param _community The community name
-    /// @param _url The Url for this community
-    /// @param _description The community description
-    /// @return MetaStorage the storage
-    function createMeta(
-        bytes32 _community,
-        string memory _url,
-        string memory _description
-    ) external returns (MetaStorage) {
-        CollectiveMetaStorage _metaStore = new CollectiveMetaStorage(_community, _url, _description);
-        _metaStore.transferOwnership(msg.sender);
-        return _metaStore;
-    }
-
-    /// @notice see ERC-165
-    function supportsInterface(bytes4 interfaceId) public view virtual override(IERC165, ERC165) returns (bool) {
-        return
-            interfaceId == type(MetaProxyCreator).interfaceId ||
-            interfaceId == type(Upgradeable).interfaceId ||
-            super.supportsInterface(interfaceId);
-    }
+contract System {
+  
 }

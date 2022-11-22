@@ -14,6 +14,8 @@ import "../contracts/VoterClass.sol";
 import "../contracts/VoterClassVoterPool.sol";
 import "../contracts/VoterClassERC721.sol";
 import "../contracts/VoterClassOpenVote.sol";
+import "../contracts/access/Upgradeable.sol";
+
 import "./TestData.sol";
 
 import "./MockERC721.sol";
@@ -597,7 +599,7 @@ contract GovernanceStorageTest is Test {
     }
 
     function testVersion() public {
-        assertEq(_storage.version(), 1);
+        assertEq(_storage.version(), Constant.VERSION_2);
     }
 
     function testLatestProposalAfterEnd() public {
@@ -1152,5 +1154,20 @@ contract GovernanceStorageChoiceVoteTest is Test {
 
     function testIsChoiceVote() public {
         assertTrue(_storage.isChoiceVote(_proposalId));
+    }
+
+    function testSupportsInterfaceStorage() public {
+        bytes4 ifId = type(Storage).interfaceId;
+        assertTrue(_storage.supportsInterface(ifId));
+    }
+
+    function testSupportsInterfaceUpgradeable() public {
+        bytes4 ifId = type(Upgradeable).interfaceId;
+        assertTrue(_storage.supportsInterface(ifId));
+    }
+
+    function testSupportsInterfaceOwnable() public {
+        bytes4 ifId = type(Ownable).interfaceId;
+        assertTrue(_storage.supportsInterface(ifId));
     }
 }

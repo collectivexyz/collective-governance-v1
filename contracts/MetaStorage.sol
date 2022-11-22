@@ -45,10 +45,12 @@ pragma solidity ^0.8.15;
 
 import "@openzeppelin/contracts/interfaces/IERC165.sol";
 
+import "../contracts/access/Upgradeable.sol";
+
 /// @title Metadata storage interface
 /// @notice store community metadata
 /// @custom:type interface
-interface MetaStorage is IERC165 {
+interface MetaStorage is Upgradeable, IERC165 {
     error CommunityUrlExceedsDataLimit();
     error CommunityDescriptionExceedsDataLimit();
     error UrlExceedsDataLimit(uint256 metadataId);
@@ -144,8 +146,4 @@ interface MetaStorage is IERC165 {
     /// @notice return the name of this implementation
     /// @return string memory representation of name
     function name() external pure returns (string memory);
-
-    /// @notice return the version of this implementation
-    /// @return uint32 version number
-    function version() external pure returns (uint32);
 }

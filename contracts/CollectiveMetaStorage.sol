@@ -49,8 +49,10 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 
 import "../contracts/Constant.sol";
 import "../contracts/MetaStorage.sol";
+import "../contracts/access/Upgradeable.sol";
+import "../contracts/access/UpgradeableContract.sol";
 
-contract CollectiveMetaStorage is MetaStorage, ERC165, Ownable {
+contract CollectiveMetaStorage is MetaStorage, UpgradeableContract, ERC165, Ownable {
     string public constant NAME = "meta storage";
 
     bytes32 public immutable _communityName;
@@ -189,17 +191,12 @@ contract CollectiveMetaStorage is MetaStorage, ERC165, Ownable {
         return NAME;
     }
 
-    /// @notice return the version of this implementation
-    /// @return uint32 version number
-    function version() public pure virtual returns (uint32) {
-        return Constant.VERSION_1;
-    }
-
     /// @notice see ERC-165
     function supportsInterface(bytes4 interfaceId) public view virtual override(IERC165, ERC165) returns (bool) {
         return
             interfaceId == type(MetaStorage).interfaceId ||
             interfaceId == type(Ownable).interfaceId ||
+            interfaceId == type(Upgradeable).interfaceId ||
             super.supportsInterface(interfaceId);
     }
 }

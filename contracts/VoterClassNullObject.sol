@@ -47,10 +47,12 @@ import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
 
 import "../contracts/VoterClass.sol";
 import "../contracts/access/AlwaysFinal.sol";
+import "../contracts/access/Upgradeable.sol";
+import "../contracts/access/UpgradeableContract.sol";
 
 /// @notice Null Object Pattern for VoterClass
 /// @dev No voter is allowed.
-contract VoterClassNullObject is VoterClass, AlwaysFinal, ERC165 {
+contract VoterClassNullObject is VoterClass, AlwaysFinal, UpgradeableContract, ERC165 {
     string public constant NAME = "collective VoterClassNullObject";
 
     /// @notice no voter is allowed
@@ -81,6 +83,7 @@ contract VoterClassNullObject is VoterClass, AlwaysFinal, ERC165 {
         return
             interfaceId == type(VoterClass).interfaceId ||
             interfaceId == type(Mutable).interfaceId ||
+            interfaceId == type(Upgradeable).interfaceId ||
             super.supportsInterface(interfaceId);
     }
 
@@ -88,11 +91,5 @@ contract VoterClassNullObject is VoterClass, AlwaysFinal, ERC165 {
     /// @return string memory representation of name
     function name() external pure virtual returns (string memory) {
         return NAME;
-    }
-
-    /// @notice return the version of this implementation
-    /// @return uint32 version number
-    function version() external pure returns (uint32) {
-        return 1;
     }
 }

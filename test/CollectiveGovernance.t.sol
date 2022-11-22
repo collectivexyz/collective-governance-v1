@@ -22,6 +22,7 @@ import "../contracts/GovernanceBuilder.sol";
 import "./MockERC721.sol";
 import "./FlagSet.sol";
 import "./TestData.sol";
+import "../contracts/access/Upgradeable.sol";
 
 contract CollectiveGovernanceTest is Test {
     uint256 private constant UINT256MAX = Constant.UINT_MAX;
@@ -78,7 +79,7 @@ contract CollectiveGovernanceTest is Test {
     }
 
     function testVersion() public {
-        assertEq(governance.version(), 1);
+        assertEq(governance.version(), Constant.VERSION_2);
     }
 
     function testPropose() public {
@@ -1112,6 +1113,11 @@ contract CollectiveGovernanceTest is Test {
     function testSupportsInterfaceCollectiveGovernance() public {
         bytes4 govId = type(Governance).interfaceId;
         assertTrue(governance.supportsInterface(govId));
+    }
+
+    function testSupportsInterfaceUpgradeable() public {
+        bytes4 ifId = type(Upgradeable).interfaceId;
+        assertTrue(governance.supportsInterface(ifId));
     }
 
     function testSupportsInterfaceVoteStrategy() public {

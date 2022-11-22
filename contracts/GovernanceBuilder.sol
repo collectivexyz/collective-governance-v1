@@ -43,22 +43,26 @@
  */
 pragma solidity ^0.8.15;
 
-import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
 import "@openzeppelin/contracts/utils/math/Math.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/interfaces/IERC165.sol";
+import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
 
 import "../contracts/Constant.sol";
-import "../contracts/CollectiveGovernanceFactory.sol";
+import "../contracts/GovernanceProxyCreator.sol";
+import "../contracts/GovernanceFactory.sol";
 import "../contracts/VoterClass.sol";
 import "../contracts/GovernanceCreator.sol";
 import "../contracts/Storage.sol";
 import "../contracts/StorageFactory.sol";
 import "../contracts/MetaStorage.sol";
 import "../contracts/MetaStorageFactory.sol";
+import "../contracts/access/Upgradeable.sol";
+import "../contracts/access/UpgradeableContract.sol";
 
 /// @title Governance GovernanceCreator implementation
 /// @notice This builder supports creating new instances of the Collective Governance Contract
-contract GovernanceBuilder is GovernanceCreator, ERC165 {
+contract GovernanceBuilder is GovernanceCreator, UpgradeableContract, ERC165, Ownable {
     string public constant NAME = "collective governance builder";
 
     mapping(address => GovernanceProperties) private _buildMap;
@@ -66,11 +70,11 @@ contract GovernanceBuilder is GovernanceCreator, ERC165 {
     /// @dev implement the null object pattern requring voter class to be valid
     VoterClass private immutable _voterClassNull;
 
-    StorageFactory private immutable _storageFactory;
+    StorageProxyCreator private _storageFactory;
 
-    MetaStorageFactory private immutable _metaStorageFactory;
+    MetaProxyCreator private _metaStorageFactory;
 
-    CollectiveGovernanceFactory private immutable _governanceFactory;
+    GovernanceProxyCreator private _governanceFactory;
 
     mapping(address => bool) public _governanceContractRegistered;
 
@@ -78,7 +82,7 @@ contract GovernanceBuilder is GovernanceCreator, ERC165 {
         _voterClassNull = new VoterClassNullObject();
         _storageFactory = new StorageFactory();
         _metaStorageFactory = new MetaStorageFactory();
-        _governanceFactory = new CollectiveGovernanceFactory();
+        _governanceFactory = new GovernanceFactory();
     }
 
     /// @notice initialize and create a new builder context for this sender
@@ -252,21 +256,34 @@ contract GovernanceBuilder is GovernanceCreator, ERC165 {
         delete _buildMap[msg.sender];
     }
 
-    /// @notice see ERC-165
-    function supportsInterface(bytes4 interfaceId) public view virtual override(IERC165, ERC165) returns (bool) {
-        return interfaceId == type(GovernanceCreator).interfaceId || super.supportsInterface(interfaceId);
-    }
-
     /// @notice return the name of this implementation
     /// @return string memory representation of name
     function name() external pure virtual returns (string memory) {
         return NAME;
     }
 
-    /// @notice return the version of this implementation
-    /// @return uint32 version number
-    function version() external pure virtual returns (uint32) {
-        return Constant.VERSION_1;
+    /// @notice upgrade factories
+    /// @dev owner required
+    /// @param _governanceAddr The address of the governance factory
+    /// @param _storageAddr The address of the storage factory
+    function upgrade(
+        address _governanceAddr,
+        address _storageAddr,
+        address _metaAddr
+    ) external onlyOwner {
+        if (!supportsInterface(_governanceAddr, type(GovernanceProxyCreator).interfaceId))
+            revert GovernanceFactoryRequired(_governanceAddr);
+        if (!supportsInterface(_storageAddr, type(StorageProxyCreator).interfaceId)) revert StorageFactoryRequired(_storageAddr);
+        if (!supportsInterface(_metaAddr, type(MetaProxyCreator).interfaceId)) revert MetaStorageFactoryRequired(_metaAddr);
+        StorageProxyCreator _storage = StorageProxyCreator(_storageAddr);
+        MetaProxyCreator _meta = MetaProxyCreator(_metaAddr);
+        GovernanceProxyCreator _creator = GovernanceProxyCreator(_governanceAddr);
+        uint32 version = _creator.version();
+        if (version > _storage.version()) revert StorageVersionMismatch(_storageAddr, version, _storage.version());
+        if (version > _meta.version()) revert MetaVersionMismatch(_storageAddr, version, _meta.version());
+        _storageFactory = _storage;
+        _metaStorageFactory = _meta;
+        _governanceFactory = _creator;
     }
 
     function transferOwnership(address _ownedObject, address _targetOwner) private {
@@ -306,4 +323,19 @@ contract GovernanceBuilder is GovernanceCreator, ERC165 {
         _properties.url = "";
         _properties.description = "";
     }
+
+    /// @notice see ERC-165
+    function supportsInterface(bytes4 interfaceId) public view virtual override(IERC165, ERC165) returns (bool) {
+        return
+            interfaceId == type(GovernanceCreator).interfaceId ||
+            interfaceId == type(Ownable).interfaceId ||
+            interfaceId == type(Upgradeable).interfaceId ||
+            super.supportsInterface(interfaceId);
+    }
+
+    function supportsInterface(address _ct, bytes4 _interfaceId) private view returns (bool) {
+        IERC165 _erc165 = IERC165(_ct);
+        return _erc165.supportsInterface(_interfaceId);
+    }
 }
+ 

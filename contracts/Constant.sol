@@ -83,7 +83,7 @@ library Constant {
     /// @notice the maximum allowed gas fee for rebate
     uint256 public constant MAXIMUM_REBATE_BASE_FEE = 200 gwei;
 
-    uint32 public constant VERSION_1 = 1;
+    uint32 public constant VERSION_2 = 2;
 
     /// @notice Compute the length of any string in solidity
     /// @dev This method is expensive and is used only for validating

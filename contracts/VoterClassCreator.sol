@@ -43,11 +43,13 @@
  */
 pragma solidity ^0.8.15;
 
+import "@openzeppelin/contracts/interfaces/IERC165.sol";
 import "../contracts/VoterClass.sol";
+import "../contracts/access/Upgradeable.sol";
 
 /// @title Interface for VoterClass creation
 /// @custom:type interface
-interface VoterClassCreator {
+interface VoterClassCreator is Upgradeable, IERC165 {
     event VoterClassCreated(address voterClass);
     event VoterClassCreated(address voterClass, address project);
 

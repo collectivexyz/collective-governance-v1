@@ -8,6 +8,7 @@ import "forge-std/Test.sol";
 import "../contracts/Storage.sol";
 import "../contracts/StorageFactory.sol";
 import "../contracts/VoterClassFactory.sol";
+import "../contracts/access/Upgradeable.sol";
 
 import "./TestData.sol";
 
@@ -41,5 +42,20 @@ contract StorageFactoryTest is Test {
         );
         Ownable _ownable = Ownable(address(_storage));
         assertEq(_ownable.owner(), address(this));
+    }
+
+    function testSupportsIERC165() public {
+        bytes4 ifId = type(IERC165).interfaceId;
+        assertTrue(_storageFactory.supportsInterface(ifId));
+    }
+
+    function testSupportsGovernanceProxyCreator() public {
+        bytes4 ifId = type(StorageProxyCreator).interfaceId;
+        assertTrue(_storageFactory.supportsInterface(ifId));
+    }
+
+    function testSupportsInterfaceUpgradeable() public {
+        bytes4 ifId = type(Upgradeable).interfaceId;
+        assertTrue(_storageFactory.supportsInterface(ifId));
     }
 }

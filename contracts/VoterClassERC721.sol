@@ -47,9 +47,10 @@ import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
 import "@openzeppelin/contracts/interfaces/IERC721.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/IERC721Enumerable.sol";
 
-import "../contracts/Constant.sol";
 import "../contracts/VoterClass.sol";
 import "../contracts/access/AlwaysFinal.sol";
+import "../contracts/access/Upgradeable.sol";
+import "../contracts/access/UpgradeableContract.sol";
 
 /// @title ERC721 Implementation of VoterClass
 /// @notice This contract implements a voter pool based on ownership of an ERC-721 token.
@@ -57,7 +58,7 @@ import "../contracts/access/AlwaysFinal.sol";
 /// ownerOf a token of the specified address
 /// @dev ERC721Enumerable is supported for discovery, however if the token contract does not support enumeration
 /// then vote by specific tokenId is still supported
-contract VoterClassERC721 is VoterClass, AlwaysFinal, ERC165 {
+contract VoterClassERC721 is VoterClass, AlwaysFinal, UpgradeableContract, ERC165 {
     error ERC721EnumerableRequired(address contractAddress);
 
     string public constant NAME = "collective VoterClassERC721";
@@ -132,6 +133,7 @@ contract VoterClassERC721 is VoterClass, AlwaysFinal, ERC165 {
         return
             interfaceId == type(VoterClass).interfaceId ||
             interfaceId == type(Mutable).interfaceId ||
+            interfaceId == type(Upgradeable).interfaceId ||
             super.supportsInterface(interfaceId);
     }
 
@@ -139,11 +141,5 @@ contract VoterClassERC721 is VoterClass, AlwaysFinal, ERC165 {
     /// @return string memory representation of name
     function name() external pure virtual returns (string memory) {
         return NAME;
-    }
-
-    /// @notice return the version of this implementation
-    /// @return uint32 version number
-    function version() external pure returns (uint32) {
-        return Constant.VERSION_1;
     }
 }

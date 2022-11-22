@@ -2,7 +2,9 @@
 pragma solidity ^0.8.15;
 
 import "forge-std/Test.sol";
+
 import "../contracts/VoterClassOpenVote.sol";
+import "../contracts/access/Upgradeable.sol";
 
 contract VoterClassOpenVoteTest is Test {
     address private immutable _owner = address(0xffeeeeff);
@@ -62,5 +64,10 @@ contract VoterClassOpenVoteTest is Test {
         assertTrue(_erc165.supportsInterface(type(VoterClass).interfaceId));
         assertTrue(_erc165.supportsInterface(type(Mutable).interfaceId));
         assertTrue(_erc165.supportsInterface(type(IERC165).interfaceId));
+    }
+
+    function testSupportsInterfaceUpgradeable() public {
+        bytes4 ifId = type(Upgradeable).interfaceId;
+        assertTrue(_class.supportsInterface(ifId));
     }
 }

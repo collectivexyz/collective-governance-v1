@@ -44,38 +44,26 @@
 pragma solidity ^0.8.15;
 
 import "@openzeppelin/contracts/interfaces/IERC165.sol";
-import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
 
-import "../contracts/MetaStorage.sol";
-import "../contracts/MetaProxyCreator.sol";
-import "../contracts/CollectiveMetaStorage.sol";
+import "../contracts/VoterClass.sol";
+import "../contracts/Storage.sol";
 import "../contracts/access/Upgradeable.sol";
-import "../contracts/access/UpgradeableContract.sol";
 
 /**
- * @title CollectiveStorage creational contract
+ * @title proxy interface for Storage Contract creation
  */
-contract MetaStorageFactory is MetaProxyCreator, UpgradeableContract, ERC165 {
-    /// @notice create meta storage
-    /// @param _community The community name
-    /// @param _url The Url for this community
-    /// @param _description The community description
-    /// @return MetaStorage the storage
-    function createMeta(
-        bytes32 _community,
-        string memory _url,
-        string memory _description
-    ) external returns (MetaStorage) {
-        CollectiveMetaStorage _metaStore = new CollectiveMetaStorage(_community, _url, _description);
-        _metaStore.transferOwnership(msg.sender);
-        return _metaStore;
-    }
-
-    /// @notice see ERC-165
-    function supportsInterface(bytes4 interfaceId) public view virtual override(IERC165, ERC165) returns (bool) {
-        return
-            interfaceId == type(MetaProxyCreator).interfaceId ||
-            interfaceId == type(Upgradeable).interfaceId ||
-            super.supportsInterface(interfaceId);
-    }
+/// @custom:type interface
+interface StorageProxyCreator is Upgradeable, IERC165 {
+    /// @notice create a new storage object with VoterClass as the voting population
+    /// @param _class the contract that defines the popluation
+    /// @param _minimumQuorum the least possible quorum
+    /// @param _minimumDelay the minimum voting delay for the project
+    /// @param _minimumDuration the least possible voting duration
+    /// @return Storage the created instance
+    function create(
+        VoterClass _class,
+        uint256 _minimumQuorum,
+        uint256 _minimumDelay,
+        uint256 _minimumDuration
+    ) external returns (Storage);
 }

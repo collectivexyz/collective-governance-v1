@@ -5,7 +5,10 @@ import "@openzeppelin/contracts/interfaces/IERC165.sol";
 import "@openzeppelin/contracts/interfaces/IERC721.sol";
 
 import "forge-std/Test.sol";
+
 import "../contracts/VoterClassERC721.sol";
+
+import "../contracts/access/Upgradeable.sol";
 import "./MockERC721.sol";
 import "./MockERC721Enum.sol";
 
@@ -71,5 +74,10 @@ contract VoterClassERC721Test is Test {
         assertTrue(_erc165.supportsInterface(type(VoterClass).interfaceId));
         assertTrue(_erc165.supportsInterface(type(Mutable).interfaceId));
         assertTrue(_erc165.supportsInterface(type(IERC165).interfaceId));
+    }
+
+    function testSupportsInterfaceUpgradeable() public {
+        bytes4 ifId = type(Upgradeable).interfaceId;
+        assertTrue(_class.supportsInterface(ifId));
     }
 }

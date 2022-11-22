@@ -45,14 +45,14 @@ pragma solidity ^0.8.15;
 
 import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
 
-import "../contracts/Constant.sol";
 import "../contracts/VoterClass.sol";
 import "../contracts/access/AlwaysFinal.sol";
+import "../contracts/access/Upgradeable.sol";
+import "../contracts/access/UpgradeableContract.sol";
 
 /// @notice OpenVote VoterClass allows every wallet to participate in an open vote
-contract VoterClassOpenVote is VoterClass, AlwaysFinal, ERC165 {
+contract VoterClassOpenVote is VoterClass, AlwaysFinal, UpgradeableContract, ERC165 {
     string public constant NAME = "collective VoterClassOpenVote";
-    uint32 public constant VERSION_1 = 1;
 
     uint256 private immutable _weight;
 
@@ -104,6 +104,7 @@ contract VoterClassOpenVote is VoterClass, AlwaysFinal, ERC165 {
         return
             interfaceId == type(VoterClass).interfaceId ||
             interfaceId == type(Mutable).interfaceId ||
+            interfaceId == type(Upgradeable).interfaceId ||
             super.supportsInterface(interfaceId);
     }
 
@@ -111,11 +112,5 @@ contract VoterClassOpenVote is VoterClass, AlwaysFinal, ERC165 {
     /// @return string memory representation of name
     function name() external pure virtual returns (string memory) {
         return NAME;
-    }
-
-    /// @notice return the version of this implementation
-    /// @return uint32 version number
-    function version() external pure returns (uint32) {
-        return Constant.VERSION_1;
     }
 }

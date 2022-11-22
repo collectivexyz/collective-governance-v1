@@ -52,6 +52,8 @@ import "../contracts/Governance.sol";
 import "../contracts/VoteStrategy.sol";
 import "../contracts/VoterClass.sol";
 import "../contracts/TimeLock.sol";
+import "../contracts/access/Upgradeable.sol";
+import "../contracts/access/UpgradeableContract.sol";
 
 /// @title Collective Governance implementation
 /// @notice Governance contract implementation for Collective.   This contract implements voting by
@@ -65,10 +67,9 @@ import "../contracts/TimeLock.sol";
 ///
 /// @dev The VoterClass is common to all proposed votes as are the project supervisors.   Individual supervisors may
 /// be configured as part of the proposal creation workflow but project supervisors are always included.
-contract CollectiveGovernance is Governance, VoteStrategy, ERC165 {
+contract CollectiveGovernance is Governance, VoteStrategy, ERC165, UpgradeableContract {
     /// @notice contract name
     string public constant NAME = "collective governance";
-    uint32 public constant VERSION_1 = 1;
 
     VoterClass public immutable _voterClass;
 
@@ -576,6 +577,7 @@ contract CollectiveGovernance is Governance, VoteStrategy, ERC165 {
         return
             interfaceId == type(Governance).interfaceId ||
             interfaceId == type(VoteStrategy).interfaceId ||
+            interfaceId == type(Upgradeable).interfaceId ||
             super.supportsInterface(interfaceId);
     }
 
@@ -673,12 +675,6 @@ contract CollectiveGovernance is Governance, VoteStrategy, ERC165 {
     /// @return string memory representation of name
     function name() external pure virtual returns (string memory) {
         return NAME;
-    }
-
-    /// @notice return the version of this implementation
-    /// @return uint32 version number
-    function version() external pure virtual returns (uint32) {
-        return VERSION_1;
     }
 
     /// @notice return the name of the community

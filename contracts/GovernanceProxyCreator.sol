@@ -44,38 +44,35 @@
 pragma solidity ^0.8.15;
 
 import "@openzeppelin/contracts/interfaces/IERC165.sol";
-import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
 
+import "../contracts/VoterClass.sol";
+import "../contracts/Storage.sol";
 import "../contracts/MetaStorage.sol";
-import "../contracts/MetaProxyCreator.sol";
-import "../contracts/CollectiveMetaStorage.sol";
+import "../contracts/TimeLocker.sol";
+import "../contracts/Governance.sol";
 import "../contracts/access/Upgradeable.sol";
-import "../contracts/access/UpgradeableContract.sol";
 
 /**
- * @title CollectiveStorage creational contract
+ * @title proxy interface for Governance Contract creation
  */
-contract MetaStorageFactory is MetaProxyCreator, UpgradeableContract, ERC165 {
-    /// @notice create meta storage
-    /// @param _community The community name
-    /// @param _url The Url for this community
-    /// @param _description The community description
-    /// @return MetaStorage the storage
-    function createMeta(
-        bytes32 _community,
-        string memory _url,
-        string memory _description
-    ) external returns (MetaStorage) {
-        CollectiveMetaStorage _metaStore = new CollectiveMetaStorage(_community, _url, _description);
-        _metaStore.transferOwnership(msg.sender);
-        return _metaStore;
-    }
-
-    /// @notice see ERC-165
-    function supportsInterface(bytes4 interfaceId) public view virtual override(IERC165, ERC165) returns (bool) {
-        return
-            interfaceId == type(MetaProxyCreator).interfaceId ||
-            interfaceId == type(Upgradeable).interfaceId ||
-            super.supportsInterface(interfaceId);
-    }
+/// @custom:type interface
+interface GovernanceProxyCreator is Upgradeable, IERC165 {
+    /// @notice create a new collective governance contract
+    /// @dev this should be invoked through the GovernanceBuilder
+    /// @param _supervisorList the list of supervisors for this project
+    /// @param _class the VoterClass for this project
+    /// @param _storage The storage contract for this governance
+    /// @param _metaStore The metadata storage
+    /// @param _timeLock The timelock for the contract
+    /// @param _gasUsedRebate The maximum rebate for gas used
+    /// @param _baseFeeRebate The maximum base fee rebate
+    function create(
+        address[] memory _supervisorList,
+        VoterClass _class,
+        Storage _storage,
+        MetaStorage _metaStore,
+        TimeLocker _timeLock,
+        uint256 _gasUsedRebate,
+        uint256 _baseFeeRebate
+    ) external returns (Governance);
 }

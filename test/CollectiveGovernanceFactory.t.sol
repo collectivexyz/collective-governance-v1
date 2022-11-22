@@ -10,9 +10,11 @@ import "../contracts/StorageFactory.sol";
 import "../contracts/MetaStorage.sol";
 import "../contracts/CollectiveMetaStorage.sol";
 import "../contracts/VoterClassFactory.sol";
-import "../contracts/CollectiveGovernanceFactory.sol";
+import "../contracts/GovernanceProxyCreator.sol";
+import "../contracts/GovernanceFactory.sol";
+import "../contracts/access/Upgradeable.sol";
 
-contract CollectiveGovernanceFactoryTest is Test {
+contract GovernanceFactoryTest is Test {
     address public constant _OWNER = address(0x1001);
 
     VoterClass private _class;
@@ -20,7 +22,7 @@ contract CollectiveGovernanceFactoryTest is Test {
     MetaStorage private _metaStorage;
     TimeLocker private _timeLock;
     address[] private _supervisorList;
-    CollectiveGovernanceFactory private _governanceFactory;
+    GovernanceFactory private _governanceFactory;
 
     function setUp() public {
         VoterClassCreator _vcCreator = new VoterClassFactory();
@@ -40,7 +42,7 @@ contract CollectiveGovernanceFactoryTest is Test {
         _timeLock = new TimeLock(Constant.TIMELOCK_MINIMUM_DELAY);
         _supervisorList = new address[](1);
         _supervisorList[0] = _OWNER;
-        _governanceFactory = new CollectiveGovernanceFactory();
+        _governanceFactory = new GovernanceFactory();
     }
 
     function testFailSupervisorListIsEmpty() public {
@@ -105,5 +107,20 @@ contract CollectiveGovernanceFactoryTest is Test {
         CollectiveGovernance cGovernance = CollectiveGovernance(payable(address(governance)));
         assertEq(cGovernance._maximumGasUsedRebate(), Constant.MAXIMUM_REBATE_GAS_USED + 1);
         assertEq(cGovernance._maximumBaseFeeRebate(), Constant.MAXIMUM_REBATE_BASE_FEE + 7);
+    }
+
+    function testSupportsIERC165() public {
+        bytes4 ifId = type(IERC165).interfaceId;
+        assertTrue(_governanceFactory.supportsInterface(ifId));
+    }
+
+    function testSupportsGovernanceProxyCreator() public {
+        bytes4 ifId = type(GovernanceProxyCreator).interfaceId;
+        assertTrue(_governanceFactory.supportsInterface(ifId));
+    }
+
+    function testSupportsInterfaceUpgradeable() public {
+        bytes4 ifId = type(Upgradeable).interfaceId;
+        assertTrue(_governanceFactory.supportsInterface(ifId));
     }
 }

@@ -3,6 +3,17 @@ pragma solidity ^0.8.15;
 
 import "forge-std/Test.sol";
 
+import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/interfaces/IERC165.sol";
+import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
+
+import "../contracts/MetaProxyCreator.sol";
+import "../contracts/MetaStorageFactory.sol";
+import "../contracts/StorageProxyCreator.sol";
+import "../contracts/StorageFactory.sol";
+import "../contracts/GovernanceProxyCreator.sol";
+import "../contracts/GovernanceFactory.sol";
+
 import "../contracts/GovernanceBuilder.sol";
 import "../contracts/Governance.sol";
 import "../contracts/CollectiveGovernance.sol";
@@ -10,6 +21,7 @@ import "../contracts/VoterClass.sol";
 import "../contracts/VoterClassVoterPool.sol";
 import "../contracts/VoterClassERC721.sol";
 import "../contracts/VoterClassOpenVote.sol";
+import "../contracts/access/Upgradeable.sol";
 
 import "./MockERC721.sol";
 
@@ -22,6 +34,7 @@ contract GovernanceBuilderTest is Test {
 
     function setUp() public {
         vm.clearMockedCalls();
+        vm.prank(_OWNER, _OWNER);
         _builder = new GovernanceBuilder();
     }
 
@@ -229,4 +242,96 @@ contract GovernanceBuilderTest is Test {
             .withVoterClass(_class)
             .build();
     }
+
+    function testSupportsInterfaceGovernanceCreator() public {
+        bytes4 govId = type(GovernanceCreator).interfaceId;
+        assertTrue(_builder.supportsInterface(govId));
+    }
+
+    function testSupportsInterfaceOwnable() public {
+        bytes4 ifId = type(Ownable).interfaceId;
+        assertTrue(_builder.supportsInterface(ifId));
+    }
+
+    function testSupportsIERC165() public {
+        bytes4 ifId = type(IERC165).interfaceId;
+        assertTrue(_builder.supportsInterface(ifId));
+    }
+
+    function testSupportsInterfaceUpgradeable() public {
+        bytes4 ifId = type(Upgradeable).interfaceId;
+        assertTrue(_builder.supportsInterface(ifId));
+    }
+
+    function testUpgradeRequiresOwner() public {
+        MetaProxyCreator _meta = new MetaStorageFactory();
+        StorageProxyCreator _storage = new StorageFactory();
+        GovernanceProxyCreator _creator = new GovernanceFactory();
+        vm.expectRevert("Ownable: caller is not the owner");
+        _builder.upgrade(address(_creator), address(_storage), address(_meta));
+    }
+
+    function testUpgradeRequiresMeta() public {
+        IERC165 _meta = new Mock165();
+        StorageProxyCreator _storage = new StorageFactory();
+        GovernanceProxyCreator _creator = new GovernanceFactory();
+        vm.expectRevert(abi.encodeWithSelector(GovernanceCreator.MetaStorageFactoryRequired.selector, address(_meta)));
+        vm.prank(_OWNER, _OWNER);
+        _builder.upgrade(address(_creator), address(_storage), address(_meta));
+    }
+
+    function testUpgradeRequiresStorage() public {
+        MetaProxyCreator _meta = new MetaStorageFactory();
+        IERC165 _storage = new Mock165();
+        GovernanceProxyCreator _creator = new GovernanceFactory();
+        vm.expectRevert(abi.encodeWithSelector(GovernanceCreator.StorageFactoryRequired.selector, address(_storage)));
+        vm.prank(_OWNER, _OWNER);
+        _builder.upgrade(address(_creator), address(_storage), address(_meta));
+    }
+
+    function testUpgradeRequiresGovernance() public {
+        MetaProxyCreator _meta = new MetaStorageFactory();
+        StorageProxyCreator _storage = new StorageFactory();
+        IERC165 _mockGov = new Mock165();
+        vm.expectRevert(abi.encodeWithSelector(GovernanceCreator.GovernanceFactoryRequired.selector, address(_mockGov)));
+        vm.prank(_OWNER, _OWNER);
+        _builder.upgrade(address(_mockGov), address(_storage), address(_meta));
+    }
+
+    function testFailUpgradeStorageRequiresHigherVersion() public {
+        MetaProxyCreator _meta = new MetaStorageFactory();
+        StorageProxyCreator _storage = new StorageFactory();
+        GovernanceProxyCreator _creator = new GovernanceFactory();
+        address creatorMock = address(_creator);
+        bytes memory code = creatorMock.code;
+        vm.etch(creatorMock, code);
+        vm.mockCall(creatorMock, abi.encodeWithSelector(Upgradeable.version.selector), abi.encode(Constant.VERSION_2 + 1));
+        address metaMock = address(_meta);
+        bytes memory metacode = metaMock.code;
+        vm.etch(metaMock, metacode);
+        vm.mockCall(metaMock, abi.encodeWithSelector(Upgradeable.version.selector), abi.encode(Constant.VERSION_2 + 1));
+        vm.prank(_OWNER, _OWNER);
+        _builder.upgrade(creatorMock, address(_storage), metaMock);
+    }
+
+    function testFailUpgradeMetaRequiresHigherVersion() public {
+        MetaProxyCreator _meta = new MetaStorageFactory();
+        StorageProxyCreator _storage = new StorageFactory();
+        GovernanceProxyCreator _creator = new GovernanceFactory();
+        address creatorMock = address(_creator);
+        bytes memory code = creatorMock.code;
+        vm.etch(creatorMock, code);
+        vm.mockCall(creatorMock, abi.encodeWithSelector(Upgradeable.version.selector), abi.encode(Constant.VERSION_2 + 1));
+        address storageMock = address(_storage);
+        bytes memory storagecode = storageMock.code;
+        vm.etch(storageMock, storagecode);
+        vm.mockCall(storageMock, abi.encodeWithSelector(Upgradeable.version.selector), abi.encode(Constant.VERSION_2 + 1));
+        vm.prank(_OWNER, _OWNER);
+        _builder.upgrade(creatorMock, storageMock, address(_meta));
+    }
+}
+
+// solhint-disable-next-line no-empty-blocks
+contract Mock165 is ERC165 {
+
 }
