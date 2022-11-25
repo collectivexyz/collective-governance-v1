@@ -210,6 +210,21 @@ contract GovernanceBuilderTest is Test {
         assertEq(gov.description(), desc);
     }
 
+    function testWithCommmunityDescription() public {
+        string memory desc = "A unique project to build on chain governance for all web3 communities";
+        VoterClass _class = new VoterClassNullObject();
+        (address payable _governance, , ) = _builder
+            .aGovernance()
+            .withSupervisor(_SUPERVISOR)
+            .withVoterClass(_class)
+            .withDescription("acme inc", "https://collective.xyz", desc)
+            .build();
+        Governance gov = Governance(_governance);
+        assertEq(gov.community(), "acme inc");
+        assertEq(gov.url(), "https://collective.xyz");
+        assertEq(gov.description(), desc);
+    }
+
     function testWithGasRebate() public {
         VoterClass _class = new VoterClassNullObject();
         (address payable _governance, , ) = _builder

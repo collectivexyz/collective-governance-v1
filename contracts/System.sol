@@ -43,6 +43,24 @@
  */
 pragma solidity ^0.8.15;
 
-contract System {
-  
+import "@openzeppelin/contracts/access/Ownable.sol";
+
+import "../contracts/GovernanceCreator.sol";
+import "../contracts/Governance.sol";
+
+contract System is Ownable {
+    error NotGovernanceCreator(address creator);
+
+    GovernanceCreator private _creator;
+
+    constructor(address _creatorAddress) {
+        if (!_creator.supportsInterface(type(GovernanceCreator).interfaceId)) revert NotGovernanceCreator(_creatorAddress);
+        _creator = GovernanceCreator(_creatorAddress);
+    }
+
+    /// @notice one-shot factory creation method for Collective Governance System
+    /// @dev this is useful for front end code or minimizing transactions
+    function create() external pure returns (Governance) {
+        return Governance(address(0x0));
+    }
 }

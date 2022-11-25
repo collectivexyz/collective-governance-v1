@@ -155,6 +155,18 @@ interface GovernanceCreator is Upgradeable, IERC165 {
     /// @return GovernanceCreator this contract
     function withProjectQuorum(uint256 _minimumQuorum) external returns (GovernanceCreator);
 
+    /// @notice set the community information
+    /// @dev this helper calls withName, withUrl and WithDescription
+    /// @param _name the name
+    /// @param _url the url
+    /// @param _description the description
+    /// @return GovernanceCreator this contract
+    function withDescription(
+        bytes32 _name,
+        string memory _url,
+        string memory _description
+    ) external returns (GovernanceCreator);
+
     /// @notice set the community name
     /// @param _name the name
     /// @return GovernanceCreator this contract
@@ -167,8 +179,9 @@ interface GovernanceCreator is Upgradeable, IERC165 {
 
     /// @notice set the community description
     /// @dev limit 1k
+    /// @param _description the description
     /// @return GovernanceCreator this contract
-    function withDescription(string memory _descritpion) external returns (GovernanceCreator);
+    function withDescription(string memory _description) external returns (GovernanceCreator);
 
     /// @notice setup gas rebate parameters
     /// @param _gasUsed the maximum gas used for rebate

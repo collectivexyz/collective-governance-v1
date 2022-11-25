@@ -159,7 +159,7 @@ contract GovernanceBuilder is GovernanceCreator, UpgradeableContract, ERC165, Ow
     /// @notice set the community name
     /// @param _name the name
     /// @return GovernanceCreator this contract
-    function withName(bytes32 _name) external returns (GovernanceCreator) {
+    function withName(bytes32 _name) public returns (GovernanceCreator) {
         GovernanceProperties storage _properties = _buildMap[msg.sender];
         _properties.name = _name;
         emit GovernanceContractWithName(msg.sender, _name);
@@ -169,7 +169,7 @@ contract GovernanceBuilder is GovernanceCreator, UpgradeableContract, ERC165, Ow
     /// @notice set the community url
     /// @param _url the url
     /// @return GovernanceCreator this contract
-    function withUrl(string memory _url) external returns (GovernanceCreator) {
+    function withUrl(string memory _url) public returns (GovernanceCreator) {
         GovernanceProperties storage _properties = _buildMap[msg.sender];
         _properties.url = _url;
         emit GovernanceContractWithUrl(msg.sender, _url);
@@ -178,12 +178,29 @@ contract GovernanceBuilder is GovernanceCreator, UpgradeableContract, ERC165, Ow
 
     /// @notice set the community description
     /// @dev limit 1k
+    /// @param _description the description
     /// @return GovernanceCreator this contract
-    function withDescription(string memory _description) external returns (GovernanceCreator) {
+    function withDescription(string memory _description) public returns (GovernanceCreator) {
         GovernanceProperties storage _properties = _buildMap[msg.sender];
         _properties.description = _description;
         emit GovernanceContractWithDescription(msg.sender, _description);
         return this;
+    }
+
+    /// @notice set the community information
+    /// @dev this helper calls withName, withUrl and WithDescription
+    /// @param _name the name
+    /// @param _url the url
+    /// @param _description the description
+    /// @return GovernanceCreator this contract
+    function withDescription(
+        bytes32 _name,
+        string memory _url,
+        string memory _description
+    ) external returns (GovernanceCreator) {
+        withName(_name);
+        withUrl(_url);
+        return withDescription(_description);
     }
 
     /// @notice setup gas rebate parameters
@@ -338,4 +355,3 @@ contract GovernanceBuilder is GovernanceCreator, UpgradeableContract, ERC165, Ow
         return _erc165.supportsInterface(_interfaceId);
     }
 }
- 
