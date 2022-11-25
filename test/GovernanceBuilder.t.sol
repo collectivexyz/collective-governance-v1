@@ -287,30 +287,33 @@ contract GovernanceBuilderTest is Test {
     }
 
     function testUpgradeRequiresMeta() public {
-        IERC165 _meta = new Mock165();
+        address _metaAddress = address(0x1);
+        vm.mockCall(_metaAddress, abi.encodeWithSelector(IERC165.supportsInterface.selector), abi.encode(false));
         StorageProxyCreator _storage = new StorageFactory();
         GovernanceProxyCreator _creator = new GovernanceFactory();
-        vm.expectRevert(abi.encodeWithSelector(GovernanceCreator.MetaStorageFactoryRequired.selector, address(_meta)));
+        vm.expectRevert(abi.encodeWithSelector(GovernanceCreator.MetaStorageFactoryRequired.selector, _metaAddress));
         vm.prank(_OWNER, _OWNER);
-        _builder.upgrade(address(_creator), address(_storage), address(_meta));
+        _builder.upgrade(address(_creator), address(_storage), _metaAddress);
     }
 
     function testUpgradeRequiresStorage() public {
         MetaProxyCreator _meta = new MetaStorageFactory();
-        IERC165 _storage = new Mock165();
+        address _storageAddress = address(0x1);
+        vm.mockCall(_storageAddress, abi.encodeWithSelector(IERC165.supportsInterface.selector), abi.encode(false));
         GovernanceProxyCreator _creator = new GovernanceFactory();
-        vm.expectRevert(abi.encodeWithSelector(GovernanceCreator.StorageFactoryRequired.selector, address(_storage)));
+        vm.expectRevert(abi.encodeWithSelector(GovernanceCreator.StorageFactoryRequired.selector, _storageAddress));
         vm.prank(_OWNER, _OWNER);
-        _builder.upgrade(address(_creator), address(_storage), address(_meta));
+        _builder.upgrade(address(_creator), _storageAddress, address(_meta));
     }
 
     function testUpgradeRequiresGovernance() public {
         MetaProxyCreator _meta = new MetaStorageFactory();
         StorageProxyCreator _storage = new StorageFactory();
-        IERC165 _mockGov = new Mock165();
-        vm.expectRevert(abi.encodeWithSelector(GovernanceCreator.GovernanceFactoryRequired.selector, address(_mockGov)));
+        address _governanceAddress = address(0x1);
+        vm.mockCall(_governanceAddress, abi.encodeWithSelector(IERC165.supportsInterface.selector), abi.encode(false));
+        vm.expectRevert(abi.encodeWithSelector(GovernanceCreator.GovernanceFactoryRequired.selector, _governanceAddress));
         vm.prank(_OWNER, _OWNER);
-        _builder.upgrade(address(_mockGov), address(_storage), address(_meta));
+        _builder.upgrade(_governanceAddress, address(_storage), address(_meta));
     }
 
     function testFailUpgradeStorageRequiresHigherVersion() public {
@@ -344,9 +347,10 @@ contract GovernanceBuilderTest is Test {
         vm.prank(_OWNER, _OWNER);
         _builder.upgrade(creatorMock, storageMock, address(_meta));
     }
-}
 
-// solhint-disable-next-line no-empty-blocks
-contract Mock165 is ERC165 {
-
+    function testFailVoterClassAddressMustSupportVoterClassInterface() public {
+        address classMock = address(0x0);
+        vm.mockCall(classMock, abi.encodeWithSelector(IERC165.supportsInterface.selector), abi.encode(false));
+        _builder.withVoterClassAddress(classMock);
+    }
 }

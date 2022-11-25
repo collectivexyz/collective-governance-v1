@@ -9,7 +9,6 @@ import "../contracts/access/Upgradeable.sol";
 contract VoterClassOpenVoteTest is Test {
     address private immutable _owner = address(0xffeeeeff);
     address private immutable _notowner = address(0x55);
-    address private immutable _nobody = address(0x0);
 
     VoterClass private _class;
 
@@ -29,10 +28,6 @@ contract VoterClassOpenVoteTest is Test {
         assertEq(uint160(_notowner), shareList[0]);
     }
 
-    function testFailDiscoverVoteNobody() public view {
-        _class.discover(_nobody);
-    }
-
     function testConfirmOwner() public {
         uint256 shareCount = _class.confirm(_owner, uint160(_owner));
         assertEq(shareCount, 1);
@@ -45,10 +40,6 @@ contract VoterClassOpenVoteTest is Test {
     function testConfirmNotOwner() public {
         uint256 shareCount = _class.confirm(_notowner, uint160(_notowner));
         assertEq(shareCount, 1);
-    }
-
-    function testFailConfirmNobody() public {
-        _class.confirm(_nobody, 0x0);
     }
 
     function testWeight() public {

@@ -53,10 +53,11 @@ import "../contracts/access/Upgradeable.sol";
 /// @custom:type interface
 interface GovernanceCreator is Upgradeable, IERC165 {
     error StorageFactoryRequired(address _storage);
-    error MetaStorageFactoryRequired(address _meta);
-    error GovernanceFactoryRequired(address _governance);
+    error MetaStorageFactoryRequired(address meta);
+    error GovernanceFactoryRequired(address governance);
     error StorageVersionMismatch(address _storage, uint32 expected, uint32 provided);
     error MetaVersionMismatch(address meta, uint32 expected, uint32 provided);
+    error VoterClassRequired(address voterClass);
 
     /// @notice new contract created
     event GovernanceContractCreated(

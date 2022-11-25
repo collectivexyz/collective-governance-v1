@@ -16,7 +16,6 @@ contract VoterClassERC721Test is Test {
     uint256 private constant _TOKENID = 0xf733b17d;
     address private constant _OWNER = address(0xffeeeeff);
     address private constant _NOTOWNER = address(0x55);
-    address private constant _NOBODY = address(0x0);
 
     IERC721 private _tokenContract;
     VoterClass private _class;
@@ -50,10 +49,6 @@ contract VoterClassERC721Test is Test {
     function testConfirmOwner() public {
         uint256 shareCount = _class.confirm(_OWNER, _TOKENID);
         assertEq(shareCount, 1);
-    }
-
-    function testFailConfirmNobody() public {
-        _class.confirm(_NOBODY, _TOKENID);
     }
 
     function testFailConfirmNotOwner() public {

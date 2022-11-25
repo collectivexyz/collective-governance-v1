@@ -109,7 +109,7 @@ contract GovernanceBuilder is GovernanceCreator, UpgradeableContract, ERC165, Ow
     /// @return GovernanceCreator this contract
     function withVoterClassAddress(address _classAddress) external returns (GovernanceCreator) {
         IERC165 erc165 = IERC165(_classAddress);
-        require(erc165.supportsInterface(type(VoterClass).interfaceId), "VoterClass required");
+        if (!erc165.supportsInterface(type(VoterClass).interfaceId)) revert VoterClassRequired(_classAddress);
         return withVoterClass(VoterClass(_classAddress));
     }
 
@@ -316,8 +316,7 @@ contract GovernanceBuilder is GovernanceCreator, UpgradeableContract, ERC165, Ow
     }
 
     function createStorage(GovernanceProperties storage _properties) private returns (Storage) {
-        require(address(_properties.class) != address(_voterClassNull), "Voter class required");
-        require(_properties.minimumVoteDuration >= Constant.MINIMUM_VOTE_DURATION, "Longer minimum duration required");
+        if (address(_properties.class) == address(_voterClassNull)) revert VoterClassRequired(address(_properties.class));
         Storage _storage = _storageFactory.create(
             _properties.class,
             _properties.minimumProjectQuorum,

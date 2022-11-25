@@ -47,20 +47,67 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 
 import "../contracts/GovernanceCreator.sol";
 import "../contracts/Governance.sol";
+import "../contracts/VoterClassCreator.sol";
 
 contract System is Ownable {
     error NotGovernanceCreator(address creator);
+    error NotVoterClassCreator(address creator);
+
+    uint256 public constant MINIMUM_DELAY = 1 hours;
+    uint256 public constant MINIMUM_DURATION = 1 days;
 
     GovernanceCreator private _creator;
 
-    constructor(address _creatorAddress) {
-        if (!_creator.supportsInterface(type(GovernanceCreator).interfaceId)) revert NotGovernanceCreator(_creatorAddress);
-        _creator = GovernanceCreator(_creatorAddress);
+    VoterClassCreator private _classCreator;
+
+    /// @notice ctor for System factory
+    /// @param _creatorAddress address of GovernanceCreator
+    /// @param _voterCreator address of VoterClassCreator
+    constructor(address _creatorAddress, address _voterCreator) {
+        GovernanceCreator _govCreator = GovernanceCreator(_creatorAddress);
+        VoterClassCreator _voterFactory = VoterClassCreator(_voterCreator);
+        if (!_govCreator.supportsInterface(type(GovernanceCreator).interfaceId)) revert NotGovernanceCreator(_creatorAddress);
+        if (!_voterFactory.supportsInterface(type(VoterClassCreator).interfaceId)) revert NotVoterClassCreator(_voterCreator);
+        _creator = _govCreator;
+        _classCreator = _voterFactory;
     }
 
     /// @notice one-shot factory creation method for Collective Governance System
     /// @dev this is useful for front end code or minimizing transactions
-    function create() external pure returns (Governance) {
-        return Governance(address(0x0));
+    /// @param _name the project name
+    /// @param _url the project url
+    /// @param _description the project description
+    /// @param _erc721 address of ERC-721 contract
+    /// @param _quorum the project quorum requirement
+    /// @return governanceAddress address of the new Governance contract
+    /// @return storageAddress address of the storage contract
+    /// @return metaAddress address of the meta contract
+
+    function create(
+        bytes32 _name,
+        string memory _url,
+        string memory _description,
+        address _erc721,
+        uint256 _quorum
+    )
+        external
+        returns (
+            address payable governanceAddress,
+            address storageAddress,
+            address metaAddress
+        )
+    {
+        address erc721Class = _classCreator.createERC721(_erc721, 1);
+        address supervisor = msg.sender;
+        return
+            _creator
+                .aGovernance()
+                .withSupervisor(supervisor)
+                .withVoterClassAddress(erc721Class)
+                .withDescription(_name, _url, _description)
+                .withMinimumDelay(MINIMUM_DELAY)
+                .withMinimumDuration(MINIMUM_DURATION)
+                .withProjectQuorum(_quorum)
+                .build();
     }
 }

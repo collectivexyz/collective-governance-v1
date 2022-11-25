@@ -61,27 +61,22 @@ contract VoterClassOpenVote is VoterClass, AlwaysFinal, UpgradeableContract, ERC
         _weight = _voteWeight;
     }
 
-    modifier requireValidAddress(address _wallet) {
-        require(_wallet != address(0), "Not a valid wallet");
-        _;
-    }
-
     modifier requireValidShare(address _wallet, uint256 _shareId) {
-        require(_shareId > 0 && _shareId == uint160(_wallet), "Not a valid share");
+        if (_shareId != uint160(_wallet)) revert UnknownToken(_shareId);
         _;
     }
 
     /// @notice return true for all wallets
     /// @dev always returns true
     /// @return bool true if voter
-    function isVoter(address _wallet) external pure requireValidAddress(_wallet) returns (bool) {
+    function isVoter(address) external pure returns (bool) {
         return true;
     }
 
     /// @notice discover an array of shareIds associated with the specified wallet
     /// @dev the shareId of the open vote is the numeric value of the wallet address itself
     /// @return uint256[] array in memory of share ids
-    function discover(address _wallet) external pure requireValidAddress(_wallet) returns (uint256[] memory) {
+    function discover(address _wallet) external pure returns (uint256[] memory) {
         uint256[] memory shareList = new uint256[](1);
         shareList[0] = uint160(_wallet);
         return shareList;
