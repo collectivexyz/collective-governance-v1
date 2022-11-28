@@ -510,22 +510,6 @@ contract CollectiveGovernance is Governance, VoteStrategy, ERC165, UpgradeableCo
     }
 
     /// @notice undo any previous vote if any
-    /// @param _proposalId The numeric id of the proposed vote
-    /// @param _shareList A array of tokens or shares that confer the right to vote
-    function undoVote(uint256 _proposalId, uint256[] memory _shareList)
-        external
-        requireVoteFinal(_proposalId)
-        requireVoteOpen(_proposalId)
-        requireVoteAccepted(_proposalId)
-    {
-        uint256 startGas = gasleft();
-        for (uint256 i = 0; i < _shareList.length; i++) {
-            _undoVote(_proposalId, _shareList[i]);
-        }
-        sendGasRebate(msg.sender, startGas);
-    }
-
-    /// @notice undo any previous vote if any
     /// @dev only applies to affirmative vote
     /// @param _proposalId The numeric id of the proposed vote
     /// @param _tokenId The id of a token or share representing the right to vote
