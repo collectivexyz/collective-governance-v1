@@ -175,6 +175,23 @@
         "kind": "test",
         "isDefault": false
       }
+    },
+    {
+      "label": "deploysystem",
+      "type": "shell",
+      "command": "forge create --contracts contracts/System.sol --rpc-url ${DEVNET_RPC_URL} --private-key ${ETH_DEV_PRIVATE} --etherscan-api-key ${ETHERSCAN_API_KEY} --verify System --constructor-args ${BUILDER_ADDRESS} ${CLASS_CREATOR_ADDRESS}",
+      "options": {
+        "cwd": "${workspaceFolder}",
+        "env": {
+          "CLASS_CREATOR_ADDRESS": "0x8e7e39f6E46a27106F6C18933F4Cb296e320B40f",
+          "BUILDER_ADDRESS": "0xd64f3Db037B263D54561a2cc9885Db370B51E354"
+        }
+      },
+      "dependsOn": "production",
+      "group": {
+        "kind": "test",
+        "isDefault": false
+      }
     }
   ]
 }
