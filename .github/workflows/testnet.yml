@@ -48,7 +48,7 @@ jobs:
       - name: Deploy Constant Library
         run: |
           forge create --json --contracts contracts/Constant.sol --rpc-url ${DEVNET_RPC_URL} --private-key ${ETH_DEV_PRIVATE} Constant | tee Constant.sol.json
-        if: ${{ github.event_name == 'release' && github.event.action == 'created' }}          
+        if: ${{ github.event_name == 'release' && github.event.action == 'created' }}
 
       - name: Deploy to Görli Testnet
         run: |

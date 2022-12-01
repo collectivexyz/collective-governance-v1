@@ -68,7 +68,6 @@ import "../contracts/access/UpgradeableContract.sol";
 /// @dev The VoterClass is common to all proposed votes as are the project supervisors.   Individual supervisors may
 /// be configured as part of the proposal creation workflow but project supervisors are always included.
 contract CollectiveGovernance is Governance, VoteStrategy, ERC165, UpgradeableContract {
-    /// @notice contract name
     string public constant NAME = "collective governance";
 
     VoterClass public immutable _voterClass;
