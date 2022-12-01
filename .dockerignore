@@ -1,2 +1,8 @@
 cache/
 out/
+node_modules
+README.md
+RELEASE.txt
+SECURITY.md
+SECURITY.md.asc
+public_key.asc
