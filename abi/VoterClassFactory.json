@@ -7,19 +7,6 @@
         "internalType": "address",
         "name": "voterClass",
         "type": "address"
-      }
-    ],
-    "name": "VoterClassCreated",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "address",
-        "name": "voterClass",
-        "type": "address"
       },
       {
         "indexed": false,
