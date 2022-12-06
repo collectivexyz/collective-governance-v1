@@ -697,7 +697,7 @@ contract GovernanceStorage is Storage, UpgradeableContract, ERC165, Ownable {
         if (isChoiceVote(_proposalId)) {
             Choice storage choice = proposal.choice[_choiceId];
             choice.voteCount += _shareCount;
-            emit VoteCast(_proposalId, _wallet, _shareId, _choiceId, _shareCount);
+            emit ChoiceVoteCast(_proposalId, _wallet, _shareId, _choiceId, _shareCount);
         } else {
             emit VoteCast(_proposalId, _wallet, _shareId, _shareCount);
         }

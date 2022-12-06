@@ -63,7 +63,7 @@ contract VoterClassFactory is VoterClassCreator, UpgradeableContract, ERC165 {
     function createOpenVote(uint256 _weight) external returns (address) {
         VoterClass _class = new VoterClassOpenVote(_weight);
         address _classAddr = address(_class);
-        emit VoterClassCreated(_classAddr);
+        emit VoterClassCreated(_classAddr, msg.sender);
         return _classAddr;
     }
 
@@ -73,7 +73,7 @@ contract VoterClassFactory is VoterClassCreator, UpgradeableContract, ERC165 {
     function createVoterPool(uint256 _weight) external returns (address) {
         VoterClass _class = new VoterClassVoterPool(_weight);
         address _classAddr = address(_class);
-        emit VoterClassCreated(_classAddr);
+        emit VoterClassCreated(_classAddr, msg.sender);
         return _classAddr;
     }
 

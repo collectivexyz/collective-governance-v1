@@ -120,7 +120,7 @@ interface Storage is Upgradeable, IERC165 {
     event Executed(uint256 proposalId);
 
     event VoteCast(uint256 proposalId, address voter, uint256 shareId, uint256 totalVotesCast);
-    event VoteCast(uint256 proposalId, address voter, uint256 shareId, uint256 choiceId, uint256 totalVotesCast);
+    event ChoiceVoteCast(uint256 proposalId, address voter, uint256 shareId, uint256 choiceId, uint256 totalVotesCast);
     event UndoVote(uint256 proposalId, address voter, uint256 shareId, uint256 votesUndone);
     event VoteVeto(uint256 proposalId, address supervisor);
     event VoteFinal(uint256 proposalId, uint256 startTime, uint256 endTime);

@@ -50,7 +50,6 @@ import "../contracts/access/Upgradeable.sol";
 /// @title Interface for VoterClass creation
 /// @custom:type interface
 interface VoterClassCreator is Upgradeable, IERC165 {
-    event VoterClassCreated(address voterClass);
     event VoterClassCreated(address voterClass, address project);
 
     /// @notice create a VoterClass for open voting
