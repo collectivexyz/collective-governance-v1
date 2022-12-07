@@ -33,9 +33,10 @@ _____________
 =====================  ==========================================  =========== ===========================
 Contract               Ethereum Address                            Version     Description
 =====================  ==========================================  =========== ===========================
-`Constant`_             0x7291f9fc02a3B4AfD13d7BCAcc5833653DCf37DD   0.9.4      Constant library
-`VoterClassFactory`_    0x836CcF6E97A66AE92AA605DFe6869DDE64b2cC3D   0.9.4      VoterClass Factory
-`GovernanceBuilder`_    0x8eFCF74380F242c8f220808AA1763539D2DA6F21   0.9.4      Governance Contract Builder
+`Constant`_            0x7291f9fc02a3B4AfD13d7BCAcc5833653DCf37DD  0.9.4       Constant library
+`VoterClassFactory`_   0x836CcF6E97A66AE92AA605DFe6869DDE64b2cC3D  0.9.4       VoterClass Factory
+`GovernanceBuilder`_   0x8eFCF74380F242c8f220808AA1763539D2DA6F21  0.9.4       Governance Contract Builder
+System                 0xDb6f31A20996e265FB59406675261F3fcC0bDe6f  0.9.4       System creation contract 
 =====================  ==========================================  =========== ===========================
 
 Project Links

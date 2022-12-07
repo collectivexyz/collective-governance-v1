@@ -183,8 +183,8 @@
       "options": {
         "cwd": "${workspaceFolder}",
         "env": {
-          "CLASS_CREATOR_ADDRESS": "0x8e7e39f6E46a27106F6C18933F4Cb296e320B40f",
-          "BUILDER_ADDRESS": "0xd64f3Db037B263D54561a2cc9885Db370B51E354"
+          "CLASS_CREATOR_ADDRESS": "0x836CcF6E97A66AE92AA605DFe6869DDE64b2cC3D",
+          "BUILDER_ADDRESS": "0x8eFCF74380F242c8f220808AA1763539D2DA6F21"
         }
       },
       "dependsOn": "production",

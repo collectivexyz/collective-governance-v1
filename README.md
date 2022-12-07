@@ -22,6 +22,7 @@ Read the [Docs](https://collectivexyz.github.io/collective-governance-v1/)
 | Constant          | 0x7291f9fc02a3B4AfD13d7BCAcc5833653DCf37DD | 0.9.4   |
 | VoterClassFactory | 0x836CcF6E97A66AE92AA605DFe6869DDE64b2cC3D | 0.9.4   |
 | GovernanceBuilder | 0x8eFCF74380F242c8f220808AA1763539D2DA6F21 | 0.9.4   |
+| System            | 0xDb6f31A20996e265FB59406675261F3fcC0bDe6f | 0.9.4   |
 
 ### Command line build using docker
 
