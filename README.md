@@ -19,9 +19,9 @@ Read the [Docs](https://collectivexyz.github.io/collective-governance-v1/)
 
 | Contract          | Ethereum Address                           | Version |
 | ----------------- | ------------------------------------------ | ------- |
-| Constant          | 0x5dE2AD4822Bb16cBA6cd7dE571f271B4E12F2ebF | 0.9.3   |
-| VoterClassFactory | 0x37A04ef0C710C60E3BE6834919dFB4BC009A2799 | 0.9.3   |
-| GovernanceBuilder | 0x0085aD6b8f16Fa9294D83c5CEb53F82C2e024010 | 0.9.3   |
+| Constant          | 0x7291f9fc02a3B4AfD13d7BCAcc5833653DCf37DD | 0.9.4   |
+| VoterClassFactory | 0x836CcF6E97A66AE92AA605DFe6869DDE64b2cC3D | 0.9.4   |
+| GovernanceBuilder | 0x8eFCF74380F242c8f220808AA1763539D2DA6F21 | 0.9.4   |
 
 ### Command line build using docker
 
