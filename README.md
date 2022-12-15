@@ -34,6 +34,15 @@ a8"     ""  a8"     "8a  88  88  a8P_____88  a8"     ""    88     88  `8b     d8
 
     `Reopen in Container`
 
+### Foundry
+
+    This project is using [Foundry](https://github.com/foundry-rs/foundry).   Development is enabled with the [Foundry Development](https://github.com/collectivexyz/foundry/pkgs/container/foundry) container
+
+### JavaScript API
+
+- [TypeScript API](https://github.com/collectivexyz/governance/pkgs/npm/governance)
+- [TypeScript Reference](https://github.com/collectivexyz/collective_governance_js) implementation
+
 ## SECURITY
 
 see [SECURITY.md](SECURITY.md)

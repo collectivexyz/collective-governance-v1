@@ -79,7 +79,7 @@ Make a note of the address of the created contract as this will be used for all 
 Voting
 ______
 
-Now you can create introduce a vote using the governance contract.
+Now you can introduce a vote using the governance contract.
 
 .. code-block:: javascript
 
