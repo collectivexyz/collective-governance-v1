@@ -344,7 +344,7 @@ contract GovernanceStorage is Storage, UpgradeableContract, ERC165, Ownable {
     /// @notice set the delay period required to preceed the vote
     /// @dev requires supervisor
     /// @param _proposalId the id of the proposal
-    /// @param _voteDelay the quorum number
+    /// @param _voteDelay the vote delay in seconds
     /// @param _sender original wallet for this request
     function setVoteDelay(
         uint256 _proposalId,
@@ -360,7 +360,7 @@ contract GovernanceStorage is Storage, UpgradeableContract, ERC165, Ownable {
     /// @notice set the required duration for the vote
     /// @dev requires supervisor
     /// @param _proposalId the id of the proposal
-    /// @param _voteDuration the quorum number
+    /// @param _voteDuration the vote duration in seconds
     /// @param _sender original wallet for this request
     function setVoteDuration(
         uint256 _proposalId,
@@ -390,6 +390,7 @@ contract GovernanceStorage is Storage, UpgradeableContract, ERC165, Ownable {
     }
 
     /// @notice get the vote delay
+    /// @dev return value is seconds
     /// @param _proposalId the id of the proposal
     /// @return uint256 the delay
     function voteDelay(uint256 _proposalId) external view requireValid(_proposalId) returns (uint256) {
@@ -398,6 +399,7 @@ contract GovernanceStorage is Storage, UpgradeableContract, ERC165, Ownable {
     }
 
     /// @notice get the vote duration
+    /// @dev return value is seconds    
     /// @param _proposalId the id of the proposal
     /// @return uint256 the duration
     function voteDuration(uint256 _proposalId) external view requireValid(_proposalId) returns (uint256) {
