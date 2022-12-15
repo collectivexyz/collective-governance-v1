@@ -11,7 +11,7 @@ a8"     ""  a8"     "8a  88  88  a8P_____88  a8"     ""    88     88  `8b     d8
 
 # collective-governance-v1
 
-Read the [Docs](https://collectivexyz.github.io/collective-governance-v1/)
+- [Read the Docs](https://collectivexyz.github.io/collective-governance-v1/)
 
 ## Quick Start
 

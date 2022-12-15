@@ -3,9 +3,7 @@
 Elector Supervisor
 ==================
 
-
 The elector supervisor controls the voting process and configuration settings for specific contests.
-
 
 Supervisor Responsibilities:
 ___________________________________

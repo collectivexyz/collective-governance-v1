@@ -20,9 +20,14 @@ VoterClass Implementations:
 Create the Governance contract
 _______________________________
 
-Once the :ref:`VoterClass <voterclass>` has been created for your community, proceed with building a governance contract.
+Once the :ref:`VoterClass <voterclass>` has been created for your community, proceed with building a :ref:`Governance <Governance` contract.   There are two ways to build a contract.
 
-The :ref:`GovernanceBuilder <GovernanceBuilder>` provides a convienient method to create a new Governance Contract.
-To build a :ref:`Governance <Governance>` contract one must configure establish several preconditions for the community.  
-At the very least a VoterClass must be provided.  In addition, one or more :ref:`Supervisor <supervisor>` members must be specified who may configure voting parameters 
-as well as veto vote outcomes which are not in the best interest of the community.
+Builders
+========
+* :ref:`System <System>` to build a contract with the fewest number of transactions
+* :ref:`GovernanceBuilder <GovernanceBuilder>` to build a contract with the fewest number of parameters
+
+Contract Requirements
+======================
+* :ref:`VoterClass <VoterClass>` The project voter class.  Possibly based on an `ERC-721 <https://erc721.org>` token.
+* :ref:`Supervisor <supervisor>` One or more project supervisors to act as a community steward
