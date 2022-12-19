@@ -39,19 +39,25 @@ contract GovernanceBuilderTest is Test {
     }
 
     function testWithSupervisor() public {
-        VoterClass _class = new VoterClassNullObject();
+        VoterClassVoterPool _class = new VoterClassVoterPool(1);
+        _class.addVoter(_VOTER1);
+        _class.makeFinal();
+
         (address payable _governance, address _storage, ) = _builder
             .aGovernance()
             .withSupervisor(_SUPERVISOR)
             .withVoterClass(_class)
             .build();
         Governance _gov = Governance(_governance);
+        vm.prank(_VOTER1, _VOTER1);
         _gov.propose();
         assertTrue(Storage(_storage).isSupervisor(1, _SUPERVISOR));
     }
 
     function testWithVoteDuration() public {
-        VoterClass _class = new VoterClassNullObject();
+        VoterClassVoterPool _class = new VoterClassVoterPool(1);
+        _class.addVoter(_VOTER1);
+        _class.makeFinal();
         (address payable _governance, address _storage, ) = _builder
             .aGovernance()
             .withMinimumDuration(2 * Constant.MINIMUM_VOTE_DURATION)
@@ -59,18 +65,22 @@ contract GovernanceBuilderTest is Test {
             .withVoterClass(_class)
             .build();
         Governance _gov = Governance(_governance);
+        vm.prank(_VOTER1, _VOTER1);
         _gov.propose();
         assertEq(Storage(_storage).minimumVoteDuration(), 2 * Constant.MINIMUM_VOTE_DURATION);
     }
 
     function testWithoutVoteDurationOrQuorum() public {
-        VoterClass _class = new VoterClassNullObject();
+        VoterClassVoterPool _class = new VoterClassVoterPool(1);
+        _class.addVoter(_VOTER1);
+        _class.makeFinal();
         (address payable _governance, address _storage, ) = _builder
             .aGovernance()
             .withSupervisor(_SUPERVISOR)
             .withVoterClass(_class)
             .build();
         Governance _gov = Governance(_governance);
+        vm.prank(_VOTER1, _VOTER1);
         _gov.propose();
         assertEq(Storage(_storage).minimumVoteDuration(), Constant.MINIMUM_VOTE_DURATION);
         assertEq(Storage(_storage).minimumProjectQuorum(), Constant.MINIMUM_PROJECT_QUORUM);
@@ -97,7 +107,9 @@ contract GovernanceBuilderTest is Test {
     }
 
     function testWithProjectQuorum() public {
-        VoterClass _class = new VoterClassNullObject();
+        VoterClassVoterPool _class = new VoterClassVoterPool(1);
+        _class.addVoter(_VOTER1);
+        _class.makeFinal();
         (address payable _governance, address _storage, ) = _builder
             .aGovernance()
             .withProjectQuorum(10000)
@@ -105,6 +117,7 @@ contract GovernanceBuilderTest is Test {
             .withVoterClass(_class)
             .build();
         Governance _gov = Governance(_governance);
+        vm.prank(_VOTER1, _VOTER1);
         _gov.propose();
         assertEq(Storage(_storage).minimumProjectQuorum(), 10000);
     }
@@ -131,6 +144,7 @@ contract GovernanceBuilderTest is Test {
             .withVoterClass(_class)
             .build();
         Governance _gov = Governance(_governance);
+        vm.prank(_VOTER1, _VOTER1);
         _gov.propose();
         assertTrue(Storage(_storage).isVoter(1, _VOTER1));
     }
@@ -145,6 +159,7 @@ contract GovernanceBuilderTest is Test {
             .withVoterClass(_class)
             .build();
         Governance _gov = Governance(_governance);
+        vm.prank(_VOTER1, _VOTER1);
         uint256 pid = _gov.propose();
         assertTrue(Storage(_storage).isVoter(pid, _VOTER1));
     }

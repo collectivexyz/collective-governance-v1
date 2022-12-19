@@ -51,6 +51,7 @@ contract SystemTest is Test {
 
         MockERC721 merc721 = new MockERC721();
         merc721.mintTo(_VOTER1, 0x10);
+        merc721.mintTo(_CREATOR, 0x11);
         vm.prank(_OWNER, _OWNER);
         (address payable _g, address _s, address _m) = _system.create(
             "clxtv",
@@ -86,6 +87,7 @@ contract SystemTest is Test {
 
         MockERC721 merc721 = new MockERC721();
         merc721.mintTo(_VOTER1, 0x10);
+        merc721.mintTo(_CREATOR, 0x11);
         vm.prank(_OWNER, _OWNER);
         (address payable _g, address _s, ) = _system.create(
             "clxtv",

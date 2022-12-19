@@ -565,8 +565,9 @@ contract GovernanceStorage is Storage, UpgradeableContract, ERC165, Ownable {
         uint256 latestProposalId = _latestProposalId[_sender];
         if (latestProposalId != 0) {
             Proposal storage lastProposal = proposalMap[latestProposalId];
-            if (!isFinal(latestProposalId) || getBlockTimestamp() < lastProposal.endTime)
+            if (!isFinal(latestProposalId) || getBlockTimestamp() < lastProposal.endTime) {
                 revert TooManyProposals(_sender, latestProposalId);
+            }
         }
         _proposalCount++; // 1, 2, 3, ...
         uint256 proposalId = _proposalCount;

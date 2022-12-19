@@ -154,6 +154,11 @@ contract CollectiveGovernance is Governance, VoteStrategy, ERC165, UpgradeableCo
         _;
     }
 
+    modifier requireVoter(address _sender) {
+        if (!_voterClass.isVoter(_sender)) revert NotProjectVoter(msg.sender);
+        _;
+    }
+
     // @dev recieve funds for the purpose of offering a rebate on gas fees
     receive() external payable {
         emit RebateFund(msg.sender, msg.value, getRebateBalance());
@@ -730,7 +735,7 @@ contract CollectiveGovernance is Governance, VoteStrategy, ERC165, UpgradeableCo
         emit RebatePaid(recipient, rebate, gasUsed);
     }
 
-    function _proposeVote(uint256 _choiceCount, address _sender) private returns (uint256) {
+    function _proposeVote(uint256 _choiceCount, address _sender) private requireVoter(_sender) returns (uint256) {
         uint256 proposalId = _storage.initializeProposal(_choiceCount, _sender);
         for (uint256 i = 0; i < _communitySupervisorList.length; i++) {
             _storage.registerSupervisor(proposalId, _communitySupervisorList[i], true, _sender);
