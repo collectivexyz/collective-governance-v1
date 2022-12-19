@@ -50,6 +50,7 @@ import "../contracts/VoteStrategy.sol";
 import "../contracts/access/Upgradeable.sol";
 
 /// @title Storage interface
+/// @dev Eternal storage of strategy proxy
 /// @notice provides the requirements for Storage contract implementation
 /// @custom:type interface
 interface Storage is Upgradeable, IERC165 {

@@ -96,7 +96,8 @@ contract SystemTest is Test {
             address(merc721),
             1,
             300,
-            3600
+            3600,
+            true
         );
 
         Governance _governance = Governance(_g);

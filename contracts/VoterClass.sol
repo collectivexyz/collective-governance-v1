@@ -64,6 +64,11 @@ interface VoterClass is Mutable, Upgradeable, IERC165 {
     /// @return bool true if wallet is a voter
     function isVoter(address _wallet) external view returns (bool);
 
+    /// @notice determine if adding a proposal is approved for this voter
+    /// @param _sender The address of the sender
+    /// @return bool true if this address is approved
+    function isProposalApproved(address _sender) external view returns (bool);
+
     /// @notice discover an array of shareIds associated with the specified wallet
     /// @return uint256[] array in memory of share ids
     function discover(address _wallet) external view returns (uint256[] memory);

@@ -121,6 +121,7 @@ contract System is Ownable, UpgradeableContract {
     /// @param _description the project description
     /// @param _erc721 address of ERC-721 contract
     /// @param _quorum the project quorum requirement
+    /// @param _isClosed True if closed to non voters
     /// @return governanceAddress address of the new Governance contract
     /// @return storageAddress address of the storage contract
     /// @return metaAddress address of the meta contract
@@ -131,7 +132,8 @@ contract System is Ownable, UpgradeableContract {
         address _erc721,
         uint256 _quorum,
         uint256 _minimumDelay,
-        uint256 _minimumDuration
+        uint256 _minimumDuration,
+        bool _isClosed
     )
         external
         returns (
@@ -140,7 +142,7 @@ contract System is Ownable, UpgradeableContract {
             address metaAddress
         )
     {
-        address erc721Class = _classCreator.createERC721(_erc721, 1);
+        address erc721Class = _classCreator.createERC721(_erc721, 1, _isClosed);
         address supervisor = msg.sender;
         return
             _creator

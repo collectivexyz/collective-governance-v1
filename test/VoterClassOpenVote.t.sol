@@ -7,8 +7,8 @@ import "../contracts/VoterClassOpenVote.sol";
 import "../contracts/access/Upgradeable.sol";
 
 contract VoterClassOpenVoteTest is Test {
-    address private immutable _owner = address(0xffeeeeff);
-    address private immutable _notowner = address(0x55);
+    address private immutable _OWNER = address(0xffeeeeff);
+    address private immutable _NOTOWNER = address(0x55);
 
     VoterClass private _class;
 
@@ -16,29 +16,34 @@ contract VoterClassOpenVoteTest is Test {
         _class = new VoterClassOpenVote(1);
     }
 
+    function testOpenToPropose() public {
+        assertTrue(_class.isProposalApproved(_OWNER));
+        assertTrue(_class.isProposalApproved(_NOTOWNER));
+    }
+
     function testDiscoverVoteOwner() public {
-        uint256[] memory shareList = _class.discover(_owner);
+        uint256[] memory shareList = _class.discover(_OWNER);
         assertEq(shareList.length, 1);
-        assertEq(uint160(_owner), shareList[0]);
+        assertEq(uint160(_OWNER), shareList[0]);
     }
 
     function testDiscoverVoteNotOwner() public {
-        uint256[] memory shareList = _class.discover(_notowner);
+        uint256[] memory shareList = _class.discover(_NOTOWNER);
         assertEq(shareList.length, 1);
-        assertEq(uint160(_notowner), shareList[0]);
+        assertEq(uint160(_NOTOWNER), shareList[0]);
     }
 
     function testConfirmOwner() public {
-        uint256 shareCount = _class.confirm(_owner, uint160(_owner));
+        uint256 shareCount = _class.confirm(_OWNER, uint160(_OWNER));
         assertEq(shareCount, 1);
     }
 
     function testFailConfirmWrongId() public {
-        _class.confirm(_owner, uint160(_notowner));
+        _class.confirm(_OWNER, uint160(_NOTOWNER));
     }
 
     function testConfirmNotOwner() public {
-        uint256 shareCount = _class.confirm(_notowner, uint160(_notowner));
+        uint256 shareCount = _class.confirm(_NOTOWNER, uint160(_NOTOWNER));
         assertEq(shareCount, 1);
     }
 

@@ -55,7 +55,6 @@ interface Governance is Upgradeable, IERC165 {
     error NotEnoughChoices();
     error NotPermitted(address sender);
     error CancelNotPossible(uint256 proposalId, address sender);
-    error NotProjectVoter(address sender);
     error NotVoter(uint256 proposalId, address sender);
     error SupervisorListEmpty();
     error NotSupervisor(uint256 proposalId, address sender);

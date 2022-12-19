@@ -12,7 +12,7 @@ import "../contracts/Constant.sol";
 import "../contracts/VoterClass.sol";
 import "../contracts/VoterClassVoterPool.sol";
 import "../contracts/VoterClassOpenVote.sol";
-import "../contracts/VoterClassERC721.sol";
+import "../contracts/VoterClassClosedERC721.sol";
 import "../contracts/Storage.sol";
 import "../contracts/GovernanceStorage.sol";
 import "../contracts/VoteStrategy.sol";
@@ -99,7 +99,7 @@ contract CollectiveGovernanceTest is Test {
     }
 
     function testProposeNotVoter() public {
-        vm.expectRevert(abi.encodeWithSelector(Governance.NotProjectVoter.selector, _NOT_VOTER));
+        vm.expectRevert(abi.encodeWithSelector(Governance.NotPermitted.selector, _NOT_VOTER));
         vm.prank(_NOT_VOTER, _NOT_VOTER);
         governance.propose();
     }
@@ -518,14 +518,21 @@ contract CollectiveGovernanceTest is Test {
     function testOwnerCastVote() public {
         address[] memory voter = new address[](1);
         voter[0] = _VOTER1;
-        (_governanceAddress, _storageAddress, ) = buildVoterPool();
+        VoterClassVoterPool _class = new VoterClassVoterPool(1);
+        _class.addVoter(_VOTER1);
+        _class.addVoter(_SUPERVISOR);
+        _class.makeFinal();
+        (_governanceAddress, _storageAddress, ) = _builder
+            .aGovernance()
+            .withVoterClass(_class)
+            .withSupervisor(_SUPERVISOR)
+            .build();
         governance = CollectiveGovernance(_governanceAddress);
-        vm.prank(_OWNER, _OWNER);
+        vm.startPrank(_SUPERVISOR, _SUPERVISOR);
         governance.propose();
-        vm.prank(_SUPERVISOR, _SUPERVISOR);
         governance.configure(proposalId, 2);
-        vm.prank(_SUPERVISOR);
         governance.startVote(proposalId);
+        vm.stopPrank();
         vm.prank(_OWNER, _OWNER);
         vm.expectRevert(abi.encodeWithSelector(VoterClass.NotVoter.selector, proposalId));
         governance.voteFor(proposalId);
@@ -1461,10 +1468,10 @@ contract CollectiveGovernanceTest is Test {
         vm.prank(_VOTER1, _VOTER1);
         governance.voteFor(proposalId, TOKEN_ID1);
         assertTrue(_VOTER1.balance > 0);
-        assertApproxEqAbs(_VOTER1.balance, 8791120 gwei, 500 gwei);
+        assertApproxEqAbs(_VOTER1.balance, 8793408 gwei, 500 gwei);
     }
 
-    function testCastAgainstVoteWithRefund() public {
+    function testCastAgainstWithRefund() public {
         vm.fee(50 gwei);
 
         vm.deal(_OWNER, 1 ether);
@@ -1478,7 +1485,7 @@ contract CollectiveGovernanceTest is Test {
         vm.prank(_VOTER1, _VOTER1);
         governance.voteAgainst(proposalId, TOKEN_ID1);
         assertTrue(_VOTER1.balance > 0);
-        assertApproxEqAbs(_VOTER1.balance, 7753356 gwei, 500 gwei);
+        assertApproxEqAbs(_VOTER1.balance, 7755644 gwei, 500 gwei);
     }
 
     function testAbstainWithRefund() public {
@@ -1495,7 +1502,7 @@ contract CollectiveGovernanceTest is Test {
         vm.prank(_VOTER1, _VOTER1);
         governance.abstainFrom(proposalId, TOKEN_ID1);
         assertTrue(_VOTER1.balance > 0);
-        assertApproxEqAbs(_VOTER1.balance, 8781396 gwei, 500 gwei);
+        assertApproxEqAbs(_VOTER1.balance, 8783684 gwei, 500 gwei);
     }
 
     function testVoteAndUndoWithRefund() public {
@@ -1515,10 +1522,10 @@ contract CollectiveGovernanceTest is Test {
         governance.undoVote(proposalId, TOKEN_ID1);
         vm.stopPrank();
         assertTrue(_VOTER1.balance > 0);
-        assertApproxEqAbs(_VOTER1.balance, 12225096 gwei, 500 gwei);
+        assertApproxEqAbs(_VOTER1.balance, 12227384 gwei, 500 gwei);
     }
 
-    function testCastVoteWithMaximumRefund() public {
+    function testCastVoteWithRefundMaximum() public {
         vm.fee(1000 gwei);
 
         vm.deal(_OWNER, 1 ether);
@@ -1532,7 +1539,7 @@ contract CollectiveGovernanceTest is Test {
         vm.prank(_VOTER1, _VOTER1);
         governance.voteFor(proposalId, TOKEN_ID1);
         assertTrue(_VOTER1.balance > 0);
-        uint256 expectRefund = 17075060 gwei;
+        uint256 expectRefund = 17079504 gwei;
         assertApproxEqAbs(_VOTER1.balance, expectRefund, 500 gwei);
         assertApproxEqAbs(_governanceAddress.balance, 1 ether - expectRefund, 500 gwei);
     }
@@ -1745,7 +1752,7 @@ contract CollectiveGovernanceTest is Test {
             address
         )
     {
-        VoterClass _class = new VoterClassERC721(projectAddress, 1);
+        VoterClass _class = new VoterClassClosedERC721(projectAddress, 1);
         return _builder.aGovernance().withVoterClass(_class).withSupervisor(_SUPERVISOR).build();
     }
 
@@ -1762,7 +1769,7 @@ contract CollectiveGovernanceTest is Test {
             address
         )
     {
-        VoterClass _class = new VoterClassERC721(projectAddress, 1);
+        VoterClass _class = new VoterClassClosedERC721(projectAddress, 1);
         return
             _builder
                 .aGovernance()

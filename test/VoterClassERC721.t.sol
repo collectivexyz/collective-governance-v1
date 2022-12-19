@@ -55,6 +55,10 @@ contract VoterClassERC721Test is Test {
         _class.confirm(_NOTOWNER, _TOKENID);
     }
 
+    function testOpenToPropose() public {
+        assertTrue(_class.isProposalApproved(_NOTOWNER));
+    }
+
     function testWeight() public {
         assertEq(1, _class.weight());
     }

@@ -81,8 +81,14 @@ contract VoterClassERC721 is VoterClass, AlwaysFinal, UpgradeableContract, ERC16
 
     /// @notice determine if wallet holds at least one token from the ERC-721 contract
     /// @return bool true if wallet can sign for votes on this class
-    function isVoter(address _wallet) external view returns (bool) {
+    function isVoter(address _wallet) public view returns (bool) {
         return IERC721(_contractAddress).balanceOf(_wallet) > 0;
+    }
+
+    /// @notice determine if adding a proposal is approved for this voter
+    /// @return bool true if this address is approved
+    function isProposalApproved(address) external view virtual returns (bool) {
+        return true;
     }
 
     /// @notice tabulate the number of votes available for the specific wallet and tokenId

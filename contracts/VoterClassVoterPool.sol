@@ -133,8 +133,16 @@ contract VoterClassVoterPool is VoterClass, ConfigurableMutable, UpgradeableCont
 
     /// @notice test if wallet represents an allowed voter for this class
     /// @return bool true if wallet is a voter
-    function isVoter(address _wallet) external view returns (bool) {
+    function isVoter(address _wallet) public view returns (bool) {
         return _voterPool[_wallet];
+    }
+
+    /// @notice determine if adding a proposal is approved for this voter
+    /// @dev listed voter is required for proposal
+    /// @param _sender The address of the sender
+    /// @return bool true if this address is approved
+    function isProposalApproved(address _sender) external view returns (bool) {
+        return isVoter(_sender);
     }
 
     /// @notice discover an array of shareIds associated with the specified wallet

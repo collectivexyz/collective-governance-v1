@@ -73,6 +73,12 @@ contract VoterClassOpenVote is VoterClass, AlwaysFinal, UpgradeableContract, ERC
         return true;
     }
 
+    /// @notice determine if adding a proposal is approved for this voter
+    /// @return bool always true
+    function isProposalApproved(address) external pure returns (bool) {
+        return true;
+    }
+
     /// @notice discover an array of shareIds associated with the specified wallet
     /// @dev the shareId of the open vote is the numeric value of the wallet address itself
     /// @return uint256[] array in memory of share ids

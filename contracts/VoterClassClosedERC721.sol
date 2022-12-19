@@ -43,39 +43,19 @@
  */
 pragma solidity ^0.8.15;
 
-import "@openzeppelin/contracts/interfaces/IERC165.sol";
-import "../contracts/VoterClass.sol";
-import "../contracts/access/Upgradeable.sol";
+import "../contracts/VoterClassERC721.sol";
 
-/// @title Interface for VoterClass creation
-/// @custom:type interface
-interface VoterClassCreator is Upgradeable, IERC165 {
-    event VoterClassCreated(address voterClass, address project);
+/// @title Closed ERC721 VoterClass
+/// @notice similar to VoterClassERC721 however proposals are only allowed for voters
+contract VoterClassClosedERC721 is VoterClassERC721 {
+    /// @param _contract Address of the token contract
+    /// @param _voteWeight The integral weight to apply to each token held by the wallet
+    // solhint-disable-next-line no-empty-blocks
+    constructor(address _contract, uint256 _voteWeight) VoterClassERC721(_contract, _voteWeight) {}
 
-    /// @notice create a VoterClass for open voting
-    /// @param _weight The weight associated with each vote
-    /// @return address The address of the resulting voter class
-    function createOpenVote(uint256 _weight) external returns (address);
-
-    /// @notice create a VoterClass for pooled voting
-    /// @param _weight The weight associated with each vote
-    /// @return address The address of the resulting voter class
-    function createVoterPool(uint256 _weight) external returns (address);
-
-    /// @notice create a VoterClass for token holding members
-    /// @param _erc721 The address of the ERC-721 contract for voting
-    /// @param _weight The weight associated with each vote
-    /// @return address The address of the resulting voter class
-    function createERC721(address _erc721, uint256 _weight) external returns (address);
-
-    /// @notice create a VoterClass for token holding members
-    /// @param _erc721 The address of the ERC-721 contract for voting
-    /// @param _weight The weight associated with each vote
-    /// @param _isClosed True if class should be closed, false otherwise
-    /// @return address The address of the resulting voter class
-    function createERC721(
-        address _erc721,
-        uint256 _weight,
-        bool _isClosed
-    ) external returns (address);
+    /// @notice determine if adding a proposal is approved for this voter
+    /// @return bool true if this address is approved
+    function isProposalApproved(address _sender) external view virtual override(VoterClassERC721) returns (bool) {
+        return isVoter(_sender);
+    }
 }

@@ -61,6 +61,12 @@ contract VoterClassNullObject is VoterClass, AlwaysFinal, UpgradeableContract, E
         return false;
     }
 
+    /// @notice determine if adding a proposal is approved for this voter
+    /// @return bool always false
+    function isProposalApproved(address) external pure returns (bool) {
+        return false;
+    }
+
     /// @notice always reverts
     function discover(address _wallet) external pure returns (uint256[] memory) {
         revert NotVoter(_wallet);

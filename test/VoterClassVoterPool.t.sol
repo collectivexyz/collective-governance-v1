@@ -6,9 +6,9 @@ import "../contracts/VoterClassVoterPool.sol";
 import "../contracts/access/Upgradeable.sol";
 
 contract VoterClassVoterPoolTest is Test {
-    address private immutable _voter = address(0xffeeeeff);
-    address private immutable _notvoter = address(0x55);
-    address private immutable _nobody = address(0x0);
+    address private immutable _VOTER = address(0xffeeeeff);
+    address private immutable _NOTVOTER = address(0x55);
+    address private immutable _NOBODY = address(0x0);
 
     VoterClassVoterPool private _class;
 
@@ -16,85 +16,97 @@ contract VoterClassVoterPoolTest is Test {
         _class = new VoterClassVoterPool(1);
     }
 
+    function testOpenToMemberPropose() public {
+        _class.addVoter(_VOTER);
+        _class.makeFinal();
+        assertTrue(_class.isProposalApproved(_VOTER));
+    }
+
+    function testClosedToPropose() public {
+        _class.addVoter(_VOTER);
+        _class.makeFinal();
+        assertFalse(_class.isProposalApproved(_NOTVOTER));
+    }
+
     function testFailEmptyClass() public {
         _class.makeFinal();
     }
 
     function testDiscoverVoter() public {
-        _class.addVoter(_voter);
+        _class.addVoter(_VOTER);
         _class.makeFinal();
-        uint256[] memory shareList = _class.discover(_voter);
+        uint256[] memory shareList = _class.discover(_VOTER);
         assertEq(shareList.length, 1);
-        assertEq(uint160(_voter), shareList[0]);
+        assertEq(uint160(_VOTER), shareList[0]);
     }
 
     function testRemoveVoter() public {
-        _class.addVoter(_voter);
-        assertTrue(_class.isVoter(_voter));
-        _class.removeVoter(_voter);
-        assertFalse(_class.isVoter(_voter));
+        _class.addVoter(_VOTER);
+        assertTrue(_class.isVoter(_VOTER));
+        _class.removeVoter(_VOTER);
+        assertFalse(_class.isVoter(_VOTER));
     }
 
     function testFailRemoveVoter() public {
-        _class.addVoter(_voter);
-        assertTrue(_class.isVoter(_voter));
-        _class.removeVoter(_voter);
+        _class.addVoter(_VOTER);
+        assertTrue(_class.isVoter(_VOTER));
+        _class.removeVoter(_VOTER);
         _class.makeFinal();
-        assertEq(_class.confirm(_voter, uint160(_voter)), 0);
+        assertEq(_class.confirm(_VOTER, uint160(_VOTER)), 0);
     }
 
     function testFailDiscoverNonVoter() public {
-        _class.addVoter(_voter);
+        _class.addVoter(_VOTER);
         _class.makeFinal();
-        _class.discover(_notvoter);
+        _class.discover(_NOTVOTER);
     }
 
     function testConfirmVoter() public {
-        _class.addVoter(_voter);
+        _class.addVoter(_VOTER);
         _class.makeFinal();
-        uint256 shareCount = _class.confirm(_voter, uint160(_voter));
+        uint256 shareCount = _class.confirm(_VOTER, uint160(_VOTER));
         assertEq(shareCount, 1);
     }
 
     function testFailConfirmVoter() public {
         _class.makeFinal();
-        vm.prank(_voter);
-        _class.confirm(_voter, uint160(_voter));
+        vm.prank(_VOTER);
+        _class.confirm(_VOTER, uint160(_VOTER));
     }
 
     function testFailConfirmNotVoter() public {
         _class.makeFinal();
-        _class.confirm(_notvoter, uint160(_notvoter));
+        _class.confirm(_NOTVOTER, uint160(_NOTVOTER));
     }
 
     function testFailMakeFinalNotOwner() public {
-        vm.prank(_voter);
+        vm.prank(_VOTER);
         _class.makeFinal();
     }
 
     function testFailConfirmNotFinal() public view {
-        _class.confirm(_voter, uint160(_voter));
+        _class.confirm(_VOTER, uint160(_VOTER));
     }
 
     function testFailAddVoterByVoter() public {
-        vm.prank(_voter);
-        _class.addVoter(_voter);
+        vm.prank(_VOTER);
+        _class.addVoter(_VOTER);
     }
 
     function testFailAddVoterByNobody() public {
-        vm.prank(_nobody);
-        _class.addVoter(_nobody);
+        vm.prank(_NOBODY);
+        _class.addVoter(_NOBODY);
     }
 
     function testFailAddIfFinal() public {
         _class.makeFinal();
-        _class.addVoter(_voter);
+        _class.addVoter(_VOTER);
     }
 
     function testFailRemoveIfFinal() public {
-        _class.addVoter(_voter);
+        _class.addVoter(_VOTER);
         _class.makeFinal();
-        _class.removeVoter(_voter);
+        _class.removeVoter(_VOTER);
     }
 
     function testSupportsInterface() public {
