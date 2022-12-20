@@ -399,7 +399,7 @@ contract GovernanceStorage is Storage, UpgradeableContract, ERC165, Ownable {
     }
 
     /// @notice get the vote duration
-    /// @dev return value is seconds    
+    /// @dev return value is seconds
     /// @param _proposalId the id of the proposal
     /// @return uint256 the duration
     function voteDuration(uint256 _proposalId) external view requireValid(_proposalId) returns (uint256) {

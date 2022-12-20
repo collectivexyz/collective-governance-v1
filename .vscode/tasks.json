@@ -15,9 +15,9 @@
       }
     },
     {
-      "label": "lint",
+      "label": "prettier",
       "type": "shell",
-      "command": "yarn lint",
+      "command": "yarn prettier:check",
       "options": {
         "cwd": "${workspaceFolder}"
       },
@@ -33,7 +33,7 @@
       "options": {
         "cwd": "${workspaceFolder}"
       },
-      "dependsOn": "install",
+      "dependsOn": "prettier",
       "group": {
         "kind": "build"
       }

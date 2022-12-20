@@ -374,7 +374,7 @@ interface Storage is Upgradeable, IERC165 {
     function voteDelay(uint256 _proposalId) external view returns (uint256);
 
     /// @notice get the vote duration
-    /// @dev return value is seconds    
+    /// @dev return value is seconds
     /// @param _proposalId the id of the proposal
     /// @return uint256 the duration
     function voteDuration(uint256 _proposalId) external view returns (uint256);

@@ -10,6 +10,7 @@
   },
   "scripts": {
     "build": "~mr/.cargo/bin/forge build --sizes",
+    "prettier:check": "prettier --check \"(contracts|test)/*.sol\"",
     "hint": "solhint contracts/**/*.sol test/**/*.sol",
     "test": "~mr/.cargo/bin/forge test -vvv",
     "clean": "~mr/.cargo/bin/forge clean"

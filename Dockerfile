@@ -8,7 +8,8 @@ ENV USER=mr
 USER mr
 ENV PATH=${PATH}:~/.cargo/bin
 RUN yarn install
+RUN yarn prettier:check
 RUN yarn hint
-RUN ~mr/.cargo/bin/forge test -vvv --gas-report
+RUN forge test -vvv --gas-report
 
 RUN bin/update_abi.sh

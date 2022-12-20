@@ -37,6 +37,7 @@ jobs:
       - name: Yarn install
         run: |
           yarn install --dev
+          yarn prettier:check
           yarn hint
           yarn install --production
 
