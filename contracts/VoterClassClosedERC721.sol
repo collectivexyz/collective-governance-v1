@@ -43,19 +43,31 @@
  */
 pragma solidity ^0.8.15;
 
+import "@openzeppelin/contracts/interfaces/IERC721.sol";
+
 import "../contracts/VoterClassERC721.sol";
 
 /// @title Closed ERC721 VoterClass
 /// @notice similar to VoterClassERC721 however proposals are only allowed for voters
 contract VoterClassClosedERC721 is VoterClassERC721 {
+    // number of tokens required to propose
+    uint256 public immutable _tokenRequirement;
+
     /// @param _contract Address of the token contract
+    /// @param _tokenThreshold Number of tokens required to propose an issue
     /// @param _voteWeight The integral weight to apply to each token held by the wallet
-    // solhint-disable-next-line no-empty-blocks
-    constructor(address _contract, uint256 _voteWeight) VoterClassERC721(_contract, _voteWeight) {}
+    constructor(
+        address _contract,
+        uint256 _tokenThreshold,
+        uint256 _voteWeight
+    ) VoterClassERC721(_contract, _voteWeight) {
+        _tokenRequirement = _tokenThreshold;
+    }
 
     /// @notice determine if adding a proposal is approved for this voter
     /// @return bool true if this address is approved
-    function isProposalApproved(address _sender) external view virtual override(VoterClassERC721) returns (bool) {
-        return isVoter(_sender);
+    function isProposalApproved(address _wallet) external view virtual override(VoterClassERC721) returns (bool) {
+        uint256 balance = IERC721(_contractAddress).balanceOf(_wallet);
+        return balance >= _tokenRequirement;
     }
 }

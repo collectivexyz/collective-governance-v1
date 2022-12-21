@@ -63,9 +63,9 @@ contract VoterClassERC721 is VoterClass, AlwaysFinal, UpgradeableContract, ERC16
 
     string public constant NAME = "collective VoterClassERC721";
 
-    address private immutable _contractAddress;
+    address internal immutable _contractAddress;
 
-    uint256 private immutable _weight;
+    uint256 internal immutable _weight;
 
     /// @param _contract Address of the token contract
     /// @param _voteWeight The integral weight to apply to each token held by the wallet

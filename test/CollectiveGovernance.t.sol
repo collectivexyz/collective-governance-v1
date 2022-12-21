@@ -1468,7 +1468,7 @@ contract CollectiveGovernanceTest is Test {
         vm.prank(_VOTER1, _VOTER1);
         governance.voteFor(proposalId, TOKEN_ID1);
         assertTrue(_VOTER1.balance > 0);
-        assertApproxEqAbs(_VOTER1.balance, 8793408 gwei, 500 gwei);
+        assertApproxEqAbs(_VOTER1.balance, 8794552 gwei, 500 gwei);
     }
 
     function testCastAgainstWithRefund() public {
@@ -1485,7 +1485,7 @@ contract CollectiveGovernanceTest is Test {
         vm.prank(_VOTER1, _VOTER1);
         governance.voteAgainst(proposalId, TOKEN_ID1);
         assertTrue(_VOTER1.balance > 0);
-        assertApproxEqAbs(_VOTER1.balance, 7755644 gwei, 500 gwei);
+        assertApproxEqAbs(_VOTER1.balance, 7756788 gwei, 500 gwei);
     }
 
     function testAbstainWithRefund() public {
@@ -1502,7 +1502,7 @@ contract CollectiveGovernanceTest is Test {
         vm.prank(_VOTER1, _VOTER1);
         governance.abstainFrom(proposalId, TOKEN_ID1);
         assertTrue(_VOTER1.balance > 0);
-        assertApproxEqAbs(_VOTER1.balance, 8783684 gwei, 500 gwei);
+        assertApproxEqAbs(_VOTER1.balance, 8784828 gwei, 500 gwei);
     }
 
     function testVoteAndUndoWithRefund() public {
@@ -1522,7 +1522,7 @@ contract CollectiveGovernanceTest is Test {
         governance.undoVote(proposalId, TOKEN_ID1);
         vm.stopPrank();
         assertTrue(_VOTER1.balance > 0);
-        assertApproxEqAbs(_VOTER1.balance, 12227384 gwei, 500 gwei);
+        assertApproxEqAbs(_VOTER1.balance, 12228528 gwei, 500 gwei);
     }
 
     function testCastVoteWithRefundMaximum() public {
@@ -1539,7 +1539,7 @@ contract CollectiveGovernanceTest is Test {
         vm.prank(_VOTER1, _VOTER1);
         governance.voteFor(proposalId, TOKEN_ID1);
         assertTrue(_VOTER1.balance > 0);
-        uint256 expectRefund = 17079504 gwei;
+        uint256 expectRefund = 17081726 gwei;
         assertApproxEqAbs(_VOTER1.balance, expectRefund, 500 gwei);
         assertApproxEqAbs(_governanceAddress.balance, 1 ether - expectRefund, 500 gwei);
     }
@@ -1752,7 +1752,7 @@ contract CollectiveGovernanceTest is Test {
             address
         )
     {
-        VoterClass _class = new VoterClassClosedERC721(projectAddress, 1);
+        VoterClass _class = new VoterClassClosedERC721(projectAddress, 1, 1);
         return _builder.aGovernance().withVoterClass(_class).withSupervisor(_SUPERVISOR).build();
     }
 
@@ -1769,7 +1769,7 @@ contract CollectiveGovernanceTest is Test {
             address
         )
     {
-        VoterClass _class = new VoterClassClosedERC721(projectAddress, 1);
+        VoterClass _class = new VoterClassClosedERC721(projectAddress, 1, 1);
         return
             _builder
                 .aGovernance()

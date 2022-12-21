@@ -83,22 +83,24 @@ contract VoterClassFactory is VoterClassCreator, UpgradeableContract, ERC165 {
     /// @param _weight The weight associated with each vote
     /// @return address The address of the resulting voter class
     function createERC721(address _erc721, uint256 _weight) external returns (address) {
-        return createERC721(_erc721, _weight, false);
+        return createERC721(_erc721, 1, _weight, false);
     }
 
     /// @notice create a VoterClass for token holding members
     /// @param _erc721 The address of the ERC-721 contract for voting
+    /// @param _tokenRequirement The number of tokens required for a proposal
     /// @param _weight The weight associated with each vote
     /// @param _isClosed True if class should be closed, false otherwise
     /// @return address The address of the resulting voter class
     function createERC721(
         address _erc721,
+        uint256 _tokenRequirement,
         uint256 _weight,
         bool _isClosed
     ) public returns (address) {
         VoterClass _class;
         if (_isClosed) {
-            _class = new VoterClassClosedERC721(_erc721, _weight);
+            _class = new VoterClassClosedERC721(_erc721, _tokenRequirement, _weight);
         } else {
             _class = new VoterClassERC721(_erc721, _weight);
         }
