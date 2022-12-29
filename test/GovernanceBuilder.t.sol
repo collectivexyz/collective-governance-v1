@@ -9,9 +9,9 @@ import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
 
 import "../contracts/MetaProxyCreator.sol";
 import "../contracts/MetaStorageFactory.sol";
-import "../contracts/StorageProxyCreator.sol";
+import "../contracts/StorageFactoryCreator.sol";
 import "../contracts/StorageFactory.sol";
-import "../contracts/GovernanceProxyCreator.sol";
+import "../contracts/GovernanceFactoryCreator.sol";
 import "../contracts/GovernanceFactory.sol";
 
 import "../contracts/GovernanceBuilder.sol";
@@ -295,8 +295,8 @@ contract GovernanceBuilderTest is Test {
 
     function testUpgradeRequiresOwner() public {
         MetaProxyCreator _meta = new MetaStorageFactory();
-        StorageProxyCreator _storage = new StorageFactory();
-        GovernanceProxyCreator _creator = new GovernanceFactory();
+        StorageFactoryCreator _storage = new StorageFactory();
+        GovernanceFactoryCreator _creator = new GovernanceFactory();
         vm.expectRevert("Ownable: caller is not the owner");
         _builder.upgrade(address(_creator), address(_storage), address(_meta));
     }
@@ -304,8 +304,8 @@ contract GovernanceBuilderTest is Test {
     function testUpgradeRequiresMeta() public {
         address _metaAddress = address(0x1);
         vm.mockCall(_metaAddress, abi.encodeWithSelector(IERC165.supportsInterface.selector), abi.encode(false));
-        StorageProxyCreator _storage = new StorageFactory();
-        GovernanceProxyCreator _creator = new GovernanceFactory();
+        StorageFactoryCreator _storage = new StorageFactory();
+        GovernanceFactoryCreator _creator = new GovernanceFactory();
         vm.expectRevert(abi.encodeWithSelector(GovernanceCreator.MetaStorageFactoryRequired.selector, _metaAddress));
         vm.prank(_OWNER, _OWNER);
         _builder.upgrade(address(_creator), address(_storage), _metaAddress);
@@ -315,7 +315,7 @@ contract GovernanceBuilderTest is Test {
         MetaProxyCreator _meta = new MetaStorageFactory();
         address _storageAddress = address(0x1);
         vm.mockCall(_storageAddress, abi.encodeWithSelector(IERC165.supportsInterface.selector), abi.encode(false));
-        GovernanceProxyCreator _creator = new GovernanceFactory();
+        GovernanceFactoryCreator _creator = new GovernanceFactory();
         vm.expectRevert(abi.encodeWithSelector(GovernanceCreator.StorageFactoryRequired.selector, _storageAddress));
         vm.prank(_OWNER, _OWNER);
         _builder.upgrade(address(_creator), _storageAddress, address(_meta));
@@ -323,7 +323,7 @@ contract GovernanceBuilderTest is Test {
 
     function testUpgradeRequiresGovernance() public {
         MetaProxyCreator _meta = new MetaStorageFactory();
-        StorageProxyCreator _storage = new StorageFactory();
+        StorageFactoryCreator _storage = new StorageFactory();
         address _governanceAddress = address(0x1);
         vm.mockCall(_governanceAddress, abi.encodeWithSelector(IERC165.supportsInterface.selector), abi.encode(false));
         vm.expectRevert(abi.encodeWithSelector(GovernanceCreator.GovernanceFactoryRequired.selector, _governanceAddress));
@@ -333,8 +333,8 @@ contract GovernanceBuilderTest is Test {
 
     function testFailUpgradeStorageRequiresHigherVersion() public {
         MetaProxyCreator _meta = new MetaStorageFactory();
-        StorageProxyCreator _storage = new StorageFactory();
-        GovernanceProxyCreator _creator = new GovernanceFactory();
+        StorageFactoryCreator _storage = new StorageFactory();
+        GovernanceFactoryCreator _creator = new GovernanceFactory();
         address creatorMock = address(_creator);
         bytes memory code = creatorMock.code;
         vm.etch(creatorMock, code);
@@ -349,8 +349,8 @@ contract GovernanceBuilderTest is Test {
 
     function testFailUpgradeMetaRequiresHigherVersion() public {
         MetaProxyCreator _meta = new MetaStorageFactory();
-        StorageProxyCreator _storage = new StorageFactory();
-        GovernanceProxyCreator _creator = new GovernanceFactory();
+        StorageFactoryCreator _storage = new StorageFactory();
+        GovernanceFactoryCreator _creator = new GovernanceFactory();
         address creatorMock = address(_creator);
         bytes memory code = creatorMock.code;
         vm.etch(creatorMock, code);

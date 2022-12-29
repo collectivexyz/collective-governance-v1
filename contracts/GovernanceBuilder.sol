@@ -49,7 +49,7 @@ import "@openzeppelin/contracts/interfaces/IERC165.sol";
 import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
 
 import "../contracts/Constant.sol";
-import "../contracts/GovernanceProxyCreator.sol";
+import "../contracts/GovernanceFactoryCreator.sol";
 import "../contracts/GovernanceFactory.sol";
 import "../contracts/VoterClass.sol";
 import "../contracts/GovernanceCreator.sol";
@@ -70,11 +70,11 @@ contract GovernanceBuilder is GovernanceCreator, UpgradeableContract, ERC165, Ow
     /// @dev implement the null object pattern requring voter class to be valid
     VoterClass private immutable _voterClassNull;
 
-    StorageProxyCreator private _storageFactory;
+    StorageFactoryCreator private _storageFactory;
 
     MetaProxyCreator private _metaStorageFactory;
 
-    GovernanceProxyCreator private _governanceFactory;
+    GovernanceFactoryCreator private _governanceFactory;
 
     mapping(address => bool) public _governanceContractRegistered;
 
@@ -288,13 +288,14 @@ contract GovernanceBuilder is GovernanceCreator, UpgradeableContract, ERC165, Ow
         address _storageAddr,
         address _metaAddr
     ) external onlyOwner {
-        if (!supportsInterface(_governanceAddr, type(GovernanceProxyCreator).interfaceId))
+        if (!supportsInterface(_governanceAddr, type(GovernanceFactoryCreator).interfaceId))
             revert GovernanceFactoryRequired(_governanceAddr);
-        if (!supportsInterface(_storageAddr, type(StorageProxyCreator).interfaceId)) revert StorageFactoryRequired(_storageAddr);
+        if (!supportsInterface(_storageAddr, type(StorageFactoryCreator).interfaceId))
+            revert StorageFactoryRequired(_storageAddr);
         if (!supportsInterface(_metaAddr, type(MetaProxyCreator).interfaceId)) revert MetaStorageFactoryRequired(_metaAddr);
-        StorageProxyCreator _storage = StorageProxyCreator(_storageAddr);
+        StorageFactoryCreator _storage = StorageFactoryCreator(_storageAddr);
         MetaProxyCreator _meta = MetaProxyCreator(_metaAddr);
-        GovernanceProxyCreator _creator = GovernanceProxyCreator(_governanceAddr);
+        GovernanceFactoryCreator _creator = GovernanceFactoryCreator(_governanceAddr);
         uint32 version = _creator.version();
         if (version > _storage.version()) revert StorageVersionMismatch(_storageAddr, version, _storage.version());
         if (version > _meta.version()) revert MetaVersionMismatch(_storageAddr, version, _meta.version());

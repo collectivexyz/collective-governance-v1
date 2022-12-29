@@ -49,8 +49,8 @@ contract StorageFactoryTest is Test {
         assertTrue(_storageFactory.supportsInterface(ifId));
     }
 
-    function testSupportsGovernanceProxyCreator() public {
-        bytes4 ifId = type(StorageProxyCreator).interfaceId;
+    function testSupportsGovernanceFactoryCreator() public {
+        bytes4 ifId = type(StorageFactoryCreator).interfaceId;
         assertTrue(_storageFactory.supportsInterface(ifId));
     }
 

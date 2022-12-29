@@ -56,7 +56,7 @@ import "../contracts/access/Upgradeable.sol";
  * @title proxy interface for Governance Contract creation
  */
 /// @custom:type interface
-interface GovernanceProxyCreator is Upgradeable, IERC165 {
+interface GovernanceFactoryCreator is Upgradeable, IERC165 {
     /// @notice create a new collective governance contract
     /// @dev this should be invoked through the GovernanceBuilder
     /// @param _supervisorList the list of supervisors for this project

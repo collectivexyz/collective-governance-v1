@@ -50,7 +50,7 @@ import "../contracts/VoterClass.sol";
 import "../contracts/Storage.sol";
 import "../contracts/MetaStorage.sol";
 import "../contracts/TimeLocker.sol";
-import "../contracts/GovernanceProxyCreator.sol";
+import "../contracts/GovernanceFactoryCreator.sol";
 import "../contracts/CollectiveGovernance.sol";
 import "../contracts/access/Upgradeable.sol";
 import "../contracts/access/UpgradeableContract.sol";
@@ -62,7 +62,7 @@ import "../contracts/access/UpgradeableContract.sol";
  * CollectiveGovernance in the Builder.  The GovernanceBuilder should be preferred for creating a new
  * instance of the contract.
  */
-contract GovernanceFactory is GovernanceProxyCreator, UpgradeableContract, ERC165 {
+contract GovernanceFactory is GovernanceFactoryCreator, UpgradeableContract, ERC165 {
     /// @notice create a new collective governance contract
     /// @dev this should be invoked through the GovernanceBuilder
     /// @param _supervisorList the list of supervisors for this project
@@ -96,7 +96,7 @@ contract GovernanceFactory is GovernanceProxyCreator, UpgradeableContract, ERC16
     /// @notice see ERC-165
     function supportsInterface(bytes4 interfaceId) public view virtual override(IERC165, ERC165) returns (bool) {
         return
-            interfaceId == type(GovernanceProxyCreator).interfaceId ||
+            interfaceId == type(GovernanceFactoryCreator).interfaceId ||
             interfaceId == type(Upgradeable).interfaceId ||
             super.supportsInterface(interfaceId);
     }

@@ -10,7 +10,7 @@ import "../contracts/StorageFactory.sol";
 import "../contracts/MetaStorage.sol";
 import "../contracts/CollectiveMetaStorage.sol";
 import "../contracts/VoterClassFactory.sol";
-import "../contracts/GovernanceProxyCreator.sol";
+import "../contracts/GovernanceFactoryCreator.sol";
 import "../contracts/GovernanceFactory.sol";
 import "../contracts/access/Upgradeable.sol";
 
@@ -114,8 +114,8 @@ contract GovernanceFactoryTest is Test {
         assertTrue(_governanceFactory.supportsInterface(ifId));
     }
 
-    function testSupportsGovernanceProxyCreator() public {
-        bytes4 ifId = type(GovernanceProxyCreator).interfaceId;
+    function testSupportsGovernanceFactoryCreator() public {
+        bytes4 ifId = type(GovernanceFactoryCreator).interfaceId;
         assertTrue(_governanceFactory.supportsInterface(ifId));
     }
 

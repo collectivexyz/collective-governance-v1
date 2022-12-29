@@ -53,7 +53,7 @@ import "../contracts/access/Upgradeable.sol";
  * @title proxy interface for Storage Contract creation
  */
 /// @custom:type interface
-interface StorageProxyCreator is Upgradeable, IERC165 {
+interface StorageFactoryCreator is Upgradeable, IERC165 {
     /// @notice create a new storage object with VoterClass as the voting population
     /// @param _class the contract that defines the popluation
     /// @param _minimumQuorum the least possible quorum

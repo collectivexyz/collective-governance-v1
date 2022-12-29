@@ -46,7 +46,7 @@ pragma solidity ^0.8.15;
 import "@openzeppelin/contracts/interfaces/IERC165.sol";
 import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
 
-import "../contracts/StorageProxyCreator.sol";
+import "../contracts/StorageFactoryCreator.sol";
 import "../contracts/GovernanceStorage.sol";
 
 import "../contracts/access/Upgradeable.sol";
@@ -55,7 +55,7 @@ import "../contracts/access/UpgradeableContract.sol";
 /**
  * @title CollectiveStorage creational contract
  */
-contract StorageFactory is StorageProxyCreator, UpgradeableContract, ERC165 {
+contract StorageFactory is StorageFactoryCreator, UpgradeableContract, ERC165 {
     /// @notice create a new storage object with VoterClass as the voting population
     /// @param _class the contract that defines the popluation
     /// @param _minimumQuorum the least possible quorum
@@ -76,7 +76,7 @@ contract StorageFactory is StorageProxyCreator, UpgradeableContract, ERC165 {
     /// @notice see ERC-165
     function supportsInterface(bytes4 interfaceId) public view virtual override(IERC165, ERC165) returns (bool) {
         return
-            interfaceId == type(StorageProxyCreator).interfaceId ||
+            interfaceId == type(StorageFactoryCreator).interfaceId ||
             interfaceId == type(Upgradeable).interfaceId ||
             super.supportsInterface(interfaceId);
     }
