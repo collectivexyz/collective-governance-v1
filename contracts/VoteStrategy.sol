@@ -59,18 +59,11 @@ interface VoteStrategy {
     /// @notice a prior vote has been reversed for wallet
     event VoteUndo(uint256 proposalId, address wallet, uint256 count);
 
-    /// @notice start the voting process by proposal id
-    /// @param _proposalId The numeric id of the proposed vote
-    function startVote(uint256 _proposalId) external;
-
-    /// @notice test if an existing proposal is open
-    /// @param _proposalId The numeric id of the proposed vote
-    /// @return bool True if the proposal is open
-    function isOpen(uint256 _proposalId) external view returns (bool);
-
-    /// @notice end voting on an existing proposal by id
-    /// @param _proposalId The numeric id of the proposed vote
-    function endVote(uint256 _proposalId) external;
+    // setup errors
+    error SupervisorListEmpty();
+    error GasUsedRebateMustBeLarger(uint256 gasUsedRebate, uint256 minimumRebate);
+    error BaseFeeRebateMustBeLarger(uint256 baseFee, uint256 minimumBaseFee);
+    error NotVoter(uint256 proposalId, address sender);
 
     /// @notice cast an affirmative vote for the measure by id
     /// @param _proposalId The numeric id of the proposed vote

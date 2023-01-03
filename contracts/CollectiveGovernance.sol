@@ -46,6 +46,7 @@ pragma solidity ^0.8.15;
 import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
 import "@openzeppelin/contracts/utils/math/Math.sol";
 
+import "../contracts/Constant.sol";
 import "../contracts/Storage.sol";
 import "../contracts/MetaStorage.sol";
 import "../contracts/Governance.sol";
@@ -54,6 +55,29 @@ import "../contracts/VoterClass.sol";
 import "../contracts/TimeLock.sol";
 import "../contracts/access/Upgradeable.sol";
 import "../contracts/access/UpgradeableContract.sol";
+
+/// @notice bounded gas rebate calculation
+/// @param startGas the initial value of gasleft() function
+/// @param balance maximum balance of WEI to spend
+/// @param _maximumBaseFeeRebate maximum base fee rebate
+/// @param _maximumGasUsedRebate maximum gas used
+/// @return rebate The rebate
+/// @return gasUsed The total gas used from gasleft to this call
+function calculateGasRebate(
+    uint256 startGas,
+    uint256 balance,
+    uint256 _maximumBaseFeeRebate,
+    uint256 _maximumGasUsedRebate
+) view returns (uint256 rebate, uint256 gasUsed) {
+    uint256 permittedBaseFee = Math.min(block.basefee, _maximumBaseFeeRebate);
+    uint256 permittedGasPrice = Math.min(tx.gasprice, permittedBaseFee + Constant.MAXIMUM_REBATE_PRIORITY_FEE);
+
+    uint256 totalGasUsed = startGas - gasleft();
+
+    uint256 gasUsedForRebate = Math.min(totalGasUsed + Constant.REBATE_BASE_GAS, _maximumGasUsedRebate);
+    uint256 rebateQuantity = Math.min(permittedGasPrice * gasUsedForRebate, balance);
+    return (rebateQuantity, totalGasUsed);
+}
 
 /// @title Collective Governance implementation
 /// @notice Governance contract implementation for Collective.   This contract implements voting by
@@ -67,7 +91,7 @@ import "../contracts/access/UpgradeableContract.sol";
 ///
 /// @dev The VoterClass is common to all proposed votes as are the project supervisors.   Individual supervisors may
 /// be configured as part of the proposal creation workflow but project supervisors are always included.
-contract CollectiveGovernance is Governance, VoteStrategy, ERC165, UpgradeableContract {
+contract CollectiveGovernance is VoteStrategy, Governance, ERC165, UpgradeableContract {
     string public constant NAME = "collective governance";
 
     VoterClass public immutable _voterClass;
@@ -340,7 +364,7 @@ contract CollectiveGovernance is Governance, VoteStrategy, ERC165, UpgradeableCo
         uint256 startGas = gasleft();
         uint256[] memory _shareList = _voterClass.discover(msg.sender);
         for (uint256 i = 0; i < _shareList.length; i++) {
-            castVoteFor(_proposalId, _shareList[i], _choiceId);
+            _castVoteFor(_proposalId, _shareList[i], _choiceId);
         }
         sendGasRebate(msg.sender, startGas);
     }
@@ -370,7 +394,7 @@ contract CollectiveGovernance is Governance, VoteStrategy, ERC165, UpgradeableCo
     ) public requireVoteFinal(_proposalId) requireVoteOpen(_proposalId) requireVoteAccepted(_proposalId) {
         uint256 startGas = gasleft();
         for (uint256 i = 0; i < _tokenIdList.length; i++) {
-            castVoteFor(_proposalId, _tokenIdList[i], _choiceId);
+            _castVoteFor(_proposalId, _tokenIdList[i], _choiceId);
         }
         sendGasRebate(msg.sender, startGas);
     }
@@ -392,7 +416,7 @@ contract CollectiveGovernance is Governance, VoteStrategy, ERC165, UpgradeableCo
         uint256 _choiceId
     ) public requireVoteFinal(_proposalId) requireVoteOpen(_proposalId) requireVoteAccepted(_proposalId) {
         uint256 startGas = gasleft();
-        castVoteFor(_proposalId, _tokenId, _choiceId);
+        _castVoteFor(_proposalId, _tokenId, _choiceId);
         sendGasRebate(msg.sender, startGas);
     }
 
@@ -408,7 +432,7 @@ contract CollectiveGovernance is Governance, VoteStrategy, ERC165, UpgradeableCo
         uint256 startGas = gasleft();
         uint256[] memory _shareList = _voterClass.discover(msg.sender);
         for (uint256 i = 0; i < _shareList.length; i++) {
-            castVoteAgainst(_proposalId, _shareList[i]);
+            _castVoteAgainst(_proposalId, _shareList[i]);
         }
         sendGasRebate(msg.sender, startGas);
     }
@@ -424,7 +448,7 @@ contract CollectiveGovernance is Governance, VoteStrategy, ERC165, UpgradeableCo
     {
         uint256 startGas = gasleft();
         for (uint256 i = 0; i < _shareList.length; i++) {
-            castVoteAgainst(_proposalId, _shareList[i]);
+            _castVoteAgainst(_proposalId, _shareList[i]);
         }
         sendGasRebate(msg.sender, startGas);
     }
@@ -439,7 +463,7 @@ contract CollectiveGovernance is Governance, VoteStrategy, ERC165, UpgradeableCo
         requireVoteAccepted(_proposalId)
     {
         uint256 startGas = gasleft();
-        castVoteAgainst(_proposalId, _tokenId);
+        _castVoteAgainst(_proposalId, _tokenId);
         sendGasRebate(msg.sender, startGas);
     }
 
@@ -455,7 +479,7 @@ contract CollectiveGovernance is Governance, VoteStrategy, ERC165, UpgradeableCo
         uint256 startGas = gasleft();
         uint256[] memory _shareList = _voterClass.discover(msg.sender);
         for (uint256 i = 0; i < _shareList.length; i++) {
-            castAbstention(_proposalId, _shareList[i]);
+            _castAbstention(_proposalId, _shareList[i]);
         }
         sendGasRebate(msg.sender, startGas);
     }
@@ -471,7 +495,7 @@ contract CollectiveGovernance is Governance, VoteStrategy, ERC165, UpgradeableCo
     {
         uint256 startGas = gasleft();
         for (uint256 i = 0; i < _shareList.length; i++) {
-            castAbstention(_proposalId, _shareList[i]);
+            _castAbstention(_proposalId, _shareList[i]);
         }
         sendGasRebate(msg.sender, startGas);
     }
@@ -486,7 +510,7 @@ contract CollectiveGovernance is Governance, VoteStrategy, ERC165, UpgradeableCo
         requireVoteAccepted(_proposalId)
     {
         uint256 startGas = gasleft();
-        castAbstention(_proposalId, _tokenId);
+        _castAbstention(_proposalId, _tokenId);
         sendGasRebate(msg.sender, startGas);
     }
 
@@ -678,54 +702,13 @@ contract CollectiveGovernance is Governance, VoteStrategy, ERC165, UpgradeableCo
         return meta.description();
     }
 
-    function castVoteFor(
-        uint256 _proposalId,
-        uint256 _tokenId,
-        uint256 _choiceId
-    ) private {
-        uint256 voteCount = 0;
-        voteCount = _storage.voteForByShare(_proposalId, msg.sender, _tokenId, _choiceId);
-        if (voteCount > 0) {
-            emit VoteCount(_proposalId, msg.sender, _tokenId, voteCount, 0);
-        } else {
-            revert NotVoter(_proposalId, msg.sender);
-        }
-    }
-
-    function castVoteAgainst(uint256 _proposalId, uint256 _tokenId) private {
-        uint256 count = _storage.voteAgainstByShare(_proposalId, msg.sender, _tokenId);
-        if (count > 0) {
-            emit VoteCount(_proposalId, msg.sender, _tokenId, 0, count);
-        } else {
-            revert NotVoter(_proposalId, msg.sender);
-        }
-    }
-
-    function castAbstention(uint256 _proposalId, uint256 _tokenId) private {
-        uint256 count = _storage.abstainForShare(_proposalId, msg.sender, _tokenId);
-        if (count > 0) {
-            emit VoteCount(_proposalId, msg.sender, _tokenId, 0, 0);
-        } else {
-            revert NotVoter(_proposalId, msg.sender);
-        }
-    }
-
-    function _undoVote(uint256 _proposalId, uint256 _tokenId) private {
-        uint256 count = _storage.undoVoteById(_proposalId, msg.sender, _tokenId);
-        if (count > 0) {
-            emit VoteUndo(_proposalId, msg.sender, count);
-        } else {
-            revert NotVoter(_proposalId, msg.sender);
-        }
-    }
-
     function sendGasRebate(address recipient, uint256 startGas) internal {
         uint256 balance = getRebateBalance();
         if (balance == 0) {
             return;
         }
         // determine rebate and transfer
-        (uint256 rebate, uint256 gasUsed) = calculateGasRebate(startGas, balance);
+        (uint256 rebate, uint256 gasUsed) = calculateGasRebate(startGas, balance, _maximumBaseFeeRebate, _maximumGasUsedRebate);
         payable(recipient).transfer(rebate);
         emit RebatePaid(recipient, rebate, gasUsed);
     }
@@ -743,20 +726,45 @@ contract CollectiveGovernance is Governance, VoteStrategy, ERC165, UpgradeableCo
         return proposalId;
     }
 
-    /// @notice bounded gas rebate calculation
-    /// @param startGas the initial value of gasleft() function
-    /// @param balance maximum balance of WEI to spend
-    /// @return rebate The rebate
-    /// @return gasUsed The total gas used from gasleft to this call
-    function calculateGasRebate(uint256 startGas, uint256 balance) internal view returns (uint256 rebate, uint256 gasUsed) {
-        uint256 permittedBaseFee = Math.min(block.basefee, _maximumBaseFeeRebate);
-        uint256 permittedGasPrice = Math.min(tx.gasprice, permittedBaseFee + Constant.MAXIMUM_REBATE_PRIORITY_FEE);
+    function _castVoteFor(
+        uint256 _proposalId,
+        uint256 _tokenId,
+        uint256 _choiceId
+    ) internal {
+        uint256 voteCount = 0;
+        voteCount = _storage.voteForByShare(_proposalId, msg.sender, _tokenId, _choiceId);
+        if (voteCount > 0) {
+            emit VoteStrategy.VoteCount(_proposalId, msg.sender, _tokenId, voteCount, 0);
+        } else {
+            revert VoteStrategy.NotVoter(_proposalId, msg.sender);
+        }
+    }
 
-        uint256 totalGasUsed = startGas - gasleft();
+    function _castVoteAgainst(uint256 _proposalId, uint256 _tokenId) internal {
+        uint256 count = _storage.voteAgainstByShare(_proposalId, msg.sender, _tokenId);
+        if (count > 0) {
+            emit VoteStrategy.VoteCount(_proposalId, msg.sender, _tokenId, 0, count);
+        } else {
+            revert VoteStrategy.NotVoter(_proposalId, msg.sender);
+        }
+    }
 
-        uint256 gasUsedForRebate = Math.min(totalGasUsed + Constant.REBATE_BASE_GAS, _maximumGasUsedRebate);
-        uint256 rebateQuantity = Math.min(permittedGasPrice * gasUsedForRebate, balance);
-        return (rebateQuantity, totalGasUsed);
+    function _castAbstention(uint256 _proposalId, uint256 _tokenId) internal {
+        uint256 count = _storage.abstainForShare(_proposalId, msg.sender, _tokenId);
+        if (count > 0) {
+            emit VoteStrategy.VoteCount(_proposalId, msg.sender, _tokenId, 0, 0);
+        } else {
+            revert VoteStrategy.NotVoter(_proposalId, msg.sender);
+        }
+    }
+
+    function _undoVote(uint256 _proposalId, uint256 _tokenId) internal {
+        uint256 count = _storage.undoVoteById(_proposalId, msg.sender, _tokenId);
+        if (count > 0) {
+            emit VoteStrategy.VoteUndo(_proposalId, msg.sender, count);
+        } else {
+            revert VoteStrategy.NotVoter(_proposalId, msg.sender);
+        }
     }
 
     function getBlockTimestamp() internal view returns (uint256) {

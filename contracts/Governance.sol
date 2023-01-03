@@ -43,10 +43,11 @@
  */
 
 pragma solidity ^0.8.15;
-
+import "@openzeppelin/contracts/utils/math/Math.sol";
 import "@openzeppelin/contracts/interfaces/IERC165.sol";
 
 import "../contracts/access/Upgradeable.sol";
+import "../contracts/Constant.sol";
 
 /// @title Governance interface
 /// @notice Requirements for Governance implementation
@@ -55,8 +56,6 @@ interface Governance is Upgradeable, IERC165 {
     error NotEnoughChoices();
     error NotPermitted(address sender);
     error CancelNotPossible(uint256 proposalId, address sender);
-    error NotVoter(uint256 proposalId, address sender);
-    error SupervisorListEmpty();
     error NotSupervisor(uint256 proposalId, address sender);
     error VoteIsOpen(uint256 proposalId);
     error VoteIsClosed(uint256 proposalId);
@@ -64,8 +63,6 @@ interface Governance is Upgradeable, IERC165 {
     error VoteVetoed(uint256 proposalId);
     error VoteFinal(uint256 proposalId);
     error VoteNotFinal(uint256 proposalId);
-    error GasUsedRebateMustBeLarger(uint256 gasUsedRebate, uint256 minimumRebate);
-    error BaseFeeRebateMustBeLarger(uint256 baseFee, uint256 minimumBaseFee);
     error ProposalNotSender(uint256 proposalId, address sender);
     error QuorumNotConfigured(uint256 proposalId);
     error VoteInProgress(uint256 proposalId);
@@ -231,4 +228,17 @@ interface Governance is Upgradeable, IERC165 {
     /// @notice return community description
     /// @return string memory representation of community description
     function description() external view returns (string memory);
+
+    /// @notice start the voting process by proposal id
+    /// @param _proposalId The numeric id of the proposed vote
+    function startVote(uint256 _proposalId) external;
+
+    /// @notice test if an existing proposal is open
+    /// @param _proposalId The numeric id of the proposed vote
+    /// @return bool True if the proposal is open
+    function isOpen(uint256 _proposalId) external view returns (bool);
+
+    /// @notice end voting on an existing proposal by id
+    /// @param _proposalId The numeric id of the proposed vote
+    function endVote(uint256 _proposalId) external;
 }

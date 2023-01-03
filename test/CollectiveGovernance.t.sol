@@ -24,6 +24,14 @@ import "./FlagSet.sol";
 import "./TestData.sol";
 import "../contracts/access/Upgradeable.sol";
 
+contract GasRebateTest is Test {
+    function testGasRebate() public {
+        (uint256 gasRebate, uint256 gasUsed) = calculateGasRebate(100, 1 ether, 200 gwei, 200000);
+        assertEq(gasRebate, 100);
+        assertEq(gasUsed, 100);
+    }
+}
+
 contract CollectiveGovernanceTest is Test {
     uint256 private constant UINT256MAX = Constant.UINT_MAX;
 
@@ -1522,7 +1530,7 @@ contract CollectiveGovernanceTest is Test {
         governance.undoVote(proposalId, TOKEN_ID1);
         vm.stopPrank();
         assertTrue(_VOTER1.balance > 0);
-        assertApproxEqAbs(_VOTER1.balance, 12228528 gwei, 500 gwei);
+        assertApproxEqAbs(_VOTER1.balance, 12225980 gwei, 500 gwei);
     }
 
     function testCastVoteWithRefundMaximum() public {
