@@ -641,6 +641,7 @@ contract CollectiveGovernanceTest is Test {
         governance.voteFor(proposalId, TOKEN_ID1);
     }
 
+<<<<<<< HEAD
     function testUndoRequiresOpen() public {
         (_governanceAddress, _storageAddress, ) = buildVoterPool();
         governance = CollectiveGovernance(_governanceAddress);
@@ -750,6 +751,8 @@ contract CollectiveGovernanceTest is Test {
         governance.undoVote(proposalId);
     }
 
+=======
+>>>>>>> 4dc8923 (removes undo)
     function testVotePassed() public {
         vm.warp(10);
         bytes memory code = address(_storage).code;
@@ -1122,12 +1125,6 @@ contract CollectiveGovernanceTest is Test {
         _storage.setVoteDelay(proposalId, 0xffffffff, _SUPERVISOR);
     }
 
-    function testDirectStorageAccessToUndoVote() public {
-        vm.expectRevert("Ownable: caller is not the owner");
-        vm.prank(_SUPERVISOR);
-        _storage.enableUndoVote(proposalId, _SUPERVISOR);
-    }
-
     function testDirectStorageAccessToReady() public {
         vm.expectRevert("Ownable: caller is not the owner");
         vm.prank(_SUPERVISOR);
@@ -1150,12 +1147,6 @@ contract CollectiveGovernanceTest is Test {
         vm.expectRevert("Ownable: caller is not the owner");
         vm.prank(_VOTER1, _VOTER1);
         _storage.abstainForShare(proposalId, _VOTER1, TOKEN_ID1);
-    }
-
-    function testDirectStorageAccessToUndo() public {
-        vm.expectRevert("Ownable: caller is not the owner");
-        vm.prank(_VOTER1, _VOTER1);
-        _storage.undoVoteById(proposalId, _VOTER1, TOKEN_ID1);
     }
 
     function testDirectStorageAccessToVeto() public {
@@ -1513,27 +1504,7 @@ contract CollectiveGovernanceTest is Test {
         assertApproxEqAbs(_VOTER1.balance, 8784828 gwei, 500 gwei);
     }
 
-    function testVoteAndUndoWithRefund() public {
-        vm.fee(50 gwei);
-
-        vm.deal(_OWNER, 1 ether);
-        vm.prank(_OWNER);
-        _governanceAddress.transfer(1 ether);
-        vm.prank(_governanceAddress);
-        _storage.enableUndoVote(proposalId, _SUPERVISOR);
-        vm.startPrank(_SUPERVISOR, _SUPERVISOR);
-        governance.configure(proposalId, 2);
-        governance.startVote(proposalId);
-        vm.stopPrank();
-        vm.startPrank(_VOTER1, _VOTER1);
-        governance.voteFor(proposalId, TOKEN_ID1);
-        governance.undoVote(proposalId, TOKEN_ID1);
-        vm.stopPrank();
-        assertTrue(_VOTER1.balance > 0);
-        assertApproxEqAbs(_VOTER1.balance, 12225980 gwei, 500 gwei);
-    }
-
-    function testCastVoteWithRefundMaximum() public {
+    function testCastVoteWithMaximumRefund() public {
         vm.fee(1000 gwei);
 
         vm.deal(_OWNER, 1 ether);

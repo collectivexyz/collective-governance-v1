@@ -121,7 +121,7 @@ contract GovernanceStorage is Storage, UpgradeableContract, ERC165, Ownable {
     modifier requireVoteCast(uint256 _proposalId, uint256 _receiptId) {
         Proposal storage proposal = proposalMap[_proposalId];
         Receipt memory receipt = proposal.voteReceipt[_receiptId];
-        if (receipt.abstention || receipt.undoCast) revert VoteRescinded(_proposalId, _receiptId);
+        if (receipt.abstention) revert VoteRescinded(_proposalId, _receiptId);
         if (receipt.votesCast == 0) revert NeverVoted(_proposalId, _receiptId);
         _;
     }
@@ -153,7 +153,7 @@ contract GovernanceStorage is Storage, UpgradeableContract, ERC165, Ownable {
         Proposal storage proposal = proposalMap[_proposalId];
         if (_shareId == 0) revert TokenIdIsNotValid(_proposalId, _shareId);
         Receipt memory receipt = proposal.voteReceipt[_shareId];
-        if (receipt.shareId != 0 || receipt.votesCast > 0 || receipt.abstention || receipt.undoCast)
+        if (receipt.shareId != 0 || receipt.votesCast > 0 || receipt.abstention)
             revert TokenVoted(_proposalId, _wallet, _shareId);
         _;
     }
@@ -181,12 +181,6 @@ contract GovernanceStorage is Storage, UpgradeableContract, ERC165, Ownable {
         if (proposal.startTime > getBlockTimestamp() || proposal.endTime < getBlockTimestamp()) {
             revert VoteNotActive(_proposalId, proposal.startTime, proposal.endTime, getBlockTimestamp());
         }
-        _;
-    }
-
-    modifier requireUndo(uint256 _proposalId) {
-        Proposal storage proposal = proposalMap[_proposalId];
-        if (!proposal.isUndoEnabled) revert UndoNotEnabled(_proposalId);
         _;
     }
 
@@ -323,22 +317,6 @@ contract GovernanceStorage is Storage, UpgradeableContract, ERC165, Ownable {
         Proposal storage proposal = proposalMap[_proposalId];
         proposal.quorumRequired = _quorum;
         emit SetQuorumRequired(_proposalId, _quorum);
-    }
-
-    /// @notice enable the undo feature for this vote
-    /// @dev requires supervisor
-    /// @param _proposalId the id of the proposal
-    /// @param _sender original wallet for this request
-    function enableUndoVote(uint256 _proposalId, address _sender)
-        external
-        onlyOwner
-        requireValid(_proposalId)
-        requireConfig(_proposalId)
-        requireSupervisor(_proposalId, _sender)
-    {
-        Proposal storage proposal = proposalMap[_proposalId];
-        proposal.isUndoEnabled = true;
-        emit UndoVoteEnabled(_proposalId);
     }
 
     /// @notice set the delay period required to preceed the vote
@@ -531,7 +509,6 @@ contract GovernanceStorage is Storage, UpgradeableContract, ERC165, Ownable {
     /// @return votesCast the number of votes cast
     /// @return choiceId the choice voted, 0 if not a choice vote
     /// @return isAbstention true if vote was an abstention
-    /// @return isUndo true if the vote was reversed
     function getVoteReceipt(uint256 _proposalId, uint256 _shareId)
         external
         view
@@ -542,13 +519,12 @@ contract GovernanceStorage is Storage, UpgradeableContract, ERC165, Ownable {
             uint256 shareFor,
             uint256 votesCast,
             uint256 choiceId,
-            bool isAbstention,
-            bool isUndo
+            bool isAbstention
         )
     {
         Proposal storage proposal = proposalMap[_proposalId];
         Receipt memory receipt = proposal.voteReceipt[_shareId];
-        return (receipt.shareId, receipt.shareFor, receipt.votesCast, receipt.choiceId, receipt.abstention, receipt.undoCast);
+        return (receipt.shareId, receipt.shareFor, receipt.votesCast, receipt.choiceId, receipt.abstention);
     }
 
     /// @notice get the VoterClass used for this voting store
@@ -589,7 +565,6 @@ contract GovernanceStorage is Storage, UpgradeableContract, ERC165, Ownable {
         proposal.choiceCount = _choiceCount;
         proposal.isVeto = false;
         proposal.status = Status.CONFIG;
-        proposal.isUndoEnabled = false;
 
         emit InitializeProposal(proposalId, _sender);
         return proposalId;
@@ -695,7 +670,6 @@ contract GovernanceStorage is Storage, UpgradeableContract, ERC165, Ownable {
         receipt.votesCast = _shareCount;
         receipt.choiceId = _choiceId;
         receipt.abstention = false;
-        receipt.undoCast = false;
         proposal.forVotes += _shareCount;
         if (isChoiceVote(_proposalId)) {
             Choice storage choice = proposal.choice[_choiceId];
@@ -735,7 +709,6 @@ contract GovernanceStorage is Storage, UpgradeableContract, ERC165, Ownable {
         receipt.shareFor = 0;
         receipt.votesCast = _shareCount;
         receipt.abstention = false;
-        receipt.undoCast = false;
         proposal.againstVotes += _shareCount;
         emit VoteCast(_proposalId, _wallet, _shareId, _shareCount);
         return _shareCount;
@@ -769,40 +742,6 @@ contract GovernanceStorage is Storage, UpgradeableContract, ERC165, Ownable {
         proposal.abstentionCount += _shareCount;
         emit VoteCast(_proposalId, _wallet, _shareId, _shareCount);
         return _shareCount;
-    }
-
-    /// @notice undo vote for the specified receipt
-    /// @param _proposalId the id of the proposal
-    /// @param _wallet the wallet represented for the vote
-    /// @param _receiptId the id of the share to undo
-    /// @return uint256 the number of votes cast
-    function undoVoteById(
-        uint256 _proposalId,
-        address _wallet,
-        uint256 _receiptId
-    )
-        public
-        onlyOwner
-        requireValid(_proposalId)
-        requireValidReceipt(_proposalId, _receiptId)
-        requireVoteCast(_proposalId, _receiptId)
-        requireReceiptForWallet(_proposalId, _receiptId, _wallet)
-        requireUndo(_proposalId)
-        requireVotingActive(_proposalId)
-        returns (uint256)
-    {
-        Proposal storage proposal = proposalMap[_proposalId];
-        Receipt storage receipt = proposal.voteReceipt[_receiptId];
-        if (receipt.shareFor == 0) revert AffirmativeVoteRequired(_proposalId, _receiptId);
-        uint256 undoVotes = receipt.shareFor;
-        receipt.undoCast = true;
-        proposal.forVotes -= undoVotes;
-        if (proposal.choiceCount > 0) {
-            Choice memory choice = proposal.choice[receipt.choiceId];
-            choice.voteCount -= undoVotes;
-        }
-        emit UndoVote(_proposalId, _wallet, _receiptId, undoVotes);
-        return undoVotes;
     }
 
     /// @notice add a transaction to the specified proposal

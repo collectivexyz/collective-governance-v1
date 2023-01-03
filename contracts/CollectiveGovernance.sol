@@ -514,39 +514,6 @@ contract CollectiveGovernance is VoteStrategy, Governance, ERC165, UpgradeableCo
         sendGasRebate(msg.sender, startGas);
     }
 
-    /// @notice undo any previous vote if any
-    /// @dev Only applies to affirmative vote.
-    /// auto discovery is attempted and if possible the method will proceed using the discovered shares
-    /// @param _proposalId The numeric id of the proposed vote
-    function undoVote(uint256 _proposalId)
-        external
-        requireVoteFinal(_proposalId)
-        requireVoteOpen(_proposalId)
-        requireVoteAccepted(_proposalId)
-    {
-        uint256 startGas = gasleft();
-        uint256[] memory _shareList = _voterClass.discover(msg.sender);
-        for (uint256 i = 0; i < _shareList.length; i++) {
-            _undoVote(_proposalId, _shareList[i]);
-        }
-        sendGasRebate(msg.sender, startGas);
-    }
-
-    /// @notice undo any previous vote if any
-    /// @dev only applies to affirmative vote
-    /// @param _proposalId The numeric id of the proposed vote
-    /// @param _tokenId The id of a token or share representing the right to vote
-    function undoVote(uint256 _proposalId, uint256 _tokenId)
-        external
-        requireVoteFinal(_proposalId)
-        requireVoteOpen(_proposalId)
-        requireVoteAccepted(_proposalId)
-    {
-        uint256 startGas = gasleft();
-        _undoVote(_proposalId, _tokenId);
-        sendGasRebate(msg.sender, startGas);
-    }
-
     /// @notice veto proposal by id
     /// @param _proposalId The numeric id of the proposed vote
     /// @dev transaction must be signed by a supervisor wallet
@@ -753,15 +720,6 @@ contract CollectiveGovernance is VoteStrategy, Governance, ERC165, UpgradeableCo
         uint256 count = _storage.abstainForShare(_proposalId, msg.sender, _tokenId);
         if (count > 0) {
             emit VoteStrategy.VoteCount(_proposalId, msg.sender, _tokenId, 0, 0);
-        } else {
-            revert VoteStrategy.NotVoter(_proposalId, msg.sender);
-        }
-    }
-
-    function _undoVote(uint256 _proposalId, uint256 _tokenId) internal {
-        uint256 count = _storage.undoVoteById(_proposalId, msg.sender, _tokenId);
-        if (count > 0) {
-            emit VoteStrategy.VoteUndo(_proposalId, msg.sender, count);
         } else {
             revert VoteStrategy.NotVoter(_proposalId, msg.sender);
         }

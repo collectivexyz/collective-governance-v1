@@ -108,7 +108,6 @@ interface Storage is Upgradeable, IERC165 {
         uint256 transactionId,
         bytes32 txHash
     );
-    event UndoVoteEnabled(uint256 proposalId);
     event AddTransaction(
         uint256 proposalId,
         uint256 transactionId,
@@ -122,7 +121,6 @@ interface Storage is Upgradeable, IERC165 {
 
     event VoteCast(uint256 proposalId, address voter, uint256 shareId, uint256 totalVotesCast);
     event ChoiceVoteCast(uint256 proposalId, address voter, uint256 shareId, uint256 choiceId, uint256 totalVotesCast);
-    event UndoVote(uint256 proposalId, address voter, uint256 shareId, uint256 votesUndone);
     event VoteVeto(uint256 proposalId, address supervisor);
     event VoteFinal(uint256 proposalId, uint256 startTime, uint256 endTime);
     event VoteCancel(uint256 proposalId, address supervisor);
@@ -172,8 +170,6 @@ interface Storage is Upgradeable, IERC165 {
         bool isExecuted;
         /// @notice current status for this proposal
         Status status;
-        /// @notice this proposal allows undo votes
-        bool isUndoEnabled;
         /// @notice Receipts of ballots for the entire set of voters
         mapping(uint256 => Receipt) voteReceipt;
         /// @notice configured supervisors
@@ -198,8 +194,6 @@ interface Storage is Upgradeable, IERC165 {
         uint256 choiceId;
         /// @notice did the voter abstain
         bool abstention;
-        /// @notice has this share been reversed
-        bool undoCast;
     }
 
     struct Supervisor {
@@ -283,12 +277,6 @@ interface Storage is Upgradeable, IERC165 {
         uint256 _quorum,
         address _sender
     ) external;
-
-    /// @notice enable the undo feature for this vote
-    /// @dev requires supervisor
-    /// @param _proposalId the id of the proposal
-    /// @param _sender original wallet for this request
-    function enableUndoVote(uint256 _proposalId, address _sender) external;
 
     /// @notice set the delay period required to preceed the vote
     /// @dev requires supervisor
@@ -462,7 +450,6 @@ interface Storage is Upgradeable, IERC165 {
     /// @return votesCast the number of votes cast
     /// @return choiceId the choice voted, 0 if not a choice vote
     /// @return isAbstention true if vote was an abstention
-    /// @return isUndo true if the vote was reversed
     function getVoteReceipt(uint256 _proposalId, uint256 _shareId)
         external
         view
@@ -471,8 +458,7 @@ interface Storage is Upgradeable, IERC165 {
             uint256 shareFor,
             uint256 votesCast,
             uint256 choiceId,
-            bool isAbstention,
-            bool isUndo
+            bool isAbstention
         );
 
     /// @notice get the VoterClass used for this voting store
@@ -547,17 +533,6 @@ interface Storage is Upgradeable, IERC165 {
         uint256 _proposalId,
         address _wallet,
         uint256 _shareId
-    ) external returns (uint256);
-
-    /// @notice undo vote for the specified receipt
-    /// @param _proposalId the id of the proposal
-    /// @param _wallet the wallet represented for the vote
-    /// @param _receiptId the id of the share to undo
-    /// @return uint256 the number of votes cast
-    function undoVoteById(
-        uint256 _proposalId,
-        address _wallet,
-        uint256 _receiptId
     ) external returns (uint256);
 
     /// @notice add a transaction to the specified proposal

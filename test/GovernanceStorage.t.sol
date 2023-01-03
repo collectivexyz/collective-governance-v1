@@ -416,56 +416,16 @@ contract GovernanceStorageTest is Test {
         _storage.makeFinal(_proposalId, _SUPERVISOR);
         _storage.voteForByShare(_proposalId, _VOTER1, uint160(_VOTER1));
 
-        (uint256 shareId, uint256 shareFor, uint256 voteCast, uint256 choiceId, bool abstention, bool isUndo) = _storage
-            .getVoteReceipt(_proposalId, uint160(_VOTER1));
+        (uint256 shareId, uint256 shareFor, uint256 voteCast, uint256 choiceId, bool abstention) = _storage.getVoteReceipt(
+            _proposalId,
+            uint160(_VOTER1)
+        );
 
         assertEq(shareId, uint160(_VOTER1));
         assertEq(shareFor, 1);
         assertEq(voteCast, 1);
         assertEq(choiceId, 0);
         assertFalse(abstention);
-        assertFalse(isUndo);
-    }
-
-    function testVoterReceiptWithUndo() public {
-        _storage.registerSupervisor(_proposalId, _SUPERVISOR, _OWNER);
-        _storage.enableUndoVote(_proposalId, _SUPERVISOR);
-        _storage.setQuorumRequired(_proposalId, 2, _SUPERVISOR);
-        _storage.makeFinal(_proposalId, _SUPERVISOR);
-        _storage.voteForByShare(_proposalId, _VOTER1, uint160(_VOTER1));
-        _storage.undoVoteById(_proposalId, _VOTER1, uint160(_VOTER1));
-
-        (uint256 shareId, uint256 shareFor, uint256 voteCast, uint256 choiceId, bool abstention, bool isUndo) = _storage
-            .getVoteReceipt(_proposalId, uint160(_VOTER1));
-
-        assertEq(shareId, uint160(_VOTER1));
-        assertEq(shareFor, 1);
-        assertEq(voteCast, 1);
-        assertEq(choiceId, 0);
-        assertFalse(abstention);
-        assertTrue(isUndo);
-    }
-
-    function testAgainstWithUndo() public {
-        _storage.registerSupervisor(_proposalId, _SUPERVISOR, _OWNER);
-        _storage.enableUndoVote(_proposalId, _SUPERVISOR);
-        _storage.setQuorumRequired(_proposalId, 2, _SUPERVISOR);
-        _storage.makeFinal(_proposalId, _SUPERVISOR);
-        uint160 tokenId = uint160(_VOTER1);
-        _storage.voteAgainstByShare(_proposalId, _VOTER1, tokenId);
-        vm.expectRevert(abi.encodeWithSelector(Storage.AffirmativeVoteRequired.selector, _proposalId, tokenId));
-        _storage.undoVoteById(_proposalId, _VOTER1, tokenId);
-    }
-
-    function testAbstainWithUndo() public {
-        _storage.registerSupervisor(_proposalId, _SUPERVISOR, _OWNER);
-        _storage.enableUndoVote(_proposalId, _SUPERVISOR);
-        _storage.setQuorumRequired(_proposalId, 2, _SUPERVISOR);
-        _storage.makeFinal(_proposalId, _SUPERVISOR);
-        uint160 tokenId = uint160(_VOTER1);
-        _storage.abstainForShare(_proposalId, _VOTER1, tokenId);
-        vm.expectRevert(abi.encodeWithSelector(Storage.VoteRescinded.selector, _proposalId, tokenId));
-        _storage.undoVoteById(_proposalId, _VOTER1, tokenId);
     }
 
     function testVoteAgainstReceipt() public {
@@ -474,15 +434,16 @@ contract GovernanceStorageTest is Test {
         _storage.makeFinal(_proposalId, _SUPERVISOR);
         _storage.voteAgainstByShare(_proposalId, _VOTER1, uint160(_VOTER1));
 
-        (uint256 shareId, uint256 shareFor, uint256 voteCast, uint256 choiceId, bool abstention, bool isUndo) = _storage
-            .getVoteReceipt(_proposalId, uint160(_VOTER1));
+        (uint256 shareId, uint256 shareFor, uint256 voteCast, uint256 choiceId, bool abstention) = _storage.getVoteReceipt(
+            _proposalId,
+            uint160(_VOTER1)
+        );
 
         assertEq(shareId, uint160(_VOTER1));
         assertEq(shareFor, 0);
         assertEq(voteCast, 1);
         assertEq(choiceId, 0);
         assertFalse(abstention);
-        assertFalse(isUndo);
     }
 
     function testAbstentionReceipt() public {
@@ -491,15 +452,16 @@ contract GovernanceStorageTest is Test {
         _storage.makeFinal(_proposalId, _SUPERVISOR);
         _storage.abstainForShare(_proposalId, _VOTER1, uint160(_VOTER1));
 
-        (uint256 shareId, uint256 shareFor, uint256 voteCast, uint256 choiceId, bool abstention, bool isUndo) = _storage
-            .getVoteReceipt(_proposalId, uint160(_VOTER1));
+        (uint256 shareId, uint256 shareFor, uint256 voteCast, uint256 choiceId, bool abstention) = _storage.getVoteReceipt(
+            _proposalId,
+            uint160(_VOTER1)
+        );
 
         assertEq(shareId, uint160(_VOTER1));
         assertEq(shareFor, 0);
         assertEq(voteCast, 1);
         assertEq(choiceId, 0);
         assertTrue(abstention);
-        assertFalse(isUndo);
     }
 
     function testVoterDirectlyCastOneVote() public {
@@ -569,29 +531,6 @@ contract GovernanceStorageTest is Test {
         vm.warp(startTime + 3600);
         _storage.voteForByShare(_proposalId, _VOTER1, uint160(_VOTER1));
         assertEq(1, _storage.forVotes(_proposalId));
-    }
-
-    function testVoteWithUndo() public {
-        _storage.registerSupervisor(_proposalId, _SUPERVISOR, _OWNER);
-        _storage.enableUndoVote(_proposalId, _SUPERVISOR);
-        _storage.setQuorumRequired(_proposalId, 2, _SUPERVISOR);
-        _storage.makeFinal(_proposalId, _SUPERVISOR);
-        _storage.voteForByShare(_proposalId, _VOTER1, uint160(_VOTER1));
-        assertEq(_storage.quorum(_proposalId), 1);
-        _storage.undoVoteById(_proposalId, _VOTER1, uint160(_VOTER1));
-        assertEq(_storage.quorum(_proposalId), NONE);
-    }
-
-    function testVoteWithDoubleUndo() public {
-        _storage.registerSupervisor(_proposalId, _SUPERVISOR, _OWNER);
-        _storage.enableUndoVote(_proposalId, _SUPERVISOR);
-        _storage.setQuorumRequired(_proposalId, 2, _SUPERVISOR);
-        _storage.makeFinal(_proposalId, _SUPERVISOR);
-        uint160 tokenId = uint160(_VOTER1);
-        _storage.voteForByShare(_proposalId, _VOTER1, tokenId);
-        _storage.undoVoteById(_proposalId, _VOTER1, tokenId);
-        vm.expectRevert(abi.encodeWithSelector(Storage.VoteRescinded.selector, _proposalId, tokenId));
-        _storage.undoVoteById(_proposalId, _VOTER1, tokenId);
     }
 
     function testName() public {
@@ -1142,14 +1081,15 @@ contract GovernanceStorageChoiceVoteTest is Test {
         }
         _storage.makeFinal(_proposalId, _SUPERVISOR);
         _storage.voteForByShare(_proposalId, _VOTER1, uint160(_VOTER1), 1);
-        (uint256 shareId, uint256 shareFor, uint256 votesCast, uint256 choiceId, bool isAbstention, bool isUndo) = _storage
-            .getVoteReceipt(_proposalId, uint160(_VOTER1));
+        (uint256 shareId, uint256 shareFor, uint256 votesCast, uint256 choiceId, bool isAbstention) = _storage.getVoteReceipt(
+            _proposalId,
+            uint160(_VOTER1)
+        );
         assertEq(shareId, uint160(_VOTER1));
         assertEq(shareFor, 1);
         assertEq(votesCast, 1);
         assertEq(choiceId, 1);
         assertFalse(isAbstention);
-        assertFalse(isUndo);
     }
 
     function testIsChoiceVote() public {
