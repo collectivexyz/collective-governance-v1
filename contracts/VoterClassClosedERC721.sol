@@ -66,7 +66,7 @@ contract VoterClassClosedERC721 is VoterClassERC721 {
 
     /// @notice determine if adding a proposal is approved for this voter
     /// @return bool true if this address is approved
-    function isProposalApproved(address _wallet) external view virtual override(VoterClassERC721) returns (bool) {
+    function canPropose(address _wallet) external view virtual override(VoterClassERC721) returns (bool) {
         uint256 balance = IERC721(_contractAddress).balanceOf(_wallet);
         return balance >= _tokenRequirement;
     }

@@ -75,7 +75,7 @@ contract VoterClassOpenVote is VoterClass, AlwaysFinal, UpgradeableContract, ERC
 
     /// @notice determine if adding a proposal is approved for this voter
     /// @return bool always true
-    function isProposalApproved(address) external pure returns (bool) {
+    function canPropose(address) external pure returns (bool) {
         return true;
     }
 

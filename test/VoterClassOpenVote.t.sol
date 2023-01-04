@@ -17,8 +17,8 @@ contract VoterClassOpenVoteTest is Test {
     }
 
     function testOpenToPropose() public {
-        assertTrue(_class.isProposalApproved(_OWNER));
-        assertTrue(_class.isProposalApproved(_NOTOWNER));
+        assertTrue(_class.canPropose(_OWNER));
+        assertTrue(_class.canPropose(_NOTOWNER));
     }
 
     function testDiscoverVoteOwner() public {

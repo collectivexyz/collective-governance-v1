@@ -141,7 +141,7 @@ contract VoterClassVoterPool is VoterClass, ConfigurableMutable, UpgradeableCont
     /// @dev listed voter is required for proposal
     /// @param _sender The address of the sender
     /// @return bool true if this address is approved
-    function isProposalApproved(address _sender) external view returns (bool) {
+    function canPropose(address _sender) external view returns (bool) {
         return isVoter(_sender);
     }
 

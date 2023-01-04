@@ -87,7 +87,7 @@ contract VoterClassERC721 is VoterClass, AlwaysFinal, UpgradeableContract, ERC16
 
     /// @notice determine if adding a proposal is approved for this voter
     /// @return bool true if this address is approved
-    function isProposalApproved(address) external view virtual returns (bool) {
+    function canPropose(address) external view virtual returns (bool) {
         return true;
     }
 

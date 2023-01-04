@@ -731,7 +731,7 @@ contract CollectiveGovernance is Governance, VoteStrategy, ERC165, UpgradeableCo
     }
 
     function _proposeVote(uint256 _choiceCount, address _sender) private returns (uint256) {
-        if (!_voterClass.isProposalApproved(_sender)) revert NotPermitted(_sender);
+        if (!_voterClass.canPropose(_sender)) revert NotPermitted(_sender);
         uint256 proposalId = _storage.initializeProposal(_choiceCount, _sender);
         for (uint256 i = 0; i < _communitySupervisorList.length; i++) {
             _storage.registerSupervisor(proposalId, _communitySupervisorList[i], true, _sender);
