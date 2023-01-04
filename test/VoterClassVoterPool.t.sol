@@ -19,13 +19,13 @@ contract VoterClassVoterPoolTest is Test {
     function testOpenToMemberPropose() public {
         _class.addVoter(_VOTER);
         _class.makeFinal();
-        assertTrue(_class.isProposalApproved(_VOTER));
+        assertTrue(_class.canPropose(_VOTER));
     }
 
     function testClosedToPropose() public {
         _class.addVoter(_VOTER);
         _class.makeFinal();
-        assertFalse(_class.isProposalApproved(_NOTVOTER));
+        assertFalse(_class.canPropose(_NOTVOTER));
     }
 
     function testFailEmptyClass() public {

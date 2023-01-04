@@ -28,14 +28,14 @@ contract VoterClassClosedERC721Test is Test {
     }
 
     function testOpenToMemberPropose() public {
-        assertTrue(_class.isProposalApproved(_OWNER));
+        assertTrue(_class.canPropose(_OWNER));
     }
 
     function testNotOpenToPartOwnerPropose() public {
-        assertFalse(_class.isProposalApproved(_PARTOWNER));
+        assertFalse(_class.canPropose(_PARTOWNER));
     }
 
     function testClosedToPropose() public {
-        assertFalse(_class.isProposalApproved(_NOTOWNER));
+        assertFalse(_class.canPropose(_NOTOWNER));
     }
 }

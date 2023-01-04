@@ -63,7 +63,7 @@ contract VoterClassNullObject is VoterClass, AlwaysFinal, UpgradeableContract, E
 
     /// @notice determine if adding a proposal is approved for this voter
     /// @return bool always false
-    function isProposalApproved(address) external pure returns (bool) {
+    function canPropose(address) external pure returns (bool) {
         return false;
     }
 
