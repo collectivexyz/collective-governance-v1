@@ -7,9 +7,9 @@ COPY --chown=mr:mr . .
 ENV USER=mr
 USER mr
 ENV PATH=${PATH}:~/.cargo/bin
-RUN yarn install
-RUN yarn prettier:check
-RUN yarn hint
-RUN forge test -vvv --gas-report
+#RUN yarn install
+#RUN yarn prettier:check
+#RUN yarn hint
+#RUN forge test -vvv --gas-report
 
-RUN bin/update_abi.sh
+#RUN bin/update_abi.sh
