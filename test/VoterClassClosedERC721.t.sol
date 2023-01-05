@@ -5,7 +5,7 @@ import "forge-std/Test.sol";
 
 import "../contracts/VoterClassClosedERC721.sol";
 
-import "../contracts/access/Upgradeable.sol";
+import "../contracts/access/Versioned.sol";
 import "./MockERC721.sol";
 import "./MockERC721Enum.sol";
 

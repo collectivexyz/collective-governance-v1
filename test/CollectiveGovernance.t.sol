@@ -19,7 +19,7 @@ import "../contracts/VoteStrategy.sol";
 import "../contracts/Governance.sol";
 import "../contracts/CollectiveGovernance.sol";
 import "../contracts/GovernanceBuilder.sol";
-import "../contracts/access/Upgradeable.sol";
+import "../contracts/access/Versioned.sol";
 
 import "./MockERC721.sol";
 import "./FlagSet.sol";
@@ -1057,8 +1057,8 @@ contract CollectiveGovernanceTest is Test {
         assertTrue(governance.supportsInterface(govId));
     }
 
-    function testSupportsInterfaceUpgradeable() public {
-        bytes4 ifId = type(Upgradeable).interfaceId;
+    function testSupportsInterfaceVersioned() public {
+        bytes4 ifId = type(Versioned).interfaceId;
         assertTrue(governance.supportsInterface(ifId));
     }
 

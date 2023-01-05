@@ -43,11 +43,11 @@
  */
 pragma solidity ^0.8.15;
 
-import "../contracts/access/Upgradeable.sol";
+import "../contracts/access/Versioned.sol";
 import "../contracts/Constant.sol";
 
-/// @title Upgradeable contract
-contract UpgradeableContract is Upgradeable {
+/// @title Versioned contract
+contract VersionedContract is Versioned {
     /// @notice return the version number of this contract
     /// @return uint32 the version number
     function version() external pure returns (uint32) {

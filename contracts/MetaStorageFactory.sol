@@ -49,13 +49,13 @@ import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
 import "../contracts/MetaStorage.sol";
 import "../contracts/MetaProxyCreator.sol";
 import "../contracts/CollectiveMetaStorage.sol";
-import "../contracts/access/Upgradeable.sol";
-import "../contracts/access/UpgradeableContract.sol";
+import "../contracts/access/Versioned.sol";
+import "../contracts/access/VersionedContract.sol";
 
 /**
  * @title CollectiveStorage creational contract
  */
-contract MetaStorageFactory is MetaProxyCreator, UpgradeableContract, ERC165 {
+contract MetaStorageFactory is MetaProxyCreator, VersionedContract, ERC165 {
     /// @notice create meta storage
     /// @param _community The community name
     /// @param _url The Url for this community
@@ -75,7 +75,7 @@ contract MetaStorageFactory is MetaProxyCreator, UpgradeableContract, ERC165 {
     function supportsInterface(bytes4 interfaceId) public view virtual override(IERC165, ERC165) returns (bool) {
         return
             interfaceId == type(MetaProxyCreator).interfaceId ||
-            interfaceId == type(Upgradeable).interfaceId ||
+            interfaceId == type(Versioned).interfaceId ||
             super.supportsInterface(interfaceId);
     }
 }

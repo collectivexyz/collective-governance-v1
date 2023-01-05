@@ -49,8 +49,8 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 
 import "../contracts/Storage.sol";
 import "../contracts/VoterClass.sol";
-import "../contracts/access/Upgradeable.sol";
-import "../contracts/access/UpgradeableContract.sol";
+import "../contracts/access/Versioned.sol";
+import "../contracts/access/VersionedContract.sol";
 
 /// @title GovernanceStorage implementation
 /// @notice GovernanceStorage implements the necesscary infrastructure for
@@ -58,7 +58,7 @@ import "../contracts/access/UpgradeableContract.sol";
 /// @dev The creator of the contract, typically the Governance contract itself,
 /// privledged with respect to write opperations in this contract.   The creator
 /// is required for nearly all change operations
-contract GovernanceStorage is Storage, UpgradeableContract, ERC165, Ownable {
+contract GovernanceStorage is Storage, VersionedContract, ERC165, Ownable {
     /// @notice contract name
     string public constant NAME = "collective storage";
 
@@ -998,7 +998,7 @@ contract GovernanceStorage is Storage, UpgradeableContract, ERC165, Ownable {
         return
             interfaceId == type(Storage).interfaceId ||
             interfaceId == type(Ownable).interfaceId ||
-            interfaceId == type(Upgradeable).interfaceId ||
+            interfaceId == type(Versioned).interfaceId ||
             super.supportsInterface(interfaceId);
     }
 

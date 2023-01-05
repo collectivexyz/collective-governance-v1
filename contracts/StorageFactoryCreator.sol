@@ -47,13 +47,13 @@ import "@openzeppelin/contracts/interfaces/IERC165.sol";
 
 import "../contracts/VoterClass.sol";
 import "../contracts/Storage.sol";
-import "../contracts/access/Upgradeable.sol";
+import "../contracts/access/Versioned.sol";
 
 /**
  * @title proxy interface for Storage Contract creation
  */
 /// @custom:type interface
-interface StorageFactoryCreator is Upgradeable, IERC165 {
+interface StorageFactoryCreator is Versioned, IERC165 {
     /// @notice create a new storage object with VoterClass as the voting population
     /// @param _class the contract that defines the popluation
     /// @param _minimumQuorum the least possible quorum

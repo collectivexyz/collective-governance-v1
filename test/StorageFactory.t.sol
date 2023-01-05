@@ -8,7 +8,7 @@ import "forge-std/Test.sol";
 import "../contracts/Storage.sol";
 import "../contracts/StorageFactory.sol";
 import "../contracts/VoterClassFactory.sol";
-import "../contracts/access/Upgradeable.sol";
+import "../contracts/access/Versioned.sol";
 
 import "./TestData.sol";
 
@@ -54,8 +54,8 @@ contract StorageFactoryTest is Test {
         assertTrue(_storageFactory.supportsInterface(ifId));
     }
 
-    function testSupportsInterfaceUpgradeable() public {
-        bytes4 ifId = type(Upgradeable).interfaceId;
+    function testSupportsInterfaceVersioned() public {
+        bytes4 ifId = type(Versioned).interfaceId;
         assertTrue(_storageFactory.supportsInterface(ifId));
     }
 }

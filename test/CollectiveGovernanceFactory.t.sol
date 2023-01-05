@@ -12,7 +12,7 @@ import "../contracts/CollectiveMetaStorage.sol";
 import "../contracts/VoterClassFactory.sol";
 import "../contracts/GovernanceFactoryCreator.sol";
 import "../contracts/GovernanceFactory.sol";
-import "../contracts/access/Upgradeable.sol";
+import "../contracts/access/Versioned.sol";
 
 contract GovernanceFactoryTest is Test {
     address public constant _OWNER = address(0x1001);
@@ -119,8 +119,8 @@ contract GovernanceFactoryTest is Test {
         assertTrue(_governanceFactory.supportsInterface(ifId));
     }
 
-    function testSupportsInterfaceUpgradeable() public {
-        bytes4 ifId = type(Upgradeable).interfaceId;
+    function testSupportsInterfaceVersioned() public {
+        bytes4 ifId = type(Versioned).interfaceId;
         assertTrue(_governanceFactory.supportsInterface(ifId));
     }
 }

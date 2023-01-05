@@ -12,7 +12,7 @@ import "../contracts/VoterClassCreator.sol";
 import "../contracts/VoterClassFactory.sol";
 import "../contracts/Storage.sol";
 import "../contracts/System.sol";
-import "../contracts/access/Upgradeable.sol";
+import "../contracts/access/Versioned.sol";
 
 import "./MockERC721.sol";
 
@@ -142,7 +142,7 @@ contract SystemTest is Test {
         address mock = address(0);
         bytes4 ifId = type(GovernanceCreator).interfaceId;
         vm.mockCall(mock, abi.encodeWithSelector(IERC165.supportsInterface.selector, ifId), abi.encode(true));
-        vm.mockCall(mock, abi.encodeWithSelector(Upgradeable.version.selector), abi.encode(version));
+        vm.mockCall(mock, abi.encodeWithSelector(Versioned.version.selector), abi.encode(version));
         GovernanceCreator eMock = GovernanceCreator(mock);
         assertTrue(eMock.supportsInterface(ifId));
         return mock;
@@ -156,7 +156,7 @@ contract SystemTest is Test {
         address mock = address(1);
         bytes4 ifId = type(VoterClassCreator).interfaceId;
         vm.mockCall(mock, abi.encodeWithSelector(IERC165.supportsInterface.selector, ifId), abi.encode(true));
-        vm.mockCall(mock, abi.encodeWithSelector(Upgradeable.version.selector), abi.encode(version));
+        vm.mockCall(mock, abi.encodeWithSelector(Versioned.version.selector), abi.encode(version));
         VoterClassCreator eMock = VoterClassCreator(mock);
         assertTrue(eMock.supportsInterface(ifId));
         return mock;
@@ -165,7 +165,7 @@ contract SystemTest is Test {
     function mockNotCompliant() private returns (address) {
         address mock = address(3);
         vm.mockCall(mock, abi.encodeWithSelector(IERC165.supportsInterface.selector), abi.encode(false));
-        vm.mockCall(mock, abi.encodeWithSelector(Upgradeable.version.selector), abi.encode(0));
+        vm.mockCall(mock, abi.encodeWithSelector(Versioned.version.selector), abi.encode(0));
         return mock;
     }
 }

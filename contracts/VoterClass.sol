@@ -46,7 +46,7 @@ pragma solidity ^0.8.15;
 import "@openzeppelin/contracts/interfaces/IERC165.sol";
 
 import "../contracts/access/Mutable.sol";
-import "../contracts/access/Upgradeable.sol";
+import "../contracts/access/Versioned.sol";
 
 /// @title VoterClass interface
 /// @notice The VoterClass interface defines the requirements for specifying a
@@ -54,7 +54,7 @@ import "../contracts/access/Upgradeable.sol";
 /// @dev The VoterClass is stateless and therefore does not require any special
 /// privledges.   It can be called by anyone.
 /// @custom:type interface
-interface VoterClass is Mutable, Upgradeable, IERC165 {
+interface VoterClass is Mutable, Versioned, IERC165 {
     error NotVoter(address wallet);
     error NotOwner(address tokenContract, address wallet);
     error EmptyClass();

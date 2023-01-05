@@ -49,13 +49,13 @@ import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
 import "../contracts/StorageFactoryCreator.sol";
 import "../contracts/GovernanceStorage.sol";
 
-import "../contracts/access/Upgradeable.sol";
-import "../contracts/access/UpgradeableContract.sol";
+import "../contracts/access/Versioned.sol";
+import "../contracts/access/VersionedContract.sol";
 
 /**
  * @title CollectiveStorage creational contract
  */
-contract StorageFactory is StorageFactoryCreator, UpgradeableContract, ERC165 {
+contract StorageFactory is StorageFactoryCreator, VersionedContract, ERC165 {
     /// @notice create a new storage object with VoterClass as the voting population
     /// @param _class the contract that defines the popluation
     /// @param _minimumQuorum the least possible quorum
@@ -77,7 +77,7 @@ contract StorageFactory is StorageFactoryCreator, UpgradeableContract, ERC165 {
     function supportsInterface(bytes4 interfaceId) public view virtual override(IERC165, ERC165) returns (bool) {
         return
             interfaceId == type(StorageFactoryCreator).interfaceId ||
-            interfaceId == type(Upgradeable).interfaceId ||
+            interfaceId == type(Versioned).interfaceId ||
             super.supportsInterface(interfaceId);
     }
 }

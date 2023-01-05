@@ -5,7 +5,7 @@ import "@openzeppelin/contracts/interfaces/IERC165.sol";
 
 import "forge-std/Test.sol";
 
-import "../contracts/access/Upgradeable.sol";
+import "../contracts/access/Versioned.sol";
 import "../contracts/VoterClassFactory.sol";
 
 contract VoterClassFactoryTest is Test {
@@ -39,8 +39,8 @@ contract VoterClassFactoryTest is Test {
         assertTrue(voterPool != NONE);
     }
 
-    function testSupportsInterfaceUpgradeable() public {
-        bytes4 ifId = type(Upgradeable).interfaceId;
+    function testSupportsInterfaceVersioned() public {
+        bytes4 ifId = type(Versioned).interfaceId;
         assertTrue(_factory.supportsInterface(ifId));
     }
 

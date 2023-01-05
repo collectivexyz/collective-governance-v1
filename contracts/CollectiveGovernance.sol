@@ -53,8 +53,8 @@ import "../contracts/Governance.sol";
 import "../contracts/VoteStrategy.sol";
 import "../contracts/VoterClass.sol";
 import "../contracts/TimeLock.sol";
-import "../contracts/access/Upgradeable.sol";
-import "../contracts/access/UpgradeableContract.sol";
+import "../contracts/access/Versioned.sol";
+import "../contracts/access/VersionedContract.sol";
 
 /// @notice bounded gas rebate calculation
 /// @param startGas the initial value of gasleft() function
@@ -91,7 +91,7 @@ function calculateGasRebate(
 ///
 /// @dev The VoterClass is common to all proposed votes as are the project supervisors.   Individual supervisors may
 /// be configured as part of the proposal creation workflow but project supervisors are always included.
-contract CollectiveGovernance is VoteStrategy, Governance, ERC165, UpgradeableContract {
+contract CollectiveGovernance is VoteStrategy, Governance, ERC165, VersionedContract {
     string public constant NAME = "collective governance";
 
     VoterClass public immutable _voterClass;
@@ -551,7 +551,7 @@ contract CollectiveGovernance is VoteStrategy, Governance, ERC165, UpgradeableCo
         return
             interfaceId == type(Governance).interfaceId ||
             interfaceId == type(VoteStrategy).interfaceId ||
-            interfaceId == type(Upgradeable).interfaceId ||
+            interfaceId == type(Versioned).interfaceId ||
             super.supportsInterface(interfaceId);
     }
 

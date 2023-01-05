@@ -47,10 +47,10 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 
 import "../contracts/GovernanceCreator.sol";
 import "../contracts/Governance.sol";
-import "../contracts/access/UpgradeableContract.sol";
+import "../contracts/access/VersionedContract.sol";
 import "../contracts/VoterClassCreator.sol";
 
-contract System is Ownable, UpgradeableContract {
+contract System is Ownable, VersionedContract {
     string public constant NAME = "Governance System Creator";
 
     error NotGovernanceCreator(address creator);

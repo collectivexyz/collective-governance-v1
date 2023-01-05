@@ -49,8 +49,8 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "../contracts/access/Mutable.sol";
 import "../contracts/access/ConfigurableMutable.sol";
 import "../contracts/VoterClass.sol";
-import "../contracts/access/Upgradeable.sol";
-import "../contracts/access/UpgradeableContract.sol";
+import "../contracts/access/Versioned.sol";
+import "../contracts/access/VersionedContract.sol";
 
 /// @title interface for VoterPool
 /// @notice sets the requirements for contracts implementing a VoterPool
@@ -76,7 +76,7 @@ interface VoterPool {
 /// @notice This contract supports voting for a specific list of wallet addresses.   Each address must be added
 /// to the contract prior to voting at which time the pool must be marked as final so that it becomes impossible
 /// to modify
-contract VoterClassVoterPool is VoterClass, ConfigurableMutable, UpgradeableContract, Ownable, ERC165 {
+contract VoterClassVoterPool is VoterClass, ConfigurableMutable, VersionedContract, Ownable, ERC165 {
     error DuplicateRegistration(address voter);
     event RegisterVoter(address voter);
     event BurnVoter(address voter);
@@ -184,7 +184,7 @@ contract VoterClassVoterPool is VoterClass, ConfigurableMutable, UpgradeableCont
             interfaceId == type(VoterClass).interfaceId ||
             interfaceId == type(Ownable).interfaceId ||
             interfaceId == type(Mutable).interfaceId ||
-            interfaceId == type(Upgradeable).interfaceId ||
+            interfaceId == type(Versioned).interfaceId ||
             super.supportsInterface(interfaceId);
     }
 

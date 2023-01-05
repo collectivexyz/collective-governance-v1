@@ -57,12 +57,12 @@ import "../contracts/Storage.sol";
 import "../contracts/StorageFactory.sol";
 import "../contracts/MetaStorage.sol";
 import "../contracts/MetaStorageFactory.sol";
-import "../contracts/access/Upgradeable.sol";
-import "../contracts/access/UpgradeableContract.sol";
+import "../contracts/access/Versioned.sol";
+import "../contracts/access/VersionedContract.sol";
 
 /// @title Governance GovernanceCreator implementation
 /// @notice This builder supports creating new instances of the Collective Governance Contract
-contract GovernanceBuilder is GovernanceCreator, UpgradeableContract, ERC165, Ownable {
+contract GovernanceBuilder is GovernanceCreator, VersionedContract, ERC165, Ownable {
     string public constant NAME = "collective governance builder";
 
     mapping(address => GovernanceProperties) private _buildMap;
@@ -346,7 +346,7 @@ contract GovernanceBuilder is GovernanceCreator, UpgradeableContract, ERC165, Ow
         return
             interfaceId == type(GovernanceCreator).interfaceId ||
             interfaceId == type(Ownable).interfaceId ||
-            interfaceId == type(Upgradeable).interfaceId ||
+            interfaceId == type(Versioned).interfaceId ||
             super.supportsInterface(interfaceId);
     }
 

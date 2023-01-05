@@ -50,13 +50,13 @@ import "../contracts/Storage.sol";
 import "../contracts/MetaStorage.sol";
 import "../contracts/TimeLocker.sol";
 import "../contracts/Governance.sol";
-import "../contracts/access/Upgradeable.sol";
+import "../contracts/access/Versioned.sol";
 
 /**
  * @title proxy interface for Governance Contract creation
  */
 /// @custom:type interface
-interface GovernanceFactoryCreator is Upgradeable, IERC165 {
+interface GovernanceFactoryCreator is Versioned, IERC165 {
     /// @notice create a new collective governance contract
     /// @dev this should be invoked through the GovernanceBuilder
     /// @param _supervisorList the list of supervisors for this project
