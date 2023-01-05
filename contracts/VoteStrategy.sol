@@ -56,8 +56,6 @@ interface VoteStrategy {
     event VoteClosed(uint256 proposalId);
     /// @notice a vote has been cast by wallet
     event VoteCount(uint256 proposalId, address wallet, uint256 shareId, uint256 count, uint256 againstCount);
-    /// @notice a prior vote has been reversed for wallet
-    event VoteUndo(uint256 proposalId, address wallet, uint256 count);
 
     // setup errors
     error SupervisorListEmpty();
