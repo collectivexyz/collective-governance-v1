@@ -18,7 +18,7 @@ contract MetaStorageTest is Test {
 
     function setUp() public {
         vm.clearMockedCalls();
-        _storage = new MetaStorageFactory().createMeta(
+        _storage = new MetaStorageFactory().create(
             "acme inc",
             "https://github.com/collectivexyz/collective-governance-v1",
             "Universal Exports"

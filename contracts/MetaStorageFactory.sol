@@ -43,25 +43,41 @@
  */
 pragma solidity ^0.8.15;
 
+import "@openzeppelin/contracts/proxy/utils/Initializable.sol";
+import "@openzeppelin/contracts/proxy/utils/UUPSUpgradeable.sol";
 import "@openzeppelin/contracts/interfaces/IERC165.sol";
 import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
 
 import "../contracts/MetaStorage.sol";
-import "../contracts/MetaProxyCreator.sol";
+import "../contracts/MetaFactoryCreator.sol";
 import "../contracts/CollectiveMetaStorage.sol";
 import "../contracts/access/Versioned.sol";
 import "../contracts/access/VersionedContract.sol";
+import "../contracts/access/OwnableInitializable.sol";
 
 /**
  * @title CollectiveStorage creational contract
  */
-contract MetaStorageFactory is MetaProxyCreator, VersionedContract, ERC165 {
+contract MetaStorageFactory is
+    MetaFactoryCreator,
+    VersionedContract,
+    OwnableInitializable,
+    UUPSUpgradeable,
+    Initializable,
+    ERC165
+{
+    event UpgradeAuthorized(address sender, address owner);
+
+    function initialize() public initializer {
+        ownerInitialize(msg.sender);
+    }
+
     /// @notice create meta storage
     /// @param _community The community name
     /// @param _url The Url for this community
     /// @param _description The community description
     /// @return MetaStorage the storage
-    function createMeta(
+    function create(
         bytes32 _community,
         string memory _url,
         string memory _description
@@ -74,8 +90,13 @@ contract MetaStorageFactory is MetaProxyCreator, VersionedContract, ERC165 {
     /// @notice see ERC-165
     function supportsInterface(bytes4 interfaceId) public view virtual override(IERC165, ERC165) returns (bool) {
         return
-            interfaceId == type(MetaProxyCreator).interfaceId ||
+            interfaceId == type(MetaFactoryCreator).interfaceId ||
             interfaceId == type(Versioned).interfaceId ||
             super.supportsInterface(interfaceId);
+    }
+
+    /// see UUPSUpgradeable
+    function _authorizeUpgrade(address _caller) internal virtual override(UUPSUpgradeable) onlyOwner {
+        emit UpgradeAuthorized(_caller, owner());
     }
 }

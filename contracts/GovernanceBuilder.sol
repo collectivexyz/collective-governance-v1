@@ -72,7 +72,7 @@ contract GovernanceBuilder is GovernanceCreator, VersionedContract, ERC165, Owna
 
     StorageFactoryCreator private _storageFactory;
 
-    MetaProxyCreator private _metaStorageFactory;
+    MetaFactoryCreator private _metaStorageFactory;
 
     GovernanceFactoryCreator private _governanceFactory;
 
@@ -231,7 +231,7 @@ contract GovernanceBuilder is GovernanceCreator, VersionedContract, ERC165, Owna
         GovernanceProperties storage _properties = _buildMap[_creator];
         Storage _storage = createStorage(_properties);
         TimeLocker _timeLock = createTimelock(_storage);
-        MetaStorage _metaStore = _metaStorageFactory.createMeta(_properties.name, _properties.url, _properties.description);
+        MetaStorage _metaStore = _metaStorageFactory.create(_properties.name, _properties.url, _properties.description);
         Governance _governance = _governanceFactory.create(
             _properties.supervisorList,
             _properties.class,
@@ -292,9 +292,9 @@ contract GovernanceBuilder is GovernanceCreator, VersionedContract, ERC165, Owna
             revert GovernanceFactoryRequired(_governanceAddr);
         if (!supportsInterface(_storageAddr, type(StorageFactoryCreator).interfaceId))
             revert StorageFactoryRequired(_storageAddr);
-        if (!supportsInterface(_metaAddr, type(MetaProxyCreator).interfaceId)) revert MetaStorageFactoryRequired(_metaAddr);
+        if (!supportsInterface(_metaAddr, type(MetaFactoryCreator).interfaceId)) revert MetaStorageFactoryRequired(_metaAddr);
         StorageFactoryCreator _storage = StorageFactoryCreator(_storageAddr);
-        MetaProxyCreator _meta = MetaProxyCreator(_metaAddr);
+        MetaFactoryCreator _meta = MetaFactoryCreator(_metaAddr);
         GovernanceFactoryCreator _creator = GovernanceFactoryCreator(_governanceAddr);
         uint32 version = _creator.version();
         if (version > _storage.version()) revert StorageVersionMismatch(_storageAddr, version, _storage.version());

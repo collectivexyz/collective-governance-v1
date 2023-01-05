@@ -52,13 +52,13 @@ import "../contracts/access/Versioned.sol";
  * @title proxy interface for MetaStorage Contract creation
  */
 /// @custom:type interface
-interface MetaProxyCreator is Versioned, IERC165 {
+interface MetaFactoryCreator is Versioned, IERC165 {
     /// @notice create meta storage
     /// @param _community The community name
     /// @param _url The Url for this community
     /// @param _description The community description
     /// @return MetaStorage the storage
-    function createMeta(
+    function create(
         bytes32 _community,
         string memory _url,
         string memory _description
