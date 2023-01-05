@@ -21,7 +21,7 @@ import "../contracts/VoterClass.sol";
 import "../contracts/VoterClassVoterPool.sol";
 import "../contracts/VoterClassERC721.sol";
 import "../contracts/VoterClassOpenVote.sol";
-import "../contracts/access/Upgradeable.sol";
+import "../contracts/access/Versioned.sol";
 
 import "./MockERC721.sol";
 
@@ -288,8 +288,8 @@ contract GovernanceBuilderTest is Test {
         assertTrue(_builder.supportsInterface(ifId));
     }
 
-    function testSupportsInterfaceUpgradeable() public {
-        bytes4 ifId = type(Upgradeable).interfaceId;
+    function testSupportsInterfaceVersioned() public {
+        bytes4 ifId = type(Versioned).interfaceId;
         assertTrue(_builder.supportsInterface(ifId));
     }
 
@@ -338,11 +338,11 @@ contract GovernanceBuilderTest is Test {
         address creatorMock = address(_creator);
         bytes memory code = creatorMock.code;
         vm.etch(creatorMock, code);
-        vm.mockCall(creatorMock, abi.encodeWithSelector(Upgradeable.version.selector), abi.encode(Constant.VERSION_2 + 1));
+        vm.mockCall(creatorMock, abi.encodeWithSelector(Versioned.version.selector), abi.encode(Constant.VERSION_2 + 1));
         address metaMock = address(_meta);
         bytes memory metacode = metaMock.code;
         vm.etch(metaMock, metacode);
-        vm.mockCall(metaMock, abi.encodeWithSelector(Upgradeable.version.selector), abi.encode(Constant.VERSION_2 + 1));
+        vm.mockCall(metaMock, abi.encodeWithSelector(Versioned.version.selector), abi.encode(Constant.VERSION_2 + 1));
         vm.prank(_OWNER, _OWNER);
         _builder.upgrade(creatorMock, address(_storage), metaMock);
     }
@@ -354,11 +354,11 @@ contract GovernanceBuilderTest is Test {
         address creatorMock = address(_creator);
         bytes memory code = creatorMock.code;
         vm.etch(creatorMock, code);
-        vm.mockCall(creatorMock, abi.encodeWithSelector(Upgradeable.version.selector), abi.encode(Constant.VERSION_2 + 1));
+        vm.mockCall(creatorMock, abi.encodeWithSelector(Versioned.version.selector), abi.encode(Constant.VERSION_2 + 1));
         address storageMock = address(_storage);
         bytes memory storagecode = storageMock.code;
         vm.etch(storageMock, storagecode);
-        vm.mockCall(storageMock, abi.encodeWithSelector(Upgradeable.version.selector), abi.encode(Constant.VERSION_2 + 1));
+        vm.mockCall(storageMock, abi.encodeWithSelector(Versioned.version.selector), abi.encode(Constant.VERSION_2 + 1));
         vm.prank(_OWNER, _OWNER);
         _builder.upgrade(creatorMock, storageMock, address(_meta));
     }

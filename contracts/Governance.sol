@@ -46,13 +46,13 @@ pragma solidity ^0.8.15;
 import "@openzeppelin/contracts/utils/math/Math.sol";
 import "@openzeppelin/contracts/interfaces/IERC165.sol";
 
-import "../contracts/access/Upgradeable.sol";
+import "../contracts/access/Versioned.sol";
 import "../contracts/Constant.sol";
 
 /// @title Governance interface
 /// @notice Requirements for Governance implementation
 /// @custom:type interface
-interface Governance is Upgradeable, IERC165 {
+interface Governance is Versioned, IERC165 {
     error NotEnoughChoices();
     error NotPermitted(address sender);
     error CancelNotPossible(uint256 proposalId, address sender);

@@ -14,7 +14,7 @@ import "../contracts/VoterClass.sol";
 import "../contracts/VoterClassVoterPool.sol";
 import "../contracts/VoterClassERC721.sol";
 import "../contracts/VoterClassOpenVote.sol";
-import "../contracts/access/Upgradeable.sol";
+import "../contracts/access/Versioned.sol";
 
 import "./TestData.sol";
 
@@ -1101,8 +1101,8 @@ contract GovernanceStorageChoiceVoteTest is Test {
         assertTrue(_storage.supportsInterface(ifId));
     }
 
-    function testSupportsInterfaceUpgradeable() public {
-        bytes4 ifId = type(Upgradeable).interfaceId;
+    function testSupportsInterfaceVersioned() public {
+        bytes4 ifId = type(Versioned).interfaceId;
         assertTrue(_storage.supportsInterface(ifId));
     }
 

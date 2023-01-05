@@ -7,7 +7,7 @@ import "forge-std/Test.sol";
 
 import "../contracts/MetaStorage.sol";
 import "../contracts/MetaStorageFactory.sol";
-import "../contracts/access/Upgradeable.sol";
+import "../contracts/access/Versioned.sol";
 import "./TestData.sol";
 
 contract MetaStorageTest is Test {
@@ -136,8 +136,8 @@ contract MetaStorageTest is Test {
         assertTrue(_storage.supportsInterface(ifId));
     }
 
-    function testSupportsInterfaceUpgradeable() public {
-        bytes4 ifId = type(Upgradeable).interfaceId;
+    function testSupportsInterfaceVersioned() public {
+        bytes4 ifId = type(Versioned).interfaceId;
         assertTrue(_storage.supportsInterface(ifId));
     }
 

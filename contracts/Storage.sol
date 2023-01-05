@@ -47,13 +47,13 @@ import "@openzeppelin/contracts/interfaces/IERC165.sol";
 
 import "../contracts/VoterClass.sol";
 import "../contracts/VoteStrategy.sol";
-import "../contracts/access/Upgradeable.sol";
+import "../contracts/access/Versioned.sol";
 
 /// @title Storage interface
 /// @dev Eternal storage of strategy proxy
 /// @notice provides the requirements for Storage contract implementation
 /// @custom:type interface
-interface Storage is Upgradeable, IERC165 {
+interface Storage is Versioned, IERC165 {
     error NotSupervisor(uint256 proposalId, address supervisor);
     error NotSender(uint256 proposalId, address sender);
     error SupervisorAlreadyRegistered(uint256 proposalId, address supervisor, address sender);

@@ -5,7 +5,7 @@ import "@openzeppelin/contracts/interfaces/IERC165.sol";
 
 import "forge-std/Test.sol";
 
-import "../contracts/access/Upgradeable.sol";
+import "../contracts/access/Versioned.sol";
 import "../contracts/MetaStorageFactory.sol";
 
 contract MetaStorageFactoryTest is Test {
@@ -42,8 +42,8 @@ contract MetaStorageFactoryTest is Test {
         assertTrue(_metaCreator.supportsInterface(ifId));
     }
 
-    function testSupportsInterfaceUpgradeable() public {
-        bytes4 ifId = type(Upgradeable).interfaceId;
+    function testSupportsInterfaceVersioned() public {
+        bytes4 ifId = type(Versioned).interfaceId;
         assertTrue(_metaCreator.supportsInterface(ifId));
     }
 }

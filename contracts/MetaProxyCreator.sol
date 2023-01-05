@@ -46,13 +46,13 @@ pragma solidity ^0.8.15;
 import "@openzeppelin/contracts/interfaces/IERC165.sol";
 
 import "../contracts/MetaStorage.sol";
-import "../contracts/access/Upgradeable.sol";
+import "../contracts/access/Versioned.sol";
 
 /**
  * @title proxy interface for MetaStorage Contract creation
  */
 /// @custom:type interface
-interface MetaProxyCreator is Upgradeable, IERC165 {
+interface MetaProxyCreator is Versioned, IERC165 {
     /// @notice create meta storage
     /// @param _community The community name
     /// @param _url The Url for this community

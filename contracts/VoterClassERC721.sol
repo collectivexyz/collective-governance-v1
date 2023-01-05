@@ -49,8 +49,8 @@ import "@openzeppelin/contracts/token/ERC721/extensions/IERC721Enumerable.sol";
 
 import "../contracts/VoterClass.sol";
 import "../contracts/access/AlwaysFinal.sol";
-import "../contracts/access/Upgradeable.sol";
-import "../contracts/access/UpgradeableContract.sol";
+import "../contracts/access/Versioned.sol";
+import "../contracts/access/VersionedContract.sol";
 
 /// @title ERC721 Implementation of VoterClass
 /// @notice This contract implements a voter pool based on ownership of an ERC-721 token.
@@ -58,7 +58,7 @@ import "../contracts/access/UpgradeableContract.sol";
 /// ownerOf a token of the specified address
 /// @dev ERC721Enumerable is supported for discovery, however if the token contract does not support enumeration
 /// then vote by specific tokenId is still supported
-contract VoterClassERC721 is VoterClass, AlwaysFinal, UpgradeableContract, ERC165 {
+contract VoterClassERC721 is VoterClass, AlwaysFinal, VersionedContract, ERC165 {
     error ERC721EnumerableRequired(address contractAddress);
 
     string public constant NAME = "collective VoterClassERC721";
@@ -139,7 +139,7 @@ contract VoterClassERC721 is VoterClass, AlwaysFinal, UpgradeableContract, ERC16
         return
             interfaceId == type(VoterClass).interfaceId ||
             interfaceId == type(Mutable).interfaceId ||
-            interfaceId == type(Upgradeable).interfaceId ||
+            interfaceId == type(Versioned).interfaceId ||
             super.supportsInterface(interfaceId);
     }
 

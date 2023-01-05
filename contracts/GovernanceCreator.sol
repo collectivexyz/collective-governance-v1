@@ -46,12 +46,12 @@ pragma solidity ^0.8.15;
 import "@openzeppelin/contracts/interfaces/IERC165.sol";
 
 import "../contracts/VoterClass.sol";
-import "../contracts/access/Upgradeable.sol";
+import "../contracts/access/Versioned.sol";
 
 /// @title Governance GovernanceCreator interface
 /// @notice Requirements for Governance GovernanceCreator implementation
 /// @custom:type interface
-interface GovernanceCreator is Upgradeable, IERC165 {
+interface GovernanceCreator is Versioned, IERC165 {
     error StorageFactoryRequired(address _storage);
     error MetaStorageFactoryRequired(address meta);
     error GovernanceFactoryRequired(address governance);

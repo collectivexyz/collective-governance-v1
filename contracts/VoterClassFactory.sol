@@ -52,12 +52,12 @@ import "../contracts/VoterClassVoterPool.sol";
 import "../contracts/VoterClassERC721.sol";
 import "../contracts/VoterClassClosedERC721.sol";
 import "../contracts/VoterClassCreator.sol";
-import "../contracts/access/Upgradeable.sol";
-import "../contracts/access/UpgradeableContract.sol";
+import "../contracts/access/Versioned.sol";
+import "../contracts/access/VersionedContract.sol";
 
 /// @title Creator for VoterClass implementations
 /// @notice A simple factory for VoterClass instances.
-contract VoterClassFactory is VoterClassCreator, UpgradeableContract, ERC165 {
+contract VoterClassFactory is VoterClassCreator, VersionedContract, ERC165 {
     /// @notice create a VoterClass for open voting
     /// @param _weight The weight associated with each vote
     /// @return address The address of the resulting voter class
@@ -113,7 +113,7 @@ contract VoterClassFactory is VoterClassCreator, UpgradeableContract, ERC165 {
     function supportsInterface(bytes4 interfaceId) public view virtual override(IERC165, ERC165) returns (bool) {
         return
             interfaceId == type(VoterClassCreator).interfaceId ||
-            interfaceId == type(Upgradeable).interfaceId ||
+            interfaceId == type(Versioned).interfaceId ||
             super.supportsInterface(interfaceId);
     }
 }

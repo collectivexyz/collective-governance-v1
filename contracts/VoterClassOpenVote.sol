@@ -47,11 +47,11 @@ import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
 
 import "../contracts/VoterClass.sol";
 import "../contracts/access/AlwaysFinal.sol";
-import "../contracts/access/Upgradeable.sol";
-import "../contracts/access/UpgradeableContract.sol";
+import "../contracts/access/Versioned.sol";
+import "../contracts/access/VersionedContract.sol";
 
 /// @notice OpenVote VoterClass allows every wallet to participate in an open vote
-contract VoterClassOpenVote is VoterClass, AlwaysFinal, UpgradeableContract, ERC165 {
+contract VoterClassOpenVote is VoterClass, AlwaysFinal, VersionedContract, ERC165 {
     string public constant NAME = "collective VoterClassOpenVote";
 
     uint256 private immutable _weight;
@@ -105,7 +105,7 @@ contract VoterClassOpenVote is VoterClass, AlwaysFinal, UpgradeableContract, ERC
         return
             interfaceId == type(VoterClass).interfaceId ||
             interfaceId == type(Mutable).interfaceId ||
-            interfaceId == type(Upgradeable).interfaceId ||
+            interfaceId == type(Versioned).interfaceId ||
             super.supportsInterface(interfaceId);
     }
 
