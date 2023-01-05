@@ -43,6 +43,8 @@
  */
 pragma solidity ^0.8.15;
 
+import "@openzeppelin/contracts/proxy/utils/Initializable.sol";
+import "@openzeppelin/contracts/proxy/utils/UUPSUpgradeable.sol";
 import "@openzeppelin/contracts/interfaces/IERC165.sol";
 import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
 
@@ -54,6 +56,7 @@ import "../contracts/GovernanceFactoryCreator.sol";
 import "../contracts/CollectiveGovernance.sol";
 import "../contracts/access/Versioned.sol";
 import "../contracts/access/VersionedContract.sol";
+import "../contracts/access/OwnableInitializable.sol";
 
 /**
  * @title CollectiveGovernance creator
@@ -62,7 +65,20 @@ import "../contracts/access/VersionedContract.sol";
  * CollectiveGovernance in the Builder.  The GovernanceBuilder should be preferred for creating a new
  * instance of the contract.
  */
-contract GovernanceFactory is GovernanceFactoryCreator, VersionedContract, ERC165 {
+contract GovernanceFactory is
+    GovernanceFactoryCreator,
+    VersionedContract,
+    OwnableInitializable,
+    UUPSUpgradeable,
+    Initializable,
+    ERC165
+{
+    event UpgradeAuthorized(address sender, address owner);
+
+    function initialize() public initializer {
+        ownerInitialize(msg.sender);
+    }
+
     /// @notice create a new collective governance contract
     /// @dev this should be invoked through the GovernanceBuilder
     /// @param _supervisorList the list of supervisors for this project
@@ -99,5 +115,10 @@ contract GovernanceFactory is GovernanceFactoryCreator, VersionedContract, ERC16
             interfaceId == type(GovernanceFactoryCreator).interfaceId ||
             interfaceId == type(Versioned).interfaceId ||
             super.supportsInterface(interfaceId);
+    }
+
+    /// see UUPSUpgradeable
+    function _authorizeUpgrade(address _caller) internal virtual override(UUPSUpgradeable) onlyOwner {
+        emit UpgradeAuthorized(_caller, owner());
     }
 }

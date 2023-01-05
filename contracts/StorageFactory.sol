@@ -43,19 +43,34 @@
  */
 pragma solidity ^0.8.15;
 
+import "@openzeppelin/contracts/proxy/utils/Initializable.sol";
+import "@openzeppelin/contracts/proxy/utils/UUPSUpgradeable.sol";
 import "@openzeppelin/contracts/interfaces/IERC165.sol";
 import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
 
 import "../contracts/StorageFactoryCreator.sol";
 import "../contracts/GovernanceStorage.sol";
-
 import "../contracts/access/Versioned.sol";
 import "../contracts/access/VersionedContract.sol";
+import "../contracts/access/OwnableInitializable.sol";
 
 /**
  * @title CollectiveStorage creational contract
  */
-contract StorageFactory is StorageFactoryCreator, VersionedContract, ERC165 {
+contract StorageFactory is
+    StorageFactoryCreator,
+    VersionedContract,
+    OwnableInitializable,
+    UUPSUpgradeable,
+    Initializable,
+    ERC165
+{
+    event UpgradeAuthorized(address sender, address owner);
+
+    function initialize() public initializer {
+        ownerInitialize(msg.sender);
+    }
+
     /// @notice create a new storage object with VoterClass as the voting population
     /// @param _class the contract that defines the popluation
     /// @param _minimumQuorum the least possible quorum
@@ -79,5 +94,10 @@ contract StorageFactory is StorageFactoryCreator, VersionedContract, ERC165 {
             interfaceId == type(StorageFactoryCreator).interfaceId ||
             interfaceId == type(Versioned).interfaceId ||
             super.supportsInterface(interfaceId);
+    }
+
+    /// see UUPSUpgradeable
+    function _authorizeUpgrade(address _caller) internal virtual override(UUPSUpgradeable) onlyOwner {
+        emit UpgradeAuthorized(_caller, owner());
     }
 }

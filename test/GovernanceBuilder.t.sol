@@ -7,7 +7,7 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/interfaces/IERC165.sol";
 import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
 
-import "../contracts/MetaProxyCreator.sol";
+import "../contracts/MetaFactoryCreator.sol";
 import "../contracts/MetaStorageFactory.sol";
 import "../contracts/StorageFactoryCreator.sol";
 import "../contracts/StorageFactory.sol";
@@ -294,7 +294,7 @@ contract GovernanceBuilderTest is Test {
     }
 
     function testUpgradeRequiresOwner() public {
-        MetaProxyCreator _meta = new MetaStorageFactory();
+        MetaFactoryCreator _meta = new MetaStorageFactory();
         StorageFactoryCreator _storage = new StorageFactory();
         GovernanceFactoryCreator _creator = new GovernanceFactory();
         vm.expectRevert("Ownable: caller is not the owner");
@@ -312,7 +312,7 @@ contract GovernanceBuilderTest is Test {
     }
 
     function testUpgradeRequiresStorage() public {
-        MetaProxyCreator _meta = new MetaStorageFactory();
+        MetaFactoryCreator _meta = new MetaStorageFactory();
         address _storageAddress = address(0x1);
         vm.mockCall(_storageAddress, abi.encodeWithSelector(IERC165.supportsInterface.selector), abi.encode(false));
         GovernanceFactoryCreator _creator = new GovernanceFactory();
@@ -322,7 +322,7 @@ contract GovernanceBuilderTest is Test {
     }
 
     function testUpgradeRequiresGovernance() public {
-        MetaProxyCreator _meta = new MetaStorageFactory();
+        MetaFactoryCreator _meta = new MetaStorageFactory();
         StorageFactoryCreator _storage = new StorageFactory();
         address _governanceAddress = address(0x1);
         vm.mockCall(_governanceAddress, abi.encodeWithSelector(IERC165.supportsInterface.selector), abi.encode(false));
@@ -332,7 +332,7 @@ contract GovernanceBuilderTest is Test {
     }
 
     function testFailUpgradeStorageRequiresHigherVersion() public {
-        MetaProxyCreator _meta = new MetaStorageFactory();
+        MetaFactoryCreator _meta = new MetaStorageFactory();
         StorageFactoryCreator _storage = new StorageFactory();
         GovernanceFactoryCreator _creator = new GovernanceFactory();
         address creatorMock = address(_creator);
@@ -348,7 +348,7 @@ contract GovernanceBuilderTest is Test {
     }
 
     function testFailUpgradeMetaRequiresHigherVersion() public {
-        MetaProxyCreator _meta = new MetaStorageFactory();
+        MetaFactoryCreator _meta = new MetaStorageFactory();
         StorageFactoryCreator _storage = new StorageFactory();
         GovernanceFactoryCreator _creator = new GovernanceFactory();
         address creatorMock = address(_creator);

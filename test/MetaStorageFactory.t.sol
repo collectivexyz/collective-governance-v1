@@ -9,16 +9,12 @@ import "../contracts/access/Versioned.sol";
 import "../contracts/MetaStorageFactory.sol";
 
 contract MetaStorageFactoryTest is Test {
-    MetaProxyCreator private _metaCreator;
+    MetaFactoryCreator private _metaCreator;
     MetaStorage private _meta;
 
     function setUp() public {
         _metaCreator = new MetaStorageFactory();
-        _meta = _metaCreator.createMeta(
-            "acme inc",
-            "https://github.com/collectivexyz/collective-governance-v1",
-            "Universal Exports"
-        );
+        _meta = _metaCreator.create("acme inc", "https://github.com/collectivexyz/collective-governance-v1", "Universal Exports");
     }
 
     function testCreateMeta() public {
@@ -37,8 +33,8 @@ contract MetaStorageFactoryTest is Test {
         assertTrue(_metaCreator.supportsInterface(ifId));
     }
 
-    function testSupportsMetaProxyCreator() public {
-        bytes4 ifId = type(MetaProxyCreator).interfaceId;
+    function testSupportsMetaFactoryCreator() public {
+        bytes4 ifId = type(MetaFactoryCreator).interfaceId;
         assertTrue(_metaCreator.supportsInterface(ifId));
     }
 
