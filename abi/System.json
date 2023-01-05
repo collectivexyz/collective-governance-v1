@@ -147,6 +147,16 @@
         "internalType": "uint256",
         "name": "_minimumDuration",
         "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_tokenRequirement",
+        "type": "uint256"
+      },
+      {
+        "internalType": "bool",
+        "name": "_isClosed",
+        "type": "bool"
       }
     ],
     "name": "create",

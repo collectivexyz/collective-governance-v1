@@ -3,22 +3,6 @@
     "inputs": [
       {
         "internalType": "uint256",
-        "name": "baseFee",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "minimumBaseFee",
-        "type": "uint256"
-      }
-    ],
-    "name": "BaseFeeRebateMustBeLarger",
-    "type": "error"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
         "name": "proposalId",
         "type": "uint256"
       },
@@ -29,22 +13,6 @@
       }
     ],
     "name": "CancelNotPossible",
-    "type": "error"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "gasUsedRebate",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "minimumRebate",
-        "type": "uint256"
-      }
-    ],
-    "name": "GasUsedRebateMustBeLarger",
     "type": "error"
   },
   {
@@ -119,22 +87,6 @@
         "type": "address"
       }
     ],
-    "name": "NotVoter",
-    "type": "error"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "proposalId",
-        "type": "uint256"
-      },
-      {
-        "internalType": "address",
-        "name": "sender",
-        "type": "address"
-      }
-    ],
     "name": "ProposalNotSender",
     "type": "error"
   },
@@ -147,11 +99,6 @@
       }
     ],
     "name": "QuorumNotConfigured",
-    "type": "error"
-  },
-  {
-    "inputs": [],
-    "name": "SupervisorListEmpty",
     "type": "error"
   },
   {
@@ -856,6 +803,38 @@
     "type": "function"
   },
   {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_proposalId",
+        "type": "uint256"
+      }
+    ],
+    "name": "endVote",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_proposalId",
+        "type": "uint256"
+      }
+    ],
+    "name": "isOpen",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [],
     "name": "name",
     "outputs": [
@@ -929,6 +908,19 @@
       }
     ],
     "name": "setChoice",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_proposalId",
+        "type": "uint256"
+      }
+    ],
+    "name": "startVote",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

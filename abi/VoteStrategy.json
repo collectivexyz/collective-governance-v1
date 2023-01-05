@@ -1,5 +1,58 @@
 [
   {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "baseFee",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "minimumBaseFee",
+        "type": "uint256"
+      }
+    ],
+    "name": "BaseFeeRebateMustBeLarger",
+    "type": "error"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "gasUsedRebate",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "minimumRebate",
+        "type": "uint256"
+      }
+    ],
+    "name": "GasUsedRebateMustBeLarger",
+    "type": "error"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "proposalId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "sender",
+        "type": "address"
+      }
+    ],
+    "name": "NotVoter",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "SupervisorListEmpty",
+    "type": "error"
+  },
+  {
     "anonymous": false,
     "inputs": [
       {
@@ -63,31 +116,6 @@
     "type": "event"
   },
   {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "proposalId",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "address",
-        "name": "wallet",
-        "type": "address"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "count",
-        "type": "uint256"
-      }
-    ],
-    "name": "VoteUndo",
-    "type": "event"
-  },
-  {
     "inputs": [
       {
         "internalType": "uint256",
@@ -144,19 +172,6 @@
         "type": "uint256"
       }
     ],
-    "name": "endVote",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "_proposalId",
-        "type": "uint256"
-      }
-    ],
     "name": "getVoteSucceeded",
     "outputs": [
       {
@@ -166,69 +181,6 @@
       }
     ],
     "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "_proposalId",
-        "type": "uint256"
-      }
-    ],
-    "name": "isOpen",
-    "outputs": [
-      {
-        "internalType": "bool",
-        "name": "",
-        "type": "bool"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "_proposalId",
-        "type": "uint256"
-      }
-    ],
-    "name": "startVote",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "_proposalId",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_tokenId",
-        "type": "uint256"
-      }
-    ],
-    "name": "undoVote",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "_proposalId",
-        "type": "uint256"
-      }
-    ],
-    "name": "undoVote",
-    "outputs": [],
-    "stateMutability": "nonpayable",
     "type": "function"
   },
   {

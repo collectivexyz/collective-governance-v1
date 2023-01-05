@@ -45,6 +45,40 @@
   {
     "inputs": [
       {
+        "internalType": "address",
+        "name": "_erc721",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_tokenRequirement",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_weight",
+        "type": "uint256"
+      },
+      {
+        "internalType": "bool",
+        "name": "_isClosed",
+        "type": "bool"
+      }
+    ],
+    "name": "createERC721",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "uint256",
         "name": "_weight",
         "type": "uint256"

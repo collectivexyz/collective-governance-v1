@@ -911,50 +911,6 @@
       {
         "indexed": false,
         "internalType": "address",
-        "name": "voter",
-        "type": "address"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "shareId",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "votesUndone",
-        "type": "uint256"
-      }
-    ],
-    "name": "UndoVote",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "proposalId",
-        "type": "uint256"
-      }
-    ],
-    "name": "UndoVoteEnabled",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "proposalId",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "address",
         "name": "supervisor",
         "type": "address"
       }
@@ -1247,24 +1203,6 @@
         "internalType": "uint256",
         "name": "_proposalId",
         "type": "uint256"
-      },
-      {
-        "internalType": "address",
-        "name": "_sender",
-        "type": "address"
-      }
-    ],
-    "name": "enableUndoVote",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "_proposalId",
-        "type": "uint256"
       }
     ],
     "name": "endTime",
@@ -1447,11 +1385,6 @@
       {
         "internalType": "bool",
         "name": "isAbstention",
-        "type": "bool"
-      },
-      {
-        "internalType": "bool",
-        "name": "isUndo",
         "type": "bool"
       }
     ],
@@ -2002,35 +1935,6 @@
       }
     ],
     "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "_proposalId",
-        "type": "uint256"
-      },
-      {
-        "internalType": "address",
-        "name": "_wallet",
-        "type": "address"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_receiptId",
-        "type": "uint256"
-      }
-    ],
-    "name": "undoVoteById",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "nonpayable",
     "type": "function"
   },
   {
