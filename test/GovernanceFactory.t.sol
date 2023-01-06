@@ -12,6 +12,7 @@ import "../contracts/CollectiveMetaStorage.sol";
 import "../contracts/VoterClassFactory.sol";
 import "../contracts/GovernanceFactoryCreator.sol";
 import "../contracts/GovernanceFactory.sol";
+import "../contracts/GovernanceFactoryProxy.sol";
 import "../contracts/access/Versioned.sol";
 
 contract GovernanceFactoryTest is Test {
@@ -22,7 +23,9 @@ contract GovernanceFactoryTest is Test {
     MetaStorage private _metaStorage;
     TimeLocker private _timeLock;
     address[] private _supervisorList;
-    GovernanceFactory private _governanceFactory;
+    GovernanceFactory private _factoryInstance;
+    GovernanceFactoryProxy private _factoryProxy;
+    GovernanceFactoryCreator private _governanceFactory;
 
     function setUp() public {
         VoterClassCreator _vcCreator = new VoterClassFactory();
@@ -42,7 +45,9 @@ contract GovernanceFactoryTest is Test {
         _timeLock = new TimeLock(Constant.TIMELOCK_MINIMUM_DELAY);
         _supervisorList = new address[](1);
         _supervisorList[0] = _OWNER;
-        _governanceFactory = new GovernanceFactory();
+        _factoryInstance = new GovernanceFactory();
+        _factoryProxy = new GovernanceFactoryProxy(address(_factoryInstance));
+        _governanceFactory = GovernanceFactoryCreator(address(_factoryProxy));
     }
 
     function testFailSupervisorListIsEmpty() public {
@@ -122,5 +127,21 @@ contract GovernanceFactoryTest is Test {
     function testSupportsInterfaceVersioned() public {
         bytes4 ifId = type(Versioned).interfaceId;
         assertTrue(_governanceFactory.supportsInterface(ifId));
+    }
+
+    function testProxyUpgrade() public {
+        UUPSUpgradeable __uups = UUPSUpgradeable(address(_factoryProxy));
+        ForwardGovernanceFactory fgFactory = new ForwardGovernanceFactory();
+        __uups.upgradeTo(address(fgFactory));
+        ForwardGovernanceFactory fgByProxy = ForwardGovernanceFactory(address(_factoryProxy));
+        // check upgraded
+        assertTrue(fgByProxy.isUpgraded());
+    }
+}
+
+// for testing
+contract ForwardGovernanceFactory is GovernanceFactory {
+    function isUpgraded() public pure returns (bool) {
+        return true;
     }
 }

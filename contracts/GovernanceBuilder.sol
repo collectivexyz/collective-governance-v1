@@ -47,16 +47,21 @@ import "@openzeppelin/contracts/utils/math/Math.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/interfaces/IERC165.sol";
 import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
+import "@openzeppelin/contracts/proxy/utils/UUPSUpgradeable.sol";
 
 import "../contracts/Constant.sol";
 import "../contracts/GovernanceFactoryCreator.sol";
 import "../contracts/GovernanceFactory.sol";
+import "../contracts/GovernanceFactoryProxy.sol";
 import "../contracts/VoterClass.sol";
 import "../contracts/GovernanceCreator.sol";
 import "../contracts/Storage.sol";
 import "../contracts/StorageFactory.sol";
+import "../contracts/StorageFactoryProxy.sol";
 import "../contracts/MetaStorage.sol";
+import "../contracts/MetaFactoryCreator.sol";
 import "../contracts/MetaStorageFactory.sol";
+import "../contracts/MetaStorageFactoryProxy.sol";
 import "../contracts/access/Versioned.sol";
 import "../contracts/access/VersionedContract.sol";
 
@@ -70,19 +75,28 @@ contract GovernanceBuilder is GovernanceCreator, VersionedContract, ERC165, Owna
     /// @dev implement the null object pattern requring voter class to be valid
     VoterClass private immutable _voterClassNull;
 
-    StorageFactoryCreator private _storageFactory;
+    StorageFactoryCreator public immutable _storageFactory;
+    StorageFactoryProxy public immutable _storageFactoryProxy;
 
-    MetaFactoryCreator private _metaStorageFactory;
+    MetaFactoryCreator public immutable _metaStorageFactory;
+    MetaStorageFactoryProxy public immutable _metaStorageFactoryProxy;
 
-    GovernanceFactoryCreator private _governanceFactory;
+    GovernanceFactoryCreator public immutable _governanceFactory;
+    GovernanceFactoryProxy public immutable _governanceFactoryProxy;
 
     mapping(address => bool) public _governanceContractRegistered;
 
     constructor() {
         _voterClassNull = new VoterClassNullObject();
-        _storageFactory = new StorageFactory();
-        _metaStorageFactory = new MetaStorageFactory();
-        _governanceFactory = new GovernanceFactory();
+        StorageFactoryCreator storageFactory = new StorageFactory();
+        _storageFactoryProxy = new StorageFactoryProxy(address(storageFactory));
+        _storageFactory = StorageFactoryCreator(address(_storageFactoryProxy));
+        MetaFactoryCreator metaStorageFactory = new MetaStorageFactory();
+        _metaStorageFactoryProxy = new MetaStorageFactoryProxy(address(metaStorageFactory));
+        _metaStorageFactory = MetaFactoryCreator(address(_metaStorageFactoryProxy));
+        GovernanceFactoryCreator governanceFactory = new GovernanceFactory();
+        _governanceFactoryProxy = new GovernanceFactoryProxy(address(governanceFactory));
+        _governanceFactory = GovernanceFactoryCreator(address(_governanceFactoryProxy));
     }
 
     /// @notice initialize and create a new builder context for this sender
@@ -299,9 +313,15 @@ contract GovernanceBuilder is GovernanceCreator, VersionedContract, ERC165, Owna
         uint32 version = _creator.version();
         if (version > _storage.version()) revert StorageVersionMismatch(_storageAddr, version, _storage.version());
         if (version > _meta.version()) revert MetaVersionMismatch(_storageAddr, version, _meta.version());
-        _storageFactory = _storage;
-        _metaStorageFactory = _meta;
-        _governanceFactory = _creator;
+
+        UUPSUpgradeable _upgradeableStorage = UUPSUpgradeable(address(_storageFactoryProxy));
+        _upgradeableStorage.upgradeTo(_storageAddr);
+
+        UUPSUpgradeable _upgradeableMeta = UUPSUpgradeable(address(_metaStorageFactoryProxy));
+        _upgradeableMeta.upgradeTo(_metaAddr);
+
+        UUPSUpgradeable _upgradeableGovernance = UUPSUpgradeable(address(_governanceFactoryProxy));
+        _upgradeableGovernance.upgradeTo(_governanceAddr);
     }
 
     function transferOwnership(address _ownedObject, address _targetOwner) private {
