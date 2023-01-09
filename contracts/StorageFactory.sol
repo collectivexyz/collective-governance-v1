@@ -75,15 +75,26 @@ contract StorageFactory is
     /// @param _class the contract that defines the popluation
     /// @param _minimumQuorum the least possible quorum
     /// @param _minimumDelay the minimum voting delay for the project
+    /// @param _maximumDelay the minimum voting delay for the project
     /// @param _minimumDuration the least possible voting duration
+    /// @param _maximumDuration the least possible voting duration
     /// @return Storage the created instance
     function create(
         VoterClass _class,
         uint256 _minimumQuorum,
         uint256 _minimumDelay,
-        uint256 _minimumDuration
+        uint256 _maximumDelay,
+        uint256 _minimumDuration,
+        uint256 _maximumDuration
     ) external returns (Storage) {
-        GovernanceStorage _storage = new GovernanceStorage(_class, _minimumQuorum, _minimumDelay, _minimumDuration);
+        GovernanceStorage _storage = new GovernanceStorage(
+            _class,
+            _minimumQuorum,
+            _minimumDelay,
+            _maximumDelay,
+            _minimumDuration,
+            _maximumDuration
+        );
         _storage.transferOwnership(msg.sender);
         return _storage;
     }

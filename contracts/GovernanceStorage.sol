@@ -68,8 +68,14 @@ contract GovernanceStorage is Storage, VersionedContract, ERC165, Ownable {
     /// @notice minimum vote delay for any vote
     uint256 private immutable _minimumVoteDelay;
 
+    /// @notice maximum vote delay for any vote
+    uint256 private immutable _maximumVoteDelay;
+
     /// @notice minimum time for any vote
     uint256 private immutable _minimumVoteDuration;
+
+    /// @notice maximum time for any vote
+    uint256 private immutable _maximumVoteDuration;
 
     /// @notice minimum quorum for any vote
     uint256 private immutable _minimumProjectQuorum;
@@ -90,23 +96,33 @@ contract GovernanceStorage is Storage, VersionedContract, ERC165, Ownable {
     /// @param _class the contract that defines the popluation
     /// @param _minimumQuorum the least possible quorum for any vote
     /// @param _minimumDelay the least possible vote delay
+    /// @param _maximumDelay the least possible vote delay
     /// @param _minimumDuration the least possible voting duration
+    /// @param _maximumDuration the least possible voting duration
     constructor(
         VoterClass _class,
         uint256 _minimumQuorum,
         uint256 _minimumDelay,
-        uint256 _minimumDuration
+        uint256 _maximumDelay,
+        uint256 _minimumDuration,
+        uint256 _mxiimumDuration
     ) {
         if (_minimumDelay < Constant.MINIMUM_VOTE_DELAY)
             revert MinimumDelayNotPermitted(_minimumDelay, Constant.MINIMUM_VOTE_DELAY);
+        if (_maximumDelay > Constant.MAXIMUM_VOTE_DELAY)
+            revert MaximumDelayNotPermitted(_minimumDelay, Constant.MAXIMUM_VOTE_DELAY);
         if (_minimumDuration < Constant.MINIMUM_VOTE_DURATION)
             revert MinimumDurationNotPermitted(_minimumDuration, Constant.MINIMUM_VOTE_DURATION);
+        if (_maximumDuration < Constant.MAXIMUM_VOTE_DURATION)
+            revert MaximumDurationNotPermitted(_minimumDuration, Constant.MAXIMUM_VOTE_DURATION);
         if (_minimumQuorum < Constant.MINIMUM_PROJECT_QUORUM)
             revert MinimumQuorumNotPermitted(_minimumQuorum, Constant.MINIMUM_PROJECT_QUORUM);
         if (!_class.isFinal()) revert VoterClassNotFinal(_class.name(), _class.version());
 
         _minimumVoteDelay = _minimumDelay;
+        _maximumVoteDelay = _maximumDelay;
         _minimumVoteDuration = _minimumDuration;
+        _maximumVoteDuration = _maximumVoteDuration;
         _minimumProjectQuorum = _minimumQuorum;
         _voterClass = _class;
         _proposalCount = 0;

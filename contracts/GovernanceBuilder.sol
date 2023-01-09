@@ -148,6 +148,16 @@ contract GovernanceBuilder is GovernanceCreator, VersionedContract, ERC165, Owna
         return this;
     }
 
+    /// @notice set the maximum vote delay to the specified value
+    /// @param _maximumDelay the duration in seconds
+    /// @return GovernanceCreator this contract
+    function withMaximumDelay(uint256 _maximumDelay) external returns (GovernanceCreator) {
+        GovernanceProperties storage _properties = _buildMap[msg.sender];
+        _properties.maximumVoteDelay = _maximumDelay;
+        emit GovernanceContractWithMaximumVoteDelay(msg.sender, _maximumDelay);
+        return this;
+    }
+
     /// @notice set the minimum duration to the specified value
     /// @dev at least one day is required
     /// @param _minimumDuration the duration in seconds
@@ -156,6 +166,17 @@ contract GovernanceBuilder is GovernanceCreator, VersionedContract, ERC165, Owna
         GovernanceProperties storage _properties = _buildMap[msg.sender];
         _properties.minimumVoteDuration = _minimumDuration;
         emit GovernanceContractWithMinimumDuration(msg.sender, _minimumDuration);
+        return this;
+    }
+
+    /// @notice set the maximum duration to the specified value
+    /// @dev at least one day is required
+    /// @param _maximumDuration the duration in seconds
+    /// @return GovernanceCreator this contract
+    function withMaximumDuration(uint256 _maximumDuration) external returns (GovernanceCreator) {
+        GovernanceProperties storage _properties = _buildMap[msg.sender];
+        _properties.maximumVoteDuration = _maximumDuration;
+        emit GovernanceContractWithMaximumDuration(msg.sender, _maximumDuration);
         return this;
     }
 
@@ -342,7 +363,9 @@ contract GovernanceBuilder is GovernanceCreator, VersionedContract, ERC165, Owna
             _properties.class,
             _properties.minimumProjectQuorum,
             _properties.minimumVoteDelay,
-            _properties.minimumVoteDuration
+            _properties.maximumVoteDelay,
+            _properties.minimumVoteDuration,
+            _properties.maximumVoteDuration
         );
         return _storage;
     }
@@ -352,7 +375,9 @@ contract GovernanceBuilder is GovernanceCreator, VersionedContract, ERC165, Owna
         _properties.class = _voterClassNull;
         _properties.supervisorList = new address[](0);
         _properties.minimumVoteDelay = Constant.MINIMUM_VOTE_DELAY;
+        _properties.maximumVoteDelay = Constant.UINT_MAX;
         _properties.minimumVoteDuration = Constant.MINIMUM_VOTE_DURATION;
+        _properties.maximumVoteDuration = Constant.UINT_MAX;
         _properties.minimumProjectQuorum = Constant.MINIMUM_PROJECT_QUORUM;
         _properties.maxGasUsed = Constant.MAXIMUM_REBATE_GAS_USED;
         _properties.maxBaseFee = Constant.MAXIMUM_REBATE_BASE_FEE;

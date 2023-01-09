@@ -59,8 +59,10 @@ interface Storage is Versioned, IERC165 {
     error SupervisorAlreadyRegistered(uint256 proposalId, address supervisor, address sender);
     error AlreadyVetoed(uint256 proposalId, address sender);
     error MinimumDelayNotPermitted(uint256 delay, uint256 minimumDelay);
+    error MaximumDelayNotPermitted(uint256 delay, uint256 maximumDelay);
     error DelayNotPermitted(uint256 proposalId, uint256 quorum, uint256 minimumProjectQuorum);
     error MinimumDurationNotPermitted(uint256 duration, uint256 minimumDuration);
+    error MaximumDurationNotPermitted(uint256 duration, uint256 maximumDuration);
     error DurationNotPermitted(uint256 proposalId, uint256 quorum, uint256 minimumProjectQuorum);
     error MinimumQuorumNotPermitted(uint256 quorum, uint256 minimumProjectQuorum);
     error QuorumNotPermitted(uint256 proposalId, uint256 quorum, uint256 minimumProjectQuorum);

@@ -76,8 +76,12 @@ interface GovernanceCreator is Versioned, IERC165 {
     event GovernanceContractWithVoterClass(address creator, address class, string name, uint32 version);
     /// @notice set minimum delay
     event GovernanceContractWithMinimumVoteDelay(address creator, uint256 delay);
+    /// @notice set maximum delay
+    event GovernanceContractWithMaximumVoteDelay(address creator, uint256 delay);
     /// @notice set minimum duration
     event GovernanceContractWithMinimumDuration(address creator, uint256 duration);
+    /// @notice set maximum duration
+    event GovernanceContractWithMaximumDuration(address creator, uint256 duration);
     /// @notice set minimum quorum
     event GovernanceContractWithMinimumQuorum(address creator, uint256 quorum);
     /// @notice add name
@@ -100,8 +104,12 @@ interface GovernanceCreator is Versioned, IERC165 {
         string description;
         /// @notice minimum allowed vote delay
         uint256 minimumVoteDelay;
+        /// @notice maximum allowed vote delay
+        uint256 maximumVoteDelay;
         /// @notice minimum allowed vote duration
         uint256 minimumVoteDuration;
+        /// @notice maximum allowed vote duration
+        uint256 maximumVoteDuration;
         /// @notice minimum allowed quorum
         uint256 minimumProjectQuorum;
         /// @notice max gas used for rebate
