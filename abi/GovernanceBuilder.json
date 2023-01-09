@@ -382,6 +382,84 @@
   },
   {
     "inputs": [],
+    "name": "_governanceFactory",
+    "outputs": [
+      {
+        "internalType": "contract GovernanceFactoryCreator",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "_governanceFactoryProxy",
+    "outputs": [
+      {
+        "internalType": "contract GovernanceFactoryProxy",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "_metaStorageFactory",
+    "outputs": [
+      {
+        "internalType": "contract MetaFactoryCreator",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "_metaStorageFactoryProxy",
+    "outputs": [
+      {
+        "internalType": "contract MetaStorageFactoryProxy",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "_storageFactory",
+    "outputs": [
+      {
+        "internalType": "contract StorageFactoryCreator",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "_storageFactoryProxy",
+    "outputs": [
+      {
+        "internalType": "contract StorageFactoryProxy",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
     "name": "aGovernance",
     "outputs": [
       {
