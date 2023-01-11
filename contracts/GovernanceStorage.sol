@@ -105,7 +105,7 @@ contract GovernanceStorage is Storage, VersionedContract, ERC165, Ownable {
         uint256 _minimumDelay,
         uint256 _maximumDelay,
         uint256 _minimumDuration,
-        uint256 _mxiimumDuration
+        uint256 _maximumDuration
     ) {
         if (_minimumDelay < Constant.MINIMUM_VOTE_DELAY)
             revert MinimumDelayNotPermitted(_minimumDelay, Constant.MINIMUM_VOTE_DELAY);
@@ -113,7 +113,7 @@ contract GovernanceStorage is Storage, VersionedContract, ERC165, Ownable {
             revert MaximumDelayNotPermitted(_minimumDelay, Constant.MAXIMUM_VOTE_DELAY);
         if (_minimumDuration < Constant.MINIMUM_VOTE_DURATION)
             revert MinimumDurationNotPermitted(_minimumDuration, Constant.MINIMUM_VOTE_DURATION);
-        if (_maximumDuration < Constant.MAXIMUM_VOTE_DURATION)
+        if (_maximumDuration > Constant.MAXIMUM_VOTE_DURATION)
             revert MaximumDurationNotPermitted(_minimumDuration, Constant.MAXIMUM_VOTE_DURATION);
         if (_minimumQuorum < Constant.MINIMUM_PROJECT_QUORUM)
             revert MinimumQuorumNotPermitted(_minimumQuorum, Constant.MINIMUM_PROJECT_QUORUM);
@@ -122,7 +122,7 @@ contract GovernanceStorage is Storage, VersionedContract, ERC165, Ownable {
         _minimumVoteDelay = _minimumDelay;
         _maximumVoteDelay = _maximumDelay;
         _minimumVoteDuration = _minimumDuration;
-        _maximumVoteDuration = _maximumVoteDuration;
+        _maximumVoteDuration = _maximumDuration;
         _minimumProjectQuorum = _minimumQuorum;
         _voterClass = _class;
         _proposalCount = 0;
@@ -346,6 +346,7 @@ contract GovernanceStorage is Storage, VersionedContract, ERC165, Ownable {
         address _sender
     ) external onlyOwner requireValid(_proposalId) requireConfig(_proposalId) requireSupervisor(_proposalId, _sender) {
         if (_voteDelay < minimumVoteDelay()) revert DelayNotPermitted(_proposalId, _voteDelay, minimumVoteDelay());
+        if (_voteDelay > maximumVoteDelay()) revert DelayNotPermitted(_proposalId, _voteDelay, maximumVoteDelay());
         Proposal storage proposal = proposalMap[_proposalId];
         proposal.voteDelay = _voteDelay;
         emit SetVoteDelay(_proposalId, _voteDelay);
@@ -362,6 +363,7 @@ contract GovernanceStorage is Storage, VersionedContract, ERC165, Ownable {
         address _sender
     ) external onlyOwner requireValid(_proposalId) requireConfig(_proposalId) requireSupervisor(_proposalId, _sender) {
         if (_voteDuration < minimumVoteDuration()) revert DurationNotPermitted(_proposalId, _voteDuration, minimumVoteDuration());
+        if (_voteDuration > maximumVoteDuration()) revert DurationNotPermitted(_proposalId, _voteDuration, maximumVoteDuration());
         Proposal storage proposal = proposalMap[_proposalId];
         proposal.voteDuration = _voteDuration;
         emit SetVoteDuration(_proposalId, _voteDuration);
@@ -1024,10 +1026,22 @@ contract GovernanceStorage is Storage, VersionedContract, ERC165, Ownable {
         return _minimumVoteDelay;
     }
 
+    /// @notice get the project vote delay maximum
+    /// @return uint the max vote delay allowed for any vote
+    function maximumVoteDelay() public view returns (uint256) {
+        return _maximumVoteDelay;
+    }
+
     /// @notice get the vote duration in seconds
     /// @return uint256 the least duration of a vote in seconds
     function minimumVoteDuration() public view returns (uint256) {
         return _minimumVoteDuration;
+    }
+
+    /// @notice get the vote duration in seconds
+    /// @return uint256 the vote duration of a vote in seconds
+    function maximumVoteDuration() public view returns (uint256) {
+        return _maximumVoteDuration;
     }
 
     /// @notice get the project quorum requirement

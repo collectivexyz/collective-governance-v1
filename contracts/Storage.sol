@@ -609,9 +609,17 @@ interface Storage is Versioned, IERC165 {
     /// @return uint the least vote delay allowed for any vote
     function minimumVoteDelay() external view returns (uint256);
 
-    /// @notice get the vote duration in seconds
+    /// @notice get the project vote delay maximum
+    /// @return uint the max vote delay allowed for any vote
+    function maximumVoteDelay() external view returns (uint256);
+
+    /// @notice get the vote duration minimum in seconds
     /// @return uint256 the least duration of a vote in seconds
     function minimumVoteDuration() external view returns (uint256);
+
+    /// @notice get the vote duration maximum in seconds
+    /// @return uint256 the vote duration of a vote in seconds
+    function maximumVoteDuration() external view returns (uint256);
 
     /// @notice get the project quorum requirement
     /// @return uint the least quorum allowed for any vote

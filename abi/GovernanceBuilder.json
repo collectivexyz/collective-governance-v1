@@ -181,6 +181,44 @@
         "type": "uint256"
       }
     ],
+    "name": "GovernanceContractWithMaximumDuration",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "creator",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "delay",
+        "type": "uint256"
+      }
+    ],
+    "name": "GovernanceContractWithMaximumVoteDelay",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "creator",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "duration",
+        "type": "uint256"
+      }
+    ],
     "name": "GovernanceContractWithMinimumDuration",
     "type": "event"
   },
@@ -683,6 +721,44 @@
       }
     ],
     "name": "withGasRebate",
+    "outputs": [
+      {
+        "internalType": "contract GovernanceCreator",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_maximumDelay",
+        "type": "uint256"
+      }
+    ],
+    "name": "withMaximumDelay",
+    "outputs": [
+      {
+        "internalType": "contract GovernanceCreator",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_maximumDuration",
+        "type": "uint256"
+      }
+    ],
+    "name": "withMaximumDuration",
     "outputs": [
       {
         "internalType": "contract GovernanceCreator",

@@ -33,7 +33,9 @@ contract StorageFactoryTest is Test {
             _class,
             Constant.MINIMUM_PROJECT_QUORUM,
             Constant.MINIMUM_VOTE_DELAY,
-            Constant.MINIMUM_VOTE_DURATION
+            Constant.MAXIMUM_VOTE_DELAY,
+            Constant.MINIMUM_VOTE_DURATION,
+            Constant.MAXIMUM_VOTE_DURATION
         );
         assertTrue(_storage.supportsInterface(type(Storage).interfaceId));
     }
@@ -43,10 +45,30 @@ contract StorageFactoryTest is Test {
             _class,
             Constant.MINIMUM_PROJECT_QUORUM,
             Constant.MINIMUM_VOTE_DELAY,
-            Constant.MINIMUM_VOTE_DURATION
+            Constant.MAXIMUM_VOTE_DELAY,
+            Constant.MINIMUM_VOTE_DURATION,
+            Constant.MAXIMUM_VOTE_DURATION
         );
         Ownable _ownable = Ownable(address(_storage));
         assertEq(_ownable.owner(), address(this));
+    }
+
+    function testMinimumDurationNotPermitted() public {
+        vm.expectRevert(
+            abi.encodeWithSelector(
+                Storage.MinimumDurationNotPermitted.selector,
+                Constant.MINIMUM_VOTE_DURATION - 1,
+                Constant.MINIMUM_VOTE_DURATION
+            )
+        );
+        _storageFactory.create(
+            _class,
+            Constant.MINIMUM_PROJECT_QUORUM,
+            Constant.MINIMUM_VOTE_DELAY,
+            Constant.MAXIMUM_VOTE_DELAY,
+            Constant.MINIMUM_VOTE_DURATION - 1,
+            Constant.MAXIMUM_VOTE_DURATION
+        );
     }
 
     function testSupportsIERC165() public {

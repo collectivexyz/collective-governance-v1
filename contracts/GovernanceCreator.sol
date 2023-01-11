@@ -152,11 +152,21 @@ interface GovernanceCreator is Versioned, IERC165 {
     /// @return GovernanceCreator this contract
     function withMinimumDelay(uint256 _minimumDelay) external returns (GovernanceCreator);
 
+    /// @notice set the maximum vote delay to the specified value
+    /// @param _maximumDelay the duration in seconds
+    /// @return GovernanceCreator this contract
+    function withMaximumDelay(uint256 _maximumDelay) external returns (GovernanceCreator);
+
     /// @notice set the minimum duration to the specified value
     /// @dev at least one day is required
     /// @param _minimumDuration the duration in seconds
     /// @return GovernanceCreator this contract
     function withMinimumDuration(uint256 _minimumDuration) external returns (GovernanceCreator);
+
+    /// @notice set the maximum duration to the specified value
+    /// @param _maximumDuration the duration in seconds
+    /// @return GovernanceCreator this contract
+    function withMaximumDuration(uint256 _maximumDuration) external returns (GovernanceCreator);
 
     /// @notice set the minimum quorum for the project
     /// @dev must be non zero

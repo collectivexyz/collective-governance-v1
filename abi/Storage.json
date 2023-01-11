@@ -253,6 +253,38 @@
       },
       {
         "internalType": "uint256",
+        "name": "maximumDelay",
+        "type": "uint256"
+      }
+    ],
+    "name": "MaximumDelayNotPermitted",
+    "type": "error"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "duration",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "maximumDuration",
+        "type": "uint256"
+      }
+    ],
+    "name": "MaximumDurationNotPermitted",
+    "type": "error"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "delay",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
         "name": "minimumDelay",
         "type": "uint256"
       }
@@ -1612,6 +1644,32 @@
     "name": "makeFinal",
     "outputs": [],
     "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "maximumVoteDelay",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "maximumVoteDuration",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
     "type": "function"
   },
   {

@@ -54,6 +54,58 @@ contract GovernanceBuilderTest is Test {
         assertTrue(Storage(_storage).isSupervisor(1, _SUPERVISOR));
     }
 
+    function testWithMinimumVoteDelay() public {
+        VoterClassVoterPool _class = new VoterClassVoterPool(1);
+        _class.addVoter(_VOTER1);
+        _class.makeFinal();
+        (address payable _governance, address _storage, ) = _builder
+            .aGovernance()
+            .withMinimumDelay(Constant.MINIMUM_VOTE_DURATION)
+            .withSupervisor(_SUPERVISOR)
+            .withVoterClass(_class)
+            .build();
+        Governance _gov = Governance(_governance);
+        vm.prank(_VOTER1, _VOTER1);
+        uint256 proposalId = _gov.propose();
+        assertEq(Storage(_storage).minimumVoteDelay(), Constant.MINIMUM_VOTE_DURATION);
+        vm.expectRevert(
+            abi.encodeWithSelector(
+                Storage.DelayNotPermitted.selector,
+                proposalId,
+                Constant.MINIMUM_VOTE_DURATION - 1,
+                Constant.MINIMUM_VOTE_DURATION
+            )
+        );
+        vm.prank(_VOTER1, _VOTER1);
+        _gov.configure(proposalId, 100, Constant.MINIMUM_VOTE_DURATION - 1, Constant.MINIMUM_VOTE_DURATION);
+    }
+
+    function testWithMaximumVoteDelay() public {
+        VoterClassVoterPool _class = new VoterClassVoterPool(1);
+        _class.addVoter(_VOTER1);
+        _class.makeFinal();
+        (address payable _governance, address _storage, ) = _builder
+            .aGovernance()
+            .withMaximumDelay(Constant.MINIMUM_VOTE_DURATION)
+            .withSupervisor(_SUPERVISOR)
+            .withVoterClass(_class)
+            .build();
+        Governance _gov = Governance(_governance);
+        vm.prank(_VOTER1, _VOTER1);
+        uint256 proposalId = _gov.propose();
+        assertEq(Storage(_storage).maximumVoteDelay(), Constant.MINIMUM_VOTE_DURATION);
+        vm.expectRevert(
+            abi.encodeWithSelector(
+                Storage.DelayNotPermitted.selector,
+                proposalId,
+                Constant.MINIMUM_VOTE_DURATION + 1,
+                Constant.MINIMUM_VOTE_DURATION
+            )
+        );
+        vm.prank(_VOTER1, _VOTER1);
+        _gov.configure(proposalId, 100, Constant.MINIMUM_VOTE_DURATION + 1, Constant.MINIMUM_VOTE_DURATION);
+    }
+
     function testWithVoteDuration() public {
         VoterClassVoterPool _class = new VoterClassVoterPool(1);
         _class.addVoter(_VOTER1);
@@ -68,6 +120,58 @@ contract GovernanceBuilderTest is Test {
         vm.prank(_VOTER1, _VOTER1);
         _gov.propose();
         assertEq(Storage(_storage).minimumVoteDuration(), 2 * Constant.MINIMUM_VOTE_DURATION);
+    }
+
+    function testWithMinimumVoteDuration() public {
+        VoterClassVoterPool _class = new VoterClassVoterPool(1);
+        _class.addVoter(_VOTER1);
+        _class.makeFinal();
+        (address payable _governance, address _storage, ) = _builder
+            .aGovernance()
+            .withMinimumDuration(2 * Constant.MINIMUM_VOTE_DURATION)
+            .withSupervisor(_SUPERVISOR)
+            .withVoterClass(_class)
+            .build();
+        Governance _gov = Governance(_governance);
+        vm.prank(_VOTER1, _VOTER1);
+        uint256 proposalId = _gov.propose();
+        assertEq(Storage(_storage).minimumVoteDuration(), 2 * Constant.MINIMUM_VOTE_DURATION);
+        vm.expectRevert(
+            abi.encodeWithSelector(
+                Storage.DurationNotPermitted.selector,
+                proposalId,
+                Constant.MINIMUM_VOTE_DURATION + 1,
+                Constant.MINIMUM_VOTE_DURATION * 2
+            )
+        );
+        vm.prank(_VOTER1, _VOTER1);
+        _gov.configure(proposalId, 100, Constant.MINIMUM_VOTE_DELAY, Constant.MINIMUM_VOTE_DURATION + 1);
+    }
+
+    function testWithMaximumVoteDuration() public {
+        VoterClassVoterPool _class = new VoterClassVoterPool(1);
+        _class.addVoter(_VOTER1);
+        _class.makeFinal();
+        (address payable _governance, address _storage, ) = _builder
+            .aGovernance()
+            .withMaximumDuration(2 * Constant.MINIMUM_VOTE_DURATION)
+            .withSupervisor(_SUPERVISOR)
+            .withVoterClass(_class)
+            .build();
+        Governance _gov = Governance(_governance);
+        vm.prank(_VOTER1, _VOTER1);
+        uint256 proposalId = _gov.propose();
+        assertEq(Storage(_storage).maximumVoteDuration(), 2 * Constant.MINIMUM_VOTE_DURATION);
+        vm.expectRevert(
+            abi.encodeWithSelector(
+                Storage.DurationNotPermitted.selector,
+                proposalId,
+                Constant.MINIMUM_VOTE_DURATION * 2 + 1,
+                Constant.MINIMUM_VOTE_DURATION * 2
+            )
+        );
+        vm.prank(_VOTER1, _VOTER1);
+        _gov.configure(proposalId, 100, Constant.MINIMUM_VOTE_DELAY, Constant.MINIMUM_VOTE_DURATION * 2 + 1);
     }
 
     function testWithoutVoteDurationOrQuorum() public {

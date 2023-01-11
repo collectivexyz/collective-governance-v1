@@ -40,7 +40,9 @@ contract GovernanceFactoryTest is Test {
             _class,
             Constant.MINIMUM_PROJECT_QUORUM,
             Constant.MINIMUM_VOTE_DELAY,
-            Constant.MINIMUM_VOTE_DURATION
+            Constant.MAXIMUM_VOTE_DELAY,
+            Constant.MINIMUM_VOTE_DURATION,
+            Constant.MAXIMUM_VOTE_DURATION
         );
         _timeLock = new TimeLock(Constant.TIMELOCK_MINIMUM_DELAY);
         _supervisorList = new address[](1);

@@ -49,7 +49,9 @@ contract GovernanceStorageTest is Test {
             _voterClass,
             Constant.MINIMUM_PROJECT_QUORUM,
             Constant.MINIMUM_VOTE_DELAY,
-            Constant.MINIMUM_VOTE_DURATION
+            Constant.MAXIMUM_VOTE_DELAY,
+            Constant.MINIMUM_VOTE_DURATION,
+            Constant.MAXIMUM_VOTE_DURATION
         );
         _proposalId = _storage.initializeProposal(0, _OWNER);
         assertEq(_proposalId, PROPOSAL_ID);
@@ -59,23 +61,74 @@ contract GovernanceStorageTest is Test {
         VoterClassVoterPool _voterClass = new VoterClassVoterPool(1);
         _voterClass.addVoter(_VOTER1);
         _voterClass.makeFinal();
-        _storage = _storageFactory.create(_voterClass, Constant.MINIMUM_PROJECT_QUORUM, 333, Constant.MINIMUM_VOTE_DURATION);
-        assertEq(_storage.minimumVoteDelay(), 333);
+        _storage = _storageFactory.create(
+            _voterClass,
+            Constant.MINIMUM_PROJECT_QUORUM,
+            333 seconds,
+            Constant.MAXIMUM_VOTE_DELAY,
+            Constant.MINIMUM_VOTE_DURATION,
+            Constant.MAXIMUM_VOTE_DURATION
+        );
+        assertEq(_storage.minimumVoteDelay(), 333 seconds);
+    }
+
+    function testMaximumVoteDelay() public {
+        VoterClassVoterPool _voterClass = new VoterClassVoterPool(1);
+        _voterClass.addVoter(_VOTER1);
+        _voterClass.makeFinal();
+        _storage = _storageFactory.create(
+            _voterClass,
+            Constant.MINIMUM_PROJECT_QUORUM,
+            Constant.MINIMUM_VOTE_DELAY,
+            1001 days,
+            Constant.MINIMUM_VOTE_DURATION,
+            Constant.MAXIMUM_VOTE_DURATION
+        );
+        assertEq(_storage.maximumVoteDelay(), 1001 days);
     }
 
     function testMinimumVoteDuration() public {
         VoterClassVoterPool _voterClass = new VoterClassVoterPool(1);
         _voterClass.addVoter(_VOTER1);
         _voterClass.makeFinal();
-        _storage = _storageFactory.create(_voterClass, Constant.MINIMUM_PROJECT_QUORUM, Constant.MINIMUM_VOTE_DELAY, 22 days);
+        _storage = _storageFactory.create(
+            _voterClass,
+            Constant.MINIMUM_PROJECT_QUORUM,
+            Constant.MINIMUM_VOTE_DELAY,
+            Constant.MAXIMUM_VOTE_DELAY,
+            22 days,
+            Constant.MAXIMUM_VOTE_DURATION
+        );
         assertEq(_storage.minimumVoteDuration(), 22 days);
+    }
+
+    function testMaximumVoteDuration() public {
+        VoterClassVoterPool _voterClass = new VoterClassVoterPool(1);
+        _voterClass.addVoter(_VOTER1);
+        _voterClass.makeFinal();
+        _storage = _storageFactory.create(
+            _voterClass,
+            Constant.MINIMUM_PROJECT_QUORUM,
+            Constant.MINIMUM_VOTE_DELAY,
+            Constant.MAXIMUM_VOTE_DELAY,
+            Constant.MINIMUM_VOTE_DURATION,
+            1000 days
+        );
+        assertEq(_storage.maximumVoteDuration(), 1000 days);
     }
 
     function testMinimumProjectQuorum() public {
         VoterClassVoterPool _voterClass = new VoterClassVoterPool(1);
         _voterClass.addVoter(_VOTER1);
         _voterClass.makeFinal();
-        _storage = _storageFactory.create(_voterClass, 11111, Constant.MINIMUM_VOTE_DELAY, Constant.MINIMUM_VOTE_DURATION);
+        _storage = _storageFactory.create(
+            _voterClass,
+            11111,
+            Constant.MINIMUM_VOTE_DELAY,
+            Constant.MAXIMUM_VOTE_DELAY,
+            Constant.MINIMUM_VOTE_DURATION,
+            Constant.MAXIMUM_VOTE_DURATION
+        );
         assertEq(_storage.minimumProjectQuorum(), 11111);
     }
 
@@ -90,7 +143,14 @@ contract GovernanceStorageTest is Test {
         VoterClassVoterPool _voterClass = new VoterClassVoterPool(1);
         _voterClass.addVoter(_VOTER1);
         _voterClass.makeFinal();
-        new GovernanceStorage(_voterClass, Constant.MINIMUM_PROJECT_QUORUM, 0, Constant.MINIMUM_VOTE_DURATION);
+        new GovernanceStorage(
+            _voterClass,
+            Constant.MINIMUM_PROJECT_QUORUM,
+            0,
+            Constant.MAXIMUM_VOTE_DELAY,
+            Constant.MINIMUM_VOTE_DURATION,
+            Constant.MAXIMUM_VOTE_DURATION
+        );
     }
 
     function testFailMinimumDurationRequired() public {
@@ -99,7 +159,9 @@ contract GovernanceStorageTest is Test {
             _voterClass,
             Constant.MINIMUM_PROJECT_QUORUM,
             Constant.MINIMUM_VOTE_DELAY,
-            Constant.MINIMUM_VOTE_DURATION - 1
+            Constant.MAXIMUM_VOTE_DELAY,
+            Constant.MINIMUM_VOTE_DURATION - 1,
+            Constant.MAXIMUM_VOTE_DURATION
         );
     }
 
@@ -109,7 +171,9 @@ contract GovernanceStorageTest is Test {
             _voterClass,
             Constant.MINIMUM_PROJECT_QUORUM - 1,
             Constant.MINIMUM_VOTE_DELAY,
-            Constant.MINIMUM_VOTE_DURATION
+            Constant.MAXIMUM_VOTE_DELAY,
+            Constant.MINIMUM_VOTE_DURATION,
+            Constant.MAXIMUM_VOTE_DURATION
         );
     }
 
@@ -119,7 +183,9 @@ contract GovernanceStorageTest is Test {
             _class,
             Constant.MINIMUM_PROJECT_QUORUM,
             Constant.MINIMUM_VOTE_DELAY,
-            Constant.MINIMUM_VOTE_DURATION
+            Constant.MAXIMUM_VOTE_DELAY,
+            Constant.MINIMUM_VOTE_DURATION,
+            Constant.MAXIMUM_VOTE_DURATION
         );
     }
 
@@ -491,7 +557,9 @@ contract GovernanceStorageTest is Test {
             new VoterClassOpenVote(1),
             Constant.MINIMUM_PROJECT_QUORUM,
             Constant.MINIMUM_VOTE_DELAY,
-            Constant.MINIMUM_VOTE_DURATION
+            Constant.MAXIMUM_VOTE_DELAY,
+            Constant.MINIMUM_VOTE_DURATION,
+            Constant.MAXIMUM_VOTE_DURATION
         );
         _storage.initializeProposal(0, _OWNER);
         _storage.registerSupervisor(_proposalId, _SUPERVISOR, _OWNER);
@@ -509,7 +577,9 @@ contract GovernanceStorageTest is Test {
             new VoterClassERC721(address(token), 1),
             Constant.MINIMUM_PROJECT_QUORUM,
             Constant.MINIMUM_VOTE_DELAY,
-            Constant.MINIMUM_VOTE_DURATION
+            Constant.MAXIMUM_VOTE_DELAY,
+            Constant.MINIMUM_VOTE_DURATION,
+            Constant.MAXIMUM_VOTE_DURATION
         );
         _storage.initializeProposal(0, _OWNER);
         _storage.registerSupervisor(_proposalId, _SUPERVISOR, _OWNER);
@@ -615,7 +685,9 @@ contract GovernanceStorageTest is Test {
         GovernanceStorage _gStorage = new GovernanceStorage(
             _storage.voterClass(),
             Constant.MINIMUM_VOTE_DELAY,
+            Constant.MAXIMUM_VOTE_DELAY,
             Constant.MINIMUM_VOTE_DURATION,
+            Constant.MAXIMUM_VOTE_DURATION,
             Constant.MINIMUM_PROJECT_QUORUM
         );
         vm.prank(_SUPERVISOR);
@@ -813,7 +885,9 @@ contract GovernanceStorageChoiceVoteTest is Test {
             _voterClass,
             Constant.MINIMUM_PROJECT_QUORUM,
             Constant.MINIMUM_VOTE_DELAY,
-            Constant.MINIMUM_VOTE_DURATION
+            Constant.MAXIMUM_VOTE_DELAY,
+            Constant.MINIMUM_VOTE_DURATION,
+            Constant.MAXIMUM_VOTE_DURATION
         );
         _proposalId = _storage.initializeProposal(_NCHOICE, _OWNER);
     }
