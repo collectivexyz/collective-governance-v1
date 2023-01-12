@@ -592,8 +592,7 @@ interface Storage is Versioned, IERC165 {
 
     /// @notice set proposal state executed
     /// @param _proposalId the id of the proposal
-    /// @param _sender for this proposal
-    function setExecuted(uint256 _proposalId, address _sender) external;
+    function setExecuted(uint256 _proposalId) external;
 
     /// @notice get the current state if executed or not
     /// @param _proposalId the id of the proposal

@@ -836,15 +836,16 @@ contract GovernanceStorageTest is Test {
         _storage.registerSupervisor(_proposalId, _SUPERVISOR, _OWNER);
         _storage.makeFinal(_proposalId, _SUPERVISOR);
         assertFalse(_storage.isExecuted(_proposalId));
-        _storage.setExecuted(_proposalId, _OWNER);
+        _storage.setExecuted(_proposalId);
         assertTrue(_storage.isExecuted(_proposalId));
     }
 
     function testSetExecutedNotOwner() public {
         _storage.registerSupervisor(_proposalId, _SUPERVISOR, _OWNER);
         _storage.makeFinal(_proposalId, _SUPERVISOR);
-        vm.expectRevert(abi.encodeWithSelector(Storage.NotSender.selector, _proposalId, _SUPERVISOR));
-        _storage.setExecuted(_proposalId, _SUPERVISOR);
+        vm.expectRevert("Ownable: caller is not the owner");
+        vm.prank(_SUPERVISOR, _SUPERVISOR);
+        _storage.setExecuted(_proposalId);
     }
 
     function testGetWinnerForNoChoice() public {

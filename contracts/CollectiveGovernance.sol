@@ -315,12 +315,7 @@ contract CollectiveGovernance is VoteStrategy, Governance, ERC165, VersionedCont
 
     /// @notice start the voting process by proposal id
     /// @param _proposalId The numeric id of the proposed vote
-    function startVote(uint256 _proposalId)
-        external
-        requireSupervisor(_proposalId)
-        requireVoteFinal(_proposalId)
-        requireVoteAccepted(_proposalId)
-    {
+    function startVote(uint256 _proposalId) external requireVoteFinal(_proposalId) requireVoteAccepted(_proposalId) {
         if (_storage.quorumRequired(_proposalId) == Constant.UINT_MAX) revert QuorumNotConfigured(_proposalId);
         if (isVoteOpenByProposalId[_proposalId]) revert VoteIsOpen(_proposalId);
         isVoteOpenByProposalId[_proposalId] = true;
@@ -339,7 +334,7 @@ contract CollectiveGovernance is VoteStrategy, Governance, ERC165, VersionedCont
     /// @notice end voting on an existing proposal by id
     /// @param _proposalId The numeric id of the proposed vote
     /// @dev it is not possible to end voting until the required duration has elapsed
-    function endVote(uint256 _proposalId) public requireSupervisor(_proposalId) requireVoteOpen(_proposalId) {
+    function endVote(uint256 _proposalId) public requireVoteOpen(_proposalId) {
         uint256 _endTime = _storage.endTime(_proposalId);
         if (_endTime > getBlockTimestamp() && !_storage.isVeto(_proposalId) && !_storage.isCancel(_proposalId))
             revert VoteInProgress(_proposalId);
@@ -581,7 +576,7 @@ contract CollectiveGovernance is VoteStrategy, Governance, ERC165, VersionedCont
 
     function executeTransaction(uint256 _proposalId) private {
         if (_storage.isExecuted(_proposalId)) revert TransactionExecuted(_proposalId);
-        _storage.setExecuted(_proposalId, msg.sender);
+        _storage.setExecuted(_proposalId);
         uint256 transactionCount = _storage.transactionCount(_proposalId);
         if (transactionCount > 0) {
             uint256 executedCount = 0;

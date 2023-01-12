@@ -53,7 +53,7 @@ import "../contracts/access/Versioned.sol";
 import "../contracts/access/VersionedContract.sol";
 
 /// @title GovernanceStorage implementation
-/// @notice GovernanceStorage implements the necesscary infrastructure for
+/// @notice GovernanceStorage implements the necessary infrastructure for
 /// governance and voting with safety controls
 /// @dev The creator of the contract, typically the Governance contract itself,
 /// privledged with respect to write opperations in this contract.   The creator
@@ -867,14 +867,7 @@ contract GovernanceStorage is Storage, VersionedContract, ERC165, Ownable {
 
     /// @notice set proposal state executed
     /// @param _proposalId the id of the proposal
-    /// @param _sender for this proposal
-    function setExecuted(uint256 _proposalId, address _sender)
-        external
-        onlyOwner
-        requireValid(_proposalId)
-        requireFinal(_proposalId)
-        requireProposalSender(_proposalId, _sender)
-    {
+    function setExecuted(uint256 _proposalId) external onlyOwner requireValid(_proposalId) requireFinal(_proposalId) {
         Proposal storage proposal = proposalMap[_proposalId];
         if (proposal.isExecuted) revert MarkedExecuted(_proposalId);
         proposal.isExecuted = true;

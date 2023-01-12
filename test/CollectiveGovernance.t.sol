@@ -1193,7 +1193,7 @@ contract CollectiveGovernanceTest is Test {
         governance.voteFor(proposalId, TOKEN_ID1);
         vm.warp(scheduleTime + 7 days);
         assertFalse(flag.isSet());
-        vm.prank(_OWNER);
+        vm.prank(_NOT_VOTER, _NOT_VOTER);
         governance.endVote(proposalId);
         assertTrue(flag.isSet());
         assertTrue(_storage.isExecuted(proposalId));
@@ -1245,7 +1245,7 @@ contract CollectiveGovernanceTest is Test {
         governance.voteFor(proposalId, TOKEN_ID1);
         vm.warp(scheduleTime + 7 days);
         assertFalse(flag.isSet());
-        vm.prank(_OWNER);
+        vm.prank(_NOT_VOTER, _NOT_VOTER);
         governance.endVote(proposalId);
         assertTrue(flag.isSet());
         assertTrue(_storage.isExecuted(proposalId));
