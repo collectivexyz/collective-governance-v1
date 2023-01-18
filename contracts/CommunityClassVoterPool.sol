@@ -43,19 +43,16 @@
  */
 pragma solidity ^0.8.15;
 
-import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
-import "@openzeppelin/contracts/access/Ownable.sol";
-
-import "../contracts/access/Mutable.sol";
-import "../contracts/access/ConfigurableMutable.sol";
-import "../contracts/VoterClass.sol";
-import "../contracts/access/Versioned.sol";
-import "../contracts/access/VersionedContract.sol";
+import "../contracts/MutableCommunityClass.sol";
 
 /// @title interface for VoterPool
 /// @notice sets the requirements for contracts implementing a VoterPool
 /// @custom:type interface
 interface VoterPool {
+    error DuplicateRegistration(address voter);
+    event RegisterVoter(address voter);
+    event BurnVoter(address voter);
+
     /// @notice add voter to pool
     /// @param _wallet the address of the wallet
     function addVoter(address _wallet) external;
@@ -63,25 +60,14 @@ interface VoterPool {
     /// @notice remove voter from the pool
     /// @param _wallet the address of the wallet
     function removeVoter(address _wallet) external;
-
-    /// @notice test if the pool if final
-    /// @return bool true if pool if final
-    function isFinal() external view returns (bool);
-
-    /// @notice mark the VoterPool as final
-    function makeFinal() external;
 }
 
-/// @title VoterClassVoterPool contract
+/// @title CommunityClassVoterPool contract
 /// @notice This contract supports voting for a specific list of wallet addresses.   Each address must be added
 /// to the contract prior to voting at which time the pool must be marked as final so that it becomes impossible
 /// to modify
-contract VoterClassVoterPool is VoterClass, ConfigurableMutable, VersionedContract, Ownable, ERC165 {
-    error DuplicateRegistration(address voter);
-    event RegisterVoter(address voter);
-    event BurnVoter(address voter);
-
-    string public constant NAME = "collective VoterClassVoterPool";
+contract CommunityClassVoterPool is MutableCommunityClass, VoterPool {
+    string public constant NAME = "CommunityClassVoterPool";
 
     uint256 private immutable _weight;
 
@@ -91,7 +77,19 @@ contract VoterClassVoterPool is VoterClass, ConfigurableMutable, VersionedContra
     mapping(address => bool) private _voterPool;
 
     /// @param _voteWeight The integral weight to apply to each token held by the wallet
-    constructor(uint256 _voteWeight) {
+    /// @param _minimumQuorum the least possible quorum for any vote
+    /// @param _minimumDelay the least possible vote delay
+    /// @param _maximumDelay the least possible vote delay
+    /// @param _minimumDuration the least possible voting duration
+    /// @param _maximumDuration the least possible voting duration
+    constructor(
+        uint256 _voteWeight,
+        uint256 _minimumQuorum,
+        uint256 _minimumDelay,
+        uint256 _maximumDelay,
+        uint256 _minimumDuration,
+        uint256 _maximumDuration
+    ) MutableCommunityClass(_minimumQuorum, _minimumDelay, _maximumDelay, _minimumDuration, _maximumDuration) {
         _weight = _voteWeight;
     }
 
@@ -172,20 +170,14 @@ contract VoterClassVoterPool is VoterClass, ConfigurableMutable, VersionedContra
     }
 
     /// @notice set the voterpool final.   No further changes may be made to the voting pool.
-    function makeFinal() public override onlyOwner {
+    function makeFinal() public override(ConfigurableMutable) onlyOwner {
         if (_poolCount == 0) revert EmptyClass();
         super.makeFinal();
     }
 
     /// @notice see ERC-165
-    function supportsInterface(bytes4 interfaceId) public view virtual override(IERC165, ERC165) returns (bool) {
-        return
-            interfaceId == type(VoterPool).interfaceId ||
-            interfaceId == type(VoterClass).interfaceId ||
-            interfaceId == type(Ownable).interfaceId ||
-            interfaceId == type(Mutable).interfaceId ||
-            interfaceId == type(Versioned).interfaceId ||
-            super.supportsInterface(interfaceId);
+    function supportsInterface(bytes4 interfaceId) public view virtual override(MutableCommunityClass) returns (bool) {
+        return interfaceId == type(VoterPool).interfaceId || super.supportsInterface(interfaceId);
     }
 
     /// @notice return the name of this implementation

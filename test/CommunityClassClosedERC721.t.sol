@@ -3,13 +3,13 @@ pragma solidity ^0.8.15;
 
 import "forge-std/Test.sol";
 
-import "../contracts/VoterClassClosedERC721.sol";
+import "../contracts/CommunityClassClosedERC721.sol";
 
 import "../contracts/access/Versioned.sol";
 import "./MockERC721.sol";
 import "./MockERC721Enum.sol";
 
-contract VoterClassClosedERC721Test is Test {
+contract CommunityClassClosedERC721Test is Test {
     uint256 private constant _TOKENID = 0xf733b17d;
     address private constant _OWNER = address(0xffeeeeff);
     address private constant _PARTOWNER = address(0xffeeeefe);
@@ -24,7 +24,16 @@ contract VoterClassClosedERC721Test is Test {
         merc721.mintTo(_OWNER, _TOKENID + 1);
         merc721.mintTo(_PARTOWNER, _TOKENID + 2);
         _tokenContract = merc721;
-        _class = new VoterClassClosedERC721(address(_tokenContract), 2, 1);
+        _class = new CommunityClassClosedERC721(
+            address(_tokenContract),
+            2,
+            1,
+            Constant.MINIMUM_PROJECT_QUORUM,
+            Constant.MINIMUM_VOTE_DELAY,
+            Constant.MAXIMUM_VOTE_DELAY,
+            Constant.MINIMUM_VOTE_DURATION,
+            Constant.MAXIMUM_VOTE_DURATION
+        );
     }
 
     function testOpenToMemberPropose() public {
@@ -37,5 +46,9 @@ contract VoterClassClosedERC721Test is Test {
 
     function testClosedToPropose() public {
         assertFalse(_class.canPropose(_NOTOWNER));
+    }
+
+    function testName() public {
+        assertEq("CommunityClassERC721", _class.name());
     }
 }

@@ -43,17 +43,25 @@
  */
 pragma solidity ^0.8.15;
 
-import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
-
-import "../contracts/VoterClass.sol";
-import "../contracts/access/AlwaysFinal.sol";
-import "../contracts/access/Versioned.sol";
-import "../contracts/access/VersionedContract.sol";
+import "../contracts/MutableCommunityClass.sol";
 
 /// @notice Null Object Pattern for VoterClass
 /// @dev No voter is allowed.
-contract VoterClassNullObject is VoterClass, AlwaysFinal, VersionedContract, ERC165 {
-    string public constant NAME = "collective VoterClassNullObject";
+contract CommunityClassNullObject is MutableCommunityClass {
+    string public constant NAME = "CommunityClassNullObject";
+
+    constructor()
+        MutableCommunityClass(
+            Constant.MINIMUM_PROJECT_QUORUM,
+            Constant.MINIMUM_VOTE_DELAY,
+            Constant.MAXIMUM_VOTE_DELAY,
+            Constant.MINIMUM_VOTE_DURATION,
+            Constant.MAXIMUM_VOTE_DURATION
+        )
+    // solhint-disable-next-line no-empty-blocks
+    {
+
+    }
 
     /// @notice no voter is allowed
     /// @return bool always returns false
@@ -83,14 +91,6 @@ contract VoterClassNullObject is VoterClass, AlwaysFinal, VersionedContract, ERC
     /// @notice always returns 0
     function weight() external pure returns (uint256) {
         return 0;
-    }
-
-    function supportsInterface(bytes4 interfaceId) public view virtual override(IERC165, ERC165) returns (bool) {
-        return
-            interfaceId == type(VoterClass).interfaceId ||
-            interfaceId == type(Mutable).interfaceId ||
-            interfaceId == type(Versioned).interfaceId ||
-            super.supportsInterface(interfaceId);
     }
 
     /// @notice return the name of this implementation

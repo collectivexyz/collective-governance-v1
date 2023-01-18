@@ -45,17 +45,35 @@ pragma solidity ^0.8.15;
 
 import "@openzeppelin/contracts/interfaces/IERC165.sol";
 
-import "../contracts/CommunityClass.sol";
-import "../contracts/Storage.sol";
-import "../contracts/access/Versioned.sol";
+import "../contracts/VoterClass.sol";
 
-/**
- * @title proxy interface for Storage Contract creation
- */
+/// @title CommunityClass interface
+/// @notice defines the configurable parameters for a community
 /// @custom:type interface
-interface StorageFactoryCreator is Versioned, IERC165 {
-    /// @notice create a new storage object with VoterClass as the voting population
-    /// @param _class the contract that defines the popluation
-    /// @return Storage the created instance
-    function create(CommunityClass _class) external returns (Storage);
+interface CommunityClass is VoterClass {
+    error MinimumDelayNotPermitted(uint256 delay, uint256 minimumDelay);
+    error MaximumDelayNotPermitted(uint256 delay, uint256 maximumDelay);
+    error MinimumDurationNotPermitted(uint256 duration, uint256 minimumDuration);
+    error MaximumDurationNotPermitted(uint256 duration, uint256 maximumDuration);
+    error MinimumQuorumNotPermitted(uint256 quorum, uint256 minimumProjectQuorum);
+
+    /// @notice get the project vote delay requirement
+    /// @return uint the least vote delay allowed for any vote
+    function minimumVoteDelay() external view returns (uint256);
+
+    /// @notice get the project vote delay maximum
+    /// @return uint the max vote delay allowed for any vote
+    function maximumVoteDelay() external view returns (uint256);
+
+    /// @notice get the vote duration minimum in seconds
+    /// @return uint256 the least duration of a vote in seconds
+    function minimumVoteDuration() external view returns (uint256);
+
+    /// @notice get the vote duration maximum in seconds
+    /// @return uint256 the vote duration of a vote in seconds
+    function maximumVoteDuration() external view returns (uint256);
+
+    /// @notice get the project quorum requirement
+    /// @return uint the least quorum allowed for any vote
+    function minimumProjectQuorum() external view returns (uint256);
 }

@@ -18,7 +18,7 @@ import "../contracts/access/Versioned.sol";
 contract GovernanceFactoryTest is Test {
     address public constant _OWNER = address(0x1001);
 
-    VoterClass private _class;
+    CommunityClass private _class;
     Storage private _storage;
     MetaStorage private _metaStorage;
     TimeLocker private _timeLock;
@@ -30,20 +30,13 @@ contract GovernanceFactoryTest is Test {
     function setUp() public {
         VoterClassCreator _vcCreator = new VoterClassFactory();
         address vcAddress = _vcCreator.createOpenVote(1);
-        _class = VoterClass(vcAddress);
+        _class = CommunityClass(vcAddress);
         _metaStorage = new CollectiveMetaStorage(
             "collective",
             "https://github.com/collectivexyz/collective-governance-v1",
             "Collective Governance"
         );
-        _storage = new StorageFactory().create(
-            _class,
-            Constant.MINIMUM_PROJECT_QUORUM,
-            Constant.MINIMUM_VOTE_DELAY,
-            Constant.MAXIMUM_VOTE_DELAY,
-            Constant.MINIMUM_VOTE_DURATION,
-            Constant.MAXIMUM_VOTE_DURATION
-        );
+        _storage = new StorageFactory().create(_class);
         _timeLock = new TimeLock(Constant.TIMELOCK_MINIMUM_DELAY);
         _supervisorList = new address[](1);
         _supervisorList[0] = _OWNER;

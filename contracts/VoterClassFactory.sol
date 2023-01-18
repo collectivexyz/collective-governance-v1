@@ -47,10 +47,10 @@ import "@openzeppelin/contracts/interfaces/IERC165.sol";
 import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
 
 import "../contracts/VoterClass.sol";
-import "../contracts/VoterClassOpenVote.sol";
-import "../contracts/VoterClassVoterPool.sol";
-import "../contracts/VoterClassERC721.sol";
-import "../contracts/VoterClassClosedERC721.sol";
+import "../contracts/CommunityClassOpenVote.sol";
+import "../contracts/CommunityClassVoterPool.sol";
+import "../contracts/CommunityClassERC721.sol";
+import "../contracts/CommunityClassClosedERC721.sol";
 import "../contracts/VoterClassCreator.sol";
 import "../contracts/access/Versioned.sol";
 import "../contracts/access/VersionedContract.sol";
@@ -62,7 +62,14 @@ contract VoterClassFactory is VoterClassCreator, VersionedContract, ERC165 {
     /// @param _weight The weight associated with each vote
     /// @return address The address of the resulting voter class
     function createOpenVote(uint256 _weight) external returns (address) {
-        VoterClass _class = new VoterClassOpenVote(_weight);
+        VoterClass _class = new CommunityClassOpenVote(
+            _weight,
+            Constant.MINIMUM_PROJECT_QUORUM,
+            Constant.MINIMUM_VOTE_DELAY,
+            Constant.MAXIMUM_VOTE_DELAY,
+            Constant.MINIMUM_VOTE_DURATION,
+            Constant.MAXIMUM_VOTE_DURATION
+        );
         address _classAddr = address(_class);
         emit VoterClassCreated(_classAddr, msg.sender);
         return _classAddr;
@@ -72,7 +79,14 @@ contract VoterClassFactory is VoterClassCreator, VersionedContract, ERC165 {
     /// @param _weight The weight associated with each vote
     /// @return address The address of the resulting voter class
     function createVoterPool(uint256 _weight) external returns (address) {
-        VoterClass _class = new VoterClassVoterPool(_weight);
+        VoterClass _class = new CommunityClassVoterPool(
+            _weight,
+            Constant.MINIMUM_PROJECT_QUORUM,
+            Constant.MINIMUM_VOTE_DELAY,
+            Constant.MAXIMUM_VOTE_DELAY,
+            Constant.MINIMUM_VOTE_DURATION,
+            Constant.MAXIMUM_VOTE_DURATION
+        );
         address _classAddr = address(_class);
         emit VoterClassCreated(_classAddr, msg.sender);
         return _classAddr;
@@ -98,11 +112,28 @@ contract VoterClassFactory is VoterClassCreator, VersionedContract, ERC165 {
         uint256 _weight,
         bool _isClosed
     ) public returns (address) {
-        VoterClass _class;
+        CommunityClass _class;
         if (_isClosed) {
-            _class = new VoterClassClosedERC721(_erc721, _tokenRequirement, _weight);
+            _class = new CommunityClassClosedERC721(
+                _erc721,
+                _tokenRequirement,
+                _weight,
+                Constant.MINIMUM_PROJECT_QUORUM,
+                Constant.MINIMUM_VOTE_DELAY,
+                Constant.MAXIMUM_VOTE_DELAY,
+                Constant.MINIMUM_VOTE_DURATION,
+                Constant.MAXIMUM_VOTE_DURATION
+            );
         } else {
-            _class = new VoterClassERC721(_erc721, _weight);
+            _class = new CommunityClassERC721(
+                _erc721,
+                _weight,
+                Constant.MINIMUM_PROJECT_QUORUM,
+                Constant.MINIMUM_VOTE_DELAY,
+                Constant.MAXIMUM_VOTE_DELAY,
+                Constant.MINIMUM_VOTE_DURATION,
+                Constant.MAXIMUM_VOTE_DURATION
+            );
         }
         address _classAddr = address(_class);
         emit VoterClassCreated(_classAddr, _erc721);

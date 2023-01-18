@@ -57,9 +57,6 @@ contract System is Ownable, VersionedContract {
     error NotVoterClassCreator(address creator);
     error VersionMismatch(uint256 expected, uint256 provided);
 
-    uint256 public constant MINIMUM_DELAY = 1 hours;
-    uint256 public constant MINIMUM_DURATION = 1 days;
-
     GovernanceCreator private _creator;
 
     VoterClassCreator private _classCreator;
@@ -82,7 +79,6 @@ contract System is Ownable, VersionedContract {
     /// @param _url the project url
     /// @param _description the project description
     /// @param _erc721 address of ERC-721 contract
-    /// @param _quorum the project quorum requirement
     /// @return governanceAddress address of the new Governance contract
     /// @return storageAddress address of the storage contract
     /// @return metaAddress address of the meta contract
@@ -90,8 +86,7 @@ contract System is Ownable, VersionedContract {
         bytes32 _name,
         string memory _url,
         string memory _description,
-        address _erc721,
-        uint256 _quorum
+        address _erc721
     )
         external
         returns (
@@ -106,11 +101,8 @@ contract System is Ownable, VersionedContract {
             _creator
                 .aGovernance()
                 .withSupervisor(supervisor)
-                .withVoterClassAddress(erc721Class)
+                .withCommunityClassAddress(erc721Class)
                 .withDescription(_name, _url, _description)
-                .withMinimumDelay(MINIMUM_DELAY)
-                .withMinimumDuration(MINIMUM_DURATION)
-                .withProjectQuorum(_quorum)
                 .build();
     }
 
@@ -120,9 +112,6 @@ contract System is Ownable, VersionedContract {
     /// @param _url the project url
     /// @param _description the project description
     /// @param _erc721 address of ERC-721 contract
-    /// @param _quorum the project quorum requirement
-    /// @param _minimumDelay the minimum vote delay
-    /// @param _minimumDuration the duration for the vote
     /// @param _tokenRequirement The number of token required for a proposal
     /// @param _isClosed True if closed to non voters
     /// @return governanceAddress address of the new Governance contract
@@ -133,9 +122,6 @@ contract System is Ownable, VersionedContract {
         string memory _url,
         string memory _description,
         address _erc721,
-        uint256 _quorum,
-        uint256 _minimumDelay,
-        uint256 _minimumDuration,
         uint256 _tokenRequirement,
         bool _isClosed
     )
@@ -152,11 +138,8 @@ contract System is Ownable, VersionedContract {
             _creator
                 .aGovernance()
                 .withSupervisor(supervisor)
-                .withVoterClassAddress(erc721Class)
+                .withCommunityClassAddress(erc721Class)
                 .withDescription(_name, _url, _description)
-                .withMinimumDelay(_minimumDelay)
-                .withMinimumDuration(_minimumDuration)
-                .withProjectQuorum(_quorum)
                 .build();
     }
 

@@ -3,17 +3,24 @@ pragma solidity ^0.8.15;
 
 import "forge-std/Test.sol";
 
-import "../contracts/VoterClassOpenVote.sol";
+import "../contracts/CommunityClassOpenVote.sol";
 import "../contracts/access/Versioned.sol";
 
-contract VoterClassOpenVoteTest is Test {
+contract CommunityClassOpenVoteTest is Test {
     address private immutable _OWNER = address(0xffeeeeff);
     address private immutable _NOTOWNER = address(0x55);
 
     VoterClass private _class;
 
     function setUp() public {
-        _class = new VoterClassOpenVote(1);
+        _class = new CommunityClassOpenVote(
+            1,
+            Constant.MINIMUM_PROJECT_QUORUM,
+            Constant.MINIMUM_VOTE_DELAY,
+            Constant.MAXIMUM_VOTE_DELAY,
+            Constant.MINIMUM_VOTE_DURATION,
+            Constant.MAXIMUM_VOTE_DURATION
+        );
     }
 
     function testOpenToPropose() public {
@@ -52,7 +59,7 @@ contract VoterClassOpenVoteTest is Test {
     }
 
     function testFinal() public {
-        assertTrue(_class.isFinal());
+        assertFalse(_class.isFinal());
     }
 
     function testSupportsInterface() public {
@@ -65,5 +72,9 @@ contract VoterClassOpenVoteTest is Test {
     function testSupportsInterfaceVersioned() public {
         bytes4 ifId = type(Versioned).interfaceId;
         assertTrue(_class.supportsInterface(ifId));
+    }
+
+    function testName() public {
+        assertEq("CommunityClassOpenVote", _class.name());
     }
 }

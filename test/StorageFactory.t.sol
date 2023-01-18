@@ -14,7 +14,7 @@ import "../contracts/access/Versioned.sol";
 import "./TestData.sol";
 
 contract StorageFactoryTest is Test {
-    VoterClass private _class;
+    CommunityClass private _class;
     StorageFactoryCreator private _storageFactoryInstance;
     StorageFactoryProxy private _factoryProxy;
     StorageFactoryCreator private _storageFactory;
@@ -22,53 +22,21 @@ contract StorageFactoryTest is Test {
     function setUp() public {
         VoterClassCreator _vcCreator = new VoterClassFactory();
         address vcAddress = _vcCreator.createOpenVote(1);
-        _class = VoterClass(vcAddress);
+        _class = CommunityClass(vcAddress);
         _storageFactoryInstance = new StorageFactory();
         _factoryProxy = new StorageFactoryProxy(address(_storageFactoryInstance));
         _storageFactory = StorageFactoryCreator(address(_factoryProxy));
     }
 
     function testSetupNewStorage() public {
-        Storage _storage = _storageFactory.create(
-            _class,
-            Constant.MINIMUM_PROJECT_QUORUM,
-            Constant.MINIMUM_VOTE_DELAY,
-            Constant.MAXIMUM_VOTE_DELAY,
-            Constant.MINIMUM_VOTE_DURATION,
-            Constant.MAXIMUM_VOTE_DURATION
-        );
+        Storage _storage = _storageFactory.create(_class);
         assertTrue(_storage.supportsInterface(type(Storage).interfaceId));
     }
 
     function testIsStorageOwner() public {
-        Storage _storage = _storageFactory.create(
-            _class,
-            Constant.MINIMUM_PROJECT_QUORUM,
-            Constant.MINIMUM_VOTE_DELAY,
-            Constant.MAXIMUM_VOTE_DELAY,
-            Constant.MINIMUM_VOTE_DURATION,
-            Constant.MAXIMUM_VOTE_DURATION
-        );
+        Storage _storage = _storageFactory.create(_class);
         Ownable _ownable = Ownable(address(_storage));
         assertEq(_ownable.owner(), address(this));
-    }
-
-    function testMinimumDurationNotPermitted() public {
-        vm.expectRevert(
-            abi.encodeWithSelector(
-                Storage.MinimumDurationNotPermitted.selector,
-                Constant.MINIMUM_VOTE_DURATION - 1,
-                Constant.MINIMUM_VOTE_DURATION
-            )
-        );
-        _storageFactory.create(
-            _class,
-            Constant.MINIMUM_PROJECT_QUORUM,
-            Constant.MINIMUM_VOTE_DELAY,
-            Constant.MAXIMUM_VOTE_DELAY,
-            Constant.MINIMUM_VOTE_DURATION - 1,
-            Constant.MAXIMUM_VOTE_DURATION
-        );
     }
 
     function testSupportsIERC165() public {

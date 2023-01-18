@@ -49,6 +49,7 @@ import "@openzeppelin/contracts/interfaces/IERC165.sol";
 import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
 
 import "../contracts/StorageFactoryCreator.sol";
+import "../contracts/CommunityClass.sol";
 import "../contracts/GovernanceStorage.sol";
 import "../contracts/access/Versioned.sol";
 import "../contracts/access/VersionedContract.sol";
@@ -73,28 +74,9 @@ contract StorageFactory is
 
     /// @notice create a new storage object with VoterClass as the voting population
     /// @param _class the contract that defines the popluation
-    /// @param _minimumQuorum the least possible quorum
-    /// @param _minimumDelay the minimum voting delay for the project
-    /// @param _maximumDelay the minimum voting delay for the project
-    /// @param _minimumDuration the least possible voting duration
-    /// @param _maximumDuration the least possible voting duration
     /// @return Storage the created instance
-    function create(
-        VoterClass _class,
-        uint256 _minimumQuorum,
-        uint256 _minimumDelay,
-        uint256 _maximumDelay,
-        uint256 _minimumDuration,
-        uint256 _maximumDuration
-    ) external returns (Storage) {
-        GovernanceStorage _storage = new GovernanceStorage(
-            _class,
-            _minimumQuorum,
-            _minimumDelay,
-            _maximumDelay,
-            _minimumDuration,
-            _maximumDuration
-        );
+    function create(CommunityClass _class) external returns (Storage) {
+        GovernanceStorage _storage = new GovernanceStorage(_class);
         _storage.transferOwnership(msg.sender);
         return _storage;
     }

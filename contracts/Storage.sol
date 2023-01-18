@@ -58,13 +58,8 @@ interface Storage is Versioned, IERC165 {
     error NotSender(uint256 proposalId, address sender);
     error SupervisorAlreadyRegistered(uint256 proposalId, address supervisor, address sender);
     error AlreadyVetoed(uint256 proposalId, address sender);
-    error MinimumDelayNotPermitted(uint256 delay, uint256 minimumDelay);
-    error MaximumDelayNotPermitted(uint256 delay, uint256 maximumDelay);
     error DelayNotPermitted(uint256 proposalId, uint256 quorum, uint256 minimumProjectQuorum);
-    error MinimumDurationNotPermitted(uint256 duration, uint256 minimumDuration);
-    error MaximumDurationNotPermitted(uint256 duration, uint256 maximumDuration);
     error DurationNotPermitted(uint256 proposalId, uint256 quorum, uint256 minimumProjectQuorum);
-    error MinimumQuorumNotPermitted(uint256 quorum, uint256 minimumProjectQuorum);
     error QuorumNotPermitted(uint256 proposalId, uint256 quorum, uint256 minimumProjectQuorum);
     error VoterClassNotFinal(string name, uint256 version);
     error NoProposal(address _wallet);
@@ -463,10 +458,6 @@ interface Storage is Versioned, IERC165 {
             bool isAbstention
         );
 
-    /// @notice get the VoterClass used for this voting store
-    /// @return VoterClass the voter class for this store
-    function voterClass() external view returns (VoterClass);
-
     /// @notice initialize a new proposal and return the id
     /// @param _choiceCount The number of choices for this proposal
     /// @param _sender the proposal sender
@@ -603,26 +594,6 @@ interface Storage is Versioned, IERC165 {
     /// @param _proposalId the id of the proposal
     /// @return uint256 current number of transactions
     function transactionCount(uint256 _proposalId) external view returns (uint256);
-
-    /// @notice get the project vote delay requirement
-    /// @return uint the least vote delay allowed for any vote
-    function minimumVoteDelay() external view returns (uint256);
-
-    /// @notice get the project vote delay maximum
-    /// @return uint the max vote delay allowed for any vote
-    function maximumVoteDelay() external view returns (uint256);
-
-    /// @notice get the vote duration minimum in seconds
-    /// @return uint256 the least duration of a vote in seconds
-    function minimumVoteDuration() external view returns (uint256);
-
-    /// @notice get the vote duration maximum in seconds
-    /// @return uint256 the vote duration of a vote in seconds
-    function maximumVoteDuration() external view returns (uint256);
-
-    /// @notice get the project quorum requirement
-    /// @return uint the least quorum allowed for any vote
-    function minimumProjectQuorum() external view returns (uint256);
 
     /// @notice return the name of this implementation
     /// @return string memory representation of name

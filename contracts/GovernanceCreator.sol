@@ -45,7 +45,7 @@ pragma solidity ^0.8.15;
 
 import "@openzeppelin/contracts/interfaces/IERC165.sol";
 
-import "../contracts/VoterClass.sol";
+import "../contracts/CommunityClass.sol";
 import "../contracts/access/Versioned.sol";
 
 /// @title Governance GovernanceCreator interface
@@ -57,7 +57,7 @@ interface GovernanceCreator is Versioned, IERC165 {
     error GovernanceFactoryRequired(address governance);
     error StorageVersionMismatch(address _storage, uint32 expected, uint32 provided);
     error MetaVersionMismatch(address meta, uint32 expected, uint32 provided);
-    error VoterClassRequired(address voterClass);
+    error CommunityClassRequired(address voterClass);
 
     /// @notice new contract created
     event GovernanceContractCreated(
@@ -73,7 +73,7 @@ interface GovernanceCreator is Versioned, IERC165 {
     /// @notice add supervisor
     event GovernanceContractWithSupervisor(address creator, address supervisor);
     /// @notice set voterclass
-    event GovernanceContractWithVoterClass(address creator, address class, string name, uint32 version);
+    event GovernanceContractwithCommunityClass(address creator, address class, string name, uint32 version);
     /// @notice set minimum delay
     event GovernanceContractWithMinimumVoteDelay(address creator, uint256 delay);
     /// @notice set maximum delay
@@ -102,16 +102,6 @@ interface GovernanceCreator is Versioned, IERC165 {
         string url;
         /// @notice community description
         string description;
-        /// @notice minimum allowed vote delay
-        uint256 minimumVoteDelay;
-        /// @notice maximum allowed vote delay
-        uint256 maximumVoteDelay;
-        /// @notice minimum allowed vote duration
-        uint256 minimumVoteDuration;
-        /// @notice maximum allowed vote duration
-        uint256 maximumVoteDuration;
-        /// @notice minimum allowed quorum
-        uint256 minimumProjectQuorum;
         /// @notice max gas used for rebate
         uint256 maxGasUsed;
         /// @notice max base fee for rebate
@@ -119,7 +109,7 @@ interface GovernanceCreator is Versioned, IERC165 {
         /// @notice array of supervisors
         address[] supervisorList;
         /// @notice voting class
-        VoterClass class;
+        CommunityClass class;
     }
 
     /// @notice return the name of this implementation
@@ -136,43 +126,16 @@ interface GovernanceCreator is Versioned, IERC165 {
     /// @return GovernanceCreator this contract
     function withSupervisor(address _supervisor) external returns (GovernanceCreator);
 
-    /// @notice set the VoterClass to be used for the next constructed contract
-    /// @param _classAddress the address of the VoterClass contract
+    /// @notice set the CommunityClass to be used for the next constructed contract
+    /// @param _classAddress the address of the CommunityClass contract
     /// @return GovernanceCreator this contract
-    function withVoterClassAddress(address _classAddress) external returns (GovernanceCreator);
+    function withCommunityClassAddress(address _classAddress) external returns (GovernanceCreator);
 
     /// @notice set the VoterClass to be used for the next constructed contract
     /// @dev the type safe VoterClass for use within Solidity code
     /// @param _class the address of the VoterClass contract
     /// @return GovernanceCreator this contract
-    function withVoterClass(VoterClass _class) external returns (GovernanceCreator);
-
-    /// @notice set the minimum vote delay to the specified value
-    /// @param _minimumDelay the duration in seconds
-    /// @return GovernanceCreator this contract
-    function withMinimumDelay(uint256 _minimumDelay) external returns (GovernanceCreator);
-
-    /// @notice set the maximum vote delay to the specified value
-    /// @param _maximumDelay the duration in seconds
-    /// @return GovernanceCreator this contract
-    function withMaximumDelay(uint256 _maximumDelay) external returns (GovernanceCreator);
-
-    /// @notice set the minimum duration to the specified value
-    /// @dev at least one day is required
-    /// @param _minimumDuration the duration in seconds
-    /// @return GovernanceCreator this contract
-    function withMinimumDuration(uint256 _minimumDuration) external returns (GovernanceCreator);
-
-    /// @notice set the maximum duration to the specified value
-    /// @param _maximumDuration the duration in seconds
-    /// @return GovernanceCreator this contract
-    function withMaximumDuration(uint256 _maximumDuration) external returns (GovernanceCreator);
-
-    /// @notice set the minimum quorum for the project
-    /// @dev must be non zero
-    /// @param _minimumQuorum the quorum for the project
-    /// @return GovernanceCreator this contract
-    function withProjectQuorum(uint256 _minimumQuorum) external returns (GovernanceCreator);
+    function withCommunityClass(CommunityClass _class) external returns (GovernanceCreator);
 
     /// @notice set the community information
     /// @dev this helper calls withName, withUrl and WithDescription

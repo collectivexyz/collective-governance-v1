@@ -13,9 +13,11 @@ ___________________
 
 VoterClass Implementations:
 
-* Open voting - :ref:`VoterClassOpenVote <VoterClassOpenVote>`
-* ERC-721 Token voting (including ERC-721 Enumerable) - :ref:`VoterClassERC721 <VoterClassERC721>`
-* Pool voting - based on a specific list of voters - :ref:`VoterClassVoterPool <VoterClassVoterPool>`
+* Open voting - :ref:`CommunityClassOpenVote <CommunityClassOpenVote>`
+* ERC-721 Token voting (including ERC-721 Enumerable) - :ref:`CommunityClassERC721 <CommunityClassERC721>`
+* Pool voting - based on a specific list of voters - :ref:`CommunityClassVoterPool
+ <CommunityClassVoterPool
+>`
 
 Create the Governance contract
 _______________________________

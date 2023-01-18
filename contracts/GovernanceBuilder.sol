@@ -53,7 +53,7 @@ import "../contracts/Constant.sol";
 import "../contracts/GovernanceFactoryCreator.sol";
 import "../contracts/GovernanceFactory.sol";
 import "../contracts/GovernanceFactoryProxy.sol";
-import "../contracts/VoterClass.sol";
+import "../contracts/CommunityClass.sol";
 import "../contracts/GovernanceCreator.sol";
 import "../contracts/Storage.sol";
 import "../contracts/StorageFactory.sol";
@@ -73,7 +73,7 @@ contract GovernanceBuilder is GovernanceCreator, VersionedContract, ERC165, Owna
     mapping(address => GovernanceProperties) private _buildMap;
 
     /// @dev implement the null object pattern requring voter class to be valid
-    VoterClass private immutable _voterClassNull;
+    CommunityClass private immutable _voterClassNull;
 
     StorageFactoryCreator public immutable _storageFactory;
     StorageFactoryProxy public immutable _storageFactoryProxy;
@@ -87,7 +87,7 @@ contract GovernanceBuilder is GovernanceCreator, VersionedContract, ERC165, Owna
     mapping(address => bool) public _governanceContractRegistered;
 
     constructor() {
-        _voterClassNull = new VoterClassNullObject();
+        _voterClassNull = new CommunityClassNullObject();
         StorageFactoryCreator storageFactory = new StorageFactory();
         _storageFactoryProxy = new StorageFactoryProxy(address(storageFactory));
         _storageFactory = StorageFactoryCreator(address(_storageFactoryProxy));
@@ -121,73 +121,20 @@ contract GovernanceBuilder is GovernanceCreator, VersionedContract, ERC165, Owna
     /// @notice set the VoterClass to be used for the next constructed contract
     /// @param _classAddress the address of the VoterClass contract
     /// @return GovernanceCreator this contract
-    function withVoterClassAddress(address _classAddress) external returns (GovernanceCreator) {
+    function withCommunityClassAddress(address _classAddress) external returns (GovernanceCreator) {
         IERC165 erc165 = IERC165(_classAddress);
-        if (!erc165.supportsInterface(type(VoterClass).interfaceId)) revert VoterClassRequired(_classAddress);
-        return withVoterClass(VoterClass(_classAddress));
+        if (!erc165.supportsInterface(type(CommunityClass).interfaceId)) revert CommunityClassRequired(_classAddress);
+        return withCommunityClass(CommunityClass(_classAddress));
     }
 
     /// @notice set the VoterClass to be used for the next constructed contract
     /// @dev the type safe VoterClass for use within Solidity code
     /// @param _class the address of the VoterClass contract
     /// @return GovernanceCreator this contract
-    function withVoterClass(VoterClass _class) public returns (GovernanceCreator) {
+    function withCommunityClass(CommunityClass _class) public returns (GovernanceCreator) {
         GovernanceProperties storage _properties = _buildMap[msg.sender];
         _properties.class = _class;
-        emit GovernanceContractWithVoterClass(msg.sender, address(_class), _class.name(), _class.version());
-        return this;
-    }
-
-    /// @notice set the minimum vote delay to the specified value
-    /// @param _minimumDelay the duration in seconds
-    /// @return GovernanceCreator this contract
-    function withMinimumDelay(uint256 _minimumDelay) external returns (GovernanceCreator) {
-        GovernanceProperties storage _properties = _buildMap[msg.sender];
-        _properties.minimumVoteDelay = _minimumDelay;
-        emit GovernanceContractWithMinimumVoteDelay(msg.sender, _minimumDelay);
-        return this;
-    }
-
-    /// @notice set the maximum vote delay to the specified value
-    /// @param _maximumDelay the duration in seconds
-    /// @return GovernanceCreator this contract
-    function withMaximumDelay(uint256 _maximumDelay) external returns (GovernanceCreator) {
-        GovernanceProperties storage _properties = _buildMap[msg.sender];
-        _properties.maximumVoteDelay = _maximumDelay;
-        emit GovernanceContractWithMaximumVoteDelay(msg.sender, _maximumDelay);
-        return this;
-    }
-
-    /// @notice set the minimum duration to the specified value
-    /// @dev at least one day is required
-    /// @param _minimumDuration the duration in seconds
-    /// @return GovernanceCreator this contract
-    function withMinimumDuration(uint256 _minimumDuration) external returns (GovernanceCreator) {
-        GovernanceProperties storage _properties = _buildMap[msg.sender];
-        _properties.minimumVoteDuration = _minimumDuration;
-        emit GovernanceContractWithMinimumDuration(msg.sender, _minimumDuration);
-        return this;
-    }
-
-    /// @notice set the maximum duration to the specified value
-    /// @dev at least one day is required
-    /// @param _maximumDuration the duration in seconds
-    /// @return GovernanceCreator this contract
-    function withMaximumDuration(uint256 _maximumDuration) external returns (GovernanceCreator) {
-        GovernanceProperties storage _properties = _buildMap[msg.sender];
-        _properties.maximumVoteDuration = _maximumDuration;
-        emit GovernanceContractWithMaximumDuration(msg.sender, _maximumDuration);
-        return this;
-    }
-
-    /// @notice set the minimum quorum for the project
-    /// @dev must be non zero
-    /// @param _minimumQuorum the quorum for the project
-    /// @return GovernanceCreator this contract
-    function withProjectQuorum(uint256 _minimumQuorum) external returns (GovernanceCreator) {
-        GovernanceProperties storage _properties = _buildMap[msg.sender];
-        _properties.minimumProjectQuorum = _minimumQuorum;
-        emit GovernanceContractWithMinimumQuorum(msg.sender, _minimumQuorum);
+        emit GovernanceContractwithCommunityClass(msg.sender, address(_class), _class.name(), _class.version());
         return this;
     }
 
@@ -265,7 +212,7 @@ contract GovernanceBuilder is GovernanceCreator, VersionedContract, ERC165, Owna
         address _creator = msg.sender;
         GovernanceProperties storage _properties = _buildMap[_creator];
         Storage _storage = createStorage(_properties);
-        TimeLocker _timeLock = createTimelock(_storage);
+        TimeLocker _timeLock = createTimelock(_properties.class.minimumVoteDuration());
         MetaStorage _metaStore = _metaStorageFactory.create(_properties.name, _properties.url, _properties.description);
         Governance _governance = _governanceFactory.create(
             _properties.supervisorList,
@@ -350,23 +297,16 @@ contract GovernanceBuilder is GovernanceCreator, VersionedContract, ERC165, Owna
         _ownableStorage.transferOwnership(_targetOwner);
     }
 
-    function createTimelock(Storage _storage) private returns (TimeLocker) {
-        uint256 _timeLockDelay = Math.max(_storage.minimumVoteDuration(), Constant.TIMELOCK_MINIMUM_DELAY);
+    function createTimelock(uint256 _minimumVoteDuration) private returns (TimeLocker) {
+        uint256 _timeLockDelay = Math.max(_minimumVoteDuration, Constant.TIMELOCK_MINIMUM_DELAY);
         TimeLocker _timeLock = new TimeLock(_timeLockDelay);
         emit TimeLockCreated(address(_timeLock), _timeLockDelay);
         return _timeLock;
     }
 
     function createStorage(GovernanceProperties storage _properties) private returns (Storage) {
-        if (address(_properties.class) == address(_voterClassNull)) revert VoterClassRequired(address(_properties.class));
-        Storage _storage = _storageFactory.create(
-            _properties.class,
-            _properties.minimumProjectQuorum,
-            _properties.minimumVoteDelay,
-            _properties.maximumVoteDelay,
-            _properties.minimumVoteDuration,
-            _properties.maximumVoteDuration
-        );
+        if (address(_properties.class) == address(_voterClassNull)) revert CommunityClassRequired(address(_properties.class));
+        Storage _storage = _storageFactory.create(_properties.class);
         return _storage;
     }
 
@@ -374,11 +314,6 @@ contract GovernanceBuilder is GovernanceCreator, VersionedContract, ERC165, Owna
         GovernanceProperties storage _properties = _buildMap[sender];
         _properties.class = _voterClassNull;
         _properties.supervisorList = new address[](0);
-        _properties.minimumVoteDelay = Constant.MINIMUM_VOTE_DELAY;
-        _properties.maximumVoteDelay = Constant.UINT_MAX;
-        _properties.minimumVoteDuration = Constant.MINIMUM_VOTE_DURATION;
-        _properties.maximumVoteDuration = Constant.UINT_MAX;
-        _properties.minimumProjectQuorum = Constant.MINIMUM_PROJECT_QUORUM;
         _properties.maxGasUsed = Constant.MAXIMUM_REBATE_GAS_USED;
         _properties.maxBaseFee = Constant.MAXIMUM_REBATE_BASE_FEE;
         _properties.name = "";

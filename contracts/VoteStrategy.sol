@@ -43,8 +43,7 @@
  */
 pragma solidity ^0.8.15;
 
-import "./VoterClass.sol";
-import "./VoterClassNullObject.sol";
+import "../contracts/CommunityClassNullObject.sol";
 
 /// @title VoteStrategy interface
 /// Requirements for voting implementations in Collective Governance

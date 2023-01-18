@@ -6,13 +6,13 @@ import "@openzeppelin/contracts/interfaces/IERC721.sol";
 
 import "forge-std/Test.sol";
 
-import "../contracts/VoterClassERC721.sol";
+import "../contracts/CommunityClassERC721.sol";
 
 import "../contracts/access/Versioned.sol";
 import "./MockERC721.sol";
 import "./MockERC721Enum.sol";
 
-contract VoterClassERC721Test is Test {
+contract CommunityClassERC721Test is Test {
     uint256 private constant _TOKENID = 0xf733b17d;
     address private constant _OWNER = address(0xffeeeeff);
     address private constant _NOTOWNER = address(0x55);
@@ -24,11 +24,19 @@ contract VoterClassERC721Test is Test {
         MockERC721 merc721 = new MockERC721();
         merc721.mintTo(_OWNER, _TOKENID);
         _tokenContract = merc721;
-        _class = new VoterClassERC721(address(_tokenContract), 1);
+        _class = new CommunityClassERC721(
+            address(_tokenContract),
+            1,
+            Constant.MINIMUM_PROJECT_QUORUM,
+            Constant.MINIMUM_VOTE_DELAY,
+            Constant.MAXIMUM_VOTE_DELAY,
+            Constant.MINIMUM_VOTE_DURATION,
+            Constant.MAXIMUM_VOTE_DURATION
+        );
     }
 
     function testDiscovery() public {
-        vm.expectRevert(abi.encodeWithSelector(VoterClassERC721.ERC721EnumerableRequired.selector, address(_tokenContract)));
+        vm.expectRevert(abi.encodeWithSelector(CommunityClassERC721.ERC721EnumerableRequired.selector, address(_tokenContract)));
         _class.discover(_OWNER);
     }
 
@@ -38,7 +46,15 @@ contract VoterClassERC721Test is Test {
         merc721.mintTo(_OWNER, _TOKENID + 1);
         merc721.mintTo(_OWNER, _TOKENID + 2);
         merc721.mintTo(_OWNER, _TOKENID + 3);
-        _class = new VoterClassERC721(address(merc721), 1);
+        _class = new CommunityClassERC721(
+            address(merc721),
+            1,
+            Constant.MINIMUM_PROJECT_QUORUM,
+            Constant.MINIMUM_VOTE_DELAY,
+            Constant.MAXIMUM_VOTE_DELAY,
+            Constant.MINIMUM_VOTE_DURATION,
+            Constant.MAXIMUM_VOTE_DURATION
+        );
         uint256[] memory tokenIdList = _class.discover(_OWNER);
         assertEq(tokenIdList.length, 4);
         for (uint256 i = 0; i < 4; i++) {
@@ -64,8 +80,7 @@ contract VoterClassERC721Test is Test {
     }
 
     function testFinal() public {
-        Mutable _mutable = Mutable(address(_class));
-        assertTrue(_mutable.isFinal());
+        assertFalse(_class.isFinal());
     }
 
     function testSupportsInterface() public {
@@ -78,5 +93,9 @@ contract VoterClassERC721Test is Test {
     function testSupportsInterfaceVersioned() public {
         bytes4 ifId = type(Versioned).interfaceId;
         assertTrue(_class.supportsInterface(ifId));
+    }
+
+    function testName() public {
+        assertEq("CommunityClassERC721", _class.name());
     }
 }

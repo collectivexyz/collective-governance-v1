@@ -87,7 +87,7 @@
         "type": "address"
       }
     ],
-    "name": "VoterClassRequired",
+    "name": "CommunityClassRequired",
     "type": "error"
   },
   {
@@ -345,7 +345,7 @@
         "type": "uint32"
       }
     ],
-    "name": "GovernanceContractWithVoterClass",
+    "name": "GovernanceContractwithCommunityClass",
     "type": "event"
   },
   {
@@ -891,7 +891,7 @@
         "type": "address"
       }
     ],
-    "name": "withVoterClass",
+    "name": "withCommunityClass",
     "outputs": [
       {
         "internalType": "contract GovernanceCreator",
@@ -910,7 +910,7 @@
         "type": "address"
       }
     ],
-    "name": "withVoterClassAddress",
+    "name": "withCommunityClassAddress",
     "outputs": [
       {
         "internalType": "contract GovernanceCreator",

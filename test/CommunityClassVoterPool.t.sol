@@ -2,18 +2,25 @@
 pragma solidity ^0.8.15;
 
 import "forge-std/Test.sol";
-import "../contracts/VoterClassVoterPool.sol";
+import "../contracts/CommunityClassVoterPool.sol";
 import "../contracts/access/Versioned.sol";
 
-contract VoterClassVoterPoolTest is Test {
+contract CommunityClassVoterPoolTest is Test {
     address private immutable _VOTER = address(0xffeeeeff);
     address private immutable _NOTVOTER = address(0x55);
     address private immutable _NOBODY = address(0x0);
 
-    VoterClassVoterPool private _class;
+    CommunityClassVoterPool private _class;
 
     function setUp() public {
-        _class = new VoterClassVoterPool(1);
+        _class = new CommunityClassVoterPool(
+            1,
+            Constant.MINIMUM_PROJECT_QUORUM,
+            Constant.MINIMUM_VOTE_DELAY,
+            Constant.MAXIMUM_VOTE_DELAY,
+            Constant.MINIMUM_VOTE_DURATION,
+            Constant.MAXIMUM_VOTE_DURATION
+        );
     }
 
     function testOpenToMemberPropose() public {
@@ -113,6 +120,7 @@ contract VoterClassVoterPoolTest is Test {
         IERC165 _erc165 = IERC165(address(_class));
         assertTrue(_erc165.supportsInterface(type(VoterPool).interfaceId));
         assertTrue(_erc165.supportsInterface(type(VoterClass).interfaceId));
+        assertTrue(_erc165.supportsInterface(type(CommunityClass).interfaceId));
         assertTrue(_erc165.supportsInterface(type(Mutable).interfaceId));
         assertTrue(_erc165.supportsInterface(type(Ownable).interfaceId));
         assertTrue(_erc165.supportsInterface(type(IERC165).interfaceId));
@@ -121,5 +129,9 @@ contract VoterClassVoterPoolTest is Test {
     function testSupportsInterfaceVersioned() public {
         bytes4 ifId = type(Versioned).interfaceId;
         assertTrue(_class.supportsInterface(ifId));
+    }
+
+    function testName() public {
+        assertEq("CommunityClassVoterPool", _class.name());
     }
 }

@@ -57,8 +57,7 @@ contract SystemTest is Test {
             "clxtv",
             "https://github.com/collectivexyz/collective-governance-v1",
             "clxtv governance contract",
-            address(merc721),
-            1
+            address(merc721)
         );
 
         Governance _governance = Governance(_g);
@@ -94,9 +93,6 @@ contract SystemTest is Test {
             "https://github.com/collectivexyz/collective-governance-v1",
             "clxtv governance contract",
             address(merc721),
-            1,
-            300,
-            3600,
             1,
             true
         );

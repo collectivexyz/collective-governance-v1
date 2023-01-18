@@ -43,21 +43,28 @@
  */
 pragma solidity ^0.8.15;
 
-import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
+import "../contracts/MutableCommunityClass.sol";
 
-import "../contracts/VoterClass.sol";
-import "../contracts/access/AlwaysFinal.sol";
-import "../contracts/access/Versioned.sol";
-import "../contracts/access/VersionedContract.sol";
-
-/// @notice OpenVote VoterClass allows every wallet to participate in an open vote
-contract VoterClassOpenVote is VoterClass, AlwaysFinal, VersionedContract, ERC165 {
-    string public constant NAME = "collective VoterClassOpenVote";
+/// @notice OpenVote CommunityClass allows every wallet to participate in an open vote
+contract CommunityClassOpenVote is MutableCommunityClass {
+    string public constant NAME = "CommunityClassOpenVote";
 
     uint256 private immutable _weight;
 
     /// @param _voteWeight The integral weight to apply to each token held by the wallet
-    constructor(uint256 _voteWeight) {
+    /// @param _minimumQuorum the least possible quorum for any vote
+    /// @param _minimumDelay the least possible vote delay
+    /// @param _maximumDelay the least possible vote delay
+    /// @param _minimumDuration the least possible voting duration
+    /// @param _maximumDuration the least possible voting duration
+    constructor(
+        uint256 _voteWeight,
+        uint256 _minimumQuorum,
+        uint256 _minimumDelay,
+        uint256 _maximumDelay,
+        uint256 _minimumDuration,
+        uint256 _maximumDuration
+    ) MutableCommunityClass(_minimumQuorum, _minimumDelay, _maximumDelay, _minimumDuration, _maximumDuration) {
         _weight = _voteWeight;
     }
 
@@ -98,15 +105,6 @@ contract VoterClassOpenVote is VoterClass, AlwaysFinal, VersionedContract, ERC16
     /// @return uint256 weight applied to one share
     function weight() external view returns (uint256) {
         return _weight;
-    }
-
-    /// @notice see ERC-165
-    function supportsInterface(bytes4 interfaceId) public view virtual override(IERC165, ERC165) returns (bool) {
-        return
-            interfaceId == type(VoterClass).interfaceId ||
-            interfaceId == type(Mutable).interfaceId ||
-            interfaceId == type(Versioned).interfaceId ||
-            super.supportsInterface(interfaceId);
     }
 
     /// @notice return the name of this implementation
