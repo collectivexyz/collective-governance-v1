@@ -43,17 +43,51 @@
  */
 pragma solidity ^0.8.15;
 
-import "@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.sol";
+import "@openzeppelin/contracts/interfaces/IERC721.sol";
 
-import "../contracts/GovernanceFactory.sol";
+import "../../contracts/community/CommunityClassERC721.sol";
 
-contract GovernanceFactoryProxy is ERC1967Proxy {
+/// @title Closed ERC721 VoterClass
+/// @notice similar to CommunityClassERC721 however proposals are only allowed for voters
+contract CommunityClassClosedERC721 is CommunityClassERC721 {
+    // number of tokens required to propose
+    uint256 public immutable _tokenRequirement;
+
+    /// @param _contract Address of the token contract
+    /// @param _tokenThreshold Number of tokens required to propose an issue
+    /// @param _voteWeight The integral weight to apply to each token held by the wallet
+    /// @param _minimumQuorum the least possible quorum for any vote
+    /// @param _minimumDelay the least possible vote delay
+    /// @param _maximumDelay the least possible vote delay
+    /// @param _minimumDuration the least possible voting duration
+    /// @param _maximumDuration the least possible voting duration
     constructor(
-        address _implementation
+        address _contract,
+        uint256 _tokenThreshold,
+        uint256 _voteWeight,
+        uint256 _minimumQuorum,
+        uint256 _minimumDelay,
+        uint256 _maximumDelay,
+        uint256 _minimumDuration,
+        uint256 _maximumDuration
     )
-        ERC1967Proxy(_implementation, abi.encodeWithSelector(GovernanceFactory.initialize.selector))
-    // solhint-disable-next-line no-empty-blocks
+        CommunityClassERC721(
+            _contract,
+            _voteWeight,
+            _minimumQuorum,
+            _minimumDelay,
+            _maximumDelay,
+            _minimumDuration,
+            _maximumDuration
+        )
     {
+        _tokenRequirement = _tokenThreshold;
+    }
 
+    /// @notice determine if adding a proposal is approved for this voter
+    /// @return bool true if this address is approved
+    function canPropose(address _wallet) external view virtual override(CommunityClassERC721) returns (bool) {
+        uint256 balance = IERC721(_contractAddress).balanceOf(_wallet);
+        return balance >= _tokenRequirement;
     }
 }

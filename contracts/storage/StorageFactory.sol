@@ -43,17 +43,54 @@
  */
 pragma solidity ^0.8.15;
 
-import "@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.sol";
+import "@openzeppelin/contracts/proxy/utils/Initializable.sol";
+import "@openzeppelin/contracts/proxy/utils/UUPSUpgradeable.sol";
+import "@openzeppelin/contracts/interfaces/IERC165.sol";
+import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
 
-import "../contracts/GovernanceFactory.sol";
+import "../../contracts/storage/StorageFactoryCreator.sol";
+import "../../contracts/community/CommunityClass.sol";
+import "../../contracts/storage/GovernanceStorage.sol";
+import "../../contracts/access/Versioned.sol";
+import "../../contracts/access/VersionedContract.sol";
+import "../../contracts/access/OwnableInitializable.sol";
 
-contract GovernanceFactoryProxy is ERC1967Proxy {
-    constructor(
-        address _implementation
-    )
-        ERC1967Proxy(_implementation, abi.encodeWithSelector(GovernanceFactory.initialize.selector))
-    // solhint-disable-next-line no-empty-blocks
-    {
+/**
+ * @title CollectiveStorage creational contract
+ */
+contract StorageFactory is
+    StorageFactoryCreator,
+    VersionedContract,
+    OwnableInitializable,
+    UUPSUpgradeable,
+    Initializable,
+    ERC165
+{
+    event UpgradeAuthorized(address sender, address owner);
 
+    function initialize() public initializer {
+        ownerInitialize(msg.sender);
+    }
+
+    /// @notice create a new storage object with VoterClass as the voting population
+    /// @param _class the contract that defines the popluation
+    /// @return Storage the created instance
+    function create(CommunityClass _class) external returns (Storage) {
+        GovernanceStorage _storage = new GovernanceStorage(_class);
+        _storage.transferOwnership(msg.sender);
+        return _storage;
+    }
+
+    /// @notice see ERC-165
+    function supportsInterface(bytes4 interfaceId) public view virtual override(IERC165, ERC165) returns (bool) {
+        return
+            interfaceId == type(StorageFactoryCreator).interfaceId ||
+            interfaceId == type(Versioned).interfaceId ||
+            super.supportsInterface(interfaceId);
+    }
+
+    /// see UUPSUpgradeable
+    function _authorizeUpgrade(address _caller) internal virtual override(UUPSUpgradeable) onlyOwner {
+        emit UpgradeAuthorized(_caller, owner());
     }
 }

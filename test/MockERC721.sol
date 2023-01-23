@@ -64,41 +64,26 @@ contract MockERC721 is IERC721, ERC165 {
         _tokenMap[_tokenId] = _to;
     }
 
-    function transferFrom(
-        address _from,
-        address _to,
-        uint256 _tokenId
-    ) external {
+    function transferFrom(address _from, address _to, uint256 _tokenId) external {
         require(_from == msg.sender, "Not token owner");
         _ownerBalanceMap[_from] -= 1;
         _ownerBalanceMap[_to] += 1;
         _tokenMap[_tokenId] = _to;
     }
 
-    function approve(
-        address, /* to */
-        uint256 /*tokenId*/
-    ) external pure {
+    function approve(address /* to */, uint256 /*tokenId*/) external pure {
         revert("Not implemented");
     }
 
-    function setApprovalForAll(
-        address, /* operator */
-        bool /* _approved */
-    ) external pure {
+    function setApprovalForAll(address /* operator */, bool /* _approved */) external pure {
         revert("Not implemented");
     }
 
-    function getApproved(
-        uint256 /* tokenId */
-    ) external pure returns (address) {
+    function getApproved(uint256 /* tokenId */) external pure returns (address) {
         revert("Not implemented");
     }
 
-    function isApprovedForAll(
-        address, /* owner */
-        address /* operator */
-    ) external pure returns (bool) {
+    function isApprovedForAll(address /* owner */, address /* operator */) external pure returns (bool) {
         revert("Not implemented");
     }
 

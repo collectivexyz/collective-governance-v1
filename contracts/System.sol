@@ -48,7 +48,7 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "../contracts/GovernanceCreator.sol";
 import "../contracts/Governance.sol";
 import "../contracts/access/VersionedContract.sol";
-import "../contracts/VoterClassCreator.sol";
+import "../contracts/community/VoterClassCreator.sol";
 
 contract System is Ownable, VersionedContract {
     string public constant NAME = "Governance System Creator";
@@ -87,14 +87,7 @@ contract System is Ownable, VersionedContract {
         string memory _url,
         string memory _description,
         address _erc721
-    )
-        external
-        returns (
-            address payable governanceAddress,
-            address storageAddress,
-            address metaAddress
-        )
-    {
+    ) external returns (address payable governanceAddress, address storageAddress, address metaAddress) {
         address erc721Class = _classCreator.createERC721(_erc721, 1);
         address supervisor = msg.sender;
         return
@@ -124,14 +117,7 @@ contract System is Ownable, VersionedContract {
         address _erc721,
         uint256 _tokenRequirement,
         bool _isClosed
-    )
-        external
-        returns (
-            address payable governanceAddress,
-            address storageAddress,
-            address metaAddress
-        )
-    {
+    ) external returns (address payable governanceAddress, address storageAddress, address metaAddress) {
         address erc721Class = _classCreator.createERC721(_erc721, _tokenRequirement, 1, _isClosed);
         address supervisor = msg.sender;
         return

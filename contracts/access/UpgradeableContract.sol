@@ -43,17 +43,14 @@
  */
 pragma solidity ^0.8.15;
 
-import "@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.sol";
+import "../../contracts/access/Versioned.sol";
+import "../../contracts/Constant.sol";
 
-import "../contracts/GovernanceFactory.sol";
-
-contract GovernanceFactoryProxy is ERC1967Proxy {
-    constructor(
-        address _implementation
-    )
-        ERC1967Proxy(_implementation, abi.encodeWithSelector(GovernanceFactory.initialize.selector))
-    // solhint-disable-next-line no-empty-blocks
-    {
-
+/// @title Versioned contract
+contract VersionedContract is Versioned {
+    /// @notice return the version number of this contract
+    /// @return uint32 the version number
+    function version() external pure returns (uint32) {
+        return Constant.VERSION_2;
     }
 }

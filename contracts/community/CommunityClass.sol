@@ -43,17 +43,37 @@
  */
 pragma solidity ^0.8.15;
 
-import "@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.sol";
+import "@openzeppelin/contracts/interfaces/IERC165.sol";
 
-import "../contracts/GovernanceFactory.sol";
+import "../../contracts/community/VoterClass.sol";
 
-contract GovernanceFactoryProxy is ERC1967Proxy {
-    constructor(
-        address _implementation
-    )
-        ERC1967Proxy(_implementation, abi.encodeWithSelector(GovernanceFactory.initialize.selector))
-    // solhint-disable-next-line no-empty-blocks
-    {
+/// @title CommunityClass interface
+/// @notice defines the configurable parameters for a community
+/// @custom:type interface
+interface CommunityClass is VoterClass {
+    error MinimumDelayNotPermitted(uint256 delay, uint256 minimumDelay);
+    error MaximumDelayNotPermitted(uint256 delay, uint256 maximumDelay);
+    error MinimumDurationNotPermitted(uint256 duration, uint256 minimumDuration);
+    error MaximumDurationNotPermitted(uint256 duration, uint256 maximumDuration);
+    error MinimumQuorumNotPermitted(uint256 quorum, uint256 minimumProjectQuorum);
 
-    }
+    /// @notice get the project vote delay requirement
+    /// @return uint the least vote delay allowed for any vote
+    function minimumVoteDelay() external view returns (uint256);
+
+    /// @notice get the project vote delay maximum
+    /// @return uint the max vote delay allowed for any vote
+    function maximumVoteDelay() external view returns (uint256);
+
+    /// @notice get the vote duration minimum in seconds
+    /// @return uint256 the least duration of a vote in seconds
+    function minimumVoteDuration() external view returns (uint256);
+
+    /// @notice get the vote duration maximum in seconds
+    /// @return uint256 the vote duration of a vote in seconds
+    function maximumVoteDuration() external view returns (uint256);
+
+    /// @notice get the project quorum requirement
+    /// @return uint the least quorum allowed for any vote
+    function minimumProjectQuorum() external view returns (uint256);
 }

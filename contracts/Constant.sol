@@ -53,14 +53,6 @@ library Constant {
     /// @notice minimum quorum
     uint256 public constant MINIMUM_PROJECT_QUORUM = 1;
 
-    /// @notice minimum vote duration
-    /// @dev For security reasons this must be a relatively long time compared to seconds
-    uint256 public constant MINIMUM_VOTE_DURATION = 1 hours;
-
-    /// @notice maximum vote duration
-    /// @dev default of unlimited is recommended
-    uint256 public constant MAXIMUM_VOTE_DURATION = UINT_MAX;
-
     /// @notice minimum vote delay
     /// @dev A vote delay is recommended to support cancellation of votes, however it is not
     ///      required
@@ -69,6 +61,14 @@ library Constant {
     /// @notice maximum vote delay
     /// @dev default of unlimited is recommended
     uint256 public constant MAXIMUM_VOTE_DELAY = UINT_MAX;
+
+    /// @notice minimum vote duration
+    /// @dev For security reasons this must be a relatively long time compared to seconds
+    uint256 public constant MINIMUM_VOTE_DURATION = 1 hours;
+
+    /// @notice maximum vote duration
+    /// @dev default of unlimited is recommended
+    uint256 public constant MAXIMUM_VOTE_DURATION = UINT_MAX;
 
     // timelock setup
 

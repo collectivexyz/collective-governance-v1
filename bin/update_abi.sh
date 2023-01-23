@@ -9,9 +9,10 @@ then
     mkdir abi
 fi
 
-for contract in VoteStrategy Storage Governance GovernanceBuilder VoterClassFactory MetaStorage System
+for contract in VoteStrategy storage/Storage Governance GovernanceBuilder community/VoterClassFactory storage/MetaStorage System
 do
-    echo "inspect abi: ${contract} to abi/${contract}.json"
-    forge inspect contracts/${contract}.sol:${contract} abi > abi/${contract}.json
-    bin/sha3sum abi/${contract}.json
+    export BASE_NAME=$(basename ${contract})
+    echo "inspect abi: ${contract} to abi/${BASE_NAME}.json"
+    forge inspect contracts/${contract}.sol:${BASE_NAME} abi > abi/${BASE_NAME}.json
+    bin/sha3sum abi/${BASE_NAME}.json
 done

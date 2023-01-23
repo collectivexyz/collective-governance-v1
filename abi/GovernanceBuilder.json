@@ -8,6 +8,17 @@
     "inputs": [
       {
         "internalType": "address",
+        "name": "voterClass",
+        "type": "address"
+      }
+    ],
+    "name": "CommunityClassRequired",
+    "type": "error"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
         "name": "governance",
         "type": "address"
       }
@@ -77,17 +88,6 @@
       }
     ],
     "name": "StorageVersionMismatch",
-    "type": "error"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "voterClass",
-        "type": "address"
-      }
-    ],
-    "name": "CommunityClassRequired",
     "type": "error"
   },
   {
@@ -662,6 +662,44 @@
   {
     "inputs": [
       {
+        "internalType": "contract CommunityClass",
+        "name": "_class",
+        "type": "address"
+      }
+    ],
+    "name": "withCommunityClass",
+    "outputs": [
+      {
+        "internalType": "contract GovernanceCreator",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_classAddress",
+        "type": "address"
+      }
+    ],
+    "name": "withCommunityClassAddress",
+    "outputs": [
+      {
+        "internalType": "contract GovernanceCreator",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "string",
         "name": "_description",
         "type": "string"
@@ -734,107 +772,12 @@
   {
     "inputs": [
       {
-        "internalType": "uint256",
-        "name": "_maximumDelay",
-        "type": "uint256"
-      }
-    ],
-    "name": "withMaximumDelay",
-    "outputs": [
-      {
-        "internalType": "contract GovernanceCreator",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "_maximumDuration",
-        "type": "uint256"
-      }
-    ],
-    "name": "withMaximumDuration",
-    "outputs": [
-      {
-        "internalType": "contract GovernanceCreator",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "_minimumDelay",
-        "type": "uint256"
-      }
-    ],
-    "name": "withMinimumDelay",
-    "outputs": [
-      {
-        "internalType": "contract GovernanceCreator",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "_minimumDuration",
-        "type": "uint256"
-      }
-    ],
-    "name": "withMinimumDuration",
-    "outputs": [
-      {
-        "internalType": "contract GovernanceCreator",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
         "internalType": "bytes32",
         "name": "_name",
         "type": "bytes32"
       }
     ],
     "name": "withName",
-    "outputs": [
-      {
-        "internalType": "contract GovernanceCreator",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "_minimumQuorum",
-        "type": "uint256"
-      }
-    ],
-    "name": "withProjectQuorum",
     "outputs": [
       {
         "internalType": "contract GovernanceCreator",
@@ -873,44 +816,6 @@
       }
     ],
     "name": "withUrl",
-    "outputs": [
-      {
-        "internalType": "contract GovernanceCreator",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "contract VoterClass",
-        "name": "_class",
-        "type": "address"
-      }
-    ],
-    "name": "withCommunityClass",
-    "outputs": [
-      {
-        "internalType": "contract GovernanceCreator",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "_classAddress",
-        "type": "address"
-      }
-    ],
-    "name": "withCommunityClassAddress",
     "outputs": [
       {
         "internalType": "contract GovernanceCreator",

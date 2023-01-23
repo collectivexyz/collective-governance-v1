@@ -7,13 +7,13 @@ import "@openzeppelin/contracts/interfaces/IERC721.sol";
 import "forge-std/Test.sol";
 
 import "../contracts/Constant.sol";
-import "../contracts/StorageFactory.sol";
+import "../contracts/storage/StorageFactory.sol";
 import "../contracts/CollectiveGovernance.sol";
 import "../contracts/VoteStrategy.sol";
-import "../contracts/VoterClass.sol";
-import "../contracts/CommunityClassVoterPool.sol";
-import "../contracts/CommunityClassERC721.sol";
-import "../contracts/CommunityClassOpenVote.sol";
+import "../contracts/community/VoterClass.sol";
+import "../contracts/community/CommunityClassVoterPool.sol";
+import "../contracts/community/CommunityClassERC721.sol";
+import "../contracts/community/CommunityClassOpenVote.sol";
 import "../contracts/access/Versioned.sol";
 
 import "./TestData.sol";

@@ -8,9 +8,9 @@ import "forge-std/Test.sol";
 
 import "../contracts/GovernanceCreator.sol";
 import "../contracts/GovernanceBuilder.sol";
-import "../contracts/VoterClassCreator.sol";
-import "../contracts/VoterClassFactory.sol";
-import "../contracts/Storage.sol";
+import "../contracts/community/VoterClassCreator.sol";
+import "../contracts/community/VoterClassFactory.sol";
+import "../contracts/storage/Storage.sol";
 import "../contracts/System.sol";
 import "../contracts/access/Versioned.sol";
 

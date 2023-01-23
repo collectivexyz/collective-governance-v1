@@ -45,10 +45,10 @@ pragma solidity ^0.8.15;
 
 import "@openzeppelin/contracts/interfaces/IERC165.sol";
 
-import "../contracts/VoterClass.sol";
-import "../contracts/Storage.sol";
-import "../contracts/MetaStorage.sol";
-import "../contracts/TimeLocker.sol";
+import "../contracts/community/VoterClass.sol";
+import "../contracts/storage/Storage.sol";
+import "../contracts/storage/MetaStorage.sol";
+import "../contracts/treasury/TimeLocker.sol";
 import "../contracts/Governance.sol";
 import "../contracts/access/Versioned.sol";
 

@@ -160,11 +160,7 @@ interface Governance is Versioned, IERC165 {
     /// @param _description the description
     /// @param _url for proposed vote
     /// @dev required prior to calling configure
-    function describe(
-        uint256 _proposalId,
-        string memory _description,
-        string memory _url
-    ) external;
+    function describe(uint256 _proposalId, string memory _description, string memory _url) external;
 
     /// @notice set a choice by choice id
     /// @dev requires supervisor
@@ -186,11 +182,7 @@ interface Governance is Versioned, IERC165 {
     /// @param _name the name of the metadata field
     /// @param _value the value of the metadata
     /// @return uint256 the metadata id
-    function addMeta(
-        uint256 _proposalId,
-        bytes32 _name,
-        string memory _value
-    ) external returns (uint256);
+    function addMeta(uint256 _proposalId, bytes32 _name, string memory _value) external returns (uint256);
 
     /// @notice cancel a proposal if it is not yet open
     /// @param _proposalId The numeric id of the proposed vote
@@ -206,12 +198,7 @@ interface Governance is Versioned, IERC165 {
     /// @param _quorumThreshold The threshold of participation that is required for a successful conclusion of voting
     /// @param _requiredDelay The minimum time required before the start of voting
     /// @param _requiredDuration The minimum time for voting to proceed before ending the vote is allowed
-    function configure(
-        uint256 _proposalId,
-        uint256 _quorumThreshold,
-        uint256 _requiredDelay,
-        uint256 _requiredDuration
-    ) external;
+    function configure(uint256 _proposalId, uint256 _quorumThreshold, uint256 _requiredDelay, uint256 _requiredDuration) external;
 
     /// @notice return the name of this implementation
     /// @return string memory representation of name

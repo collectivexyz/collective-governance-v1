@@ -43,17 +43,20 @@
  */
 pragma solidity ^0.8.15;
 
-import "@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.sol";
+import "@openzeppelin/contracts/interfaces/IERC165.sol";
 
-import "../contracts/GovernanceFactory.sol";
+import "../../contracts/storage/MetaStorage.sol";
+import "../../contracts/access/Versioned.sol";
 
-contract GovernanceFactoryProxy is ERC1967Proxy {
-    constructor(
-        address _implementation
-    )
-        ERC1967Proxy(_implementation, abi.encodeWithSelector(GovernanceFactory.initialize.selector))
-    // solhint-disable-next-line no-empty-blocks
-    {
-
-    }
+/**
+ * @title proxy interface for MetaStorage Contract creation
+ */
+/// @custom:type interface
+interface MetaFactoryCreator is Versioned, IERC165 {
+    /// @notice create meta storage
+    /// @param _community The community name
+    /// @param _url The Url for this community
+    /// @param _description The community description
+    /// @return MetaStorage the storage
+    function create(bytes32 _community, string memory _url, string memory _description) external returns (MetaStorage);
 }

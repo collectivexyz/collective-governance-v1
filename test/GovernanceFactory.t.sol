@@ -5,11 +5,11 @@ import "@openzeppelin/contracts/interfaces/IERC165.sol";
 
 import "forge-std/Test.sol";
 
-import "../contracts/Storage.sol";
-import "../contracts/StorageFactory.sol";
-import "../contracts/MetaStorage.sol";
-import "../contracts/CollectiveMetaStorage.sol";
-import "../contracts/VoterClassFactory.sol";
+import "../contracts/storage/Storage.sol";
+import "../contracts/storage/StorageFactory.sol";
+import "../contracts/storage/MetaStorage.sol";
+import "../contracts/storage/CollectiveMetaStorage.sol";
+import "../contracts/community/VoterClassFactory.sol";
 import "../contracts/GovernanceFactoryCreator.sol";
 import "../contracts/GovernanceFactory.sol";
 import "../contracts/GovernanceFactoryProxy.sol";

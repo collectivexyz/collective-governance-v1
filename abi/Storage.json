@@ -248,86 +248,6 @@
     "inputs": [
       {
         "internalType": "uint256",
-        "name": "delay",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "maximumDelay",
-        "type": "uint256"
-      }
-    ],
-    "name": "MaximumDelayNotPermitted",
-    "type": "error"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "duration",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "maximumDuration",
-        "type": "uint256"
-      }
-    ],
-    "name": "MaximumDurationNotPermitted",
-    "type": "error"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "delay",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "minimumDelay",
-        "type": "uint256"
-      }
-    ],
-    "name": "MinimumDelayNotPermitted",
-    "type": "error"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "duration",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "minimumDuration",
-        "type": "uint256"
-      }
-    ],
-    "name": "MinimumDurationNotPermitted",
-    "type": "error"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "quorum",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "minimumProjectQuorum",
-        "type": "uint256"
-      }
-    ],
-    "name": "MinimumQuorumNotPermitted",
-    "type": "error"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
         "name": "proposalId",
         "type": "uint256"
       },
@@ -1648,71 +1568,6 @@
   },
   {
     "inputs": [],
-    "name": "maximumVoteDelay",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "maximumVoteDuration",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "minimumProjectQuorum",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "minimumVoteDelay",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "minimumVoteDuration",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
     "name": "name",
     "outputs": [
       {
@@ -2178,19 +2033,6 @@
       }
     ],
     "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "voterClass",
-    "outputs": [
-      {
-        "internalType": "contract VoterClass",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "stateMutability": "view",
     "type": "function"
   }
 ]

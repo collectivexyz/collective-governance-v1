@@ -53,15 +53,16 @@ import "../contracts/Constant.sol";
 import "../contracts/GovernanceFactoryCreator.sol";
 import "../contracts/GovernanceFactory.sol";
 import "../contracts/GovernanceFactoryProxy.sol";
-import "../contracts/CommunityClass.sol";
 import "../contracts/GovernanceCreator.sol";
-import "../contracts/Storage.sol";
-import "../contracts/StorageFactory.sol";
-import "../contracts/StorageFactoryProxy.sol";
-import "../contracts/MetaStorage.sol";
-import "../contracts/MetaFactoryCreator.sol";
-import "../contracts/MetaStorageFactory.sol";
-import "../contracts/MetaStorageFactoryProxy.sol";
+import "../contracts/community/CommunityClass.sol";
+import "../contracts/community/CommunityClassNullObject.sol";
+import "../contracts/storage/Storage.sol";
+import "../contracts/storage/StorageFactory.sol";
+import "../contracts/storage/StorageFactoryProxy.sol";
+import "../contracts/storage/MetaStorage.sol";
+import "../contracts/storage/MetaFactoryCreator.sol";
+import "../contracts/storage/MetaStorageFactory.sol";
+import "../contracts/storage/MetaStorageFactoryProxy.sol";
 import "../contracts/access/Versioned.sol";
 import "../contracts/access/VersionedContract.sol";
 
@@ -175,11 +176,7 @@ contract GovernanceBuilder is GovernanceCreator, VersionedContract, ERC165, Owna
     /// @param _url the url
     /// @param _description the description
     /// @return GovernanceCreator this contract
-    function withDescription(
-        bytes32 _name,
-        string memory _url,
-        string memory _description
-    ) external returns (GovernanceCreator) {
+    function withDescription(bytes32 _name, string memory _url, string memory _description) external returns (GovernanceCreator) {
         withName(_name);
         withUrl(_url);
         return withDescription(_description);
@@ -201,14 +198,7 @@ contract GovernanceBuilder is GovernanceCreator, VersionedContract, ERC165, Owna
     /// @return governanceAddress address of the new Governance contract
     /// @return storageAddress address of the storage contract
     /// @return metaAddress address of the meta contract
-    function build()
-        external
-        returns (
-            address payable governanceAddress,
-            address storageAddress,
-            address metaAddress
-        )
-    {
+    function build() external returns (address payable governanceAddress, address storageAddress, address metaAddress) {
         address _creator = msg.sender;
         GovernanceProperties storage _properties = _buildMap[_creator];
         Storage _storage = createStorage(_properties);
@@ -265,11 +255,7 @@ contract GovernanceBuilder is GovernanceCreator, VersionedContract, ERC165, Owna
     /// @dev owner required
     /// @param _governanceAddr The address of the governance factory
     /// @param _storageAddr The address of the storage factory
-    function upgrade(
-        address _governanceAddr,
-        address _storageAddr,
-        address _metaAddr
-    ) external onlyOwner {
+    function upgrade(address _governanceAddr, address _storageAddr, address _metaAddr) external onlyOwner {
         if (!supportsInterface(_governanceAddr, type(GovernanceFactoryCreator).interfaceId))
             revert GovernanceFactoryRequired(_governanceAddr);
         if (!supportsInterface(_storageAddr, type(StorageFactoryCreator).interfaceId))

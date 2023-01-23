@@ -43,8 +43,6 @@
  */
 pragma solidity ^0.8.15;
 
-import "../contracts/CommunityClassNullObject.sol";
-
 /// @title VoteStrategy interface
 /// Requirements for voting implementations in Collective Governance
 /// @custom:type interface
@@ -80,11 +78,7 @@ interface VoteStrategy {
     /// @param _proposalId The numeric id of the proposed vote
     /// @param _tokenId The id of a token or share representing the right to vote
     /// @param _choiceId The choice to vote for
-    function voteFor(
-        uint256 _proposalId,
-        uint256 _tokenId,
-        uint256 _choiceId
-    ) external;
+    function voteFor(uint256 _proposalId, uint256 _tokenId, uint256 _choiceId) external;
 
     /// @notice cast an affirmative vote for the measure by id
     /// @param _proposalId The numeric id of the proposed vote
@@ -95,11 +89,7 @@ interface VoteStrategy {
     /// @param _proposalId The numeric id of the proposed vote
     /// @param _tokenIdList A array of tokens or shares that confer the right to vote
     /// @param _choiceId The choice to vote for
-    function voteFor(
-        uint256 _proposalId,
-        uint256[] memory _tokenIdList,
-        uint256 _choiceId
-    ) external;
+    function voteFor(uint256 _proposalId, uint256[] memory _tokenIdList, uint256 _choiceId) external;
 
     /// @notice cast an against vote by id
     /// @param _proposalId The numeric id of the proposed vote

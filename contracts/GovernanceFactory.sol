@@ -48,10 +48,10 @@ import "@openzeppelin/contracts/proxy/utils/UUPSUpgradeable.sol";
 import "@openzeppelin/contracts/interfaces/IERC165.sol";
 import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
 
-import "../contracts/VoterClass.sol";
-import "../contracts/Storage.sol";
-import "../contracts/MetaStorage.sol";
-import "../contracts/TimeLocker.sol";
+import "../contracts/community/VoterClass.sol";
+import "../contracts/storage/Storage.sol";
+import "../contracts/storage/MetaStorage.sol";
+import "../contracts/treasury/TimeLocker.sol";
 import "../contracts/GovernanceFactoryCreator.sol";
 import "../contracts/CollectiveGovernance.sol";
 import "../contracts/access/Versioned.sol";

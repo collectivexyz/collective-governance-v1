@@ -43,17 +43,56 @@
  */
 pragma solidity ^0.8.15;
 
-import "@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.sol";
+import "../../contracts/community/MutableCommunityClass.sol";
 
-import "../contracts/GovernanceFactory.sol";
+/// @notice Null Object Pattern for VoterClass
+/// @dev No voter is allowed.
+contract CommunityClassNullObject is MutableCommunityClass {
+    string public constant NAME = "CommunityClassNullObject";
 
-contract GovernanceFactoryProxy is ERC1967Proxy {
-    constructor(
-        address _implementation
-    )
-        ERC1967Proxy(_implementation, abi.encodeWithSelector(GovernanceFactory.initialize.selector))
+    constructor()
+        MutableCommunityClass(
+            Constant.MINIMUM_PROJECT_QUORUM,
+            Constant.MINIMUM_VOTE_DELAY,
+            Constant.MAXIMUM_VOTE_DELAY,
+            Constant.MINIMUM_VOTE_DURATION,
+            Constant.MAXIMUM_VOTE_DURATION
+        )
     // solhint-disable-next-line no-empty-blocks
     {
 
+    }
+
+    /// @notice no voter is allowed
+    /// @return bool always returns false
+    function isVoter(address) external pure returns (bool) {
+        return false;
+    }
+
+    /// @notice determine if adding a proposal is approved for this voter
+    /// @return bool always false
+    function canPropose(address) external pure returns (bool) {
+        return false;
+    }
+
+    /// @notice always reverts
+    function discover(address _wallet) external pure returns (uint256[] memory) {
+        revert NotVoter(_wallet);
+    }
+
+    /// @notice always returns 0
+    function confirm(address /* _wallet */, uint256 /* shareId */) external pure returns (uint256) {
+        return 0;
+    }
+
+    /// @notice always returns 0
+    function weight() external pure returns (uint256) {
+        return 0;
+    }
+
+    /// @notice return the name of this implementation
+    /// @return string memory representation of name
+    function name() external pure virtual returns (string memory) {
+        return NAME;
     }
 }

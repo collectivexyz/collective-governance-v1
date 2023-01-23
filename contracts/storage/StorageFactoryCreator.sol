@@ -43,17 +43,19 @@
  */
 pragma solidity ^0.8.15;
 
-import "@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.sol";
+import "@openzeppelin/contracts/interfaces/IERC165.sol";
 
-import "../contracts/GovernanceFactory.sol";
+import "../../contracts/community/CommunityClass.sol";
+import "../../contracts/storage/Storage.sol";
+import "../../contracts/access/Versioned.sol";
 
-contract GovernanceFactoryProxy is ERC1967Proxy {
-    constructor(
-        address _implementation
-    )
-        ERC1967Proxy(_implementation, abi.encodeWithSelector(GovernanceFactory.initialize.selector))
-    // solhint-disable-next-line no-empty-blocks
-    {
-
-    }
+/**
+ * @title proxy interface for Storage Contract creation
+ */
+/// @custom:type interface
+interface StorageFactoryCreator is Versioned, IERC165 {
+    /// @notice create a new storage object with VoterClass as the voting population
+    /// @param _class the contract that defines the popluation
+    /// @return Storage the created instance
+    function create(CommunityClass _class) external returns (Storage);
 }

@@ -43,17 +43,36 @@
  */
 pragma solidity ^0.8.15;
 
-import "@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.sol";
+import "@openzeppelin/contracts/interfaces/IERC165.sol";
+import "../../contracts/community/VoterClass.sol";
+import "../../contracts/access/Versioned.sol";
 
-import "../contracts/GovernanceFactory.sol";
+/// @title Interface for VoterClass creation
+/// @custom:type interface
+interface VoterClassCreator is Versioned, IERC165 {
+    event VoterClassCreated(address voterClass, address project);
 
-contract GovernanceFactoryProxy is ERC1967Proxy {
-    constructor(
-        address _implementation
-    )
-        ERC1967Proxy(_implementation, abi.encodeWithSelector(GovernanceFactory.initialize.selector))
-    // solhint-disable-next-line no-empty-blocks
-    {
+    /// @notice create a VoterClass for open voting
+    /// @param _weight The weight associated with each vote
+    /// @return address The address of the resulting voter class
+    function createOpenVote(uint256 _weight) external returns (address);
 
-    }
+    /// @notice create a VoterClass for pooled voting
+    /// @param _weight The weight associated with each vote
+    /// @return address The address of the resulting voter class
+    function createVoterPool(uint256 _weight) external returns (address);
+
+    /// @notice create a VoterClass for token holding members
+    /// @param _erc721 The address of the ERC-721 contract for voting
+    /// @param _weight The weight associated with each vote
+    /// @return address The address of the resulting voter class
+    function createERC721(address _erc721, uint256 _weight) external returns (address);
+
+    /// @notice create a VoterClass for token holding members
+    /// @param _erc721 The address of the ERC-721 contract for voting
+    /// @param _tokenRequirement The number of tokens required for a proposal
+    /// @param _weight The weight associated with each vote
+    /// @param _isClosed True if class should be closed, false otherwise
+    /// @return address The address of the resulting voter class
+    function createERC721(address _erc721, uint256 _tokenRequirement, uint256 _weight, bool _isClosed) external returns (address);
 }

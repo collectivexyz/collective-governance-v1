@@ -8,18 +8,18 @@ import "@openzeppelin/contracts/token/ERC721/extensions/IERC721Enumerable.sol";
 
 import "forge-std/Test.sol";
 
+import "../contracts/access/Versioned.sol";
+import "../contracts/community/CommunityClass.sol";
+import "../contracts/community/CommunityClassVoterPool.sol";
+import "../contracts/community/CommunityClassOpenVote.sol";
+import "../contracts/community/CommunityClassClosedERC721.sol";
+import "../contracts/storage/Storage.sol";
+import "../contracts/storage/GovernanceStorage.sol";
 import "../contracts/Constant.sol";
-import "../contracts/CommunityClass.sol";
-import "../contracts/CommunityClassVoterPool.sol";
-import "../contracts/CommunityClassOpenVote.sol";
-import "../contracts/CommunityClassClosedERC721.sol";
-import "../contracts/Storage.sol";
-import "../contracts/GovernanceStorage.sol";
 import "../contracts/VoteStrategy.sol";
 import "../contracts/Governance.sol";
 import "../contracts/CollectiveGovernance.sol";
 import "../contracts/GovernanceBuilder.sol";
-import "../contracts/access/Versioned.sol";
 
 import "./MockERC721.sol";
 import "./FlagSet.sol";
@@ -1604,14 +1604,7 @@ contract CollectiveGovernanceTest is Test {
         return merc721;
     }
 
-    function buildERC721(address projectAddress)
-        private
-        returns (
-            address payable,
-            address,
-            address
-        )
-    {
+    function buildERC721(address projectAddress) private returns (address payable, address, address) {
         CommunityClass _class = new CommunityClassClosedERC721(
             projectAddress,
             1,
@@ -1630,14 +1623,7 @@ contract CollectiveGovernanceTest is Test {
         uint256 minimumProjectQuorum,
         uint256 minimumVoteDelay,
         uint256 minimumDuration
-    )
-        private
-        returns (
-            address payable,
-            address,
-            address
-        )
-    {
+    ) private returns (address payable, address, address) {
         CommunityClass _class = new CommunityClassClosedERC721(
             projectAddress,
             1,
@@ -1651,14 +1637,7 @@ contract CollectiveGovernanceTest is Test {
         return _builder.aGovernance().withCommunityClass(_class).withSupervisor(_SUPERVISOR).build();
     }
 
-    function buildVoterPool()
-        private
-        returns (
-            address payable,
-            address,
-            address
-        )
-    {
+    function buildVoterPool() private returns (address payable, address, address) {
         CommunityClassVoterPool _class = new CommunityClassVoterPool(
             1,
             Constant.MINIMUM_PROJECT_QUORUM,
@@ -1673,14 +1652,7 @@ contract CollectiveGovernanceTest is Test {
         return _builder.aGovernance().withCommunityClass(_class).withSupervisor(_SUPERVISOR).build();
     }
 
-    function buildOpenVote()
-        private
-        returns (
-            address payable,
-            address,
-            address
-        )
-    {
+    function buildOpenVote() private returns (address payable, address, address) {
         CommunityClass _class = new CommunityClassOpenVote(
             1,
             Constant.MINIMUM_PROJECT_QUORUM,

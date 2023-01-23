@@ -7,20 +7,20 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/interfaces/IERC165.sol";
 import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
 
-import "../contracts/MetaFactoryCreator.sol";
-import "../contracts/MetaStorageFactory.sol";
-import "../contracts/StorageFactoryCreator.sol";
-import "../contracts/StorageFactory.sol";
+import "../contracts/storage/MetaFactoryCreator.sol";
+import "../contracts/storage/MetaStorageFactory.sol";
+import "../contracts/storage/StorageFactoryCreator.sol";
+import "../contracts/storage/StorageFactory.sol";
 import "../contracts/GovernanceFactoryCreator.sol";
 import "../contracts/GovernanceFactory.sol";
 
 import "../contracts/GovernanceBuilder.sol";
 import "../contracts/Governance.sol";
 import "../contracts/CollectiveGovernance.sol";
-import "../contracts/VoterClass.sol";
-import "../contracts/CommunityClassVoterPool.sol";
-import "../contracts/CommunityClassERC721.sol";
-import "../contracts/CommunityClassOpenVote.sol";
+import "../contracts/community/VoterClass.sol";
+import "../contracts/community/CommunityClassVoterPool.sol";
+import "../contracts/community/CommunityClassERC721.sol";
+import "../contracts/community/CommunityClassOpenVote.sol";
 import "../contracts/access/Versioned.sol";
 
 import "./MockERC721.sol";

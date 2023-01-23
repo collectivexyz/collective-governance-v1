@@ -47,12 +47,13 @@ import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
 import "@openzeppelin/contracts/utils/math/Math.sol";
 
 import "../contracts/Constant.sol";
-import "../contracts/Storage.sol";
-import "../contracts/MetaStorage.sol";
+import "../contracts/storage/Storage.sol";
+import "../contracts/storage/MetaStorage.sol";
 import "../contracts/Governance.sol";
 import "../contracts/VoteStrategy.sol";
-import "../contracts/VoterClass.sol";
-import "../contracts/TimeLock.sol";
+import "../contracts/community/VoterClass.sol";
+import "../contracts/treasury/TimeLocker.sol";
+import "../contracts/treasury/TimeLock.sol";
 import "../contracts/access/Versioned.sol";
 import "../contracts/access/VersionedContract.sol";
 
@@ -63,6 +64,7 @@ import "../contracts/access/VersionedContract.sol";
 /// @param _maximumGasUsedRebate maximum gas used
 /// @return rebate The rebate
 /// @return gasUsed The total gas used from gasleft to this call
+// solhint-disable-next-line func-visibility
 function calculateGasRebate(
     uint256 startGas,
     uint256 balance,

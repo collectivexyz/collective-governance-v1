@@ -45,7 +45,7 @@ pragma solidity ^0.8.15;
 
 import "@openzeppelin/contracts/interfaces/IERC165.sol";
 
-import "../contracts/CommunityClass.sol";
+import "../contracts/community/CommunityClass.sol";
 import "../contracts/access/Versioned.sol";
 
 /// @title Governance GovernanceCreator interface
@@ -143,11 +143,7 @@ interface GovernanceCreator is Versioned, IERC165 {
     /// @param _url the url
     /// @param _description the description
     /// @return GovernanceCreator this contract
-    function withDescription(
-        bytes32 _name,
-        string memory _url,
-        string memory _description
-    ) external returns (GovernanceCreator);
+    function withDescription(bytes32 _name, string memory _url, string memory _description) external returns (GovernanceCreator);
 
     /// @notice set the community name
     /// @param _name the name
@@ -177,13 +173,7 @@ interface GovernanceCreator is Versioned, IERC165 {
     /// @return governanceAddress address of the new Governance contract
     /// @return storageAddress address of the storage contract
     /// @return metaAddress address of the meta contract
-    function build()
-        external
-        returns (
-            address payable governanceAddress,
-            address storageAddress,
-            address metaAddress
-        );
+    function build() external returns (address payable governanceAddress, address storageAddress, address metaAddress);
 
     /// @notice clear and reset resources associated with sender build requests
     function reset() external;
@@ -194,9 +184,5 @@ interface GovernanceCreator is Versioned, IERC165 {
 
     /// @notice upgrade factories
     /// @dev owner required
-    function upgrade(
-        address _governance,
-        address _storage,
-        address _meta
-    ) external;
+    function upgrade(address _governance, address _storage, address _meta) external;
 }

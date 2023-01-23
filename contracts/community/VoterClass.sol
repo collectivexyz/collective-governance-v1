@@ -43,17 +43,45 @@
  */
 pragma solidity ^0.8.15;
 
-import "@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.sol";
+import "@openzeppelin/contracts/interfaces/IERC165.sol";
 
-import "../contracts/GovernanceFactory.sol";
+import "../../contracts/access/Mutable.sol";
+import "../../contracts/access/Versioned.sol";
 
-contract GovernanceFactoryProxy is ERC1967Proxy {
-    constructor(
-        address _implementation
-    )
-        ERC1967Proxy(_implementation, abi.encodeWithSelector(GovernanceFactory.initialize.selector))
-    // solhint-disable-next-line no-empty-blocks
-    {
+/// @title VoterClass interface
+/// @notice The VoterClass interface defines the requirements for specifying a
+/// population or grouping of acceptable voting wallets
+/// @dev The VoterClass is stateless and therefore does not require any special
+/// privledges.   It can be called by anyone.
+/// @custom:type interface
+interface VoterClass is Mutable, Versioned, IERC165 {
+    error NotVoter(address wallet);
+    error NotOwner(address tokenContract, address wallet);
+    error EmptyClass();
+    error UnknownToken(uint256 tokenId);
 
-    }
+    /// @notice test if wallet represents an allowed voter for this class
+    /// @return bool true if wallet is a voter
+    function isVoter(address _wallet) external view returns (bool);
+
+    /// @notice determine if adding a proposal is approved for this voter
+    /// @param _sender The address of the sender
+    /// @return bool true if this address is approved
+    function canPropose(address _sender) external view returns (bool);
+
+    /// @notice discover an array of shareIds associated with the specified wallet
+    /// @return uint256[] array in memory of share ids
+    function discover(address _wallet) external view returns (uint256[] memory);
+
+    /// @notice confirm shareid is associated with wallet for voting
+    /// @return uint256 The number of weighted votes confirmed
+    function confirm(address _wallet, uint256 shareId) external returns (uint256);
+
+    /// @notice return voting weight of each confirmed share
+    /// @return uint256 weight applied to one share
+    function weight() external view returns (uint256);
+
+    /// @notice return the name of this implementation
+    /// @return string memory representation of name
+    function name() external pure returns (string memory);
 }

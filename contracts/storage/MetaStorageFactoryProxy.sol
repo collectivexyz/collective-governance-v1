@@ -45,13 +45,13 @@ pragma solidity ^0.8.15;
 
 import "@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.sol";
 
-import "../contracts/GovernanceFactory.sol";
+import "../../contracts/storage/MetaStorageFactory.sol";
 
-contract GovernanceFactoryProxy is ERC1967Proxy {
+contract MetaStorageFactoryProxy is ERC1967Proxy {
     constructor(
         address _implementation
     )
-        ERC1967Proxy(_implementation, abi.encodeWithSelector(GovernanceFactory.initialize.selector))
+        ERC1967Proxy(_implementation, abi.encodeWithSelector(MetaStorageFactory.initialize.selector))
     // solhint-disable-next-line no-empty-blocks
     {
 
