@@ -4,7 +4,7 @@ pragma solidity ^0.8.15;
 
 import "forge-std/Test.sol";
 
-import "../../contracts/community/CommunityClassOpenVote.sol";
+import "../../contracts/community/CommunityBuilder.sol";
 import "../../contracts/access/Versioned.sol";
 
 contract CommunityClassOpenVoteTest is Test {
@@ -14,14 +14,9 @@ contract CommunityClassOpenVoteTest is Test {
     VoterClass private _class;
 
     function setUp() public {
-        _class = new CommunityClassOpenVote(
-            1,
-            Constant.MINIMUM_PROJECT_QUORUM,
-            Constant.MINIMUM_VOTE_DELAY,
-            Constant.MAXIMUM_VOTE_DELAY,
-            Constant.MINIMUM_VOTE_DURATION,
-            Constant.MAXIMUM_VOTE_DURATION
-        );
+        CommunityBuilder _builder = new CommunityBuilder();
+        address _classAddress = _builder.aCommunity().asOpenCommunity().withQuorum(1).build();
+        _class = CommunityClass(_classAddress);
     }
 
     function testOpenToPropose() public {
@@ -60,7 +55,7 @@ contract CommunityClassOpenVoteTest is Test {
     }
 
     function testFinal() public {
-        assertFalse(_class.isFinal());
+        assertTrue(_class.isFinal());
     }
 
     function testSupportsInterface() public {

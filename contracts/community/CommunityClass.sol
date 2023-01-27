@@ -13,7 +13,7 @@
 /*
  * BSD 3-Clause License
  *
- * Copyright (c) 2022, collective
+ * Copyright (c) 2023, collective
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -58,11 +58,11 @@ interface CommunityClass is VoterClass {
     error MinimumQuorumNotPermitted(uint256 quorum, uint256 minimumProjectQuorum);
 
     /// @notice get the project vote delay requirement
-    /// @return uint the least vote delay allowed for any vote
+    /// @return uint256 the least vote delay allowed for any vote
     function minimumVoteDelay() external view returns (uint256);
 
     /// @notice get the project vote delay maximum
-    /// @return uint the max vote delay allowed for any vote
+    /// @return uint256 the max vote delay allowed for any vote
     function maximumVoteDelay() external view returns (uint256);
 
     /// @notice get the vote duration minimum in seconds
@@ -74,6 +74,6 @@ interface CommunityClass is VoterClass {
     function maximumVoteDuration() external view returns (uint256);
 
     /// @notice get the project quorum requirement
-    /// @return uint the least quorum allowed for any vote
+    /// @return uint256 the least quorum allowed for any vote
     function minimumProjectQuorum() external view returns (uint256);
 }

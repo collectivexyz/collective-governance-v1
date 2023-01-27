@@ -51,6 +51,6 @@ abstract contract VersionedContract is Versioned {
     /// @notice return the version number of this contract
     /// @return uint32 the version number
     function version() external pure returns (uint32) {
-        return Constant.VERSION_2;
+        return Constant.VERSION_3;
     }
 }

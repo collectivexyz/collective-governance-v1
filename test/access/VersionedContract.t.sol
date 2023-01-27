@@ -14,7 +14,7 @@ contract VersionedContractTest is Test {
     }
 
     function testVersion() public {
-        assertTrue(_trinket.version() >= Constant.VERSION_2);
+        assertEq(_trinket.version(), Constant.VERSION_3);
     }
 }
 

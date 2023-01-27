@@ -489,7 +489,7 @@ contract GovernanceStorageTest is Test {
     }
 
     function testVersion() public {
-        assertEq(_storage.version(), Constant.VERSION_2);
+        assertEq(_storage.version(), Constant.VERSION_3);
     }
 
     function testLatestProposalAfterEnd() public {

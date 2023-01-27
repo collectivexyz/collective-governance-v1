@@ -3,7 +3,7 @@
 pragma solidity ^0.8.15;
 
 import "forge-std/Test.sol";
-import "../../contracts/community/CommunityClassVoterPool.sol";
+import "../../contracts/community/CommunityBuilder.sol";
 import "../../contracts/access/Versioned.sol";
 
 contract CommunityClassVoterPoolTest is Test {
@@ -36,7 +36,7 @@ contract CommunityClassVoterPoolTest is Test {
         assertFalse(_class.canPropose(_NOTVOTER));
     }
 
-    function testFailEmptyClass() public {
+    function testFailEmptyCommunity() public {
         _class.makeFinal();
     }
 
@@ -76,8 +76,10 @@ contract CommunityClassVoterPoolTest is Test {
         assertEq(shareCount, 1);
     }
 
-    function testFailConfirmVoter() public {
+    function testConfirmVoterIfNotAdded() public {
+        _class.addVoter(_NOTVOTER);
         _class.makeFinal();
+        vm.expectRevert(abi.encodeWithSelector(VoterClass.NotVoter.selector, _VOTER));
         vm.prank(_VOTER);
         _class.confirm(_VOTER, uint160(_VOTER));
     }
@@ -109,6 +111,12 @@ contract CommunityClassVoterPoolTest is Test {
     function testFailAddIfFinal() public {
         _class.makeFinal();
         _class.addVoter(_VOTER);
+    }
+
+    function testMakeFinal() public {
+        _class.addVoter(_VOTER);
+        _class.makeFinal();
+        assertTrue(_class.isFinal());
     }
 
     function testFailRemoveIfFinal() public {

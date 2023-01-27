@@ -55,7 +55,6 @@ import "../contracts/GovernanceFactory.sol";
 import "../contracts/GovernanceFactoryProxy.sol";
 import "../contracts/GovernanceCreator.sol";
 import "../contracts/community/CommunityClass.sol";
-import "../contracts/community/CommunityClassNullObject.sol";
 import "../contracts/storage/Storage.sol";
 import "../contracts/storage/StorageFactory.sol";
 import "../contracts/storage/StorageFactoryProxy.sol";
@@ -66,15 +65,12 @@ import "../contracts/storage/MetaStorageFactoryProxy.sol";
 import "../contracts/access/Versioned.sol";
 import "../contracts/access/VersionedContract.sol";
 
-/// @title Governance GovernanceCreator implementation
-/// @notice This builder supports creating new instances of the Collective Governance Contract
+/// @title Collective Governance creator
+/// @notice This builder supports creating new instances of the Collective Governance contract
 contract GovernanceBuilder is GovernanceCreator, VersionedContract, ERC165, Ownable {
     string public constant NAME = "collective governance builder";
 
     mapping(address => GovernanceProperties) private _buildMap;
-
-    /// @dev implement the null object pattern requring voter class to be valid
-    CommunityClass private immutable _voterClassNull;
 
     StorageFactoryCreator public immutable _storageFactory;
     StorageFactoryProxy public immutable _storageFactoryProxy;
@@ -88,7 +84,6 @@ contract GovernanceBuilder is GovernanceCreator, VersionedContract, ERC165, Owna
     mapping(address => bool) public _governanceContractRegistered;
 
     constructor() {
-        _voterClassNull = new CommunityClassNullObject();
         StorageFactoryCreator storageFactory = new StorageFactory();
         _storageFactoryProxy = new StorageFactoryProxy(address(storageFactory));
         _storageFactory = StorageFactoryCreator(address(_storageFactoryProxy));
@@ -199,8 +194,7 @@ contract GovernanceBuilder is GovernanceCreator, VersionedContract, ERC165, Owna
     /// @return storageAddress address of the storage contract
     /// @return metaAddress address of the meta contract
     function build() external returns (address payable governanceAddress, address storageAddress, address metaAddress) {
-        address _creator = msg.sender;
-        GovernanceProperties storage _properties = _buildMap[_creator];
+        GovernanceProperties storage _properties = _buildMap[msg.sender];
         Storage _storage = createStorage(_properties);
         TimeLocker _timeLock = createTimelock(_properties.class.minimumVoteDuration());
         MetaStorage _metaStore = _metaStorageFactory.create(_properties.name, _properties.url, _properties.description);
@@ -222,7 +216,7 @@ contract GovernanceBuilder is GovernanceCreator, VersionedContract, ERC165, Owna
         address _metaAddress = address(_metaStore);
         address _timeAddress = address(_timeLock);
         emit GovernanceContractCreated(
-            _creator,
+            msg.sender,
             _properties.name,
             _storageAddress,
             _metaAddress,
@@ -291,14 +285,14 @@ contract GovernanceBuilder is GovernanceCreator, VersionedContract, ERC165, Owna
     }
 
     function createStorage(GovernanceProperties storage _properties) private returns (Storage) {
-        if (address(_properties.class) == address(_voterClassNull)) revert CommunityClassRequired(address(_properties.class));
+        if (address(_properties.class) == address(0x0)) revert CommunityClassRequired(address(_properties.class));
         Storage _storage = _storageFactory.create(_properties.class);
         return _storage;
     }
 
     function clear(address sender) internal {
         GovernanceProperties storage _properties = _buildMap[sender];
-        _properties.class = _voterClassNull;
+        _properties.class = CommunityClass(address(0x0));
         _properties.supervisorList = new address[](0);
         _properties.maxGasUsed = Constant.MAXIMUM_REBATE_GAS_USED;
         _properties.maxBaseFee = Constant.MAXIMUM_REBATE_BASE_FEE;

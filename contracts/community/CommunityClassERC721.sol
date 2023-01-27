@@ -45,7 +45,8 @@ pragma solidity ^0.8.15;
 
 import "@openzeppelin/contracts/token/ERC721/extensions/IERC721Enumerable.sol";
 
-import "../../contracts/community/MutableCommunityClass.sol";
+import "../../contracts/access/AlwaysFinal.sol";
+import "../../contracts/community/ScheduledCommunityClass.sol";
 
 /// @title ERC721 Implementation of CommunityClass
 /// @notice This contract implements a voter pool based on ownership of an ERC-721 token.
@@ -53,7 +54,7 @@ import "../../contracts/community/MutableCommunityClass.sol";
 /// ownerOf a token of the specified address
 /// @dev ERC721Enumerable is supported for discovery, however if the token contract does not support enumeration
 /// then vote by specific tokenId is still supported
-contract CommunityClassERC721 is MutableCommunityClass {
+contract CommunityClassERC721 is ScheduledCommunityClass, AlwaysFinal {
     error ERC721EnumerableRequired(address contractAddress);
 
     string public constant NAME = "CommunityClassERC721";
@@ -77,7 +78,7 @@ contract CommunityClassERC721 is MutableCommunityClass {
         uint256 _maximumDelay,
         uint256 _minimumDuration,
         uint256 _maximumDuration
-    ) MutableCommunityClass(_minimumQuorum, _minimumDelay, _maximumDelay, _minimumDuration, _maximumDuration) {
+    ) ScheduledCommunityClass(_minimumQuorum, _minimumDelay, _maximumDelay, _minimumDuration, _maximumDuration) {
         _contractAddress = _contract;
         _weight = _voteWeight;
     }

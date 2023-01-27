@@ -98,7 +98,7 @@ contract CollectiveGovernanceTest is Test {
     }
 
     function testVersion() public {
-        assertEq(governance.version(), Constant.VERSION_2);
+        assertEq(governance.version(), Constant.VERSION_3);
     }
 
     function testPropose() public {

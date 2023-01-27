@@ -10,7 +10,8 @@
   },
   "scripts": {
     "build": "forge build --sizes",
-    "prettier:check": "prettier --check \"(contracts|test)/*.sol\"",
+    "prettier:check": "prettier --check \"(contracts|test)/**.sol\"",
+    "prettier:fix": "prettier --write \"(contracts|test)/**.sol\"",
     "hint": "solhint contracts/**/*.sol test/**/*.sol",
     "test": "forge test -vvv",
     "clean": "forge clean"
@@ -22,8 +23,7 @@
   "devDependencies": {
     "prettier": "2.8.3",
     "prettier-plugin-solidity": "1.1.1",
-    "solhint": "3.3.8",
-    "solhint-plugin-prettier": "0.0.5"
+    "solhint": "3.3.8"
   },
   "dependencies": {
     "@openzeppelin/contracts": "4.8.1",

@@ -43,10 +43,11 @@
  */
 pragma solidity ^0.8.15;
 
-import "../../contracts/community/MutableCommunityClass.sol";
+import "../../contracts/access/AlwaysFinal.sol";
+import "../../contracts/community/ScheduledCommunityClass.sol";
 
 /// @notice OpenVote CommunityClass allows every wallet to participate in an open vote
-contract CommunityClassOpenVote is MutableCommunityClass {
+contract CommunityClassOpenVote is ScheduledCommunityClass, AlwaysFinal {
     string public constant NAME = "CommunityClassOpenVote";
 
     uint256 private immutable _weight;
@@ -64,7 +65,7 @@ contract CommunityClassOpenVote is MutableCommunityClass {
         uint256 _maximumDelay,
         uint256 _minimumDuration,
         uint256 _maximumDuration
-    ) MutableCommunityClass(_minimumQuorum, _minimumDelay, _maximumDelay, _minimumDuration, _maximumDuration) {
+    ) ScheduledCommunityClass(_minimumQuorum, _minimumDelay, _maximumDelay, _minimumDuration, _maximumDuration) {
         _weight = _voteWeight;
     }
 

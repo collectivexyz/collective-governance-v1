@@ -13,7 +13,7 @@
 /*
  * BSD 3-Clause License
  *
- * Copyright (c) 2022, collective
+ * Copyright (c) 2023, collective
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -51,9 +51,9 @@ import "../../contracts/access/ConfigurableMutable.sol";
 import "../../contracts/access/VersionedContract.sol";
 import "../../contracts/community/CommunityClass.sol";
 
-/// @title MutableCommunityClass
+/// @title ScheduledCommunityClass
 /// @notice defines the configurable parameters for a community
-abstract contract MutableCommunityClass is ConfigurableMutable, CommunityClass, VersionedContract, Ownable, ERC165 {
+abstract contract ScheduledCommunityClass is CommunityClass, VersionedContract, Ownable, ERC165 {
     /// @notice minimum vote delay for any vote
     uint256 private immutable _minimumVoteDelay;
 

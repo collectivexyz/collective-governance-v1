@@ -43,7 +43,9 @@
  */
 pragma solidity ^0.8.15;
 
-import "../../contracts/community/MutableCommunityClass.sol";
+import "../../contracts/access/ConfigurableMutable.sol";
+import "../../contracts/collection/AddressSet.sol";
+import "../../contracts/community/ScheduledCommunityClass.sol";
 
 /// @title interface for VoterPool
 /// @notice sets the requirements for contracts implementing a VoterPool
@@ -66,15 +68,13 @@ interface VoterPool {
 /// @notice This contract supports voting for a specific list of wallet addresses.   Each address must be added
 /// to the contract prior to voting at which time the pool must be marked as final so that it becomes impossible
 /// to modify
-contract CommunityClassVoterPool is MutableCommunityClass, VoterPool {
+contract CommunityClassVoterPool is ScheduledCommunityClass, ConfigurableMutable, VoterPool {
     string public constant NAME = "CommunityClassVoterPool";
 
     uint256 private immutable _weight;
 
-    uint256 private _poolCount = 0;
-
     // whitelisted voters
-    mapping(address => bool) private _voterPool;
+    AddressSet private _voterPool;
 
     /// @param _voteWeight The integral weight to apply to each token held by the wallet
     /// @param _minimumQuorum the least possible quorum for any vote
@@ -89,8 +89,9 @@ contract CommunityClassVoterPool is MutableCommunityClass, VoterPool {
         uint256 _maximumDelay,
         uint256 _minimumDuration,
         uint256 _maximumDuration
-    ) MutableCommunityClass(_minimumQuorum, _minimumDelay, _maximumDelay, _minimumDuration, _maximumDuration) {
+    ) ScheduledCommunityClass(_minimumQuorum, _minimumDelay, _maximumDelay, _minimumDuration, _maximumDuration) {
         _weight = _voteWeight;
+        _voterPool = new AddressSet();
     }
 
     modifier requireValidShare(address _wallet, uint256 _shareId) {
@@ -99,7 +100,7 @@ contract CommunityClassVoterPool is MutableCommunityClass, VoterPool {
     }
 
     modifier requireVoter(address _wallet) {
-        if (!_voterPool[_wallet]) revert NotVoter(_wallet);
+        if (!_voterPool.contains(_wallet)) revert NotVoter(_wallet);
         _;
     }
 
@@ -107,9 +108,8 @@ contract CommunityClassVoterPool is MutableCommunityClass, VoterPool {
     /// @dev only possible if not final
     /// @param _wallet the address to add
     function addVoter(address _wallet) external onlyOwner onlyMutable {
-        if (!_voterPool[_wallet]) {
-            _voterPool[_wallet] = true;
-            _poolCount++;
+        if (!_voterPool.contains(_wallet)) {
+            _voterPool.add(_wallet);
             emit RegisterVoter(_wallet);
         } else {
             revert DuplicateRegistration(_wallet);
@@ -120,19 +120,14 @@ contract CommunityClassVoterPool is MutableCommunityClass, VoterPool {
     /// @dev only possible if not final
     /// @param _wallet the address to add
     function removeVoter(address _wallet) external onlyOwner onlyMutable {
-        if (_voterPool[_wallet]) {
-            _voterPool[_wallet] = false;
-            _poolCount--;
-            emit BurnVoter(_wallet);
-        } else {
-            revert NotVoter(_wallet);
-        }
+        if (!_voterPool.erase(_wallet)) revert NotVoter(_wallet);
+        emit BurnVoter(_wallet);
     }
 
     /// @notice test if wallet represents an allowed voter for this class
     /// @return bool true if wallet is a voter
     function isVoter(address _wallet) public view returns (bool) {
-        return _voterPool[_wallet];
+        return _voterPool.contains(_wallet);
     }
 
     /// @notice determine if adding a proposal is approved for this voter
@@ -167,12 +162,12 @@ contract CommunityClassVoterPool is MutableCommunityClass, VoterPool {
 
     /// @notice set the voterpool final.   No further changes may be made to the voting pool.
     function makeFinal() public override(ConfigurableMutable) onlyOwner {
-        if (_poolCount == 0) revert EmptyClass();
+        if (_voterPool.size() == 0) revert EmptyCommunity();
         super.makeFinal();
     }
 
     /// @notice see ERC-165
-    function supportsInterface(bytes4 interfaceId) public view virtual override(MutableCommunityClass) returns (bool) {
+    function supportsInterface(bytes4 interfaceId) public view virtual override(ScheduledCommunityClass) returns (bool) {
         return interfaceId == type(VoterPool).interfaceId || super.supportsInterface(interfaceId);
     }
 

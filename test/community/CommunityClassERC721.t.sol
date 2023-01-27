@@ -6,7 +6,7 @@ import "@openzeppelin/contracts/interfaces/IERC721.sol";
 
 import "forge-std/Test.sol";
 
-import "../../contracts/community/CommunityClassERC721.sol";
+import "../../contracts/community/CommunityBuilder.sol";
 
 import "../../contracts/access/Versioned.sol";
 import "../../test/MockERC721.sol";
@@ -24,15 +24,9 @@ contract CommunityClassERC721Test is Test {
         MockERC721 merc721 = new MockERC721();
         merc721.mintTo(_OWNER, _TOKENID);
         _tokenContract = merc721;
-        _class = new CommunityClassERC721(
-            address(_tokenContract),
-            1,
-            Constant.MINIMUM_PROJECT_QUORUM,
-            Constant.MINIMUM_VOTE_DELAY,
-            Constant.MAXIMUM_VOTE_DELAY,
-            Constant.MINIMUM_VOTE_DURATION,
-            Constant.MAXIMUM_VOTE_DURATION
-        );
+        CommunityBuilder _builder = new CommunityBuilder();
+        address _classAddress = _builder.aCommunity().asErc721Community(address(_tokenContract)).withQuorum(1).build();
+        _class = VoterClass(_classAddress);
     }
 
     function testDiscovery() public {
@@ -80,7 +74,7 @@ contract CommunityClassERC721Test is Test {
     }
 
     function testFinal() public {
-        assertFalse(_class.isFinal());
+        assertTrue(_class.isFinal());
     }
 
     function testSupportsInterface() public {

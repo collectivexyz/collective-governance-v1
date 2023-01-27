@@ -5,11 +5,11 @@ import "@openzeppelin/contracts/interfaces/IERC165.sol";
 
 import "forge-std/Test.sol";
 
-import "../../contracts/community/MutableCommunityClass.sol";
+import "../../contracts/community/ScheduledCommunityClass.sol";
 import "../../contracts/community/CommunityClassOpenVote.sol";
 
-contract MutableCommunityClassTest is Test {
-    MutableCommunityClass private _class;
+contract ScheduledCommunityClassTest is Test {
+    ScheduledCommunityClass private _class;
 
     function setUp() public {
         _class = new CommunityClassOpenVote(
