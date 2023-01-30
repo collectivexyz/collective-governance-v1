@@ -43,36 +43,56 @@
  */
 pragma solidity ^0.8.15;
 
-import "@openzeppelin/contracts/interfaces/IERC165.sol";
-import "../../contracts/community/VoterClass.sol";
-import "../../contracts/access/Versioned.sol";
+/// @title dynamic collection of addresses
+contract AddressSet {
+    error IndexInvalid(uint256 index);
 
-/// @title Interface for VoterClass creation
-/// @custom:type interface
-interface VoterClassCreator is Versioned, IERC165 {
-    event VoterClassCreated(address voterClass, address project);
+    event AddressAdded(address element);
 
-    /// @notice create a VoterClass for open voting
-    /// @param _weight The weight associated with each vote
-    /// @return address The address of the resulting voter class
-    function createOpenVote(uint256 _weight) external returns (address);
+    uint256 private _elementCount;
 
-    /// @notice create a VoterClass for pooled voting
-    /// @param _weight The weight associated with each vote
-    /// @return address The address of the resulting voter class
-    function createVoterPool(uint256 _weight) external returns (address);
+    mapping(uint256 => address) private _elementMap;
 
-    /// @notice create a VoterClass for token holding members
-    /// @param _erc721 The address of the ERC-721 contract for voting
-    /// @param _weight The weight associated with each vote
-    /// @return address The address of the resulting voter class
-    function createERC721(address _erc721, uint256 _weight) external returns (address);
+    mapping(address => uint256) private _elementPresent;
 
-    /// @notice create a VoterClass for token holding members
-    /// @param _erc721 The address of the ERC-721 contract for voting
-    /// @param _tokenRequirement The number of tokens required for a proposal
-    /// @param _weight The weight associated with each vote
-    /// @param _isClosed True if class should be closed, false otherwise
-    /// @return address The address of the resulting voter class
-    function createERC721(address _erc721, uint256 _tokenRequirement, uint256 _weight, bool _isClosed) external returns (address);
+    constructor() {
+        _elementCount = 0;
+    }
+
+    modifier requireValidIndex(uint256 index) {
+        if (index == 0 || index > _elementCount) revert IndexInvalid(index);
+        _;
+    }
+
+    function add(address _element) external returns (uint256) {
+        uint256 elementIndex = ++_elementCount;
+        _elementMap[elementIndex] = _element;
+        _elementPresent[_element] = elementIndex;
+        emit AddressAdded(_element);
+        return elementIndex;
+    }
+
+    function erase(address _element) external returns (bool) {
+        uint256 elementIndex = _elementPresent[_element];
+        if (elementIndex > 0) {
+            _elementMap[elementIndex] = address(0x0);
+            _elementPresent[_element] = 0;
+            delete _elementMap[elementIndex];
+            delete _elementPresent[_element];
+            return true;
+        }
+        return false;
+    }
+
+    function size() external view returns (uint256) {
+        return _elementCount;
+    }
+
+    function get(uint256 index) external view requireValidIndex(index) returns (address) {
+        return _elementMap[index];
+    }
+
+    function contains(address element) external view returns (bool) {
+        return _elementPresent[element] > 0;
+    }
 }

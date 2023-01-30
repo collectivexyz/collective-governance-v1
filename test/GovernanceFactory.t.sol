@@ -9,7 +9,7 @@ import "../contracts/storage/Storage.sol";
 import "../contracts/storage/StorageFactory.sol";
 import "../contracts/storage/MetaStorage.sol";
 import "../contracts/storage/CollectiveMetaStorage.sol";
-import "../contracts/community/VoterClassFactory.sol";
+import "../contracts/community/CommunityBuilder.sol";
 import "../contracts/GovernanceFactoryCreator.sol";
 import "../contracts/GovernanceFactory.sol";
 import "../contracts/GovernanceFactoryProxy.sol";
@@ -28,8 +28,8 @@ contract GovernanceFactoryTest is Test {
     GovernanceFactoryCreator private _governanceFactory;
 
     function setUp() public {
-        VoterClassCreator _vcCreator = new VoterClassFactory();
-        address vcAddress = _vcCreator.createOpenVote(1);
+        CommunityBuilder _vcCreator = new CommunityBuilder();
+        address vcAddress = _vcCreator.aCommunity().asOpenCommunity().withQuorum(1).build();
         _class = CommunityClass(vcAddress);
         _metaStorage = new CollectiveMetaStorage(
             "collective",

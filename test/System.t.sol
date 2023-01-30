@@ -8,8 +8,7 @@ import "forge-std/Test.sol";
 
 import "../contracts/GovernanceCreator.sol";
 import "../contracts/GovernanceBuilder.sol";
-import "../contracts/community/VoterClassCreator.sol";
-import "../contracts/community/VoterClassFactory.sol";
+import "../contracts/community/CommunityBuilder.sol";
 import "../contracts/storage/Storage.sol";
 import "../contracts/System.sol";
 import "../contracts/access/Versioned.sol";
@@ -22,23 +21,17 @@ contract SystemTest is Test {
     address private constant _VOTER1 = address(0xfff1);
 
     GovernanceCreator private _creator;
-    VoterClassCreator private _classCreator;
+    CommunityBuilder private _classCreator;
 
     function setUp() public {
         vm.clearMockedCalls();
         _creator = new GovernanceBuilder();
-        _classCreator = new VoterClassFactory();
+        _classCreator = new CommunityBuilder();
     }
 
     function testFailGovernanceCreatorRequired() public {
         address mc = mockNotCompliant();
         address mcc = mockClassCreator();
-        new System(mc, mcc);
-    }
-
-    function testFailVoterClassCreatorRequired() public {
-        address mc = mockCreator();
-        address mcc = mockNotCompliant();
         new System(mc, mcc);
     }
 
@@ -57,7 +50,8 @@ contract SystemTest is Test {
             "clxtv",
             "https://github.com/collectivexyz/collective-governance-v1",
             "clxtv governance contract",
-            address(merc721)
+            address(merc721),
+            1
         );
 
         Governance _governance = Governance(_g);
@@ -94,6 +88,7 @@ contract SystemTest is Test {
             "clxtv governance contract",
             address(merc721),
             1,
+            1,
             true
         );
 
@@ -106,6 +101,18 @@ contract SystemTest is Test {
         assertTrue(_storage.isFinal(pid));
     }
 
+    function testFailBadVersion() public {
+        address mc = mockCreator(Constant.VERSION_3 - 1);
+        address mcc = mockClassCreator();
+        new System(mc, mcc);
+    }
+
+    function testFailVersionMismatch() public {
+        address mc = mockCreator(Constant.VERSION_3);
+        address mcc = mockClassCreator(Constant.VERSION_3 + 1);
+        new System(mc, mcc);
+    }
+
     function testUpgradeOnlyOnwer() public {
         address mc = mockCreator();
         address mcc = mockClassCreator();
@@ -116,26 +123,27 @@ contract SystemTest is Test {
     }
 
     function testUpgradeBadVersion() public {
-        address mc = mockCreator();
-        address mcc = mockClassCreator(1);
+        address mc = mockCreator(Constant.VERSION_3);
+        address mcc = mockClassCreator();
         System system = new System(mc, mcc);
-        vm.expectRevert(abi.encodeWithSelector(System.VersionMismatch.selector, 1, 0));
-        system.upgrade(mc, mcc);
+        address downrevCreator = mockCreator(Constant.VERSION_3 - 1);
+        vm.expectRevert(abi.encodeWithSelector(System.VersionMismatch.selector, Constant.VERSION_3, Constant.VERSION_3 - 1));
+        system.upgrade(downrevCreator, mcc);
     }
 
     function testForwardUpgradeAllowed() public {
-        address mc = mockCreator(2);
-        address mcc = mockClassCreator(1);
+        address mc = mockCreator();
+        address mcc = mockClassCreator();
         System system = new System(mc, mcc);
         system.upgrade(mc, mcc);
     }
 
     function mockCreator() private returns (address) {
-        return mockCreator(0);
+        return mockCreator(Constant.VERSION_3);
     }
 
     function mockCreator(uint256 version) private returns (address) {
-        address mock = address(0);
+        address mock = address(0x100);
         bytes4 ifId = type(GovernanceCreator).interfaceId;
         vm.mockCall(mock, abi.encodeWithSelector(IERC165.supportsInterface.selector, ifId), abi.encode(true));
         vm.mockCall(mock, abi.encodeWithSelector(Versioned.version.selector), abi.encode(version));
@@ -145,21 +153,20 @@ contract SystemTest is Test {
     }
 
     function mockClassCreator() private returns (address) {
-        return mockClassCreator(0);
+        return mockClassCreator(Constant.VERSION_3);
     }
 
     function mockClassCreator(uint256 version) private returns (address) {
-        address mock = address(1);
-        bytes4 ifId = type(VoterClassCreator).interfaceId;
-        vm.mockCall(mock, abi.encodeWithSelector(IERC165.supportsInterface.selector, ifId), abi.encode(true));
+        address mock = address(0x200);
+        vm.mockCall(mock, abi.encodeWithSelector(IERC165.supportsInterface.selector), abi.encode(true));
         vm.mockCall(mock, abi.encodeWithSelector(Versioned.version.selector), abi.encode(version));
-        VoterClassCreator eMock = VoterClassCreator(mock);
-        assertTrue(eMock.supportsInterface(ifId));
+        CommunityBuilder eMock = CommunityBuilder(mock);
+        assertTrue(eMock.supportsInterface(type(Versioned).interfaceId));
         return mock;
     }
 
     function mockNotCompliant() private returns (address) {
-        address mock = address(3);
+        address mock = address(0x300);
         vm.mockCall(mock, abi.encodeWithSelector(IERC165.supportsInterface.selector), abi.encode(false));
         vm.mockCall(mock, abi.encodeWithSelector(Versioned.version.selector), abi.encode(0));
         return mock;

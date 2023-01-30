@@ -48,27 +48,30 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "../contracts/GovernanceCreator.sol";
 import "../contracts/Governance.sol";
 import "../contracts/access/VersionedContract.sol";
-import "../contracts/community/VoterClassCreator.sol";
+import "../contracts/community/CommunityBuilder.sol";
 
 contract System is Ownable, VersionedContract {
     string public constant NAME = "Governance System Creator";
 
     error NotGovernanceCreator(address creator);
-    error NotVoterClassCreator(address creator);
+    error NotCommunityBuilder(address creator);
     error VersionMismatch(uint256 expected, uint256 provided);
+    error VersionInvalid(uint256 expected, uint256 provided);
 
     GovernanceCreator private _creator;
 
-    VoterClassCreator private _classCreator;
+    CommunityBuilder private _classCreator;
 
     /// @notice System factory
     /// @param _creatorAddress address of GovernanceCreator
     /// @param _voterCreator address of VoterClassCreator
     constructor(address _creatorAddress, address _voterCreator) {
         GovernanceCreator _govCreator = GovernanceCreator(_creatorAddress);
-        VoterClassCreator _voterFactory = VoterClassCreator(_voterCreator);
+        CommunityBuilder _voterFactory = CommunityBuilder(_voterCreator);
         if (!_govCreator.supportsInterface(type(GovernanceCreator).interfaceId)) revert NotGovernanceCreator(_creatorAddress);
-        if (!_voterFactory.supportsInterface(type(VoterClassCreator).interfaceId)) revert NotVoterClassCreator(_voterCreator);
+        if (_govCreator.version() < _voterFactory.version())
+            revert VersionMismatch(_voterFactory.version(), _govCreator.version());
+        if (_voterFactory.version() < Constant.VERSION_3) revert VersionInvalid(Constant.VERSION_3, _voterFactory.version());
         _creator = _govCreator;
         _classCreator = _voterFactory;
     }
@@ -79,6 +82,7 @@ contract System is Ownable, VersionedContract {
     /// @param _url the project url
     /// @param _description the project description
     /// @param _erc721 address of ERC-721 contract
+    /// @param _quorumRequirement required quorum for community
     /// @return governanceAddress address of the new Governance contract
     /// @return storageAddress address of the storage contract
     /// @return metaAddress address of the meta contract
@@ -86,9 +90,10 @@ contract System is Ownable, VersionedContract {
         bytes32 _name,
         string memory _url,
         string memory _description,
-        address _erc721
+        address _erc721,
+        uint256 _quorumRequirement
     ) external returns (address payable governanceAddress, address storageAddress, address metaAddress) {
-        address erc721Class = _classCreator.createERC721(_erc721, 1);
+        address erc721Class = _classCreator.aCommunity().asErc721Community(_erc721).withQuorum(_quorumRequirement).build();
         address supervisor = msg.sender;
         return
             _creator
@@ -106,6 +111,7 @@ contract System is Ownable, VersionedContract {
     /// @param _description the project description
     /// @param _erc721 address of ERC-721 contract
     /// @param _tokenRequirement The number of token required for a proposal
+    /// @param _quorumRequirement required quorum for community
     /// @param _isClosed True if closed to non voters
     /// @return governanceAddress address of the new Governance contract
     /// @return storageAddress address of the storage contract
@@ -116,9 +122,16 @@ contract System is Ownable, VersionedContract {
         string memory _description,
         address _erc721,
         uint256 _tokenRequirement,
+        uint256 _quorumRequirement,
         bool _isClosed
     ) external returns (address payable governanceAddress, address storageAddress, address metaAddress) {
-        address erc721Class = _classCreator.createERC721(_erc721, _tokenRequirement, 1, _isClosed);
+        _classCreator.aCommunity();
+        if (_isClosed) {
+            _classCreator.asClosedErc721Community(_erc721, _tokenRequirement);
+        } else {
+            _classCreator.asErc721Community(_erc721);
+        }
+        address erc721Class = _classCreator.withQuorum(_quorumRequirement).build();
         address supervisor = msg.sender;
         return
             _creator
@@ -135,9 +148,8 @@ contract System is Ownable, VersionedContract {
     /// @param _voterCreator address of VoterClassCreator
     function upgrade(address _creatorAddress, address _voterCreator) external onlyOwner {
         GovernanceCreator _govCreator = GovernanceCreator(_creatorAddress);
-        VoterClassCreator _voterFactory = VoterClassCreator(_voterCreator);
+        CommunityBuilder _voterFactory = CommunityBuilder(_voterCreator);
         if (!_govCreator.supportsInterface(type(GovernanceCreator).interfaceId)) revert NotGovernanceCreator(_creatorAddress);
-        if (!_voterFactory.supportsInterface(type(VoterClassCreator).interfaceId)) revert NotVoterClassCreator(_voterCreator);
         if (_govCreator.version() < _voterFactory.version())
             revert VersionMismatch(_voterFactory.version(), _govCreator.version());
         _creator = _govCreator;

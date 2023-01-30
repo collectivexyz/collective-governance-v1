@@ -262,6 +262,14 @@ contract CommunityBuilder is VersionedContract, ERC165, Ownable {
         return NAME;
     }
 
+    /// @notice see ERC-165
+    function supportsInterface(bytes4 interfaceId) public view virtual override(ERC165) returns (bool) {
+        return
+            interfaceId == type(Versioned).interfaceId ||
+            interfaceId == type(Ownable).interfaceId ||
+            super.supportsInterface(interfaceId);
+    }
+
     function clear(address sender) internal {
         CommunityProperties storage _properties = _buildMap[sender];
         _properties.weight = DEFAULT_WEIGHT;

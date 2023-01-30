@@ -8,7 +8,7 @@ import "forge-std/Test.sol";
 import "../../contracts/storage/Storage.sol";
 import "../../contracts/storage/StorageFactory.sol";
 import "../../contracts/storage/StorageFactoryProxy.sol";
-import "../../contracts/community/VoterClassFactory.sol";
+import "../../contracts/community/CommunityBuilder.sol";
 import "../../contracts/access/Versioned.sol";
 
 import "../../test/TestData.sol";
@@ -20,8 +20,8 @@ contract StorageFactoryTest is Test {
     StorageFactoryCreator private _storageFactory;
 
     function setUp() public {
-        VoterClassCreator _vcCreator = new VoterClassFactory();
-        address vcAddress = _vcCreator.createOpenVote(1);
+        CommunityBuilder _vcCreator = new CommunityBuilder();
+        address vcAddress = _vcCreator.aCommunity().asOpenCommunity().withQuorum(1).build();
         _class = CommunityClass(vcAddress);
         _storageFactoryInstance = new StorageFactory();
         _factoryProxy = new StorageFactoryProxy(address(_storageFactoryInstance));
