@@ -53,7 +53,6 @@ import "../../contracts/community/CommunityClassOpenVote.sol";
 import "../../contracts/community/CommunityClassVoterPool.sol";
 import "../../contracts/community/CommunityClassERC721.sol";
 import "../../contracts/community/CommunityClassClosedERC721.sol";
-import "../../contracts/access/Versioned.sol";
 import "../../contracts/access/VersionedContract.sol";
 
 /// @title Community Creator
@@ -112,7 +111,7 @@ contract CommunityBuilder is VersionedContract, ERC165, Ownable {
     }
 
     function aCommunity() external returns (CommunityBuilder) {
-        clear(msg.sender);
+        reset();
         emit CommunityClassInitialized(msg.sender);
         return this;
     }
@@ -270,8 +269,8 @@ contract CommunityBuilder is VersionedContract, ERC165, Ownable {
             super.supportsInterface(interfaceId);
     }
 
-    function clear(address sender) internal {
-        CommunityProperties storage _properties = _buildMap[sender];
+    function reset() public {
+        CommunityProperties storage _properties = _buildMap[msg.sender];
         _properties.weight = DEFAULT_WEIGHT;
         _properties.minimumProjectQuorum = 0;
         _properties.minimumVoteDelay = Constant.MINIMUM_VOTE_DELAY;

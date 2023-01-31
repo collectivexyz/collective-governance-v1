@@ -43,18 +43,45 @@
  */
 pragma solidity ^0.8.15;
 
-/// @title dynamic collection of addresses
-contract AddressSet {
-    error IndexInvalid(uint256 index);
-    error DuplicateAddress(address _address);
+import "../../contracts/Constant.sol";
 
-    event AddressAdded(address element);
+/// @notice The executable transaction
+struct Transaction {
+    /// @notice target for call instruction
+    address target;
+    /// @notice value to pass
+    uint256 value;
+    /// @notice signature for call
+    string signature;
+    /// @notice call data of the call
+    bytes _calldata;
+    /// @notice future dated start time for call within the TimeLocked grace period
+    uint256 scheduleTime;
+}
+
+// solhint-disable-next-line func-visibility
+function getTxHash(Transaction memory transaction) pure returns (bytes32) {
+    return
+        Constant.getTxHash(
+            transaction.target,
+            transaction.value,
+            transaction.signature,
+            transaction._calldata,
+            transaction.scheduleTime
+        );
+}
+
+/// @title dynamic collection of transaction
+contract TransactionSet {
+    error IndexInvalid(uint256 index);
+    error HashCollision(bytes32 txId);
+
+    event TransactionAdded(bytes32 transactionHash);
 
     uint256 private _elementCount;
 
-    mapping(uint256 => address) private _elementMap;
-
-    mapping(address => uint256) private _elementPresent;
+    mapping(uint256 => Transaction) private _elementMap;
+    mapping(bytes32 => bool) private _elementPresent;
 
     constructor() {
         _elementCount = 0;
@@ -65,36 +92,21 @@ contract AddressSet {
         _;
     }
 
-    function add(address _element) external returns (uint256) {
+    function add(Transaction memory _element) external returns (uint256) {
         uint256 elementIndex = ++_elementCount;
         _elementMap[elementIndex] = _element;
-        if (_elementPresent[_element] > 0) revert DuplicateAddress(_element);
-        _elementPresent[_element] = elementIndex;
-        emit AddressAdded(_element);
+        bytes32 _elementHash = getTxHash(_element);
+        if (_elementPresent[_elementHash]) revert HashCollision(_elementHash);
+        _elementPresent[_elementHash] = true;
+        emit TransactionAdded(_elementHash);
         return elementIndex;
-    }
-
-    function erase(address _element) external returns (bool) {
-        uint256 elementIndex = _elementPresent[_element];
-        if (elementIndex > 0) {
-            _elementMap[elementIndex] = address(0x0);
-            _elementPresent[_element] = 0;
-            delete _elementMap[elementIndex];
-            delete _elementPresent[_element];
-            return true;
-        }
-        return false;
     }
 
     function size() external view returns (uint256) {
         return _elementCount;
     }
 
-    function get(uint256 index) external view requireValidIndex(index) returns (address) {
+    function get(uint256 index) external view requireValidIndex(index) returns (Transaction memory) {
         return _elementMap[index];
-    }
-
-    function contains(address element) external view returns (bool) {
-        return _elementPresent[element] > 0;
     }
 }

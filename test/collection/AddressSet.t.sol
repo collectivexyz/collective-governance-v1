@@ -18,6 +18,14 @@ contract AddressTest is Test {
         assertEq(_set.get(index), testAddr);
     }
 
+    function testAddDuplicate() public {
+        address testAddr = address(0x1);
+        _set.add(testAddr);
+        vm.expectRevert(abi.encodeWithSelector(AddressSet.DuplicateAddress.selector, testAddr));
+        _set.add(testAddr);
+        assertEq(_set.size(), 1);
+    }
+
     function testContains() public {
         address testAddr = address(0x1);
         _set.add(testAddr);
