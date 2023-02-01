@@ -64,13 +64,13 @@ contract MetaStorageTest is Test {
 
     function testDescribeUrlTooLarge() public {
         string memory _TEST_STRING = TestData.pi1kplus();
-        vm.expectRevert(abi.encodeWithSelector(MetaStorage.UrlExceedsDataLimit.selector, META_ID));
+        vm.expectRevert(abi.encodeWithSelector(MetaStorage.StringSizeLimit.selector, Constant.len(_TEST_STRING)));
         _storage.describe(META_ID, _TEST_STRING, "");
     }
 
     function testDescribeDescriptionTooLarge() public {
         string memory _TEST_STRING = TestData.pi1kplus();
-        vm.expectRevert(abi.encodeWithSelector(MetaStorage.DescriptionExceedsDataLimit.selector, META_ID));
+        vm.expectRevert(abi.encodeWithSelector(MetaStorage.StringSizeLimit.selector, Constant.len(_TEST_STRING)));
         _storage.describe(META_ID, "", _TEST_STRING);
     }
 
@@ -118,7 +118,7 @@ contract MetaStorageTest is Test {
     function testAddMetaValueTooLarge() public {
         _storage.describe(META_ID, "", "");
         string memory _TEST_STRING = TestData.pi1kplus();
-        vm.expectRevert(abi.encodeWithSelector(MetaStorage.ValueExceedsDataLimit.selector, META_ID));
+        vm.expectRevert(abi.encodeWithSelector(MetaStorage.StringSizeLimit.selector, Constant.len(_TEST_STRING)));
         _storage.addMeta(META_ID, "a", _TEST_STRING);
     }
 
@@ -144,13 +144,13 @@ contract MetaStorageTest is Test {
 
     function testUrlTooLarge() public {
         string memory _TEST_STRING = TestData.pi1kplus();
-        vm.expectRevert(abi.encodeWithSelector(MetaStorage.CommunityUrlExceedsDataLimit.selector));
+        vm.expectRevert(abi.encodeWithSelector(MetaStorage.StringSizeLimit.selector, Constant.len(_TEST_STRING)));
         new CollectiveMetaStorage("", _TEST_STRING, "");
     }
 
     function testDescriptionTooLarge() public {
         string memory _TEST_STRING = TestData.pi1kplus();
-        vm.expectRevert(abi.encodeWithSelector(MetaStorage.CommunityDescriptionExceedsDataLimit.selector));
+        vm.expectRevert(abi.encodeWithSelector(MetaStorage.StringSizeLimit.selector, Constant.len(_TEST_STRING)));
         new CollectiveMetaStorage("", "", _TEST_STRING);
     }
 }

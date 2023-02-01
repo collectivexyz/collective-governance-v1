@@ -48,7 +48,9 @@ import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
 import "../contracts/access/VersionedContract.sol";
+import "../contracts/Constant.sol";
 import "../contracts/Governance.sol";
+import "../contracts/collection/TransactionSet.sol";
 import "../contracts/storage/Storage.sol";
 import "../contracts/storage/MetaStorage.sol";
 
@@ -60,8 +62,11 @@ contract ProposalBuilder is VersionedContract, ERC165, Ownable {
     error NotGovernance(address _address);
     error NotStorage(address _address);
     error NotMetaStorage(address _address);
+    error StringSizeLimit(address _sender, uint256 len);
 
     event ProposalInitialized(address _sender);
+    event ProposalTransaction(address _sender, address target, uint256 value, uint256 scheduleTime);
+    event ProposalDescription(address _sender, string description, string url);
 
     struct ProposalProperties {
         uint256 quorum;
@@ -69,6 +74,7 @@ contract ProposalBuilder is VersionedContract, ERC165, Ownable {
         uint256 voteDuration;
         string description;
         string url;
+        TransactionSet transaction;
     }
 
     Governance private _governance;
@@ -115,9 +121,47 @@ contract ProposalBuilder is VersionedContract, ERC165, Ownable {
         _;
     }
 
+    modifier requireValidString(string memory _data) {
+        uint256 strLen = Constant.len(_data);
+        if (strLen > Constant.STRING_DATA_LIMIT) revert StringSizeLimit(msg.sender, strLen);
+        _;
+    }
+
     function aProposal() external returns (ProposalBuilder) {
         clear();
         emit ProposalInitialized(msg.sender);
+        return this;
+    }
+
+    /// @notice Attach a transaction to the proposal.
+    /// @param _target the target address for this transaction
+    /// @param _value the value to pass to the call
+    /// @param _signature the tranaction signature
+    /// @param _calldata the call data to pass to the call
+    /// @param _scheduleTime the expected call time, within the timelock grace,
+    ///        for the transaction
+    /// @return ProposalBuilder this builder
+    function withTransaction(
+        address _target,
+        uint256 _value,
+        string memory _signature,
+        bytes memory _calldata,
+        uint256 _scheduleTime
+    ) external returns (ProposalBuilder) {
+        ProposalProperties storage _properties = _proposalMap[msg.sender];
+        Transaction memory transaction = Transaction(_target, _value, _signature, _calldata, _scheduleTime);
+        _properties.transaction.add(transaction);
+        emit ProposalTransaction(msg.sender, _target, _value, _scheduleTime);
+        return this;
+    }
+
+    function withDescription(
+        string memory _description,
+        string memory _url
+    ) external requireValidString(_description) requireValidString(_url) returns (ProposalBuilder) {
+        ProposalProperties storage _properties = _proposalMap[msg.sender];
+        _properties.description = _description;
+        _properties.url = _url;
         return this;
     }
 
@@ -142,5 +186,6 @@ contract ProposalBuilder is VersionedContract, ERC165, Ownable {
         _properties.voteDuration = 0;
         _properties.description = "";
         _properties.url = "";
+        _properties.transaction = new TransactionSet();
     }
 }

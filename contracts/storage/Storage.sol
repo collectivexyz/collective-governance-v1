@@ -86,7 +86,7 @@ interface Storage is Versioned, IERC165 {
     error ChoiceNameRequired(uint256 proposalId, uint256 choiceId);
     error ChoiceIdInvalid(uint256 proposalId, uint256 choiceId);
     error ChoiceNotInitialized(uint256 proposalId, uint256 choiceId);
-    error ChoiceDescriptionExceedsDataLimit(uint256 proposalId, uint256 choiceId, uint256 length, uint256 limit);
+    error StringSizeLimit(uint256 length);
 
     // event section
     event InitializeProposal(uint256 proposalId, address owner);

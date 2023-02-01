@@ -68,9 +68,11 @@ contract CollectiveMetaStorage is MetaStorage, VersionedContract, ERC165, Ownabl
     /// @param _community The community name
     /// @param _url The Url for this community
     /// @param _description The community description
-    constructor(bytes32 _community, string memory _url, string memory _description) {
-        if (Constant.len(_url) > Constant.STRING_DATA_LIMIT) revert CommunityUrlExceedsDataLimit();
-        if (Constant.len(_description) > Constant.STRING_DATA_LIMIT) revert CommunityDescriptionExceedsDataLimit();
+    constructor(
+        bytes32 _community,
+        string memory _url,
+        string memory _description
+    ) requireValidString(_url) requireValidString(_description) {
         _communityName = _community;
         _communityUrl = _url;
         _communityDescription = _description;
@@ -79,6 +81,12 @@ contract CollectiveMetaStorage is MetaStorage, VersionedContract, ERC165, Ownabl
     modifier requireValid(uint256 _metadataId) {
         MetaStore storage metaStore = metaStoreMap[_metadataId];
         if (_metadataId == 0 || metaStore.id != _metadataId) revert InvalidMetadataId(_metadataId);
+        _;
+    }
+
+    modifier requireValidString(string memory _data) {
+        uint256 length = Constant.len(_data);
+        if (length > Constant.STRING_DATA_LIMIT) revert StringSizeLimit(length);
         _;
     }
 
@@ -95,10 +103,12 @@ contract CollectiveMetaStorage is MetaStorage, VersionedContract, ERC165, Ownabl
     /// @param _metadataId the id of the metadata
     /// @param _url the url
     /// @param _description the description
-    function describe(uint256 _metadataId, string memory _url, string memory _description) external onlyOwner {
+    function describe(
+        uint256 _metadataId,
+        string memory _url,
+        string memory _description
+    ) external onlyOwner requireValidString(_url) requireValidString(_description) {
         if (_metadataId == 0) revert InvalidMetadataId(_metadataId);
-        if (Constant.len(_url) > Constant.STRING_DATA_LIMIT) revert UrlExceedsDataLimit(_metadataId);
-        if (Constant.len(_description) > Constant.STRING_DATA_LIMIT) revert DescriptionExceedsDataLimit(_metadataId);
         MetaStore storage metaStore = metaStoreMap[_metadataId];
         metaStore.id = _metadataId;
         metaStore.url = _url;
@@ -132,8 +142,7 @@ contract CollectiveMetaStorage is MetaStorage, VersionedContract, ERC165, Ownabl
         uint256 _metadataId,
         bytes32 _name,
         string memory _value
-    ) external onlyOwner requireValid(_metadataId) returns (uint256) {
-        if (Constant.len(_value) > Constant.STRING_DATA_LIMIT) revert ValueExceedsDataLimit(_metadataId);
+    ) external onlyOwner requireValid(_metadataId) requireValidString(_value) returns (uint256) {
         MetaStore storage metaStore = metaStoreMap[_metadataId];
         uint256 metaId = metaStore.metaCount++;
         metaStore.metadata[metaId] = Meta(metaId, _name, _value);

@@ -213,6 +213,12 @@ contract GovernanceStorage is Storage, VersionedContract, ERC165, Ownable {
         _;
     }
 
+    modifier requireValidString(string memory _data) {
+        uint256 length = Constant.len(_data);
+        if (length > Constant.STRING_DATA_LIMIT) revert StringSizeLimit(length);
+        _;
+    }
+
     /// @notice Register a new supervisor on the specified proposal.
     /// The supervisor has rights to add or remove voters prior to start of voting
     /// in a Voter Pool. The supervisor also has the right to veto the outcome of the vote.
@@ -841,11 +847,9 @@ contract GovernanceStorage is Storage, VersionedContract, ERC165, Ownable {
         requireConfig(_proposalId)
         requireSupervisor(_proposalId, _sender)
         requireChoiceVote(_proposalId)
+        requireValidString(_description)
     {
         if (_name == 0x0) revert ChoiceNameRequired(_proposalId, _choiceId);
-        uint256 descLen = Constant.len(_description);
-        if (descLen > Constant.STRING_DATA_LIMIT)
-            revert ChoiceDescriptionExceedsDataLimit(_proposalId, _choiceId, descLen, Constant.STRING_DATA_LIMIT);
         Proposal storage proposal = proposalMap[_proposalId];
         if (_choiceId >= proposal.choiceCount) revert ChoiceIdInvalid(_proposalId, _choiceId);
         bytes32 txHash = "";

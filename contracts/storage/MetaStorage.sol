@@ -51,11 +51,7 @@ import "../../contracts/access/Versioned.sol";
 /// @notice store community metadata
 /// @custom:type interface
 interface MetaStorage is Versioned, IERC165 {
-    error CommunityUrlExceedsDataLimit();
-    error CommunityDescriptionExceedsDataLimit();
-    error UrlExceedsDataLimit(uint256 metadataId);
-    error DescriptionExceedsDataLimit(uint256 metatdataId);
-    error ValueExceedsDataLimit(uint256 metatdataId);
+    error StringSizeLimit(uint256 length);
     error InvalidMetadataId(uint256 metadataId);
     error UnknownMetadata(uint256 metatdataId, uint256 metaId);
     error InvalidMetadata(uint256 metatdataId, uint256 metaId);

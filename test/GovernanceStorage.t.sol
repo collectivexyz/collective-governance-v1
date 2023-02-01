@@ -768,15 +768,7 @@ contract GovernanceStorageChoiceVoteTest is Test {
         _storage.registerSupervisor(_proposalId, _SUPERVISOR, _OWNER);
         string memory limitedString = TestData.pi1kplus();
         uint256 descLen = Constant.len(limitedString);
-        vm.expectRevert(
-            abi.encodeWithSelector(
-                Storage.ChoiceDescriptionExceedsDataLimit.selector,
-                _proposalId,
-                0,
-                descLen,
-                Constant.STRING_DATA_LIMIT
-            )
-        );
+        vm.expectRevert(abi.encodeWithSelector(Storage.StringSizeLimit.selector, descLen));
         _storage.setChoice(_proposalId, 0, "NAME", limitedString, 0, _SUPERVISOR);
     }
 
