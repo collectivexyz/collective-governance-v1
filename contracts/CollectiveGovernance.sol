@@ -225,18 +225,24 @@ contract CollectiveGovernance is VoteStrategy, Governance, ERC165, VersionedCont
         bytes memory _calldata,
         uint256 _scheduleTime
     ) external requireSender(_proposalId) returns (uint256) {
-        bytes32 txHash = _timeLock.queueTransaction(_target, _value, _signature, _calldata, _scheduleTime);
-        uint256 transactionId = _storage.addTransaction(
-            _proposalId,
-            _target,
-            _value,
-            _signature,
-            _calldata,
-            _scheduleTime,
-            txHash,
-            msg.sender
+        Transaction memory _transaction = Transaction(_target, _value, _signature, _calldata, _scheduleTime);
+        bytes32 txHash = _timeLock.queueTransaction(
+            _transaction.target,
+            _transaction.value,
+            _transaction.signature,
+            _transaction._calldata,
+            _transaction.scheduleTime
         );
-        emit ProposalTransactionAttached(msg.sender, _proposalId, transactionId, _target, _value, _scheduleTime, txHash);
+        uint256 transactionId = _storage.addTransaction(_proposalId, _transaction, msg.sender);
+        emit ProposalTransactionAttached(
+            msg.sender,
+            _proposalId,
+            transactionId,
+            _transaction.target,
+            _transaction.value,
+            _transaction.scheduleTime,
+            txHash
+        );
         return transactionId;
     }
 
@@ -561,17 +567,23 @@ contract CollectiveGovernance is VoteStrategy, Governance, ERC165, VersionedCont
             revert CancelNotPossible(_proposalId, msg.sender);
         uint256 transactionCount = _storage.transactionCount(_proposalId);
         for (uint256 tid = 0; tid < transactionCount; tid++) {
-            (
-                address target,
-                uint256 value,
-                string memory signature,
-                bytes memory _calldata,
-                uint256 scheduleTime,
-                bytes32 txHash
-            ) = _storage.getTransaction(_proposalId, tid);
-            _timeLock.cancelTransaction(target, value, signature, _calldata, scheduleTime);
+            Transaction memory transaction = _storage.getTransaction(_proposalId, tid);
+            _timeLock.cancelTransaction(
+                transaction.target,
+                transaction.value,
+                transaction.signature,
+                transaction._calldata,
+                transaction.scheduleTime
+            );
             _storage.clearTransaction(_proposalId, tid, msg.sender);
-            emit ProposalTransactionCancelled(_proposalId, tid, target, value, scheduleTime, txHash);
+            emit ProposalTransactionCancelled(
+                _proposalId,
+                tid,
+                transaction.target,
+                transaction.value,
+                transaction.scheduleTime,
+                getTxHash(transaction)
+            );
         }
         _storage.cancel(_proposalId, msg.sender);
     }
@@ -603,23 +615,26 @@ contract CollectiveGovernance is VoteStrategy, Governance, ERC165, VersionedCont
         }
     }
 
-    function executeTransaction(
-        uint256 _proposalId,
-        uint256 _transactionId,
-        bytes32 _txHash
-    ) private {
-        (
-            address target,
-            uint256 value,
-            string memory signature,
-            bytes memory _calldata,
-            uint256 scheduleTime,
-            bytes32 txHash
-        ) = _storage.getTransaction(_proposalId, _transactionId);
+    function executeTransaction(uint256 _proposalId, uint256 _transactionId, bytes32 _txHash) private {
+        Transaction memory transaction = _storage.getTransaction(_proposalId, _transactionId);
+        bytes32 txHash = getTxHash(transaction);
         if (_txHash != 0x0 && txHash != _txHash) revert TransactionSignatureNotMatching(_proposalId, _transactionId);
         if (txHash.length > 0 && _timeLock.queuedTransaction(txHash)) {
-            _timeLock.executeTransaction(target, value, signature, _calldata, scheduleTime);
-            emit ProposalTransactionExecuted(_proposalId, _transactionId, target, value, scheduleTime, txHash);
+            _timeLock.executeTransaction(
+                transaction.target,
+                transaction.value,
+                transaction.signature,
+                transaction._calldata,
+                transaction.scheduleTime
+            );
+            emit ProposalTransactionExecuted(
+                _proposalId,
+                _transactionId,
+                transaction.target,
+                transaction.value,
+                transaction.scheduleTime,
+                txHash
+            );
         }
     }
 
@@ -627,16 +642,16 @@ contract CollectiveGovernance is VoteStrategy, Governance, ERC165, VersionedCont
         uint256 transactionCount = _storage.transactionCount(_proposalId);
         if (transactionCount > 0) {
             for (uint256 tid = 1; tid <= transactionCount; tid++) {
-                (
-                    address target,
-                    uint256 value,
-                    string memory signature,
-                    bytes memory _calldata,
-                    uint256 scheduleTime,
-                    bytes32 txHash
-                ) = _storage.getTransaction(_proposalId, tid);
+                Transaction memory transaction = _storage.getTransaction(_proposalId, tid);
+                bytes32 txHash = getTxHash(transaction);
                 if (txHash.length > 0 && _timeLock.queuedTransaction(txHash)) {
-                    _timeLock.cancelTransaction(target, value, signature, _calldata, scheduleTime);
+                    _timeLock.cancelTransaction(
+                        transaction.target,
+                        transaction.value,
+                        transaction.signature,
+                        transaction._calldata,
+                        transaction.scheduleTime
+                    );
                 }
             }
         }

@@ -21,6 +21,7 @@ contract AddressTest is Test {
         assertEq(testValue.signature, transaction.signature);
         assertEq(testValue._calldata, transaction._calldata);
         assertEq(testValue.scheduleTime, transaction.scheduleTime);
+        assertEq(abi.encode(testValue), abi.encode(transaction));
     }
 
     function testDuplicateAdd() public {
@@ -30,11 +31,46 @@ contract AddressTest is Test {
         _set.add(transaction);
     }
 
-    function testSetSize() public {
+    function testSize() public {
         for (uint256 i = 0; i < 10; ++i) {
             Transaction memory transaction = Transaction(address(0x123), 45, "six", "seven", 890 + i);
             _set.add(transaction);
         }
         assertEq(_set.size(), 10);
+    }
+
+    function testErase() public {
+        for (uint256 i = 0; i < 10; ++i) {
+            Transaction memory transaction = Transaction(address(0x123), 45, "six", "seven", 890 + i);
+            _set.add(transaction);
+        }
+        Transaction memory tt = Transaction(address(0x123), 45, "six", "seven", 890);
+        assertTrue(_set.erase(tt));
+        assertFalse(_set.contains(tt));
+    }
+
+    function testEraseSize() public {
+        for (uint256 i = 0; i < 10; ++i) {
+            Transaction memory transaction = Transaction(address(0x123), 45, "six", "seven", 890 + i);
+            _set.add(transaction);
+        }
+        Transaction memory tt = Transaction(address(0x123), 45, "six", "seven", 890);
+        assertTrue(_set.erase(tt));
+        assertEq(_set.size(), 9);
+    }
+
+    function testEraseIndex() public {
+        Transaction memory tt = Transaction(address(0x123), 45, "six", "seven", 890);
+        uint256 index = _set.add(tt);
+        _set.erase(index);
+        assertFalse(_set.contains(tt));
+        assertEq(_set.size(), 0);
+    }
+
+    function testFind() public {
+        Transaction memory tt = Transaction(address(0x123), 45, "six", "seven", 890);
+        uint256 required = _set.add(tt);
+        uint256 testValue = _set.find(tt);
+        assertEq(testValue, required);
     }
 }

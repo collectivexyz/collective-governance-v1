@@ -46,6 +46,7 @@ pragma solidity ^0.8.15;
 import "@openzeppelin/contracts/interfaces/IERC165.sol";
 
 import "../../contracts/access/Versioned.sol";
+import "../../contracts/collection/TransactionSet.sol";
 
 /// @title Storage interface
 /// @dev Eternal storage of strategy proxy
@@ -71,7 +72,6 @@ interface Storage is Versioned, IERC165 {
     error InvalidTokenId(uint256 proposalId, address sender, uint256 tokenId);
     error TokenVoted(uint256 proposalId, address sender, uint256 tokenId);
     error InvalidTransaction(uint256 proposalId, uint256 transactionId);
-    error TransactionHashInvalid(uint256 proposalId, bytes32 txHash);
     error MarkedExecuted(uint256 proposalId);
     error TokenIdIsNotValid(uint256 proposalId, uint256 tokenId);
     error VoteIsFinal(uint256 proposalId);
@@ -155,8 +155,6 @@ interface Storage is Versioned, IERC165 {
         uint256 againstVotes;
         /// @notice Current number of votes for abstaining for this proposal
         uint256 abstentionCount;
-        /// @notice number of attached transactions
-        uint256 transactionCount;
         /// @notice number of choices for this vote, zero indicates a for/against vote
         uint256 choiceCount;
         /// @notice Flag marking whether the proposal has been vetoed
@@ -165,12 +163,12 @@ interface Storage is Versioned, IERC165 {
         bool isExecuted;
         /// @notice current status for this proposal
         Status status;
+        /// @notice table of mapped transactions
+        TransactionSet transaction;
         /// @notice Receipts of ballots for the entire set of voters
         mapping(uint256 => Receipt) voteReceipt;
         /// @notice configured supervisors
         mapping(address => Supervisor) supervisorPool;
-        /// @notice table of mapped transactions
-        mapping(uint256 => Transaction) transaction;
         /// @notice mapping of id to Choice values
         mapping(uint256 => Choice) choice;
     }
@@ -194,22 +192,6 @@ interface Storage is Versioned, IERC165 {
     struct Supervisor {
         bool isEnabled;
         bool isProject;
-    }
-
-    /// @notice The executable transaction resulting from a proposed Governance operation
-    struct Transaction {
-        /// @notice target for call instruction
-        address target;
-        /// @notice value to pass
-        uint256 value;
-        /// @notice signature for call
-        string signature;
-        /// @notice call data of the call
-        bytes _calldata;
-        /// @notice future dated start time for call within the TimeLocked grace period
-        uint256 scheduleTime;
-        /// @notice hash value of this transaction once queued
-        bytes32 txHash;
     }
 
     /// @notice choice for multiple choice voting
@@ -477,50 +459,16 @@ interface Storage is Versioned, IERC165 {
 
     /// @notice add a transaction to the specified proposal
     /// @param _proposalId the id of the proposal
-    /// @param _target the target address for this transaction
-    /// @param _value the value to pass to the call
-    /// @param _signature the tranaction signature
-    /// @param _calldata the call data to pass to the call
-    /// @param _scheduleTime the expected call time, within the timelock grace,
-    ///        for the transaction
-    /// @param _txHash The hash of the queued transaction
+    /// @param _transaction the transaction
     /// @param _sender for this proposal
     /// @return uint256 the id of the transaction that was added
-    function addTransaction(
-        uint256 _proposalId,
-        address _target,
-        uint256 _value,
-        string memory _signature,
-        bytes memory _calldata,
-        uint256 _scheduleTime,
-        bytes32 _txHash,
-        address _sender
-    ) external returns (uint256);
+    function addTransaction(uint256 _proposalId, Transaction memory _transaction, address _sender) external returns (uint256);
 
     /// @notice return the stored transaction by id
     /// @param _proposalId the proposal where the transaction is stored
     /// @param _transactionId The id of the transaction on the proposal
-    /// @return _target the target address for this transaction
-    /// @return _value the value to pass to the call
-    /// @return _signature the tranaction signature
-    /// @return _calldata the call data to pass to the call
-    /// @return _scheduleTime the expected call time, within the timelock grace,
-    ///        for the transaction
-    /// @return _txHash the transaction hash of the stored transaction
-    function getTransaction(
-        uint256 _proposalId,
-        uint256 _transactionId
-    )
-        external
-        view
-        returns (
-            address _target,
-            uint256 _value,
-            string memory _signature,
-            bytes memory _calldata,
-            uint256 _scheduleTime,
-            bytes32 _txHash
-        );
+    /// @return Transaction the transaction
+    function getTransaction(uint256 _proposalId, uint256 _transactionId) external view returns (Transaction memory);
 
     /// @notice clear a stored transaction
     /// @param _proposalId the proposal where the transaction is stored

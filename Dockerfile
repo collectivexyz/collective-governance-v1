@@ -10,6 +10,6 @@ ENV PATH=${PATH}:~/.cargo/bin
 RUN yarn install
 RUN yarn prettier:check
 RUN yarn hint
-RUN forge test -vvv --gas-report
+RUN FOUNDRY_PROFILE=lite forge test -vvv
 
 RUN bin/update_abi.sh

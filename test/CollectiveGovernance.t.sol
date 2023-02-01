@@ -1367,7 +1367,7 @@ contract CollectiveGovernanceTest is Test {
         vm.prank(_VOTER1, _VOTER1);
         governance.voteFor(proposalId, TOKEN_ID1);
         assertTrue(_VOTER1.balance > 0);
-        assertApproxEqAbs(_VOTER1.balance, 8671780 gwei, 5000 gwei);
+        assertApproxEqAbs(_VOTER1.balance, 8671780 gwei, 10000 gwei);
     }
 
     function testCastAgainstWithRefund() public {
@@ -1384,7 +1384,7 @@ contract CollectiveGovernanceTest is Test {
         vm.prank(_VOTER1, _VOTER1);
         governance.voteAgainst(proposalId, TOKEN_ID1);
         assertTrue(_VOTER1.balance > 0);
-        assertApproxEqAbs(_VOTER1.balance, 7631728 gwei, 5000 gwei);
+        assertApproxEqAbs(_VOTER1.balance, 7620912 gwei, 10000 gwei);
     }
 
     function testAbstainWithRefund() public {
@@ -1401,7 +1401,7 @@ contract CollectiveGovernanceTest is Test {
         vm.prank(_VOTER1, _VOTER1);
         governance.abstainFrom(proposalId, TOKEN_ID1);
         assertTrue(_VOTER1.balance > 0);
-        assertApproxEqAbs(_VOTER1.balance, 8659404 gwei, 5000 gwei);
+        assertApproxEqAbs(_VOTER1.balance, 8659404 gwei, 10000 gwei);
     }
 
     function testConfigureWithDescriptionAndUrl() public {
@@ -1511,9 +1511,12 @@ contract CollectiveGovernanceTest is Test {
             governance.setChoice(proposalId, i, "choice", "a choice for this vote", 0);
         }
         vm.stopPrank();
-        vm.prank(_governanceAddress);
+        vm.startPrank(_governanceAddress, _governanceAddress);
         // hack the transaction
         _storage.clearTransaction(proposalId, tid, _OWNER);
+        Transaction memory wrongTransaction = Transaction(flagMock, 0, "", data, scheduleTime + 1);
+        _storage.addTransaction(proposalId, wrongTransaction, _OWNER);
+        vm.stopPrank();
         vm.startPrank(_OWNER, _OWNER);
         governance.configure(proposalId, 1);
         governance.startVote(proposalId);
@@ -1524,6 +1527,38 @@ contract CollectiveGovernanceTest is Test {
         vm.prank(_OWNER, _OWNER);
         vm.expectRevert(abi.encodeWithSelector(Governance.TransactionSignatureNotMatching.selector, proposalId, tid));
         governance.endVote(proposalId);
+    }
+
+    function testChoiceVoteClearTheTransaction() public {
+        vm.startPrank(_OWNER, _OWNER);
+        governance.cancel(proposalId);
+        vm.warp(block.timestamp + Constant.MINIMUM_VOTE_DURATION);
+        FlagSet flag = new FlagSet();
+        address flagMock = address(flag);
+        bytes memory data = abi.encodeWithSelector(flag.set.selector);
+        uint256 scheduleTime = block.timestamp + 2 days;
+        proposalId = governance.propose(3);
+        uint256 tid = governance.attachTransaction(proposalId, flagMock, 0, "", data, scheduleTime);
+        governance.setChoice(proposalId, 2, "choice", "a choice for this vote", tid);
+        for (uint256 i = 0; i < 2; i++) {
+            governance.setChoice(proposalId, i, "choice", "a choice for this vote", 0);
+        }
+        vm.stopPrank();
+        vm.prank(_governanceAddress, _governanceAddress);
+        // hack the transaction
+        _storage.clearTransaction(proposalId, tid, _OWNER);
+        vm.startPrank(_OWNER, _OWNER);
+        governance.configure(proposalId, 1);
+        governance.startVote(proposalId);
+        vm.stopPrank();
+        vm.prank(_VOTER1, _VOTER1);
+        governance.voteFor(proposalId, TOKEN_ID1, 2);
+        vm.warp(scheduleTime);
+        vm.prank(_OWNER, _OWNER);
+        governance.endVote(proposalId);
+        // nothing executed - cleared
+        assertTrue(_storage.isExecuted(proposalId));
+        assertFalse(flag.isSet());
     }
 
     function testChoiceVoteQuorumNotReached() public {

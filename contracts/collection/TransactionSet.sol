@@ -73,40 +73,89 @@ function getTxHash(Transaction memory transaction) pure returns (bytes32) {
 
 /// @title dynamic collection of transaction
 contract TransactionSet {
-    error IndexInvalid(uint256 index);
+    error InvalidTransaction(uint256 index);
     error HashCollision(bytes32 txId);
 
     event TransactionAdded(bytes32 transactionHash);
+    event TransactionRemoved(bytes32 transactionHash);
 
     uint256 private _elementCount;
 
     mapping(uint256 => Transaction) private _elementMap;
-    mapping(bytes32 => bool) private _elementPresent;
+    mapping(bytes32 => uint256) private _elementPresent;
 
     constructor() {
         _elementCount = 0;
     }
 
     modifier requireValidIndex(uint256 index) {
-        if (index == 0 || index > _elementCount) revert IndexInvalid(index);
+        if (index == 0 || index > _elementCount) revert InvalidTransaction(index);
         _;
     }
 
+    /// @notice add transaction
+    /// @param _element the transaction
+    /// @return uint256 the elementId of the transaction
     function add(Transaction memory _element) external returns (uint256) {
         uint256 elementIndex = ++_elementCount;
         _elementMap[elementIndex] = _element;
         bytes32 _elementHash = getTxHash(_element);
-        if (_elementPresent[_elementHash]) revert HashCollision(_elementHash);
-        _elementPresent[_elementHash] = true;
+        if (_elementPresent[_elementHash] > 0) revert HashCollision(_elementHash);
+        _elementPresent[_elementHash] = elementIndex;
         emit TransactionAdded(_elementHash);
         return elementIndex;
     }
 
+    function erase(Transaction memory _transaction) public returns (bool) {
+        bytes32 transactionHash = getTxHash(_transaction);
+        uint256 index = _elementPresent[transactionHash];
+        return erase(index);
+    }
+
+    /// @notice erase a transaction
+    /// @param _index the index to remove
+    /// @return bool True if element was removed
+    function erase(uint256 _index) public returns (bool) {
+        Transaction memory transaction = _elementMap[_index];
+        bytes32 transactionHash = getTxHash(transaction);
+        uint256 elementIndex = _elementPresent[transactionHash];
+        if (elementIndex > 0 && elementIndex == _index) {
+            Transaction memory _lastTransaction = _elementMap[_elementCount];
+            _elementMap[elementIndex] = _lastTransaction;
+            bytes32 _lastTransactionHash = getTxHash(_lastTransaction);
+            _elementPresent[_lastTransactionHash] = elementIndex;
+            _elementMap[_elementCount] = Transaction(address(0x0), 0, "", "", 0);
+            _elementPresent[transactionHash] = 0;
+            delete _elementMap[_elementCount];
+            delete _elementPresent[transactionHash];
+            _elementCount--;
+            emit TransactionRemoved(transactionHash);
+            return true;
+        }
+        return false;
+    }
+
+    /// @return uint256 The size of the set
     function size() external view returns (uint256) {
         return _elementCount;
     }
 
+    /// @param index The index to return
+    /// @return address The requested address
     function get(uint256 index) external view requireValidIndex(index) returns (Transaction memory) {
         return _elementMap[index];
+    }
+
+    /// @param _transaction The element to test
+    /// @return bool True if address is contained
+    function contains(Transaction memory _transaction) external view returns (bool) {
+        return find(_transaction) > 0;
+    }
+
+    /// @param _transaction The element to find
+    /// @return uint256 The index associated with element
+    function find(Transaction memory _transaction) public view returns (uint256) {
+        bytes32 transactionHash = getTxHash(_transaction);
+        return _elementPresent[transactionHash];
     }
 }

@@ -204,10 +204,10 @@ contract GovernanceStorage is Storage, VersionedContract, ERC165, Ownable {
 
     modifier requireValidTransaction(uint256 _proposalId, uint256 _transactionId) {
         Proposal storage proposal = proposalMap[_proposalId];
-        if (proposal.transactionCount == 0) {
+        if (proposal.transaction.size() == 0) {
             if (_transactionId != 0) revert InvalidTransaction(_proposalId, _transactionId);
         } else {
-            if (_transactionId == 0 || _transactionId > proposal.transactionCount)
+            if (_transactionId == 0 || _transactionId > proposal.transaction.size())
                 revert InvalidTransaction(_proposalId, _transactionId);
         }
         _;
@@ -540,7 +540,7 @@ contract GovernanceStorage is Storage, VersionedContract, ERC165, Ownable {
         proposal.forVotes = 0;
         proposal.againstVotes = 0;
         proposal.abstentionCount = 0;
-        proposal.transactionCount = 0;
+        proposal.transaction = new TransactionSet();
         proposal.choiceCount = _choiceCount;
         proposal.isVeto = false;
         proposal.status = Status.CONFIG;
@@ -725,23 +725,12 @@ contract GovernanceStorage is Storage, VersionedContract, ERC165, Ownable {
 
     /// @notice add a transaction to the specified proposal
     /// @param _proposalId the id of the proposal
-    /// @param _target the target address for this transaction
-    /// @param _value the value to pass to the call
-    /// @param _signature the tranaction signature
-    /// @param _calldata the call data to pass to the call
-    /// @param _scheduleTime the expected call time, within the timelock grace,
-    ///        for the transaction
-    /// @param _txHash the transaction hash of the stored transaction
+    /// @param _transaction the transaction
     /// @param _sender for this proposal
     /// @return uint256 the id of the transaction that was added
     function addTransaction(
         uint256 _proposalId,
-        address _target,
-        uint256 _value,
-        string memory _signature,
-        bytes memory _calldata,
-        uint256 _scheduleTime,
-        bytes32 _txHash,
+        Transaction memory _transaction,
         address _sender
     )
         external
@@ -751,49 +740,29 @@ contract GovernanceStorage is Storage, VersionedContract, ERC165, Ownable {
         requireProposalSender(_proposalId, _sender)
         returns (uint256)
     {
-        if (_txHash == 0x0) revert TransactionHashInvalid(_proposalId, _txHash);
         Proposal storage proposal = proposalMap[_proposalId];
-        proposal.transactionCount++; // 1, 2, 3, ...
-        uint256 transactionId = proposal.transactionCount;
-        proposal.transaction[transactionId] = Transaction(_target, _value, _signature, _calldata, _scheduleTime, _txHash);
-        emit AddTransaction(_proposalId, transactionId, _target, _value, _scheduleTime, _txHash);
+        uint256 transactionId = proposal.transaction.add(_transaction);
+        emit AddTransaction(
+            _proposalId,
+            transactionId,
+            _transaction.target,
+            _transaction.value,
+            _transaction.scheduleTime,
+            getTxHash(_transaction)
+        );
         return transactionId;
     }
 
     /// @notice return the stored transaction by id
     /// @param _proposalId the proposal where the transaction is stored
     /// @param _transactionId The id of the transaction on the proposal
-    /// @return _target the target address for this transaction
-    /// @return _value the value to pass to the call
-    /// @return _signature the tranaction signature
-    /// @return _calldata the call data to pass to the call
-    /// @return _scheduleTime the expected call time, within the timelock grace,
-    ///        for the transaction
-    /// @return _txHash the transaction hash of the stored transaction
-    function getTransaction(uint256 _proposalId, uint256 _transactionId)
-        external
-        view
-        requireValid(_proposalId)
-        requireValidTransaction(_proposalId, _transactionId)
-        returns (
-            address _target,
-            uint256 _value,
-            string memory _signature,
-            bytes memory _calldata,
-            uint256 _scheduleTime,
-            bytes32 _txHash
-        )
-    {
+    /// @return Transaction the transaction
+    function getTransaction(
+        uint256 _proposalId,
+        uint256 _transactionId
+    ) external view requireValid(_proposalId) requireValidTransaction(_proposalId, _transactionId) returns (Transaction memory) {
         Proposal storage proposal = proposalMap[_proposalId];
-        Transaction memory transaction = proposal.transaction[_transactionId];
-        return (
-            transaction.target,
-            transaction.value,
-            transaction.signature,
-            transaction._calldata,
-            transaction.scheduleTime,
-            transaction.txHash
-        );
+        return proposal.transaction.get(_transactionId);
     }
 
     /// @notice clear a stored transaction
@@ -813,17 +782,9 @@ contract GovernanceStorage is Storage, VersionedContract, ERC165, Ownable {
         requireProposalSender(_proposalId, _sender)
     {
         Proposal storage proposal = proposalMap[_proposalId];
-        Transaction storage transaction = proposal.transaction[_transactionId];
-        (uint256 scheduleTime, bytes32 txHash) = (transaction.scheduleTime, transaction.txHash);
-
-        transaction.target = address(0x0);
-        transaction.value = 0;
-        transaction.signature = "";
-        transaction._calldata = "";
-        transaction.scheduleTime = 0;
-        transaction.txHash = "";
-        delete proposal.transaction[_transactionId];
-        emit ClearTransaction(_proposalId, _transactionId, scheduleTime, txHash);
+        Transaction memory transaction = proposal.transaction.get(_transactionId);
+        if (!proposal.transaction.erase(_transactionId)) revert InvalidTransaction(_proposalId, _transactionId);
+        emit ClearTransaction(_proposalId, _transactionId, transaction.scheduleTime, getTxHash(transaction));
     }
 
     /// @notice set proposal state executed
@@ -848,7 +809,7 @@ contract GovernanceStorage is Storage, VersionedContract, ERC165, Ownable {
     /// @return uint256 current number of transactions
     function transactionCount(uint256 _proposalId) external view requireValid(_proposalId) returns (uint256) {
         Proposal storage proposal = proposalMap[_proposalId];
-        return proposal.transactionCount;
+        return proposal.transaction.size();
     }
 
     /// @notice get the number of attached choices
@@ -887,11 +848,13 @@ contract GovernanceStorage is Storage, VersionedContract, ERC165, Ownable {
             revert ChoiceDescriptionExceedsDataLimit(_proposalId, _choiceId, descLen, Constant.STRING_DATA_LIMIT);
         Proposal storage proposal = proposalMap[_proposalId];
         if (_choiceId >= proposal.choiceCount) revert ChoiceIdInvalid(_proposalId, _choiceId);
-        if (_transactionId != 0 && _transactionId > proposal.transactionCount)
-            revert InvalidTransaction(_proposalId, _transactionId);
-        Transaction memory transaction = proposal.transaction[_transactionId];
-        proposal.choice[_choiceId] = Choice(_choiceId, _name, _description, _transactionId, transaction.txHash, 0);
-        emit SetChoice(_proposalId, _choiceId, _name, _description, _transactionId, transaction.txHash);
+        bytes32 txHash = "";
+        if (_transactionId > 0) {
+            Transaction memory transaction = proposal.transaction.get(_transactionId);
+            txHash = getTxHash(transaction);
+        }
+        proposal.choice[_choiceId] = Choice(_choiceId, _name, _description, _transactionId, txHash, 0);
+        emit SetChoice(_proposalId, _choiceId, _name, _description, _transactionId, txHash);
     }
 
     /// @notice get the choice by id

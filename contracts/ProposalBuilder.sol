@@ -137,5 +137,10 @@ contract ProposalBuilder is VersionedContract, ERC165, Ownable {
 
     function clear() public {
         ProposalProperties storage _properties = _proposalMap[msg.sender];
+        _properties.quorum = 0;
+        _properties.voteDelay = 0;
+        _properties.voteDuration = 0;
+        _properties.description = "";
+        _properties.url = "";
     }
 }

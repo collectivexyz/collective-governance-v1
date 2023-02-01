@@ -49,6 +49,7 @@ contract AddressSet {
     error DuplicateAddress(address _address);
 
     event AddressAdded(address element);
+    event AddressRemoved(address element);
 
     uint256 private _elementCount;
 
@@ -65,6 +66,9 @@ contract AddressSet {
         _;
     }
 
+    /// @notice add an element
+    /// @param _element the address
+    /// @return uint256 the elementId of the transaction
     function add(address _element) external returns (uint256) {
         uint256 elementIndex = ++_elementCount;
         _elementMap[elementIndex] = _element;
@@ -74,27 +78,56 @@ contract AddressSet {
         return elementIndex;
     }
 
-    function erase(address _element) external returns (bool) {
+    /// @notice erase an element
+    /// @dev swaps element to end and deletes the end
+    /// @param _index The address to erase
+    /// @return bool True if element was removed
+    function erase(uint256 _index) external returns (bool) {
+        address _element = _elementMap[_index];
+        return erase(_element);
+    }
+
+    /// @notice erase an element
+    /// @dev swaps element to end and deletes the end
+    /// @param _element The address to erase
+    /// @return bool True if element was removed
+    function erase(address _element) public returns (bool) {
         uint256 elementIndex = _elementPresent[_element];
         if (elementIndex > 0) {
-            _elementMap[elementIndex] = address(0x0);
+            address _lastElement = _elementMap[_elementCount];
+            _elementMap[elementIndex] = _lastElement;
+            _elementPresent[_lastElement] = elementIndex;
+            _elementMap[_elementCount] = address(0x0);
             _elementPresent[_element] = 0;
-            delete _elementMap[elementIndex];
+            delete _elementMap[_elementCount];
             delete _elementPresent[_element];
+            _elementCount--;
+            emit AddressRemoved(_element);
             return true;
         }
         return false;
     }
 
+    /// @return uint256 The size of the set
     function size() external view returns (uint256) {
         return _elementCount;
     }
 
+    /// @param index The index to return
+    /// @return address The requested address
     function get(uint256 index) external view requireValidIndex(index) returns (address) {
         return _elementMap[index];
     }
 
-    function contains(address element) external view returns (bool) {
-        return _elementPresent[element] > 0;
+    /// @param _element The element to test
+    /// @return bool True if address is contained
+    function contains(address _element) external view returns (bool) {
+        return find(_element) > 0;
+    }
+
+    /// @param _element The element to find
+    /// @return uint256 The index associated with element 
+   function find(address _element) public view returns (uint256) {
+        return _elementPresent[_element];
     }
 }

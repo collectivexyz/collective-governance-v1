@@ -45,7 +45,35 @@ contract AddressTest is Test {
             _set.add(address(i));
         }
         assertTrue(_set.erase(address(50)));
+        for (uint160 i = 0; i < 100; ++i) {
+            if (i != 50) {
+                assertTrue(_set.contains(address(i)));
+            }
+        }
         assertFalse(_set.contains(address(50)));
         assertFalse(_set.erase(address(1000)));
+    }
+
+    function testEraseIndex() public {
+        uint256 index = _set.add(address(0x100));
+        assertTrue(_set.erase(index));
+        assertEq(_set.size(), 0);
+        assertFalse(_set.contains(address(0x100)));
+    }
+
+    function testEraseSize() public {
+        for (uint160 i = 0; i < 100; ++i) {
+            _set.add(address(i));
+        }
+        for (uint160 j = 0; j < 25; ++j) {
+            assertTrue(_set.erase(address(j)));
+        }
+        assertEq(_set.size(), 75);
+    }
+
+    function testFind() public {
+        uint256 required = _set.add(address(0x200));
+        uint256 found = _set.find(address(0x200));
+        assertEq(found, required);
     }
 }

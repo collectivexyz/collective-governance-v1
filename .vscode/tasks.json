@@ -45,10 +45,42 @@
       "options": {
         "cwd": "${workspaceFolder}"
       },
+      "env": {
+        "FOUNDRY_PROFILE": "lite",
+      },
       "dependsOn": "hint",
       "group": {
         "kind": "build",
         "isDefault": true
+      }
+    },
+    {
+      "label": "test",
+      "type": "shell",
+      "command": "forge test -vvv",
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "env": {
+        "FOUNDRY_PROFILE": "lite",
+      },
+      "dependsOn": "hint",
+      "group": {
+        "kind": "test",
+        "isDefault": true
+      }
+    },
+    {
+      "label": "gastest",
+      "type": "shell",
+      "command": "forge test -vvv --gas-report",
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "dependsOn": "hint",
+      "group": {
+        "kind": "test",
+        "isDefault": false
       }
     },
     {
@@ -85,32 +117,6 @@
         "cwd": "${workspaceFolder}"
       },
       "dependsOn": "test",
-      "group": {
-        "kind": "test",
-        "isDefault": false
-      }
-    },
-    {
-      "label": "test",
-      "type": "shell",
-      "command": "forge test -vvv",
-      "options": {
-        "cwd": "${workspaceFolder}"
-      },
-      "dependsOn": "hint",
-      "group": {
-        "kind": "test",
-        "isDefault": true
-      }
-    },
-    {
-      "label": "gastest",
-      "type": "shell",
-      "command": "forge test -vvv --gas-report",
-      "options": {
-        "cwd": "${workspaceFolder}"
-      },
-      "dependsOn": "hint",
       "group": {
         "kind": "test",
         "isDefault": false

@@ -1,13 +1,17 @@
 [profile.default]
+solc-version = '0.8.17'
 src = 'contracts'
 out = 'out'
 libs = ['lib']
 optimizer = true
-optimizer_runs = 500
+optimizer_runs = 10_000_000
 via-ir = true
 block_number = 1
 # 101 gwei this configuration is required for tests to have a tx.gasprice
 gas_price = 101000000000
+
+[profile.lite]
+optimizer = false
 
 [profile.default.optimizer_details]
 inliner = true

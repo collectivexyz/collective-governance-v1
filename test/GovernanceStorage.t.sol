@@ -571,39 +571,37 @@ contract GovernanceStorageTest is Test {
     function testAddTransaction() public {
         uint256 scheduleTime = block.timestamp + 7 days;
         _storage.registerSupervisor(_proposalId, _SUPERVISOR, _OWNER);
-        uint256 tid1 = _storage.addTransaction(_proposalId, address(0x1), 0x10, "", "", scheduleTime, "0x1", _OWNER);
+        Transaction memory t1 = Transaction(address(0x1), 0x10, "", "", scheduleTime);
+        uint256 tid1 = _storage.addTransaction(_proposalId, t1, _OWNER);
         assertEq(tid1, 1);
-        uint256 tid2 = _storage.addTransaction(_proposalId, address(0x2), 0x20, "", "", scheduleTime, "0x1", _OWNER);
+        Transaction memory t2 = Transaction(address(0x2), 0x20, "", "", scheduleTime);
+        uint256 tid2 = _storage.addTransaction(_proposalId, t2, _OWNER);
         assertEq(tid2, 2);
         _storage.makeFinal(_proposalId, _SUPERVISOR);
-    }
-
-    function testAddTransactionHashInvalid() public {
-        uint256 scheduleTime = block.timestamp + 7 days;
-        _storage.registerSupervisor(_proposalId, _SUPERVISOR, _OWNER);
-        vm.expectRevert(abi.encodeWithSelector(Storage.TransactionHashInvalid.selector, _proposalId, bytes32(0x0)));
-        _storage.addTransaction(_proposalId, address(0x1), 0x10, "", "", scheduleTime, "", _OWNER);
     }
 
     function testAddTransactionNotOwner() public {
         uint256 scheduleTime = block.timestamp + 7 days;
         _storage.registerSupervisor(_proposalId, _SUPERVISOR, _OWNER);
+        Transaction memory t1 = Transaction(address(0x1), 0x10, "", "", scheduleTime);
         vm.expectRevert(abi.encodeWithSelector(Storage.NotSender.selector, _proposalId, _SUPERVISOR));
-        _storage.addTransaction(_proposalId, address(0x1), 0x10, "", "", scheduleTime, "0x1", _SUPERVISOR);
+        _storage.addTransaction(_proposalId, t1, _SUPERVISOR);
     }
 
     function testAddTransactionIfFinal() public {
         uint256 scheduleTime = block.timestamp + 7 days;
         _storage.registerSupervisor(_proposalId, _SUPERVISOR, _OWNER);
         _storage.makeFinal(_proposalId, _SUPERVISOR);
+        Transaction memory t1 = Transaction(address(0x1), 0x10, "", "", scheduleTime);
         vm.expectRevert(abi.encodeWithSelector(Storage.VoteIsFinal.selector, _proposalId));
-        _storage.addTransaction(_proposalId, address(0x1), 0x10, "", "", scheduleTime, "0x1", _OWNER);
+        _storage.addTransaction(_proposalId, t1, _OWNER);
     }
 
     function testClearTransactionIfFinal() public {
         uint256 scheduleTime = block.timestamp + 7 days;
         _storage.registerSupervisor(_proposalId, _SUPERVISOR, _OWNER);
-        uint256 tid = _storage.addTransaction(_proposalId, address(0x1), 0x10, "", "", scheduleTime, "0x1", _OWNER);
+        Transaction memory t1 = Transaction(address(0x1), 0x10, "", "", scheduleTime);
+        uint256 tid = _storage.addTransaction(_proposalId, t1, _OWNER);
         _storage.makeFinal(_proposalId, _SUPERVISOR);
         vm.expectRevert(abi.encodeWithSelector(Storage.VoteIsFinal.selector, _proposalId));
         _storage.clearTransaction(_proposalId, tid, _OWNER);
@@ -612,46 +610,21 @@ contract GovernanceStorageTest is Test {
     function testGetTransaction() public {
         uint256 scheduleTime = block.timestamp + 7 days;
         _storage.registerSupervisor(_proposalId, _SUPERVISOR, _OWNER);
-        Storage.Transaction memory transaction = Storage.Transaction(address(0x1), 0x10, "ziggy", "a()", scheduleTime, "abc123");
-        uint256 tid = _storage.addTransaction(
-            _proposalId,
-            transaction.target,
-            transaction.value,
-            transaction.signature,
-            transaction._calldata,
-            transaction.scheduleTime,
-            transaction.txHash,
-            _OWNER
-        );
-        (
-            address target,
-            uint256 value,
-            string memory signature,
-            bytes memory _calldata,
-            uint256 scheduleTimeRet,
-            bytes32 txHash
-        ) = _storage.getTransaction(_proposalId, tid);
-        assertEq(target, transaction.target);
-        assertEq(value, transaction.value);
-        assertEq(signature, transaction.signature);
-        assertEq(_calldata, transaction._calldata);
-        assertEq(scheduleTimeRet, transaction.scheduleTime);
-        assertEq(txHash, transaction.txHash);
+        Transaction memory transaction = Transaction(address(0x1), 0x10, "ziggy", "a()", scheduleTime);
+        uint256 tid = _storage.addTransaction(_proposalId, transaction, _OWNER);
+        Transaction memory tt = _storage.getTransaction(_proposalId, tid);
+        assertEq(tt.target, transaction.target);
+        assertEq(tt.value, transaction.value);
+        assertEq(tt.signature, transaction.signature);
+        assertEq(tt._calldata, transaction._calldata);
+        assertEq(tt.scheduleTime, transaction.scheduleTime);
+        assertEq(abi.encode(tt), abi.encode(transaction));
     }
 
     function testGetZeroTransaction() public {
         uint256 scheduleTime = block.timestamp + 7 days;
-        Storage.Transaction memory transaction = Storage.Transaction(address(0x1), 0x10, "ziggy", "a()", scheduleTime, "abc123");
-        _storage.addTransaction(
-            _proposalId,
-            transaction.target,
-            transaction.value,
-            transaction.signature,
-            transaction._calldata,
-            transaction.scheduleTime,
-            transaction.txHash,
-            _OWNER
-        );
+        Transaction memory transaction = Transaction(address(0x1), 0x10, "ziggy", "a()", scheduleTime);
+        _storage.addTransaction(_proposalId, transaction, _OWNER);
         vm.expectRevert(abi.encodeWithSelector(Storage.InvalidTransaction.selector, _proposalId, 0));
         _storage.getTransaction(_proposalId, 0);
     }
@@ -659,17 +632,8 @@ contract GovernanceStorageTest is Test {
     function testGetInvalidTransaction() public {
         uint256 scheduleTime = block.timestamp + 7 days;
         _storage.registerSupervisor(_proposalId, _SUPERVISOR, _OWNER);
-        Storage.Transaction memory transaction = Storage.Transaction(address(0x1), 0x10, "ziggy", "a()", scheduleTime, "abc123");
-        uint256 tid = _storage.addTransaction(
-            _proposalId,
-            transaction.target,
-            transaction.value,
-            transaction.signature,
-            transaction._calldata,
-            transaction.scheduleTime,
-            transaction.txHash,
-            _OWNER
-        );
+        Transaction memory transaction = Transaction(address(0x1), 0x10, "ziggy", "a()", scheduleTime);
+        uint256 tid = _storage.addTransaction(_proposalId, transaction, _OWNER);
         vm.expectRevert(abi.encodeWithSelector(Storage.InvalidTransaction.selector, _proposalId, tid + 1));
         _storage.getTransaction(_proposalId, tid + 1);
     }
@@ -677,33 +641,16 @@ contract GovernanceStorageTest is Test {
     function testClearTransaction() public {
         uint256 scheduleTime = block.timestamp + 7 days;
         _storage.registerSupervisor(_proposalId, _SUPERVISOR, _OWNER);
-        uint256 tid1 = _storage.addTransaction(_proposalId, address(0x1), 0x10, "", "", scheduleTime, "tx1", _OWNER);
+
+        Transaction memory t1 = Transaction(address(0x1), 0x10, "", "", scheduleTime);
+        uint256 tid1 = _storage.addTransaction(_proposalId, t1, _OWNER);
         assertEq(tid1, 1);
-        uint256 tid2 = _storage.addTransaction(_proposalId, address(0x2), 0x20, "f()", "1", scheduleTime + 1, "tx2", _OWNER);
+        Transaction memory t2 = Transaction(address(0x2), 0x20, "f()", "1", scheduleTime + 1);
+        uint256 tid2 = _storage.addTransaction(_proposalId, t2, _OWNER);
         assertEq(tid2, 2);
         _storage.clearTransaction(_proposalId, tid1, _OWNER);
-        (
-            address target,
-            uint256 value,
-            string memory signature,
-            bytes memory _calldata,
-            uint256 scheduleTimeRet,
-            bytes32 txHash
-        ) = _storage.getTransaction(_proposalId, tid1);
-        assertEq(target, address(0x0));
-        assertEq(value, 0);
-        assertEq(signature, "");
-        assertEq(_calldata, "");
-        assertEq(scheduleTimeRet, 0);
-        assertEq(txHash, "");
-
-        (target, value, signature, _calldata, scheduleTimeRet, txHash) = _storage.getTransaction(_proposalId, tid2);
-        assertEq(target, address(0x2));
-        assertEq(value, 0x20);
-        assertEq(signature, "f()");
-        assertEq(_calldata, "1");
-        assertEq(scheduleTimeRet, scheduleTime + 1);
-        assertEq(txHash, "tx2");
+        Transaction memory trem = _storage.getTransaction(_proposalId, 1);
+        assertEq(abi.encode(trem), abi.encode(t2));
     }
 
     function testSetExecuted() public {
@@ -863,17 +810,8 @@ contract GovernanceStorageChoiceVoteTest is Test {
                 "",
                 block.timestamp
             );
-            bytes32 calculatedHash = Constant.getTxHash(target, value, _signature, _calldata, scheduleTime);
-            uint256 tid = _storage.addTransaction(
-                _proposalId,
-                target,
-                value,
-                _signature,
-                _calldata,
-                scheduleTime,
-                calculatedHash,
-                _OWNER
-            );
+            Transaction memory t = Transaction(target, value, _signature, _calldata, scheduleTime);
+            uint256 tid = _storage.addTransaction(_proposalId, t, _OWNER);
             assertEq(tid, i + 1);
             _storage.setChoice(_proposalId, i, "name", "description", tid, _SUPERVISOR);
             vm.warp(block.timestamp + 1);
@@ -888,7 +826,8 @@ contract GovernanceStorageChoiceVoteTest is Test {
             assertEq(description, "description");
             assertEq(tid, i + 1);
             assertEq(voteCount, 0);
-            (, , , , , bytes32 _txHash) = _storage.getTransaction(_proposalId, tid);
+            Transaction memory t = _storage.getTransaction(_proposalId, tid);
+            bytes32 _txHash = getTxHash(t);
             assertEq(txHash, _txHash);
         }
     }
@@ -904,11 +843,11 @@ contract GovernanceStorageChoiceVoteTest is Test {
                 "",
                 block.timestamp
             );
-            bytes32 calculatedHash = Constant.getTxHash(target, value, _signature, _calldata, scheduleTime);
-            _storage.addTransaction(_proposalId, target, value, _signature, _calldata, scheduleTime, calculatedHash, _OWNER);
+            Transaction memory t = Transaction(target, value, _signature, _calldata, scheduleTime);
+            _storage.addTransaction(_proposalId, t, _OWNER);
             vm.warp(block.timestamp + 1);
         }
-        vm.expectRevert(abi.encodeWithSelector(Storage.InvalidTransaction.selector, _proposalId, _NCHOICE + 1));
+        vm.expectRevert(abi.encodeWithSelector(TransactionSet.InvalidTransaction.selector, _NCHOICE + 1));
         _storage.setChoice(_proposalId, 0, "name", "description", _NCHOICE + 1, _SUPERVISOR);
     }
 
