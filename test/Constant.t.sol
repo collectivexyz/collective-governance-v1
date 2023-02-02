@@ -10,4 +10,9 @@ contract ConstantTest is Test {
         string memory pi = "3.141592653589793238462643383279503";
         assertEq(Constant.len(pi), 35);
     }
+
+    function testEmptyString() public {
+        assertTrue(Constant.empty(""));
+        assertFalse(Constant.empty("0"));
+    }
 }

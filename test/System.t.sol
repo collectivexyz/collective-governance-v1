@@ -5,21 +5,20 @@ import "@openzeppelin/contracts/interfaces/IERC165.sol";
 
 import "forge-std/Test.sol";
 
-import "../contracts/GovernanceCreator.sol";
 import "../contracts/GovernanceBuilder.sol";
 import "../contracts/community/CommunityBuilder.sol";
 import "../contracts/storage/Storage.sol";
 import "../contracts/System.sol";
 import "../contracts/access/Versioned.sol";
 
-import "./MockERC721.sol";
+import "./mock/MockERC721.sol";
 
 contract SystemTest is Test {
     address private constant _OWNER = address(0x1);
     address private constant _CREATOR = address(0x2);
     address private constant _VOTER1 = address(0xfff1);
 
-    GovernanceCreator private _creator;
+    GovernanceBuilder private _creator;
     CommunityBuilder private _classCreator;
 
     function setUp() public {
@@ -28,7 +27,7 @@ contract SystemTest is Test {
         _classCreator = new CommunityBuilder();
     }
 
-    function testFailGovernanceCreatorRequired() public {
+    function testFailGovernanceBuilderRequired() public {
         address mc = mockNotCompliant();
         address mcc = mockClassCreator();
         new System(mc, mcc);
@@ -143,11 +142,10 @@ contract SystemTest is Test {
 
     function mockCreator(uint256 version) private returns (address) {
         address mock = address(0x100);
-        bytes4 ifId = type(GovernanceCreator).interfaceId;
-        vm.mockCall(mock, abi.encodeWithSelector(IERC165.supportsInterface.selector, ifId), abi.encode(true));
+        vm.mockCall(mock, abi.encodeWithSelector(IERC165.supportsInterface.selector), abi.encode(true));
         vm.mockCall(mock, abi.encodeWithSelector(Versioned.version.selector), abi.encode(version));
-        GovernanceCreator eMock = GovernanceCreator(mock);
-        assertTrue(eMock.supportsInterface(ifId));
+        GovernanceBuilder eMock = GovernanceBuilder(mock);
+        assertTrue(eMock.supportsInterface(type(Versioned).interfaceId));
         return mock;
     }
 

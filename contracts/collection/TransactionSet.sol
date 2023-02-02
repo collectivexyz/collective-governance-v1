@@ -13,7 +13,7 @@
 /*
  * BSD 3-Clause License
  *
- * Copyright (c) 2022, collective
+ * Copyright (c) 2023, collective
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -60,15 +60,8 @@ struct Transaction {
 }
 
 // solhint-disable-next-line func-visibility
-function getTxHash(Transaction memory transaction) pure returns (bytes32) {
-    return
-        Constant.getTxHash(
-            transaction.target,
-            transaction.value,
-            transaction.signature,
-            transaction._calldata,
-            transaction.scheduleTime
-        );
+function getHash(Transaction memory transaction) pure returns (bytes32) {
+    return keccak256(abi.encode(transaction));
 }
 
 /// @title dynamic collection of transaction
@@ -99,7 +92,7 @@ contract TransactionSet {
     function add(Transaction memory _element) external returns (uint256) {
         uint256 elementIndex = ++_elementCount;
         _elementMap[elementIndex] = _element;
-        bytes32 _elementHash = getTxHash(_element);
+        bytes32 _elementHash = getHash(_element);
         if (_elementPresent[_elementHash] > 0) revert HashCollision(_elementHash);
         _elementPresent[_elementHash] = elementIndex;
         emit TransactionAdded(_elementHash);
@@ -107,7 +100,7 @@ contract TransactionSet {
     }
 
     function erase(Transaction memory _transaction) public returns (bool) {
-        bytes32 transactionHash = getTxHash(_transaction);
+        bytes32 transactionHash = getHash(_transaction);
         uint256 index = _elementPresent[transactionHash];
         return erase(index);
     }
@@ -117,12 +110,12 @@ contract TransactionSet {
     /// @return bool True if element was removed
     function erase(uint256 _index) public returns (bool) {
         Transaction memory transaction = _elementMap[_index];
-        bytes32 transactionHash = getTxHash(transaction);
+        bytes32 transactionHash = getHash(transaction);
         uint256 elementIndex = _elementPresent[transactionHash];
         if (elementIndex > 0 && elementIndex == _index) {
             Transaction memory _lastTransaction = _elementMap[_elementCount];
             _elementMap[elementIndex] = _lastTransaction;
-            bytes32 _lastTransactionHash = getTxHash(_lastTransaction);
+            bytes32 _lastTransactionHash = getHash(_lastTransaction);
             _elementPresent[_lastTransactionHash] = elementIndex;
             _elementMap[_elementCount] = Transaction(address(0x0), 0, "", "", 0);
             _elementPresent[transactionHash] = 0;
@@ -155,7 +148,7 @@ contract TransactionSet {
     /// @param _transaction The element to find
     /// @return uint256 The index associated with element
     function find(Transaction memory _transaction) public view returns (uint256) {
-        bytes32 transactionHash = getTxHash(_transaction);
+        bytes32 transactionHash = getHash(_transaction);
         return _elementPresent[transactionHash];
     }
 }

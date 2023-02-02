@@ -4,7 +4,7 @@ pragma solidity ^0.8.15;
 import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/IERC721Enumerable.sol";
 
-import "./MockERC721.sol";
+import "../mock/MockERC721.sol";
 
 contract MockERC721Enum is MockERC721, IERC721Enumerable {
     uint256 private _totalCount = 0;

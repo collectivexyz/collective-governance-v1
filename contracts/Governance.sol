@@ -102,12 +102,8 @@ interface Governance is Versioned, IERC165 {
         bytes32 txHash
     );
 
-    /// @notice ProposalMeta attached
-    event ProposalMeta(uint256 proposalId, uint256 metaId, bytes32 name, string value, address sender);
     /// @notice ProposalChoice Set
     event ProposalChoice(uint256 proposalId, uint256 choiceId, bytes32 name, string description, uint256 transactionId);
-    /// @notice The proposal description
-    event ProposalDescription(uint256 proposalId, string description, string url);
     /// @notice The proposal is final - vote is ready
     event ProposalFinal(uint256 proposalId, uint256 quorum);
     /// @notice Timing information
@@ -155,13 +151,6 @@ interface Governance is Versioned, IERC165 {
         uint256 _scheduleTime
     ) external returns (uint256);
 
-    /// @notice describe a proposal
-    /// @param _proposalId the numeric id of the proposed vote
-    /// @param _description the description
-    /// @param _url for proposed vote
-    /// @dev required prior to calling configure
-    function describe(uint256 _proposalId, string memory _description, string memory _url) external;
-
     /// @notice set a choice by choice id
     /// @dev requires supervisor
     /// @param _proposalId the id of the proposal
@@ -175,14 +164,6 @@ interface Governance is Versioned, IERC165 {
         string memory _description,
         uint256 _transactionId
     ) external;
-
-    /// @notice attach arbitrary metadata to proposal
-    /// @dev requires supervisor
-    /// @param _proposalId the id of the proposal
-    /// @param _name the name of the metadata field
-    /// @param _value the value of the metadata
-    /// @return uint256 the metadata id
-    function addMeta(uint256 _proposalId, bytes32 _name, string memory _value) external returns (uint256);
 
     /// @notice cancel a proposal if it is not yet open
     /// @param _proposalId The numeric id of the proposed vote
@@ -203,18 +184,6 @@ interface Governance is Versioned, IERC165 {
     /// @notice return the name of this implementation
     /// @return string memory representation of name
     function name() external pure returns (string memory);
-
-    /// @notice return the name of the community
-    /// @return bytes32 the community name
-    function community() external view returns (bytes32);
-
-    /// @notice return the community url
-    /// @return string memory representation of url
-    function url() external view returns (string memory);
-
-    /// @notice return community description
-    /// @return string memory representation of community description
-    function description() external view returns (string memory);
 
     /// @notice start the voting process by proposal id
     /// @param _proposalId The numeric id of the proposed vote

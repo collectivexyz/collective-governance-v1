@@ -46,40 +46,28 @@ pragma solidity ^0.8.15;
 import "@openzeppelin/contracts/interfaces/IERC165.sol";
 
 import "../../contracts/access/Versioned.sol";
+import "../../contracts/collection/MetaSet.sol";
 
 /// @title Metadata storage interface
 /// @notice store community metadata
 /// @custom:type interface
 interface MetaStorage is Versioned, IERC165 {
     error StringSizeLimit(uint256 length);
-    error InvalidMetadataId(uint256 metadataId);
-    error UnknownMetadata(uint256 metatdataId, uint256 metaId);
-    error InvalidMetadata(uint256 metatdataId, uint256 metaId);
+    error IndexInvaliddataId(uint256 metadataId);
 
-    event Describe(uint256 metadataId, string url, string description);
+    event DescribeMeta(uint256 metadataId, string url, string description);
     event AddMeta(uint256 metadataId, uint256 metaId, bytes32 name, string value);
 
     struct MetaStore {
         /// @notice id of metadata store
+        /// @dev implements a parity check to prevent accessing uninitialized storage
         uint256 id;
         /// @notice metadata description
         string description;
         /// @notice metadata url
         string url;
-        /// @notice number of attached metadata
-        uint256 metaCount;
-        /// @notice mapping of id to user defined metadata
-        mapping(uint256 => Meta) metadata;
-    }
-
-    /// @notice User defined metadata associated with a metadata
-    struct Meta {
-        /// @notice metadata id
-        uint256 id;
-        /// @notice metadata key or name
-        bytes32 name;
-        /// @notice metadata value
-        string value;
+        /// arbitrary metadata
+        MetaSet meta;
     }
 
     /// @notice return the name of the community
@@ -121,15 +109,14 @@ interface MetaStorage is Versioned, IERC165 {
     /// @param _metaId the id of the metadata
     /// @param _name the name of the metadata field
     /// @param _value the value of the metadata
-    /// @return uint256 the metadata id
+    /// @return uint256 the meta element id
     function addMeta(uint256 _metaId, bytes32 _name, string memory _value) external returns (uint256);
 
     /// @notice get arbitrary metadata from metadata
-    /// @param _metadataId the id of the metadata
     /// @param _metaId the id of the metadata
-    /// @return _name the name of the metadata field
-    /// @return _value the value of the metadata field
-    function getMeta(uint256 _metadataId, uint256 _metaId) external returns (bytes32 _name, string memory _value);
+    /// @param _metaElementId the id of the metadata
+    /// @return Meta the meta data
+    function getMeta(uint256 _metaId, uint256 _metaElementId) external returns (Meta memory);
 
     /// @notice return the name of this implementation
     /// @return string memory representation of name

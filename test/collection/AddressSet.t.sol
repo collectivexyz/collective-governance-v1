@@ -5,7 +5,7 @@ import "forge-std/Test.sol";
 
 import "../../contracts/collection/AddressSet.sol";
 
-contract AddressTest is Test {
+contract AddressSetTest is Test {
     AddressSet private _set;
 
     function setUp() public {
@@ -75,5 +75,20 @@ contract AddressTest is Test {
         uint256 required = _set.add(address(0x200));
         uint256 found = _set.find(address(0x200));
         assertEq(found, required);
+    }
+
+    function testGetZer0() public {
+        address testAddr = address(0x1);
+        _set.add(testAddr);
+        vm.expectRevert(abi.encodeWithSelector(AddressSet.IndexInvalid.selector, 0));
+        _set.get(0);
+    }
+
+    function testGetInvalid() public {
+        address testAddr = address(0x1);
+        _set.add(testAddr);
+        uint256 _maxIndex = _set.size() + 1;
+        vm.expectRevert(abi.encodeWithSelector(AddressSet.IndexInvalid.selector, _maxIndex));
+        _set.get(_maxIndex);
     }
 }

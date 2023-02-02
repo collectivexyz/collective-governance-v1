@@ -50,10 +50,8 @@ import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
 import "@openzeppelin/contracts/proxy/utils/UUPSUpgradeable.sol";
 
 import "../contracts/Constant.sol";
-import "../contracts/GovernanceFactoryCreator.sol";
 import "../contracts/GovernanceFactory.sol";
 import "../contracts/GovernanceFactoryProxy.sol";
-import "../contracts/GovernanceCreator.sol";
 import "../contracts/community/CommunityClass.sol";
 import "../contracts/storage/Storage.sol";
 import "../contracts/storage/StorageFactory.sol";
@@ -67,8 +65,67 @@ import "../contracts/access/VersionedContract.sol";
 
 /// @title Collective Governance creator
 /// @notice This builder supports creating new instances of the Collective Governance contract
-contract GovernanceBuilder is GovernanceCreator, VersionedContract, ERC165, Ownable {
-    string public constant NAME = "collective governance builder";
+contract GovernanceBuilder is VersionedContract, ERC165, Ownable {
+    string public constant NAME = "governance builder";
+
+    error StorageFactoryRequired(address _storage);
+    error MetaStorageFactoryRequired(address meta);
+    error StorageVersionMismatch(address _storage, uint32 expected, uint32 provided);
+    error MetaVersionMismatch(address meta, uint32 expected, uint32 provided);
+    error CommunityClassRequired(address voterClass);
+
+    /// @notice new contract created
+    event GovernanceContractCreated(
+        address creator,
+        bytes32 name,
+        address _storage,
+        address metaStorage,
+        address timeLock,
+        address governance
+    );
+    /// @notice initialized local state for sender
+    event GovernanceContractInitialized(address creator);
+    /// @notice add supervisor
+    event GovernanceContractWithSupervisor(address creator, address supervisor);
+    /// @notice set voterclass
+    event GovernanceContractwithCommunityClass(address creator, address class, string name, uint32 version);
+    /// @notice set minimum delay
+    event GovernanceContractWithMinimumVoteDelay(address creator, uint256 delay);
+    /// @notice set maximum delay
+    event GovernanceContractWithMaximumVoteDelay(address creator, uint256 delay);
+    /// @notice set minimum duration
+    event GovernanceContractWithMinimumDuration(address creator, uint256 duration);
+    /// @notice set maximum duration
+    event GovernanceContractWithMaximumDuration(address creator, uint256 duration);
+    /// @notice set minimum quorum
+    event GovernanceContractWithMinimumQuorum(address creator, uint256 quorum);
+    /// @notice add name
+    event GovernanceContractWithName(address creator, bytes32 name);
+    /// @notice add url
+    event GovernanceContractWithUrl(address creator, string url);
+    /// @notice add description
+    event GovernanceContractWithDescription(address creator, string description);
+
+    /// @notice The timelock created
+    event TimeLockCreated(address timeLock, uint256 lockTime);
+
+    /// @notice settings state used by builder for creating Governance contract
+    struct GovernanceProperties {
+        /// @notice community name
+        bytes32 name;
+        /// @notice community url
+        string url;
+        /// @notice community description
+        string description;
+        /// @notice max gas used for rebate
+        uint256 maxGasUsed;
+        /// @notice max base fee for rebate
+        uint256 maxBaseFee;
+        /// @notice array of supervisors
+        address[] supervisorList;
+        /// @notice voting class
+        CommunityClass class;
+    }
 
     mapping(address => GovernanceProperties) private _buildMap;
 
@@ -78,7 +135,7 @@ contract GovernanceBuilder is GovernanceCreator, VersionedContract, ERC165, Owna
     MetaFactoryCreator public immutable _metaStorageFactory;
     MetaStorageFactoryProxy public immutable _metaStorageFactoryProxy;
 
-    GovernanceFactoryCreator public immutable _governanceFactory;
+    GovernanceFactory public immutable _governanceFactory;
     GovernanceFactoryProxy public immutable _governanceFactoryProxy;
 
     mapping(address => bool) public _governanceContractRegistered;
@@ -90,14 +147,14 @@ contract GovernanceBuilder is GovernanceCreator, VersionedContract, ERC165, Owna
         MetaFactoryCreator metaStorageFactory = new MetaStorageFactory();
         _metaStorageFactoryProxy = new MetaStorageFactoryProxy(address(metaStorageFactory));
         _metaStorageFactory = MetaFactoryCreator(address(_metaStorageFactoryProxy));
-        GovernanceFactoryCreator governanceFactory = new GovernanceFactory();
+        GovernanceFactory governanceFactory = new GovernanceFactory();
         _governanceFactoryProxy = new GovernanceFactoryProxy(address(governanceFactory));
-        _governanceFactory = GovernanceFactoryCreator(address(_governanceFactoryProxy));
+        _governanceFactory = GovernanceFactory(address(_governanceFactoryProxy));
     }
 
     /// @notice initialize and create a new builder context for this sender
-    /// @return GovernanceCreator this contract
-    function aGovernance() external returns (GovernanceCreator) {
+    /// @return GovernanceBuilder this contract
+    function aGovernance() external returns (GovernanceBuilder) {
         clear(msg.sender);
         emit GovernanceContractInitialized(msg.sender);
         return this;
@@ -106,8 +163,8 @@ contract GovernanceBuilder is GovernanceCreator, VersionedContract, ERC165, Owna
     /// @notice add a supervisor to the supervisor list for the next constructed contract contract
     /// @dev maintains an internal list which increases with every call
     /// @param _supervisor the address of the wallet representing a supervisor for the project
-    /// @return GovernanceCreator this contract
-    function withSupervisor(address _supervisor) external returns (GovernanceCreator) {
+    /// @return GovernanceBuilder this contract
+    function withSupervisor(address _supervisor) external returns (GovernanceBuilder) {
         GovernanceProperties storage _properties = _buildMap[msg.sender];
         _properties.supervisorList.push(_supervisor);
         emit GovernanceContractWithSupervisor(msg.sender, _supervisor);
@@ -116,8 +173,8 @@ contract GovernanceBuilder is GovernanceCreator, VersionedContract, ERC165, Owna
 
     /// @notice set the VoterClass to be used for the next constructed contract
     /// @param _classAddress the address of the VoterClass contract
-    /// @return GovernanceCreator this contract
-    function withCommunityClassAddress(address _classAddress) external returns (GovernanceCreator) {
+    /// @return GovernanceBuilder this contract
+    function withCommunityClassAddress(address _classAddress) external returns (GovernanceBuilder) {
         IERC165 erc165 = IERC165(_classAddress);
         if (!erc165.supportsInterface(type(CommunityClass).interfaceId)) revert CommunityClassRequired(_classAddress);
         return withCommunityClass(CommunityClass(_classAddress));
@@ -126,8 +183,8 @@ contract GovernanceBuilder is GovernanceCreator, VersionedContract, ERC165, Owna
     /// @notice set the VoterClass to be used for the next constructed contract
     /// @dev the type safe VoterClass for use within Solidity code
     /// @param _class the address of the VoterClass contract
-    /// @return GovernanceCreator this contract
-    function withCommunityClass(CommunityClass _class) public returns (GovernanceCreator) {
+    /// @return GovernanceBuilder this contract
+    function withCommunityClass(CommunityClass _class) public returns (GovernanceBuilder) {
         GovernanceProperties storage _properties = _buildMap[msg.sender];
         _properties.class = _class;
         emit GovernanceContractwithCommunityClass(msg.sender, address(_class), _class.name(), _class.version());
@@ -136,8 +193,8 @@ contract GovernanceBuilder is GovernanceCreator, VersionedContract, ERC165, Owna
 
     /// @notice set the community name
     /// @param _name the name
-    /// @return GovernanceCreator this contract
-    function withName(bytes32 _name) public returns (GovernanceCreator) {
+    /// @return GovernanceBuilder this contract
+    function withName(bytes32 _name) public returns (GovernanceBuilder) {
         GovernanceProperties storage _properties = _buildMap[msg.sender];
         _properties.name = _name;
         emit GovernanceContractWithName(msg.sender, _name);
@@ -146,8 +203,8 @@ contract GovernanceBuilder is GovernanceCreator, VersionedContract, ERC165, Owna
 
     /// @notice set the community url
     /// @param _url the url
-    /// @return GovernanceCreator this contract
-    function withUrl(string memory _url) public returns (GovernanceCreator) {
+    /// @return GovernanceBuilder this contract
+    function withUrl(string memory _url) public returns (GovernanceBuilder) {
         GovernanceProperties storage _properties = _buildMap[msg.sender];
         _properties.url = _url;
         emit GovernanceContractWithUrl(msg.sender, _url);
@@ -157,8 +214,8 @@ contract GovernanceBuilder is GovernanceCreator, VersionedContract, ERC165, Owna
     /// @notice set the community description
     /// @dev limit 1k
     /// @param _description the description
-    /// @return GovernanceCreator this contract
-    function withDescription(string memory _description) public returns (GovernanceCreator) {
+    /// @return GovernanceBuilder this contract
+    function withDescription(string memory _description) public returns (GovernanceBuilder) {
         GovernanceProperties storage _properties = _buildMap[msg.sender];
         _properties.description = _description;
         emit GovernanceContractWithDescription(msg.sender, _description);
@@ -170,8 +227,8 @@ contract GovernanceBuilder is GovernanceCreator, VersionedContract, ERC165, Owna
     /// @param _name the name
     /// @param _url the url
     /// @param _description the description
-    /// @return GovernanceCreator this contract
-    function withDescription(bytes32 _name, string memory _url, string memory _description) external returns (GovernanceCreator) {
+    /// @return GovernanceBuilder this contract
+    function withDescription(bytes32 _name, string memory _url, string memory _description) external returns (GovernanceBuilder) {
         withName(_name);
         withUrl(_url);
         return withDescription(_description);
@@ -180,8 +237,8 @@ contract GovernanceBuilder is GovernanceCreator, VersionedContract, ERC165, Owna
     /// @notice setup gas rebate parameters
     /// @param _gasUsed the maximum gas used for rebate
     /// @param _baseFee the maximum base fee for rebate
-    /// @return GovernanceCreator this contract
-    function withGasRebate(uint256 _gasUsed, uint256 _baseFee) external returns (GovernanceCreator) {
+    /// @return GovernanceBuilder this contract
+    function withGasRebate(uint256 _gasUsed, uint256 _baseFee) external returns (GovernanceBuilder) {
         GovernanceProperties storage _properties = _buildMap[msg.sender];
         _properties.maxGasUsed = _gasUsed;
         _properties.maxBaseFee = _baseFee;
@@ -198,17 +255,16 @@ contract GovernanceBuilder is GovernanceCreator, VersionedContract, ERC165, Owna
         Storage _storage = createStorage(_properties);
         TimeLocker _timeLock = createTimelock(_properties.class.minimumVoteDuration());
         MetaStorage _metaStore = _metaStorageFactory.create(_properties.name, _properties.url, _properties.description);
+        transferOwnership(address(_metaStore), msg.sender);
         Governance _governance = _governanceFactory.create(
             _properties.supervisorList,
             _properties.class,
             _storage,
-            _metaStore,
             _timeLock,
             _properties.maxGasUsed,
             _properties.maxBaseFee
         );
         address payable _governanceAddress = payable(address(_governance));
-        transferOwnership(address(_metaStore), _governanceAddress);
         transferOwnership(address(_timeLock), _governanceAddress);
         transferOwnership(address(_storage), _governanceAddress);
         _governanceContractRegistered[_governanceAddress] = true;
@@ -250,14 +306,12 @@ contract GovernanceBuilder is GovernanceCreator, VersionedContract, ERC165, Owna
     /// @param _governanceAddr The address of the governance factory
     /// @param _storageAddr The address of the storage factory
     function upgrade(address _governanceAddr, address _storageAddr, address _metaAddr) external onlyOwner {
-        if (!supportsInterface(_governanceAddr, type(GovernanceFactoryCreator).interfaceId))
-            revert GovernanceFactoryRequired(_governanceAddr);
         if (!supportsInterface(_storageAddr, type(StorageFactoryCreator).interfaceId))
             revert StorageFactoryRequired(_storageAddr);
         if (!supportsInterface(_metaAddr, type(MetaFactoryCreator).interfaceId)) revert MetaStorageFactoryRequired(_metaAddr);
         StorageFactoryCreator _storage = StorageFactoryCreator(_storageAddr);
         MetaFactoryCreator _meta = MetaFactoryCreator(_metaAddr);
-        GovernanceFactoryCreator _creator = GovernanceFactoryCreator(_governanceAddr);
+        GovernanceFactory _creator = GovernanceFactory(_governanceAddr);
         uint32 version = _creator.version();
         if (version > _storage.version()) revert StorageVersionMismatch(_storageAddr, version, _storage.version());
         if (version > _meta.version()) revert MetaVersionMismatch(_storageAddr, version, _meta.version());
@@ -302,9 +356,8 @@ contract GovernanceBuilder is GovernanceCreator, VersionedContract, ERC165, Owna
     }
 
     /// @notice see ERC-165
-    function supportsInterface(bytes4 interfaceId) public view virtual override(IERC165, ERC165) returns (bool) {
+    function supportsInterface(bytes4 interfaceId) public view virtual override(ERC165) returns (bool) {
         return
-            interfaceId == type(GovernanceCreator).interfaceId ||
             interfaceId == type(Ownable).interfaceId ||
             interfaceId == type(Versioned).interfaceId ||
             super.supportsInterface(interfaceId);

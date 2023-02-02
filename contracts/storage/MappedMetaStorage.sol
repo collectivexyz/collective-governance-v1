@@ -52,7 +52,7 @@ import "../../contracts/storage/MetaStorage.sol";
 import "../../contracts/access/Versioned.sol";
 import "../../contracts/access/VersionedContract.sol";
 
-contract CollectiveMetaStorage is MetaStorage, VersionedContract, ERC165, Ownable {
+contract MappedMetaStorage is MetaStorage, VersionedContract, ERC165, Ownable {
     string public constant NAME = "meta storage";
 
     bytes32 public immutable _communityName;
@@ -78,9 +78,9 @@ contract CollectiveMetaStorage is MetaStorage, VersionedContract, ERC165, Ownabl
         _communityDescription = _description;
     }
 
-    modifier requireValid(uint256 _metadataId) {
-        MetaStore storage metaStore = metaStoreMap[_metadataId];
-        if (_metadataId == 0 || metaStore.id != _metadataId) revert InvalidMetadataId(_metadataId);
+    modifier requireValid(uint256 _metaId) {
+        MetaStore storage metaStore = metaStoreMap[_metaId];
+        if (_metaId == 0 || metaStore.id != _metaId) revert IndexInvaliddataId(_metaId);
         _;
     }
 
@@ -95,75 +95,67 @@ contract CollectiveMetaStorage is MetaStorage, VersionedContract, ERC165, Ownabl
     /// @return uint256 current number of meta elements
     function metaCount(uint256 _metaId) external view requireValid(_metaId) returns (uint256) {
         MetaStore storage metaStore = metaStoreMap[_metaId];
-        return metaStore.metaCount;
+        return metaStore.meta.size();
     }
 
     /// @notice set metadata
     /// @dev requires owner
-    /// @param _metadataId the id of the metadata
+    /// @param _metaId the id of the metadata
     /// @param _url the url
     /// @param _description the description
     function describe(
-        uint256 _metadataId,
+        uint256 _metaId,
         string memory _url,
         string memory _description
     ) external onlyOwner requireValidString(_url) requireValidString(_description) {
-        if (_metadataId == 0) revert InvalidMetadataId(_metadataId);
-        MetaStore storage metaStore = metaStoreMap[_metadataId];
-        metaStore.id = _metadataId;
+        if (_metaId == 0) revert IndexInvaliddataId(_metaId);
+        MetaStore storage metaStore = metaStoreMap[_metaId];
+        if (metaStore.id != _metaId) initializeStore(_metaId);
         metaStore.url = _url;
         metaStore.description = _description;
-        emit Describe(_metadataId, _url, _description);
+        emit DescribeMeta(_metaId, _url, _description);
     }
 
     /// @notice get the url by id
-    /// @param _metadataId the id of the metadata
+    /// @param _metaId the id of the metadata
     /// @return string the url
-    function url(uint256 _metadataId) external view requireValid(_metadataId) returns (string memory) {
-        MetaStore storage metaStore = metaStoreMap[_metadataId];
+    function url(uint256 _metaId) external view requireValid(_metaId) returns (string memory) {
+        MetaStore storage metaStore = metaStoreMap[_metaId];
         return metaStore.url;
     }
 
     /// @notice get the metadata description by id
-    /// @param _metadataId the id of the metadata
+    /// @param _metaId the id of the metadata
     /// @return string the description
-    function description(uint256 _metadataId) external view requireValid(_metadataId) returns (string memory) {
-        MetaStore storage metaStore = metaStoreMap[_metadataId];
+    function description(uint256 _metaId) external view requireValid(_metaId) returns (string memory) {
+        MetaStore storage metaStore = metaStoreMap[_metaId];
         return metaStore.description;
     }
 
     /// @notice attach arbitrary metadata
     /// @dev requires owner
-    /// @param _metadataId the id of the metadata to modify
+    /// @param _metaId the id of the metadata to modify
     /// @param _name the name of the metadata field
     /// @param _value the value of the metadata
     /// @return uint256 the id of the attached element
     function addMeta(
-        uint256 _metadataId,
+        uint256 _metaId,
         bytes32 _name,
         string memory _value
-    ) external onlyOwner requireValid(_metadataId) requireValidString(_value) returns (uint256) {
-        MetaStore storage metaStore = metaStoreMap[_metadataId];
-        uint256 metaId = metaStore.metaCount++;
-        metaStore.metadata[metaId] = Meta(metaId, _name, _value);
-        emit AddMeta(_metadataId, metaId, _name, _value);
-        return metaId;
+    ) external onlyOwner requireValid(_metaId) requireValidString(_value) returns (uint256) {
+        MetaStore storage metaStore = metaStoreMap[_metaId];
+        uint256 metaElementId = metaStore.meta.add(Meta(_name, _value));
+        emit AddMeta(_metaId, metaElementId, _name, _value);
+        return metaElementId;
     }
 
     /// @notice get arbitrary metadata element
-    /// @param _metadataId the id of the metadata
-    /// @param _metaId the id of the element
-    /// @return _name the name of the element
-    /// @return _value the value of the element
-    function getMeta(
-        uint256 _metadataId,
-        uint256 _metaId
-    ) external view requireValid(_metadataId) returns (bytes32 _name, string memory _value) {
-        MetaStore storage metaStore = metaStoreMap[_metadataId];
-        if (_metaId >= metaStore.metaCount) revert UnknownMetadata(_metadataId, _metaId);
-        Meta memory meta = metaStore.metadata[_metaId];
-        if (meta.id != _metaId) revert InvalidMetadata(_metadataId, _metaId);
-        return (meta.name, meta.value);
+    /// @param _metaId the id of the metadata
+    /// @param _metaElementId the id of the element
+    /// @return Meta the metadata element
+    function getMeta(uint256 _metaId, uint256 _metaElementId) external view requireValid(_metaId) returns (Meta memory) {
+        MetaStore storage metaStore = metaStoreMap[_metaId];
+        return metaStore.meta.get(_metaElementId);
     }
 
     /// @notice return the name of the community
@@ -197,5 +189,13 @@ contract CollectiveMetaStorage is MetaStorage, VersionedContract, ERC165, Ownabl
             interfaceId == type(Ownable).interfaceId ||
             interfaceId == type(Versioned).interfaceId ||
             super.supportsInterface(interfaceId);
+    }
+
+    function initializeStore(uint256 _metaId) internal {
+        MetaStore storage metaStore = metaStoreMap[_metaId];
+        metaStore.id = _metaId;
+        metaStore.description = "";
+        metaStore.url = "";
+        metaStore.meta = new MetaSet();
     }
 }

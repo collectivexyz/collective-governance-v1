@@ -18,23 +18,17 @@
   {
     "inputs": [
       {
-        "internalType": "address",
-        "name": "creator",
-        "type": "address"
-      }
-    ],
-    "name": "NotGovernanceCreator",
-    "type": "error"
-  },
-  {
-    "inputs": [
+        "internalType": "uint256",
+        "name": "expected",
+        "type": "uint256"
+      },
       {
-        "internalType": "address",
-        "name": "creator",
-        "type": "address"
+        "internalType": "uint256",
+        "name": "provided",
+        "type": "uint256"
       }
     ],
-    "name": "NotCommunityBuilder",
+    "name": "VersionInvalid",
     "type": "error"
   },
   {
@@ -109,13 +103,8 @@
       },
       {
         "internalType": "uint256",
-        "name": "_tokenRequirement",
+        "name": "_quorumRequirement",
         "type": "uint256"
-      },
-      {
-        "internalType": "bool",
-        "name": "_isClosed",
-        "type": "bool"
       }
     ],
     "name": "create",
@@ -160,6 +149,21 @@
         "internalType": "address",
         "name": "_erc721",
         "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_tokenRequirement",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_quorumRequirement",
+        "type": "uint256"
+      },
+      {
+        "internalType": "bool",
+        "name": "_isClosed",
+        "type": "bool"
       }
     ],
     "name": "create",

@@ -52,7 +52,6 @@ import "../contracts/community/VoterClass.sol";
 import "../contracts/storage/Storage.sol";
 import "../contracts/storage/MetaStorage.sol";
 import "../contracts/treasury/TimeLocker.sol";
-import "../contracts/GovernanceFactoryCreator.sol";
 import "../contracts/CollectiveGovernance.sol";
 import "../contracts/access/Versioned.sol";
 import "../contracts/access/VersionedContract.sol";
@@ -65,14 +64,7 @@ import "../contracts/access/OwnableInitializable.sol";
  * CollectiveGovernance in the Builder.  The GovernanceBuilder should be preferred for creating a new
  * instance of the contract.
  */
-contract GovernanceFactory is
-    GovernanceFactoryCreator,
-    VersionedContract,
-    OwnableInitializable,
-    UUPSUpgradeable,
-    Initializable,
-    ERC165
-{
+contract GovernanceFactory is VersionedContract, OwnableInitializable, UUPSUpgradeable, Initializable, ERC165 {
     event UpgradeAuthorized(address sender, address owner);
 
     function initialize() public initializer {
@@ -84,7 +76,6 @@ contract GovernanceFactory is
     /// @param _supervisorList the list of supervisors for this project
     /// @param _class the VoterClass for this project
     /// @param _storage The storage contract for this governance
-    /// @param _metaStore The metadata storage
     /// @param _timeLock The timelock for the contract
     /// @param _gasUsedRebate The maximum rebate for gas used
     /// @param _baseFeeRebate The maximum base fee rebate
@@ -92,7 +83,6 @@ contract GovernanceFactory is
         address[] memory _supervisorList,
         VoterClass _class,
         Storage _storage,
-        MetaStorage _metaStore,
         TimeLocker _timeLock,
         uint256 _gasUsedRebate,
         uint256 _baseFeeRebate
@@ -101,7 +91,6 @@ contract GovernanceFactory is
             _supervisorList,
             _class,
             _storage,
-            _metaStore,
             _timeLock,
             _gasUsedRebate,
             _baseFeeRebate
@@ -110,11 +99,8 @@ contract GovernanceFactory is
     }
 
     /// @notice see ERC-165
-    function supportsInterface(bytes4 interfaceId) public view virtual override(IERC165, ERC165) returns (bool) {
-        return
-            interfaceId == type(GovernanceFactoryCreator).interfaceId ||
-            interfaceId == type(Versioned).interfaceId ||
-            super.supportsInterface(interfaceId);
+    function supportsInterface(bytes4 interfaceId) public view virtual override(ERC165) returns (bool) {
+        return interfaceId == type(Versioned).interfaceId || super.supportsInterface(interfaceId);
     }
 
     /// see UUPSUpgradeable

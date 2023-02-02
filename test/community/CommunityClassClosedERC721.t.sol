@@ -5,8 +5,8 @@ import "forge-std/Test.sol";
 
 import "../../contracts/community/CommunityBuilder.sol";
 import "../../contracts/access/Versioned.sol";
-import "../../test/MockERC721.sol";
-import "../../test/MockERC721Enum.sol";
+import "../../test/mock/MockERC721.sol";
+import "../../test/mock/MockERC721Enum.sol";
 
 contract CommunityClassClosedERC721Test is Test {
     uint256 private constant _TOKENID = 0xf733b17d;

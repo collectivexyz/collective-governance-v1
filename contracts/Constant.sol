@@ -45,10 +45,9 @@ pragma solidity ^0.8.15;
 
 /**
  * @notice extract global manifest constants
- * @dev hash e014cf626264c611c71d46e5983c455c53b47e00 deployed to 0xA5f38eb8d0e4bbd9dDce33B6e08C9119D4Cc2182
  */
 library Constant {
-    uint256 public constant UINT_MAX = 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF;
+    uint256 public constant UINT_MAX = type(uint256).max;
 
     /// @notice minimum quorum
     uint256 public constant MINIMUM_PROJECT_QUORUM = 1;
@@ -98,7 +97,7 @@ library Constant {
     /// @dev This method is expensive and is used only for validating
     ///      inputs on the creation of new Governance contract
     ///      or upon the configuration of a new vote
-    function len(string memory str) external pure returns (uint256) {
+    function len(string memory str) public pure returns (uint256) {
         uint256 bytelength = bytes(str).length;
         uint256 i = 0;
         uint256 length;
@@ -121,23 +120,8 @@ library Constant {
         return length;
     }
 
-    /**
-     * Calculate the hash code of the specified transaction.  This is used as the transaction id
-     * for marking the transaction as queued.
-     * @param _target the target address for this transaction
-     * @param _value the value to pass to the call
-     * @param _signature the tranaction signature
-     * @param _calldata the call data to pass to the call
-     * @param _scheduleTime the expected time when the _target should be available to call
-     * @return bytes32 The 32 byte hash of the transaction
-     */
-    function getTxHash(
-        address _target,
-        uint256 _value,
-        string calldata _signature,
-        bytes calldata _calldata,
-        uint256 _scheduleTime
-    ) external pure returns (bytes32) {
-        return keccak256(abi.encode(_target, _value, _signature, _calldata, _scheduleTime));
+    /// @return bool True if empty string
+    function empty(string memory str) external pure returns (bool) {
+        return len(str) == 0;
     }
 }

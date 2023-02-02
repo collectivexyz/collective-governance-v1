@@ -19,17 +19,6 @@
     "inputs": [
       {
         "internalType": "address",
-        "name": "governance",
-        "type": "address"
-      }
-    ],
-    "name": "GovernanceFactoryRequired",
-    "type": "error"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
         "name": "meta",
         "type": "address"
       }
@@ -423,7 +412,7 @@
     "name": "_governanceFactory",
     "outputs": [
       {
-        "internalType": "contract GovernanceFactoryCreator",
+        "internalType": "contract GovernanceFactory",
         "name": "",
         "type": "address"
       }
@@ -501,7 +490,7 @@
     "name": "aGovernance",
     "outputs": [
       {
-        "internalType": "contract GovernanceCreator",
+        "internalType": "contract GovernanceBuilder",
         "name": "",
         "type": "address"
       }
@@ -670,7 +659,7 @@
     "name": "withCommunityClass",
     "outputs": [
       {
-        "internalType": "contract GovernanceCreator",
+        "internalType": "contract GovernanceBuilder",
         "name": "",
         "type": "address"
       }
@@ -689,7 +678,7 @@
     "name": "withCommunityClassAddress",
     "outputs": [
       {
-        "internalType": "contract GovernanceCreator",
+        "internalType": "contract GovernanceBuilder",
         "name": "",
         "type": "address"
       }
@@ -708,7 +697,7 @@
     "name": "withDescription",
     "outputs": [
       {
-        "internalType": "contract GovernanceCreator",
+        "internalType": "contract GovernanceBuilder",
         "name": "",
         "type": "address"
       }
@@ -737,7 +726,7 @@
     "name": "withDescription",
     "outputs": [
       {
-        "internalType": "contract GovernanceCreator",
+        "internalType": "contract GovernanceBuilder",
         "name": "",
         "type": "address"
       }
@@ -761,7 +750,7 @@
     "name": "withGasRebate",
     "outputs": [
       {
-        "internalType": "contract GovernanceCreator",
+        "internalType": "contract GovernanceBuilder",
         "name": "",
         "type": "address"
       }
@@ -780,7 +769,7 @@
     "name": "withName",
     "outputs": [
       {
-        "internalType": "contract GovernanceCreator",
+        "internalType": "contract GovernanceBuilder",
         "name": "",
         "type": "address"
       }
@@ -799,7 +788,7 @@
     "name": "withSupervisor",
     "outputs": [
       {
-        "internalType": "contract GovernanceCreator",
+        "internalType": "contract GovernanceBuilder",
         "name": "",
         "type": "address"
       }
@@ -818,7 +807,7 @@
     "name": "withUrl",
     "outputs": [
       {
-        "internalType": "contract GovernanceCreator",
+        "internalType": "contract GovernanceBuilder",
         "name": "",
         "type": "address"
       }

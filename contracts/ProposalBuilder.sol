@@ -13,7 +13,7 @@
 /*
  * BSD 3-Clause License
  *
- * Copyright (c) 2022, collective
+ * Copyright (c) 2023, collective
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -50,6 +50,7 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "../contracts/access/VersionedContract.sol";
 import "../contracts/Constant.sol";
 import "../contracts/Governance.sol";
+import "../contracts/collection/MetaSet.sol";
 import "../contracts/collection/TransactionSet.sol";
 import "../contracts/storage/Storage.sol";
 import "../contracts/storage/MetaStorage.sol";
@@ -75,6 +76,7 @@ contract ProposalBuilder is VersionedContract, ERC165, Ownable {
         string description;
         string url;
         TransactionSet transaction;
+        MetaSet meta;
     }
 
     Governance private _governance;
@@ -155,6 +157,10 @@ contract ProposalBuilder is VersionedContract, ERC165, Ownable {
         return this;
     }
 
+    /// @notice set the description
+    /// @param _description the description
+    /// @param _url the url
+    /// @return ProposalBuilder this builder
     function withDescription(
         string memory _description,
         string memory _url
@@ -163,6 +169,73 @@ contract ProposalBuilder is VersionedContract, ERC165, Ownable {
         _properties.description = _description;
         _properties.url = _url;
         return this;
+    }
+
+    /// @notice attach arbitrary metadata to the proposal
+    /// @param _name the name of the metadata field
+    /// @param _value the value of the metadata
+    /// @return ProposalBuilder this builder
+    function withMeta(bytes32 _name, string memory _value) external returns (ProposalBuilder) {
+        ProposalProperties storage _properties = _proposalMap[msg.sender];
+        _properties.meta.add(Meta(_name, _value));
+        return this;
+    }
+
+    /// @notice set the minimum quorum
+    /// @param _quorum the quorum
+    /// @return ProposalBuilder this builder
+    function withQuorum(uint256 _quorum) external returns (ProposalBuilder) {
+        ProposalProperties storage _properties = _proposalMap[msg.sender];
+        _properties.quorum = _quorum;
+        return this;
+    }
+
+    /// @notice set the vote delay
+    /// @param _delay the delay
+    /// @return ProposalBuilder this builder
+    function withDelay(uint256 _delay) external returns (ProposalBuilder) {
+        ProposalProperties storage _properties = _proposalMap[msg.sender];
+        _properties.voteDelay = _delay;
+        return this;
+    }
+
+    /// @notice set the vote duration
+    /// @param _duration the duration
+    /// @return ProposalBuilder this builder
+    function withDuration(uint256 _duration) external returns (ProposalBuilder) {
+        ProposalProperties storage _properties = _proposalMap[msg.sender];
+        _properties.voteDuration = _duration;
+        return this;
+    }
+
+    /// @notice build the proposal
+    /// @return uint256 the propposal id
+    function build() external returns (uint256) {
+        ProposalProperties storage _properties = _proposalMap[msg.sender];
+        uint256 pid = _governance.propose();
+        if (_properties.transaction.size() > 0) {
+            for (uint256 i = 1; i <= _properties.transaction.size(); ++i) {
+                Transaction memory transaction = _properties.transaction.get(i);
+                _governance.attachTransaction(
+                    pid,
+                    transaction.target,
+                    transaction.value,
+                    transaction.signature,
+                    transaction._calldata,
+                    transaction.scheduleTime
+                );
+            }
+        }
+        if (!Constant.empty(_properties.url) || !Constant.empty(_properties.description) || _properties.meta.size() > 0) {
+            _meta.describe(pid, _properties.url, _properties.description);
+            for (uint256 i = 1; i <= _properties.meta.size(); ++i) {
+                Meta memory meta = _properties.meta.get(i);
+                _meta.addMeta(pid, meta.name, meta.value);
+            }
+        }
+
+        _governance.configure(pid, _properties.quorum, _properties.voteDelay, _properties.voteDuration);
+        return pid;
     }
 
     // @notice return the name of this implementation
@@ -187,5 +260,6 @@ contract ProposalBuilder is VersionedContract, ERC165, Ownable {
         _properties.description = "";
         _properties.url = "";
         _properties.transaction = new TransactionSet();
+        _properties.meta = new MetaSet();
     }
 }

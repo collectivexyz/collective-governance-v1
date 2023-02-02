@@ -8,12 +8,11 @@ import "@openzeppelin/contracts/interfaces/IERC165.sol";
 import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
 
 import "../contracts/storage/MetaFactoryCreator.sol";
+import "../contracts/storage/MetaStorage.sol";
 import "../contracts/storage/MetaStorageFactory.sol";
 import "../contracts/storage/StorageFactoryCreator.sol";
 import "../contracts/storage/StorageFactory.sol";
-import "../contracts/GovernanceFactoryCreator.sol";
 import "../contracts/GovernanceFactory.sol";
-
 import "../contracts/GovernanceBuilder.sol";
 import "../contracts/Governance.sol";
 import "../contracts/CollectiveGovernance.sol";
@@ -23,7 +22,7 @@ import "../contracts/community/CommunityClassERC721.sol";
 import "../contracts/community/CommunityClassOpenVote.sol";
 import "../contracts/access/Versioned.sol";
 
-import "./MockERC721.sol";
+import "./mock/MockERC721.sol";
 
 contract GovernanceBuilderTest is Test {
     address private constant _OWNER = address(0x1);
@@ -257,51 +256,51 @@ contract GovernanceBuilderTest is Test {
     }
 
     function testWithName() public {
-        (address payable _governance, , ) = _builder
+        (, , address _meta) = _builder
             .aGovernance()
             .withSupervisor(_SUPERVISOR)
             .withCommunityClass(_class)
             .withName("acme inc")
             .build();
-        Governance gov = Governance(_governance);
-        assertEq(gov.community(), "acme inc");
+        MetaStorage meta = MetaStorage(_meta);
+        assertEq(meta.community(), "acme inc");
     }
 
     function testWithUrl() public {
-        (address payable _governance, , ) = _builder
+        (, , address _meta) = _builder
             .aGovernance()
             .withSupervisor(_SUPERVISOR)
             .withCommunityClass(_class)
             .withUrl("https://collective.xyz")
             .build();
-        Governance gov = Governance(_governance);
-        assertEq(gov.url(), "https://collective.xyz");
+        MetaStorage meta = MetaStorage(_meta);
+        assertEq(meta.url(), "https://collective.xyz");
     }
 
     function testWithDescription() public {
         string memory desc = "A unique project to build on chain governance for all web3 communities";
-        (address payable _governance, , ) = _builder
+        (, , address _meta) = _builder
             .aGovernance()
             .withSupervisor(_SUPERVISOR)
             .withCommunityClass(_class)
             .withDescription(desc)
             .build();
-        Governance gov = Governance(_governance);
-        assertEq(gov.description(), desc);
+        MetaStorage meta = MetaStorage(_meta);
+        assertEq(meta.description(), desc);
     }
 
     function testWithCommmunityDescription() public {
         string memory desc = "A unique project to build on chain governance for all web3 communities";
-        (address payable _governance, , ) = _builder
+        (, , address _meta) = _builder
             .aGovernance()
             .withSupervisor(_SUPERVISOR)
             .withCommunityClass(_class)
             .withDescription("acme inc", "https://collective.xyz", desc)
             .build();
-        Governance gov = Governance(_governance);
-        assertEq(gov.community(), "acme inc");
-        assertEq(gov.url(), "https://collective.xyz");
-        assertEq(gov.description(), desc);
+        MetaStorage meta = MetaStorage(_meta);
+        assertEq(meta.community(), "acme inc");
+        assertEq(meta.url(), "https://collective.xyz");
+        assertEq(meta.description(), desc);
     }
 
     function testWithGasRebate() public {
@@ -334,11 +333,6 @@ contract GovernanceBuilderTest is Test {
             .build();
     }
 
-    function testSupportsInterfaceGovernanceCreator() public {
-        bytes4 govId = type(GovernanceCreator).interfaceId;
-        assertTrue(_builder.supportsInterface(govId));
-    }
-
     function testSupportsInterfaceOwnable() public {
         bytes4 ifId = type(Ownable).interfaceId;
         assertTrue(_builder.supportsInterface(ifId));
@@ -357,7 +351,7 @@ contract GovernanceBuilderTest is Test {
     function testUpgradeRequiresOwner() public {
         MetaFactoryCreator _meta = new MetaStorageFactory();
         StorageFactoryCreator _storage = new StorageFactory();
-        GovernanceFactoryCreator _creator = new GovernanceFactory();
+        GovernanceFactory _creator = new GovernanceFactory();
         vm.expectRevert("Ownable: caller is not the owner");
         _builder.upgrade(address(_creator), address(_storage), address(_meta));
     }
@@ -366,8 +360,8 @@ contract GovernanceBuilderTest is Test {
         address _metaAddress = address(0x1);
         vm.mockCall(_metaAddress, abi.encodeWithSelector(IERC165.supportsInterface.selector), abi.encode(false));
         StorageFactoryCreator _storage = new StorageFactory();
-        GovernanceFactoryCreator _creator = new GovernanceFactory();
-        vm.expectRevert(abi.encodeWithSelector(GovernanceCreator.MetaStorageFactoryRequired.selector, _metaAddress));
+        GovernanceFactory _creator = new GovernanceFactory();
+        vm.expectRevert(abi.encodeWithSelector(GovernanceBuilder.MetaStorageFactoryRequired.selector, _metaAddress));
         vm.prank(_OWNER, _OWNER);
         _builder.upgrade(address(_creator), address(_storage), _metaAddress);
     }
@@ -376,26 +370,16 @@ contract GovernanceBuilderTest is Test {
         MetaFactoryCreator _meta = new MetaStorageFactory();
         address _storageAddress = address(0x1);
         vm.mockCall(_storageAddress, abi.encodeWithSelector(IERC165.supportsInterface.selector), abi.encode(false));
-        GovernanceFactoryCreator _creator = new GovernanceFactory();
-        vm.expectRevert(abi.encodeWithSelector(GovernanceCreator.StorageFactoryRequired.selector, _storageAddress));
+        GovernanceFactory _creator = new GovernanceFactory();
+        vm.expectRevert(abi.encodeWithSelector(GovernanceBuilder.StorageFactoryRequired.selector, _storageAddress));
         vm.prank(_OWNER, _OWNER);
         _builder.upgrade(address(_creator), _storageAddress, address(_meta));
-    }
-
-    function testUpgradeRequiresGovernance() public {
-        MetaFactoryCreator _meta = new MetaStorageFactory();
-        StorageFactoryCreator _storage = new StorageFactory();
-        address _governanceAddress = address(0x1);
-        vm.mockCall(_governanceAddress, abi.encodeWithSelector(IERC165.supportsInterface.selector), abi.encode(false));
-        vm.expectRevert(abi.encodeWithSelector(GovernanceCreator.GovernanceFactoryRequired.selector, _governanceAddress));
-        vm.prank(_OWNER, _OWNER);
-        _builder.upgrade(_governanceAddress, address(_storage), address(_meta));
     }
 
     function testFailUpgradeStorageRequiresHigherVersion() public {
         MetaFactoryCreator _meta = new MetaStorageFactory();
         StorageFactoryCreator _storage = new StorageFactory();
-        GovernanceFactoryCreator _creator = new GovernanceFactory();
+        GovernanceFactory _creator = new GovernanceFactory();
         address creatorMock = address(_creator);
         bytes memory code = creatorMock.code;
         vm.etch(creatorMock, code);
@@ -411,7 +395,7 @@ contract GovernanceBuilderTest is Test {
     function testFailUpgradeMetaRequiresHigherVersion() public {
         MetaFactoryCreator _meta = new MetaStorageFactory();
         StorageFactoryCreator _storage = new StorageFactory();
-        GovernanceFactoryCreator _creator = new GovernanceFactory();
+        GovernanceFactory _creator = new GovernanceFactory();
         address creatorMock = address(_creator);
         bytes memory code = creatorMock.code;
         vm.etch(creatorMock, code);

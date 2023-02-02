@@ -9,7 +9,7 @@ import "forge-std/Test.sol";
 import "../../contracts/storage/MetaStorage.sol";
 import "../../contracts/storage/MetaStorageFactory.sol";
 import "../../contracts/access/Versioned.sol";
-import "../../test/TestData.sol";
+import "../../test/mock/TestData.sol";
 
 contract MetaStorageTest is Test {
     MetaStorage private _storage;
@@ -46,13 +46,13 @@ contract MetaStorageTest is Test {
 
     function testDescribeBadId() public {
         _storage.describe(META_ID, "https://collective.xyz", "description");
-        vm.expectRevert(abi.encodeWithSelector(MetaStorage.InvalidMetadataId.selector, META_ID + 1));
+        vm.expectRevert(abi.encodeWithSelector(MetaStorage.IndexInvaliddataId.selector, META_ID + 1));
         _storage.description(META_ID + 1);
     }
 
     function testUrlBadID() public {
         _storage.describe(META_ID, "https://collective.xyz", "description");
-        vm.expectRevert(abi.encodeWithSelector(MetaStorage.InvalidMetadataId.selector, META_ID + 1));
+        vm.expectRevert(abi.encodeWithSelector(MetaStorage.IndexInvaliddataId.selector, META_ID + 1));
         _storage.url(META_ID + 1);
     }
 
@@ -82,7 +82,7 @@ contract MetaStorageTest is Test {
     function testMetaCount() public {
         _storage.describe(META_ID, "", "");
         for (uint256 i = 0; i < 10; i++) {
-            _storage.addMeta(META_ID, "a", "1");
+            _storage.addMeta(META_ID, keccak256(abi.encode(i)), "1");
         }
         assertEq(_storage.metaCount(META_ID), 10);
     }
@@ -91,21 +91,21 @@ contract MetaStorageTest is Test {
         _storage.describe(META_ID, "", "");
         uint256 m1 = _storage.addMeta(META_ID, "a", "1");
         uint256 m2 = _storage.addMeta(META_ID, "b", "2");
-        (bytes32 m1name, string memory m1value) = _storage.getMeta(META_ID, m1);
-        assertEq(m1name, "a");
-        assertEq(m1value, "1");
-        (bytes32 m2name, string memory m2value) = _storage.getMeta(META_ID, m2);
-        assertEq(m2name, "b");
-        assertEq(m2value, "2");
+        Meta memory m1meta = _storage.getMeta(META_ID, m1);
+        assertEq(m1meta.name, "a");
+        assertEq(m1meta.value, "1");
+        Meta memory m2meta = _storage.getMeta(META_ID, m2);
+        assertEq(m2meta.name, "b");
+        assertEq(m2meta.value, "2");
     }
 
     function testAddMetaRequiresDescribe() public {
-        vm.expectRevert(abi.encodeWithSelector(MetaStorage.InvalidMetadataId.selector, META_ID));
+        vm.expectRevert(abi.encodeWithSelector(MetaStorage.IndexInvaliddataId.selector, META_ID));
         _storage.addMeta(META_ID, "a", "1");
     }
 
     function testZeroNotAllowedForMetaId() public {
-        vm.expectRevert(abi.encodeWithSelector(MetaStorage.InvalidMetadataId.selector, 0));
+        vm.expectRevert(abi.encodeWithSelector(MetaStorage.IndexInvaliddataId.selector, 0));
         _storage.describe(0, "aaa", "1111");
     }
 
@@ -145,12 +145,12 @@ contract MetaStorageTest is Test {
     function testUrlTooLarge() public {
         string memory _TEST_STRING = TestData.pi1kplus();
         vm.expectRevert(abi.encodeWithSelector(MetaStorage.StringSizeLimit.selector, Constant.len(_TEST_STRING)));
-        new CollectiveMetaStorage("", _TEST_STRING, "");
+        new MappedMetaStorage("", _TEST_STRING, "");
     }
 
     function testDescriptionTooLarge() public {
         string memory _TEST_STRING = TestData.pi1kplus();
         vm.expectRevert(abi.encodeWithSelector(MetaStorage.StringSizeLimit.selector, Constant.len(_TEST_STRING)));
-        new CollectiveMetaStorage("", "", _TEST_STRING);
+        new MappedMetaStorage("", "", _TEST_STRING);
     }
 }

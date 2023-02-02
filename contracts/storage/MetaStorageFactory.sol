@@ -50,7 +50,7 @@ import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
 
 import "../../contracts/storage/MetaStorage.sol";
 import "../../contracts/storage/MetaFactoryCreator.sol";
-import "../../contracts/storage/CollectiveMetaStorage.sol";
+import "../../contracts/storage/MappedMetaStorage.sol";
 import "../../contracts/access/Versioned.sol";
 import "../../contracts/access/VersionedContract.sol";
 import "../../contracts/access/OwnableInitializable.sol";
@@ -78,7 +78,7 @@ contract MetaStorageFactory is
     /// @param _description The community description
     /// @return MetaStorage the storage
     function create(bytes32 _community, string memory _url, string memory _description) external returns (MetaStorage) {
-        CollectiveMetaStorage _metaStore = new CollectiveMetaStorage(_community, _url, _description);
+        MappedMetaStorage _metaStore = new MappedMetaStorage(_community, _url, _description);
         _metaStore.transferOwnership(msg.sender);
         return _metaStore;
     }

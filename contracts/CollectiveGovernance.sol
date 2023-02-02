@@ -100,8 +100,6 @@ contract CollectiveGovernance is VoteStrategy, Governance, ERC165, VersionedCont
 
     Storage public immutable _storage;
 
-    MetaStorage public immutable meta;
-
     TimeLocker public immutable _timeLock;
 
     uint256 public immutable _maximumGasUsedRebate;
@@ -125,7 +123,6 @@ contract CollectiveGovernance is VoteStrategy, Governance, ERC165, VersionedCont
         address[] memory _supervisorList,
         VoterClass _class,
         Storage _governanceStorage,
-        MetaStorage _metaStore,
         TimeLocker _timeLocker,
         uint256 _gasUsedRebate,
         uint256 _baseFeeRebate
@@ -137,7 +134,6 @@ contract CollectiveGovernance is VoteStrategy, Governance, ERC165, VersionedCont
             revert BaseFeeRebateMustBeLarger(_baseFeeRebate, Constant.MAXIMUM_REBATE_BASE_FEE);
         _voterClass = _class;
         _storage = _governanceStorage;
-        meta = _metaStore;
         _timeLock = _timeLocker;
         _maximumGasUsedRebate = _gasUsedRebate;
         _maximumBaseFeeRebate = _baseFeeRebate;
@@ -244,36 +240,6 @@ contract CollectiveGovernance is VoteStrategy, Governance, ERC165, VersionedCont
             txHash
         );
         return transactionId;
-    }
-
-    /// @notice describe a proposal
-    /// @param _proposalId the numeric id of the proposed vote
-    /// @param _description the description
-    /// @param _url for proposed vote
-    /// @dev required prior to calling configure
-    function describe(
-        uint256 _proposalId,
-        string memory _description,
-        string memory _url
-    ) external requireSupervisor(_proposalId) requireNotFinal(_proposalId) {
-        meta.describe(_proposalId, _url, _description);
-        emit ProposalDescription(_proposalId, _description, _url);
-    }
-
-    /// @notice attach arbitrary metadata to proposal
-    /// @dev required prior to calling configure
-    /// @param _proposalId the id of the proposal
-    /// @param _name the name of the metadata field
-    /// @param _value the value of the metadata
-    /// @return uint256 the metadata id
-    function addMeta(
-        uint256 _proposalId,
-        bytes32 _name,
-        string memory _value
-    ) external requireSupervisor(_proposalId) requireNotFinal(_proposalId) returns (uint256) {
-        uint256 metaId = meta.addMeta(_proposalId, _name, _value);
-        emit ProposalMeta(_proposalId, metaId, _name, _value, msg.sender);
-        return metaId;
     }
 
     /// @notice set a choice by choice id
@@ -582,7 +548,7 @@ contract CollectiveGovernance is VoteStrategy, Governance, ERC165, VersionedCont
                 transaction.target,
                 transaction.value,
                 transaction.scheduleTime,
-                getTxHash(transaction)
+                getHash(transaction)
             );
         }
         _storage.cancel(_proposalId, msg.sender);
@@ -617,7 +583,7 @@ contract CollectiveGovernance is VoteStrategy, Governance, ERC165, VersionedCont
 
     function executeTransaction(uint256 _proposalId, uint256 _transactionId, bytes32 _txHash) private {
         Transaction memory transaction = _storage.getTransaction(_proposalId, _transactionId);
-        bytes32 txHash = getTxHash(transaction);
+        bytes32 txHash = getHash(transaction);
         if (_txHash != 0x0 && txHash != _txHash) revert TransactionSignatureNotMatching(_proposalId, _transactionId);
         if (txHash.length > 0 && _timeLock.queuedTransaction(txHash)) {
             _timeLock.executeTransaction(
@@ -643,7 +609,7 @@ contract CollectiveGovernance is VoteStrategy, Governance, ERC165, VersionedCont
         if (transactionCount > 0) {
             for (uint256 tid = 1; tid <= transactionCount; tid++) {
                 Transaction memory transaction = _storage.getTransaction(_proposalId, tid);
-                bytes32 txHash = getTxHash(transaction);
+                bytes32 txHash = getHash(transaction);
                 if (txHash.length > 0 && _timeLock.queuedTransaction(txHash)) {
                     _timeLock.cancelTransaction(
                         transaction.target,
@@ -661,24 +627,6 @@ contract CollectiveGovernance is VoteStrategy, Governance, ERC165, VersionedCont
     /// @return string memory representation of name
     function name() external pure virtual returns (string memory) {
         return NAME;
-    }
-
-    /// @notice return the name of the community
-    /// @return bytes32 the community name
-    function community() external view returns (bytes32) {
-        return meta.community();
-    }
-
-    /// @notice return the community url
-    /// @return string memory representation of url
-    function url() external view returns (string memory) {
-        return meta.url();
-    }
-
-    /// @notice return community description
-    /// @return string memory representation of community description
-    function description() external view returns (string memory) {
-        return meta.description();
     }
 
     function sendGasRebate(address recipient, uint256 startGas) internal {

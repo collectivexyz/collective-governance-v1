@@ -43,19 +43,32 @@
  */
 pragma solidity ^0.8.15;
 
-/// @title dynamic collection of addresses
-contract AddressSet {
-    error IndexInvalid(uint256 index);
-    error DuplicateAddress(address _address);
+/// @notice User defined metadata
+struct Meta {
+    /// @notice metadata key or name
+    bytes32 name;
+    /// @notice metadata value
+    string value;
+}
 
-    event AddressAdded(address element);
-    event AddressRemoved(address element);
+// solhint-disable-next-line func-visibility
+function getHash(Meta memory meta) pure returns (bytes32) {
+    return keccak256(abi.encode(meta));
+}
+
+/// @title dynamic collection of metadata
+contract MetaSet {
+    error IndexInvalid(uint256 index);
+    error HashCollision(bytes32 txId);
+
+    event MetaAdded(bytes32 metaHash);
+    event MetaRemoved(bytes32 metaHash);
 
     uint256 private _elementCount;
 
-    mapping(uint256 => address) private _elementMap;
+    mapping(uint256 => Meta) private _elementMap;
 
-    mapping(address => uint256) private _elementPresent;
+    mapping(bytes32 => uint256) private _elementPresent;
 
     constructor() {
         _elementCount = 0;
@@ -66,43 +79,43 @@ contract AddressSet {
         _;
     }
 
-    /// @notice add an element
-    /// @param _element the address
-    /// @return uint256 the elementId of the transaction
-    function add(address _element) external returns (uint256) {
+    /// @notice add meta
+    /// @param _element the meta
+    /// @return uint256 the elementId of the meta
+    function add(Meta memory _element) external returns (uint256) {
         uint256 elementIndex = ++_elementCount;
         _elementMap[elementIndex] = _element;
-        if (_elementPresent[_element] > 0) revert DuplicateAddress(_element);
-        _elementPresent[_element] = elementIndex;
-        emit AddressAdded(_element);
+        bytes32 _elementHash = getHash(_element);
+        if (_elementPresent[_elementHash] > 0) revert HashCollision(_elementHash);
+        _elementPresent[_elementHash] = elementIndex;
+        emit MetaAdded(_elementHash);
         return elementIndex;
     }
 
-    /// @notice erase an element
-    /// @dev swaps element to end and deletes the end
-    /// @param _index The address to erase
-    /// @return bool True if element was removed
-    function erase(uint256 _index) external returns (bool) {
-        address _element = _elementMap[_index];
-        return erase(_element);
+    function erase(Meta memory _meta) public returns (bool) {
+        bytes32 metaHash = getHash(_meta);
+        uint256 index = _elementPresent[metaHash];
+        return erase(index);
     }
 
-    /// @notice erase an element
-    /// @dev swaps element to end and deletes the end
-    /// @param _element The address to erase
+    /// @notice erase a meta
+    /// @param _index the index to remove
     /// @return bool True if element was removed
-    function erase(address _element) public returns (bool) {
-        uint256 elementIndex = _elementPresent[_element];
-        if (elementIndex > 0) {
-            address _lastElement = _elementMap[_elementCount];
-            _elementMap[elementIndex] = _lastElement;
-            _elementPresent[_lastElement] = elementIndex;
-            _elementMap[_elementCount] = address(0x0);
-            _elementPresent[_element] = 0;
+    function erase(uint256 _index) public returns (bool) {
+        Meta memory meta = _elementMap[_index];
+        bytes32 metaHash = getHash(meta);
+        uint256 elementIndex = _elementPresent[metaHash];
+        if (elementIndex > 0 && elementIndex == _index) {
+            Meta memory _lastMeta = _elementMap[_elementCount];
+            _elementMap[elementIndex] = _lastMeta;
+            bytes32 _lastMetaHash = getHash(_lastMeta);
+            _elementPresent[_lastMetaHash] = elementIndex;
+            _elementMap[_elementCount] = Meta("", "");
+            _elementPresent[metaHash] = 0;
             delete _elementMap[_elementCount];
-            delete _elementPresent[_element];
+            delete _elementPresent[metaHash];
             _elementCount--;
-            emit AddressRemoved(_element);
+            emit MetaRemoved(metaHash);
             return true;
         }
         return false;
@@ -115,19 +128,20 @@ contract AddressSet {
 
     /// @param index The index to return
     /// @return address The requested address
-    function get(uint256 index) external view requireValidIndex(index) returns (address) {
+    function get(uint256 index) external view requireValidIndex(index) returns (Meta memory) {
         return _elementMap[index];
     }
 
-    /// @param _element The element to test
+    /// @param _meta The element to test
     /// @return bool True if address is contained
-    function contains(address _element) external view returns (bool) {
-        return find(_element) > 0;
+    function contains(Meta memory _meta) external view returns (bool) {
+        return find(_meta) > 0;
     }
 
-    /// @param _element The element to find
+    /// @param _meta The element to find
     /// @return uint256 The index associated with element
-    function find(address _element) public view returns (uint256) {
-        return _elementPresent[_element];
+    function find(Meta memory _meta) public view returns (uint256) {
+        bytes32 metaHash = getHash(_meta);
+        return _elementPresent[metaHash];
     }
 }

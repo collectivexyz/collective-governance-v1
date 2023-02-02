@@ -45,30 +45,27 @@ pragma solidity ^0.8.15;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
 
-import "../contracts/GovernanceCreator.sol";
+import "../contracts/GovernanceBuilder.sol";
 import "../contracts/Governance.sol";
 import "../contracts/access/VersionedContract.sol";
 import "../contracts/community/CommunityBuilder.sol";
 
 contract System is Ownable, VersionedContract {
-    string public constant NAME = "Governance System Creator";
+    string public constant NAME = "governance system creator";
 
-    error NotGovernanceCreator(address creator);
-    error NotCommunityBuilder(address creator);
     error VersionMismatch(uint256 expected, uint256 provided);
     error VersionInvalid(uint256 expected, uint256 provided);
 
-    GovernanceCreator private _creator;
+    GovernanceBuilder private _creator;
 
     CommunityBuilder private _classCreator;
 
     /// @notice System factory
-    /// @param _creatorAddress address of GovernanceCreator
+    /// @param _creatorAddress address of GovernanceBuilder
     /// @param _voterCreator address of VoterClassCreator
     constructor(address _creatorAddress, address _voterCreator) {
-        GovernanceCreator _govCreator = GovernanceCreator(_creatorAddress);
+        GovernanceBuilder _govCreator = GovernanceBuilder(_creatorAddress);
         CommunityBuilder _voterFactory = CommunityBuilder(_voterCreator);
-        if (!_govCreator.supportsInterface(type(GovernanceCreator).interfaceId)) revert NotGovernanceCreator(_creatorAddress);
         if (_govCreator.version() < _voterFactory.version())
             revert VersionMismatch(_voterFactory.version(), _govCreator.version());
         if (_voterFactory.version() < Constant.VERSION_3) revert VersionInvalid(Constant.VERSION_3, _voterFactory.version());
@@ -144,12 +141,11 @@ contract System is Ownable, VersionedContract {
 
     /// @notice System factory upgrade
     /// @dev onlyOwner
-    /// @param _creatorAddress address of GovernanceCreator
+    /// @param _creatorAddress address of GovernanceBuilder
     /// @param _voterCreator address of VoterClassCreator
     function upgrade(address _creatorAddress, address _voterCreator) external onlyOwner {
-        GovernanceCreator _govCreator = GovernanceCreator(_creatorAddress);
+        GovernanceBuilder _govCreator = GovernanceBuilder(_creatorAddress);
         CommunityBuilder _voterFactory = CommunityBuilder(_voterCreator);
-        if (!_govCreator.supportsInterface(type(GovernanceCreator).interfaceId)) revert NotGovernanceCreator(_creatorAddress);
         if (_govCreator.version() < _voterFactory.version())
             revert VersionMismatch(_voterFactory.version(), _govCreator.version());
         _creator = _govCreator;

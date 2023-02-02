@@ -5,7 +5,7 @@ import "forge-std/Test.sol";
 
 import "../../contracts/collection/TransactionSet.sol";
 
-contract AddressTest is Test {
+contract TransactionSetTest is Test {
     TransactionSet private _set;
 
     function setUp() public {
@@ -27,7 +27,7 @@ contract AddressTest is Test {
     function testDuplicateAdd() public {
         Transaction memory transaction = Transaction(address(0x123), 45, "six", "seven", 890);
         _set.add(transaction);
-        vm.expectRevert(abi.encodeWithSelector(TransactionSet.HashCollision.selector, getTxHash(transaction)));
+        vm.expectRevert(abi.encodeWithSelector(TransactionSet.HashCollision.selector, getHash(transaction)));
         _set.add(transaction);
     }
 
@@ -72,5 +72,27 @@ contract AddressTest is Test {
         uint256 required = _set.add(tt);
         uint256 testValue = _set.find(tt);
         assertEq(testValue, required);
+    }
+
+    function testGetHash() public {
+        Transaction memory tt = Transaction(address(0x123), 45, "six", "seven", 890);
+        bytes32 expect = keccak256(abi.encode(tt));
+        bytes32 computed = getHash(tt);
+        assertEq(expect, computed);
+    }
+
+    function testGetZer0() public {
+        Transaction memory transaction = Transaction(address(0x123), 45, "six", "seven", 890);
+        _set.add(transaction);
+        vm.expectRevert(abi.encodeWithSelector(TransactionSet.InvalidTransaction.selector, 0));
+        _set.get(0);
+    }
+
+    function testGetInvalid() public {
+        Transaction memory transaction = Transaction(address(0x123), 45, "six", "seven", 890);
+        _set.add(transaction);
+        uint256 _maxIndex = _set.size() + 1;
+        vm.expectRevert(abi.encodeWithSelector(TransactionSet.InvalidTransaction.selector, _maxIndex));
+        _set.get(_maxIndex);
     }
 }

@@ -11,7 +11,7 @@ import "../../contracts/storage/StorageFactoryProxy.sol";
 import "../../contracts/community/CommunityBuilder.sol";
 import "../../contracts/access/Versioned.sol";
 
-import "../../test/TestData.sol";
+import "../../test/mock/TestData.sol";
 
 contract StorageFactoryTest is Test {
     CommunityClass private _class;

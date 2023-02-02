@@ -5,7 +5,7 @@ import "@openzeppelin/contracts/interfaces/IERC721.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/IERC721Enumerable.sol";
 
 import "forge-std/Test.sol";
-import "./MockERC721.sol";
+import "../mock/MockERC721.sol";
 
 contract MockERC721Test is Test {
     IERC721 private erc721;

@@ -6,7 +6,7 @@ import "@openzeppelin/contracts/interfaces/IERC165.sol";
 import "forge-std/Test.sol";
 
 import "../../contracts/Constant.sol";
-import "../../test/MockERC721.sol";
+import "../../test/mock/MockERC721.sol";
 import "../../contracts/community/CommunityBuilder.sol";
 import "../../contracts/community/CommunityClass.sol";
 

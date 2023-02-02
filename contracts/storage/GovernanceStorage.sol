@@ -754,7 +754,7 @@ contract GovernanceStorage is Storage, VersionedContract, ERC165, Ownable {
             _transaction.target,
             _transaction.value,
             _transaction.scheduleTime,
-            getTxHash(_transaction)
+            getHash(_transaction)
         );
         return transactionId;
     }
@@ -790,7 +790,7 @@ contract GovernanceStorage is Storage, VersionedContract, ERC165, Ownable {
         Proposal storage proposal = proposalMap[_proposalId];
         Transaction memory transaction = proposal.transaction.get(_transactionId);
         if (!proposal.transaction.erase(_transactionId)) revert InvalidTransaction(_proposalId, _transactionId);
-        emit ClearTransaction(_proposalId, _transactionId, transaction.scheduleTime, getTxHash(transaction));
+        emit ClearTransaction(_proposalId, _transactionId, transaction.scheduleTime, getHash(transaction));
     }
 
     /// @notice set proposal state executed
@@ -855,7 +855,7 @@ contract GovernanceStorage is Storage, VersionedContract, ERC165, Ownable {
         bytes32 txHash = "";
         if (_transactionId > 0) {
             Transaction memory transaction = proposal.transaction.get(_transactionId);
-            txHash = getTxHash(transaction);
+            txHash = getHash(transaction);
         }
         proposal.choice[_choiceId] = Choice(_choiceId, _name, _description, _transactionId, txHash, 0);
         emit SetChoice(_proposalId, _choiceId, _name, _description, _transactionId, txHash);

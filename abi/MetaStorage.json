@@ -1,42 +1,5 @@
 [
   {
-    "inputs": [],
-    "name": "CommunityDescriptionExceedsDataLimit",
-    "type": "error"
-  },
-  {
-    "inputs": [],
-    "name": "CommunityUrlExceedsDataLimit",
-    "type": "error"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "metatdataId",
-        "type": "uint256"
-      }
-    ],
-    "name": "DescriptionExceedsDataLimit",
-    "type": "error"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "metatdataId",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "metaId",
-        "type": "uint256"
-      }
-    ],
-    "name": "InvalidMetadata",
-    "type": "error"
-  },
-  {
     "inputs": [
       {
         "internalType": "uint256",
@@ -44,45 +7,18 @@
         "type": "uint256"
       }
     ],
-    "name": "InvalidMetadataId",
+    "name": "IndexInvaliddataId",
     "type": "error"
   },
   {
     "inputs": [
       {
         "internalType": "uint256",
-        "name": "metatdataId",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "metaId",
+        "name": "length",
         "type": "uint256"
       }
     ],
-    "name": "UnknownMetadata",
-    "type": "error"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "metadataId",
-        "type": "uint256"
-      }
-    ],
-    "name": "UrlExceedsDataLimit",
-    "type": "error"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "metatdataId",
-        "type": "uint256"
-      }
-    ],
-    "name": "ValueExceedsDataLimit",
+    "name": "StringSizeLimit",
     "type": "error"
   },
   {
@@ -138,7 +74,7 @@
         "type": "string"
       }
     ],
-    "name": "Describe",
+    "name": "DescribeMeta",
     "type": "event"
   },
   {
@@ -242,26 +178,33 @@
     "inputs": [
       {
         "internalType": "uint256",
-        "name": "_metadataId",
+        "name": "_metaId",
         "type": "uint256"
       },
       {
         "internalType": "uint256",
-        "name": "_metaId",
+        "name": "_metaElementId",
         "type": "uint256"
       }
     ],
     "name": "getMeta",
     "outputs": [
       {
-        "internalType": "bytes32",
-        "name": "_name",
-        "type": "bytes32"
-      },
-      {
-        "internalType": "string",
-        "name": "_value",
-        "type": "string"
+        "components": [
+          {
+            "internalType": "bytes32",
+            "name": "name",
+            "type": "bytes32"
+          },
+          {
+            "internalType": "string",
+            "name": "value",
+            "type": "string"
+          }
+        ],
+        "internalType": "struct Meta",
+        "name": "",
+        "type": "tuple"
       }
     ],
     "stateMutability": "nonpayable",

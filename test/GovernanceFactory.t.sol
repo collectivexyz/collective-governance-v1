@@ -8,9 +8,8 @@ import "forge-std/Test.sol";
 import "../contracts/storage/Storage.sol";
 import "../contracts/storage/StorageFactory.sol";
 import "../contracts/storage/MetaStorage.sol";
-import "../contracts/storage/CollectiveMetaStorage.sol";
+import "../contracts/storage/MappedMetaStorage.sol";
 import "../contracts/community/CommunityBuilder.sol";
-import "../contracts/GovernanceFactoryCreator.sol";
 import "../contracts/GovernanceFactory.sol";
 import "../contracts/GovernanceFactoryProxy.sol";
 import "../contracts/access/Versioned.sol";
@@ -23,15 +22,14 @@ contract GovernanceFactoryTest is Test {
     MetaStorage private _metaStorage;
     TimeLocker private _timeLock;
     address[] private _supervisorList;
-    GovernanceFactory private _factoryInstance;
     GovernanceFactoryProxy private _factoryProxy;
-    GovernanceFactoryCreator private _governanceFactory;
+    GovernanceFactory private _governanceFactory;
 
     function setUp() public {
         CommunityBuilder _vcCreator = new CommunityBuilder();
         address vcAddress = _vcCreator.aCommunity().asOpenCommunity().withQuorum(1).build();
         _class = CommunityClass(vcAddress);
-        _metaStorage = new CollectiveMetaStorage(
+        _metaStorage = new MappedMetaStorage(
             "collective",
             "https://github.com/collectivexyz/collective-governance-v1",
             "Collective Governance"
@@ -40,9 +38,9 @@ contract GovernanceFactoryTest is Test {
         _timeLock = new TimeLock(Constant.TIMELOCK_MINIMUM_DELAY);
         _supervisorList = new address[](1);
         _supervisorList[0] = _OWNER;
-        _factoryInstance = new GovernanceFactory();
+        GovernanceFactory _factoryInstance = new GovernanceFactory();
         _factoryProxy = new GovernanceFactoryProxy(address(_factoryInstance));
-        _governanceFactory = GovernanceFactoryCreator(address(_factoryProxy));
+        _governanceFactory = GovernanceFactory(address(_factoryProxy));
     }
 
     function testFailSupervisorListIsEmpty() public {
@@ -50,7 +48,6 @@ contract GovernanceFactoryTest is Test {
             new address[](0),
             _class,
             _storage,
-            _metaStorage,
             _timeLock,
             Constant.MAXIMUM_REBATE_GAS_USED,
             Constant.MAXIMUM_REBATE_BASE_FEE
@@ -62,7 +59,6 @@ contract GovernanceFactoryTest is Test {
             _supervisorList,
             _class,
             _storage,
-            _metaStorage,
             _timeLock,
             Constant.MAXIMUM_REBATE_GAS_USED - 1,
             Constant.MAXIMUM_REBATE_BASE_FEE
@@ -74,7 +70,6 @@ contract GovernanceFactoryTest is Test {
             _supervisorList,
             _class,
             _storage,
-            _metaStorage,
             _timeLock,
             Constant.MAXIMUM_REBATE_GAS_USED,
             Constant.MAXIMUM_REBATE_BASE_FEE - 1
@@ -86,7 +81,6 @@ contract GovernanceFactoryTest is Test {
             _supervisorList,
             _class,
             _storage,
-            _metaStorage,
             _timeLock,
             Constant.MAXIMUM_REBATE_GAS_USED,
             Constant.MAXIMUM_REBATE_BASE_FEE
@@ -99,7 +93,6 @@ contract GovernanceFactoryTest is Test {
             _supervisorList,
             _class,
             _storage,
-            _metaStorage,
             _timeLock,
             Constant.MAXIMUM_REBATE_GAS_USED + 1,
             Constant.MAXIMUM_REBATE_BASE_FEE + 7
@@ -111,11 +104,6 @@ contract GovernanceFactoryTest is Test {
 
     function testSupportsIERC165() public {
         bytes4 ifId = type(IERC165).interfaceId;
-        assertTrue(_governanceFactory.supportsInterface(ifId));
-    }
-
-    function testSupportsGovernanceFactoryCreator() public {
-        bytes4 ifId = type(GovernanceFactoryCreator).interfaceId;
         assertTrue(_governanceFactory.supportsInterface(ifId));
     }
 

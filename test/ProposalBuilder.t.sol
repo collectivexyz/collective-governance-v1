@@ -11,20 +11,35 @@ import "../contracts/Governance.sol";
 import "../contracts/storage/Storage.sol";
 import "../contracts/storage/MetaStorage.sol";
 import "../contracts/access/Versioned.sol";
+import "../contracts/GovernanceBuilder.sol";
+import "../contracts/community/CommunityBuilder.sol";
 
 contract ProposalBuilderTest is Test {
     address private constant _OWNER = address(0x1);
     address private constant _CREATOR = address(0x2);
     address private constant _VOTER1 = address(0xfff1);
 
+    ProposalBuilder private _proposalBuilder;
+
+    function setUp() public {
+        address _class = new CommunityBuilder().aCommunity().asOpenCommunity().withQuorum(1).build();
+        (address payable _govAddr, address _stoAddr, address _metaAddr) = new GovernanceBuilder()
+            .aGovernance()
+            .withSupervisor(_CREATOR)
+            .withCommunityClassAddress(_class)
+            .build();
+        transferOwnership(_metaAddr, address(this));
+        _proposalBuilder = new ProposalBuilder(_govAddr, _stoAddr, _metaAddr);
+    }
+
     function testRequiresGovernanceLessThanStorageVersion() public {
-        address _gov = mockGovernance();
-        address _storage = mockConforming(address(0x10), Constant.VERSION_3 - 1, true);
-        address _meta = mockMetaStorage();
+        address _govAddr = mockGovernance();
+        address _storageAddr = mockConforming(address(0x10), Constant.VERSION_3 - 1, true);
+        address _metaAddr = mockMetaStorage();
         vm.expectRevert(
             abi.encodeWithSelector(ProposalBuilder.VersionMismatch.selector, Constant.VERSION_3, Constant.VERSION_3 - 1)
         );
-        new ProposalBuilder(_gov, _storage, _meta);
+        new ProposalBuilder(_govAddr, _storageAddr, _metaAddr);
     }
 
     function testRequiresGovernanceLessThanMetaStorageVersion() public {
@@ -82,5 +97,10 @@ contract ProposalBuilderTest is Test {
         Versioned eMock = Versioned(_mock);
         assertEq(eMock.version(), version);
         return _mock;
+    }
+
+    function transferOwnership(address _ownedObject, address _targetOwner) private {
+        Ownable _ownableStorage = Ownable(_ownedObject);
+        _ownableStorage.transferOwnership(_targetOwner);
     }
 }

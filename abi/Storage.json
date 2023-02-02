@@ -42,32 +42,6 @@
         "internalType": "uint256",
         "name": "choiceId",
         "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "length",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "limit",
-        "type": "uint256"
-      }
-    ],
-    "name": "ChoiceDescriptionExceedsDataLimit",
-    "type": "error"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "proposalId",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "choiceId",
-        "type": "uint256"
       }
     ],
     "name": "ChoiceIdInvalid",
@@ -376,6 +350,17 @@
     "inputs": [
       {
         "internalType": "uint256",
+        "name": "length",
+        "type": "uint256"
+      }
+    ],
+    "name": "StringSizeLimit",
+    "type": "error"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
         "name": "proposalId",
         "type": "uint256"
       },
@@ -444,22 +429,6 @@
       }
     ],
     "name": "TooManyProposals",
-    "type": "error"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "proposalId",
-        "type": "uint256"
-      },
-      {
-        "internalType": "bytes32",
-        "name": "txHash",
-        "type": "bytes32"
-      }
-    ],
-    "name": "TransactionHashInvalid",
     "type": "error"
   },
   {
@@ -1001,34 +970,36 @@
         "type": "uint256"
       },
       {
-        "internalType": "address",
-        "name": "_target",
-        "type": "address"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_value",
-        "type": "uint256"
-      },
-      {
-        "internalType": "string",
-        "name": "_signature",
-        "type": "string"
-      },
-      {
-        "internalType": "bytes",
-        "name": "_calldata",
-        "type": "bytes"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_scheduleTime",
-        "type": "uint256"
-      },
-      {
-        "internalType": "bytes32",
-        "name": "_txHash",
-        "type": "bytes32"
+        "components": [
+          {
+            "internalType": "address",
+            "name": "target",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "value",
+            "type": "uint256"
+          },
+          {
+            "internalType": "string",
+            "name": "signature",
+            "type": "string"
+          },
+          {
+            "internalType": "bytes",
+            "name": "_calldata",
+            "type": "bytes"
+          },
+          {
+            "internalType": "uint256",
+            "name": "scheduleTime",
+            "type": "uint256"
+          }
+        ],
+        "internalType": "struct Transaction",
+        "name": "_transaction",
+        "type": "tuple"
       },
       {
         "internalType": "address",
@@ -1266,34 +1237,36 @@
     "name": "getTransaction",
     "outputs": [
       {
-        "internalType": "address",
-        "name": "_target",
-        "type": "address"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_value",
-        "type": "uint256"
-      },
-      {
-        "internalType": "string",
-        "name": "_signature",
-        "type": "string"
-      },
-      {
-        "internalType": "bytes",
-        "name": "_calldata",
-        "type": "bytes"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_scheduleTime",
-        "type": "uint256"
-      },
-      {
-        "internalType": "bytes32",
-        "name": "_txHash",
-        "type": "bytes32"
+        "components": [
+          {
+            "internalType": "address",
+            "name": "target",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "value",
+            "type": "uint256"
+          },
+          {
+            "internalType": "string",
+            "name": "signature",
+            "type": "string"
+          },
+          {
+            "internalType": "bytes",
+            "name": "_calldata",
+            "type": "bytes"
+          },
+          {
+            "internalType": "uint256",
+            "name": "scheduleTime",
+            "type": "uint256"
+          }
+        ],
+        "internalType": "struct Transaction",
+        "name": "",
+        "type": "tuple"
       }
     ],
     "stateMutability": "view",

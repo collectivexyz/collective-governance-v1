@@ -46,7 +46,7 @@ pragma solidity ^0.8.15;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
 
-import "../../contracts/Constant.sol";
+import "../../contracts/collection/TransactionSet.sol";
 import "../../contracts/treasury/TimeLocker.sol";
 
 /**
@@ -102,12 +102,15 @@ contract TimeLock is TimeLocker, Ownable {
         bytes calldata _calldata,
         uint256 _scheduleTime
     ) external onlyOwner returns (bytes32) {
-        bytes32 txHash = Constant.getTxHash(_target, _value, _signature, _calldata, _scheduleTime);
+        Transaction memory transaction = Transaction(_target, _value, _signature, _calldata, _scheduleTime);
+        bytes32 txHash = getHash(transaction);
         uint256 blockTime = getBlockTimestamp();
-        if (_scheduleTime < (blockTime + _lockTime) || _scheduleTime > (blockTime + _lockTime + Constant.TIMELOCK_GRACE_PERIOD)) {
-            revert TimestampNotInLockRange(txHash, blockTime, _scheduleTime);
+        uint256 startLock = blockTime + _lockTime;
+        uint256 endLock = startLock + Constant.TIMELOCK_GRACE_PERIOD;
+        if (_scheduleTime < startLock || _scheduleTime > endLock) {
+            revert TimestampNotInLockRange(txHash, blockTime, _scheduleTime, startLock, endLock);
         }
-        if (_queuedTransaction[txHash]) revert AlreadyInQueue(txHash);
+        if (_queuedTransaction[txHash]) revert QueueCollision(txHash);
         setQueue(txHash);
         emit QueueTransaction(txHash, _target, _value, _signature, _calldata, _scheduleTime);
         return txHash;
@@ -128,7 +131,8 @@ contract TimeLock is TimeLocker, Ownable {
         bytes calldata _calldata,
         uint256 _scheduleTime
     ) external onlyOwner returns (bytes32) {
-        bytes32 txHash = Constant.getTxHash(_target, _value, _signature, _calldata, _scheduleTime);
+        Transaction memory transaction = Transaction(_target, _value, _signature, _calldata, _scheduleTime);
+        bytes32 txHash = getHash(transaction);
         if (!_queuedTransaction[txHash]) revert NotInQueue(txHash);
         clearQueue(txHash);
         emit CancelTransaction(txHash, _target, _value, _signature, _calldata, _scheduleTime);
@@ -152,7 +156,8 @@ contract TimeLock is TimeLocker, Ownable {
         bytes calldata _calldata,
         uint256 _scheduleTime
     ) external payable onlyOwner returns (bytes memory) {
-        bytes32 txHash = Constant.getTxHash(_target, _value, _signature, _calldata, _scheduleTime);
+        Transaction memory transaction = Transaction(_target, _value, _signature, _calldata, _scheduleTime);
+        bytes32 txHash = getHash(transaction);
         if (!_queuedTransaction[txHash]) {
             revert NotInQueue(txHash);
         }
@@ -173,7 +178,7 @@ contract TimeLock is TimeLocker, Ownable {
         }
 
         // solhint-disable-next-line avoid-low-level-calls
-        (bool ok, bytes memory returnData) = _target.call{value: _value}(callData);
+        (bool ok, bytes memory returnData) = _target.call{ value: _value }(callData);
         if (!ok) revert ExecutionFailed(txHash);
         emit ExecuteTransaction(txHash, _target, _value, _signature, _calldata, _scheduleTime);
         return returnData;

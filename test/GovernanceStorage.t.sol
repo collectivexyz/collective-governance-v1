@@ -16,9 +16,9 @@ import "../contracts/community/CommunityClassERC721.sol";
 import "../contracts/community/CommunityClassOpenVote.sol";
 import "../contracts/access/Versioned.sol";
 
-import "./TestData.sol";
+import "./mock/TestData.sol";
 
-import "./MockERC721.sol";
+import "./mock/MockERC721.sol";
 
 contract GovernanceStorageTest is Test {
     address private constant _OWNER = address(0x155);
@@ -819,7 +819,7 @@ contract GovernanceStorageChoiceVoteTest is Test {
             assertEq(tid, i + 1);
             assertEq(voteCount, 0);
             Transaction memory t = _storage.getTransaction(_proposalId, tid);
-            bytes32 _txHash = getTxHash(t);
+            bytes32 _txHash = getHash(t);
             assertEq(txHash, _txHash);
         }
     }
