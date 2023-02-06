@@ -100,14 +100,14 @@ contract SystemTest is Test {
     }
 
     function testFailBadVersion() public {
-        address mc = mockCreator(Constant.VERSION_3 - 1);
+        address mc = mockCreator(Constant.CURRENT_VERSION - 1);
         address mcc = mockClassCreator();
         new System(mc, mcc);
     }
 
     function testFailVersionMismatch() public {
-        address mc = mockCreator(Constant.VERSION_3);
-        address mcc = mockClassCreator(Constant.VERSION_3 + 1);
+        address mc = mockCreator(Constant.CURRENT_VERSION);
+        address mcc = mockClassCreator(Constant.CURRENT_VERSION + 1);
         new System(mc, mcc);
     }
 
@@ -121,11 +121,13 @@ contract SystemTest is Test {
     }
 
     function testUpgradeBadVersion() public {
-        address mc = mockCreator(Constant.VERSION_3);
+        address mc = mockCreator(Constant.CURRENT_VERSION);
         address mcc = mockClassCreator();
         System system = new System(mc, mcc);
-        address downrevCreator = mockCreator(Constant.VERSION_3 - 1);
-        vm.expectRevert(abi.encodeWithSelector(System.VersionMismatch.selector, Constant.VERSION_3, Constant.VERSION_3 - 1));
+        address downrevCreator = mockCreator(Constant.CURRENT_VERSION - 1);
+        vm.expectRevert(
+            abi.encodeWithSelector(System.VersionMismatch.selector, Constant.CURRENT_VERSION, Constant.CURRENT_VERSION - 1)
+        );
         system.upgrade(downrevCreator, mcc);
     }
 
@@ -137,7 +139,7 @@ contract SystemTest is Test {
     }
 
     function mockCreator() private returns (address) {
-        return mockCreator(Constant.VERSION_3);
+        return mockCreator(Constant.CURRENT_VERSION);
     }
 
     function mockCreator(uint256 version) private returns (address) {
@@ -150,7 +152,7 @@ contract SystemTest is Test {
     }
 
     function mockClassCreator() private returns (address) {
-        return mockClassCreator(Constant.VERSION_3);
+        return mockClassCreator(Constant.CURRENT_VERSION);
     }
 
     function mockClassCreator(uint256 version) private returns (address) {

@@ -196,6 +196,6 @@ contract MappedMetaStorage is MetaStorage, VersionedContract, ERC165, Ownable {
         metaStore.id = _metaId;
         metaStore.description = "";
         metaStore.url = "";
-        metaStore.meta = new MetaSet();
+        metaStore.meta = Constant.createMetaSet();
     }
 }

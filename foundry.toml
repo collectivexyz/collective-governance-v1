@@ -3,12 +3,12 @@ src = 'contracts'
 out = 'out'
 libs = ['lib']
 optimizer = true
-optimizer_runs = 10_000_000
+optimizer_runs = 200
 via-ir = true
 block_number = 1
 # 101 gwei 
 gas_price = 101000000000
-block_timestamp = 1600000000
+block_timestamp = 100
 
 [profile.default.optimizer_details]
 inliner = true
@@ -21,18 +21,4 @@ yul = true
 
 [profile.default.optimizer_details.yulDetails]
 stackAllocation = true
-
-[profile.noopt]
-src = 'contracts'
-out = 'out'
-libs = ['lib']
-optimizer = false
-via-ir = true
-block_number = 1
-# 101 gwei 
-gas_price = 101000000000
-block_timestamp = 1600000000
-
-[profile.noopt.optimizer_details.yulDetails]
-optimizerSteps = ''
 

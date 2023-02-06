@@ -53,17 +53,6 @@
         "internalType": "address",
         "name": "_storage",
         "type": "address"
-      }
-    ],
-    "name": "StorageFactoryRequired",
-    "type": "error"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "_storage",
-        "type": "address"
       },
       {
         "internalType": "uint32",
@@ -438,7 +427,7 @@
     "name": "_metaStorageFactory",
     "outputs": [
       {
-        "internalType": "contract MetaFactoryCreator",
+        "internalType": "contract MetaStorageFactory",
         "name": "",
         "type": "address"
       }
@@ -464,7 +453,7 @@
     "name": "_storageFactory",
     "outputs": [
       {
-        "internalType": "contract StorageFactoryCreator",
+        "internalType": "contract StorageFactory",
         "name": "",
         "type": "address"
       }

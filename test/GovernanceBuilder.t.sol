@@ -7,10 +7,10 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/interfaces/IERC165.sol";
 import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
 
-import "../contracts/storage/MetaFactoryCreator.sol";
+import "../contracts/access/Versioned.sol";
 import "../contracts/storage/MetaStorage.sol";
 import "../contracts/storage/MetaStorageFactory.sol";
-import "../contracts/storage/StorageFactoryCreator.sol";
+import "../contracts/storage/Storage.sol";
 import "../contracts/storage/StorageFactory.sol";
 import "../contracts/GovernanceFactory.sol";
 import "../contracts/GovernanceBuilder.sol";
@@ -20,7 +20,6 @@ import "../contracts/community/VoterClass.sol";
 import "../contracts/community/CommunityClassVoterPool.sol";
 import "../contracts/community/CommunityClassERC721.sol";
 import "../contracts/community/CommunityClassOpenVote.sol";
-import "../contracts/access/Versioned.sol";
 
 import "./mock/MockERC721.sol";
 
@@ -349,63 +348,39 @@ contract GovernanceBuilderTest is Test {
     }
 
     function testUpgradeRequiresOwner() public {
-        MetaFactoryCreator _meta = new MetaStorageFactory();
-        StorageFactoryCreator _storage = new StorageFactory();
+        MetaStorageFactory _meta = new MetaStorageFactory();
+        StorageFactory _storage = new StorageFactory();
         GovernanceFactory _creator = new GovernanceFactory();
         vm.expectRevert("Ownable: caller is not the owner");
         _builder.upgrade(address(_creator), address(_storage), address(_meta));
     }
 
-    function testUpgradeRequiresMeta() public {
-        address _metaAddress = address(0x1);
-        vm.mockCall(_metaAddress, abi.encodeWithSelector(IERC165.supportsInterface.selector), abi.encode(false));
-        StorageFactoryCreator _storage = new StorageFactory();
-        GovernanceFactory _creator = new GovernanceFactory();
-        vm.expectRevert(abi.encodeWithSelector(GovernanceBuilder.MetaStorageFactoryRequired.selector, _metaAddress));
-        vm.prank(_OWNER, _OWNER);
-        _builder.upgrade(address(_creator), address(_storage), _metaAddress);
-    }
-
-    function testUpgradeRequiresStorage() public {
-        MetaFactoryCreator _meta = new MetaStorageFactory();
-        address _storageAddress = address(0x1);
-        vm.mockCall(_storageAddress, abi.encodeWithSelector(IERC165.supportsInterface.selector), abi.encode(false));
-        GovernanceFactory _creator = new GovernanceFactory();
-        vm.expectRevert(abi.encodeWithSelector(GovernanceBuilder.StorageFactoryRequired.selector, _storageAddress));
-        vm.prank(_OWNER, _OWNER);
-        _builder.upgrade(address(_creator), _storageAddress, address(_meta));
-    }
-
     function testFailUpgradeStorageRequiresHigherVersion() public {
-        MetaFactoryCreator _meta = new MetaStorageFactory();
-        StorageFactoryCreator _storage = new StorageFactory();
+        MetaStorageFactory _meta = new MetaStorageFactory();
+        StorageFactory _storage = new StorageFactory();
         GovernanceFactory _creator = new GovernanceFactory();
         address creatorMock = address(_creator);
         bytes memory code = creatorMock.code;
         vm.etch(creatorMock, code);
-        vm.mockCall(creatorMock, abi.encodeWithSelector(Versioned.version.selector), abi.encode(Constant.VERSION_3 + 1));
+        vm.mockCall(creatorMock, abi.encodeWithSelector(Versioned.version.selector), abi.encode(Constant.CURRENT_VERSION + 1));
         address metaMock = address(_meta);
         bytes memory metacode = metaMock.code;
         vm.etch(metaMock, metacode);
-        vm.mockCall(metaMock, abi.encodeWithSelector(Versioned.version.selector), abi.encode(Constant.VERSION_3 + 1));
+        vm.mockCall(metaMock, abi.encodeWithSelector(Versioned.version.selector), abi.encode(Constant.CURRENT_VERSION + 1));
         vm.prank(_OWNER, _OWNER);
         _builder.upgrade(creatorMock, address(_storage), metaMock);
     }
 
     function testFailUpgradeMetaRequiresHigherVersion() public {
-        MetaFactoryCreator _meta = new MetaStorageFactory();
-        StorageFactoryCreator _storage = new StorageFactory();
+        MetaStorageFactory _meta = new MetaStorageFactory();
+        StorageFactory _storage = new StorageFactory();
         GovernanceFactory _creator = new GovernanceFactory();
         address creatorMock = address(_creator);
         bytes memory code = creatorMock.code;
         vm.etch(creatorMock, code);
-        vm.mockCall(creatorMock, abi.encodeWithSelector(Versioned.version.selector), abi.encode(Constant.VERSION_3 + 1));
-        address storageMock = address(_storage);
-        bytes memory storagecode = storageMock.code;
-        vm.etch(storageMock, storagecode);
-        vm.mockCall(storageMock, abi.encodeWithSelector(Versioned.version.selector), abi.encode(Constant.VERSION_3 + 1));
+        vm.mockCall(creatorMock, abi.encodeWithSelector(Versioned.version.selector), abi.encode(Constant.CURRENT_VERSION + 1));
         vm.prank(_OWNER, _OWNER);
-        _builder.upgrade(creatorMock, storageMock, address(_meta));
+        _builder.upgrade(creatorMock, address(_storage), address(_meta));
     }
 
     function testFailVoterClassAddressMustSupportVoterClassInterface() public {

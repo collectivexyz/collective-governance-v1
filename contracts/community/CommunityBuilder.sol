@@ -126,7 +126,7 @@ contract CommunityBuilder is VersionedContract, ERC165, Ownable {
     function asPoolCommunity() external returns (CommunityBuilder) {
         CommunityProperties storage _properties = _buildMap[msg.sender];
         _properties.communityType = CommunityType.POOL;
-        _properties.addressSet = new AddressSet();
+        _properties.addressSet = Constant.createAddressSet();
         emit CommunityClassType(CommunityType.POOL);
         return this;
     }

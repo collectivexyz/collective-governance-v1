@@ -480,11 +480,6 @@
         "internalType": "uint256",
         "name": "endTime",
         "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "blockTime",
-        "type": "uint256"
       }
     ],
     "name": "VoteNotActive",

@@ -68,7 +68,8 @@ contract System is Ownable, VersionedContract {
         CommunityBuilder _voterFactory = CommunityBuilder(_voterCreator);
         if (_govCreator.version() < _voterFactory.version())
             revert VersionMismatch(_voterFactory.version(), _govCreator.version());
-        if (_voterFactory.version() < Constant.VERSION_3) revert VersionInvalid(Constant.VERSION_3, _voterFactory.version());
+        if (_voterFactory.version() < Constant.CURRENT_VERSION)
+            revert VersionInvalid(Constant.CURRENT_VERSION, _voterFactory.version());
         _creator = _govCreator;
         _classCreator = _voterFactory;
     }

@@ -10,16 +10,16 @@ import "../../contracts/storage/MetaStorageFactory.sol";
 import "../../contracts/storage/MetaStorageFactoryProxy.sol";
 
 contract MetaStorageFactoryTest is Test {
-    MetaFactoryCreator private _metaInstance;
+    MetaStorageFactory private _metaInstance;
     MetaStorageFactoryProxy private _metaProxy;
-    MetaFactoryCreator private _metaCreator;
+    MetaStorageFactory private _metaCreator;
 
     MetaStorage private _meta;
 
     function setUp() public {
         _metaInstance = new MetaStorageFactory();
         _metaProxy = new MetaStorageFactoryProxy(address(_metaInstance));
-        _metaCreator = MetaFactoryCreator(address(_metaProxy));
+        _metaCreator = MetaStorageFactory(address(_metaProxy));
         _meta = _metaCreator.create("acme inc", "https://github.com/collectivexyz/collective-governance-v1", "Universal Exports");
     }
 
@@ -36,11 +36,6 @@ contract MetaStorageFactoryTest is Test {
 
     function testSupportsIERC165() public {
         bytes4 ifId = type(IERC165).interfaceId;
-        assertTrue(_metaCreator.supportsInterface(ifId));
-    }
-
-    function testSupportsMetaFactoryCreator() public {
-        bytes4 ifId = type(MetaFactoryCreator).interfaceId;
         assertTrue(_metaCreator.supportsInterface(ifId));
     }
 

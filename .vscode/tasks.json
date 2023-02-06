@@ -41,7 +41,7 @@
         {
             "label": "build",
             "type": "shell",
-            "command": "FOUNDRY_PROFILE=noopt forge build --sizes",
+            "command": "forge build --sizes",
             "options": {
                 "cwd": "${workspaceFolder}"
             },
@@ -54,7 +54,7 @@
         {
             "label": "test",
             "type": "shell",
-            "command": "FOUNDRY_PROFILE=noopt forge test -vvv",
+            "command": "forge test -vvv",
             "options": {
                 "cwd": "${workspaceFolder}"
             },

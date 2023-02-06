@@ -43,14 +43,14 @@
  */
 pragma solidity ^0.8.15;
 
-import "../../contracts/access/Versioned.sol";
 import "../../contracts/Constant.sol";
+import "../../contracts/access/Versioned.sol";
 
 /// @title Versioned contract
 abstract contract VersionedContract is Versioned {
     /// @notice return the version number of this contract
     /// @return uint32 the version number
     function version() external pure returns (uint32) {
-        return Constant.VERSION_3;
+        return Constant.CURRENT_VERSION;
     }
 }

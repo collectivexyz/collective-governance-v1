@@ -6,19 +6,21 @@ import "@openzeppelin/contracts/interfaces/IERC721.sol";
 
 import "forge-std/Test.sol";
 
-import "../contracts/Constant.sol";
-import "../contracts/storage/StorageFactory.sol";
-import "../contracts/CollectiveGovernance.sol";
-import "../contracts/VoteStrategy.sol";
-import "../contracts/community/VoterClass.sol";
-import "../contracts/community/CommunityClassVoterPool.sol";
-import "../contracts/community/CommunityClassERC721.sol";
-import "../contracts/community/CommunityClassOpenVote.sol";
-import "../contracts/access/Versioned.sol";
+import "../../contracts/Constant.sol";
+import "../../contracts/CollectiveGovernance.sol";
+import "../../contracts/VoteStrategy.sol";
+import "../../contracts/community/VoterClass.sol";
+import "../../contracts/community/CommunityClassVoterPool.sol";
+import "../../contracts/community/CommunityClassERC721.sol";
+import "../../contracts/community/CommunityClassOpenVote.sol";
+import "../../contracts/access/Versioned.sol";
+import "../../contracts/access/VersionedContract.sol";
+import "../../contracts/storage/Storage.sol";
+import "../../contracts/storage/GovernanceStorage.sol";
+import "../../contracts/storage/StorageFactory.sol";
 
-import "./mock/TestData.sol";
-
-import "./mock/MockERC721.sol";
+import "../mock/TestData.sol";
+import "../mock/MockERC721.sol";
 
 contract GovernanceStorageTest is Test {
     address private constant _OWNER = address(0x155);
@@ -32,7 +34,6 @@ contract GovernanceStorageTest is Test {
     uint256 private constant NONE = 0;
     uint256 private constant PROPOSAL_ID = 1;
 
-    StorageFactory private _storageFactory;
     Storage private _storage;
     VoteStrategy private _strategy;
     CommunityClass private _voterClass;
@@ -40,7 +41,6 @@ contract GovernanceStorageTest is Test {
 
     function setUp() public {
         vm.clearMockedCalls();
-        _storageFactory = new StorageFactory();
         CommunityClassVoterPool _class = new CommunityClassVoterPool(
             1,
             Constant.MINIMUM_PROJECT_QUORUM,
@@ -54,7 +54,7 @@ contract GovernanceStorageTest is Test {
         _class.addVoter(_VOTER3);
         _class.makeFinal();
         _voterClass = _class;
-        _storage = _storageFactory.create(_voterClass);
+        _storage = new StorageFactory().create(_voterClass);
         _proposalId = _storage.initializeProposal(0, _OWNER);
         assertEq(_proposalId, PROPOSAL_ID);
     }
@@ -488,10 +488,6 @@ contract GovernanceStorageTest is Test {
         assertEq(_storage.name(), "collective storage");
     }
 
-    function testVersion() public {
-        assertEq(_storage.version(), Constant.VERSION_3);
-    }
-
     function testLatestProposalAfterEnd() public {
         uint256 latestProposalId = _storage.latestProposal(_OWNER);
         assertEq(_proposalId, latestProposalId);
@@ -690,14 +686,12 @@ contract GovernanceStorageChoiceVoteTest is Test {
 
     uint256 public constant _NCHOICE = 5;
 
-    StorageFactory private _storageFactory;
     Storage private _storage;
     VoteStrategy private _strategy;
     uint256 private _proposalId;
 
     function setUp() public {
         vm.clearMockedCalls();
-        _storageFactory = new StorageFactory();
         CommunityClassVoterPool _voterClass = new CommunityClassVoterPool(
             1,
             Constant.MINIMUM_PROJECT_QUORUM,
@@ -710,7 +704,7 @@ contract GovernanceStorageChoiceVoteTest is Test {
         _voterClass.addVoter(_VOTER2);
         _voterClass.addVoter(_VOTER3);
         _voterClass.makeFinal();
-        _storage = _storageFactory.create(_voterClass);
+        _storage = new StorageFactory().create(_voterClass);
         _proposalId = _storage.initializeProposal(_NCHOICE, _OWNER);
     }
 
@@ -950,7 +944,7 @@ contract GovernanceStorageChoiceVoteTest is Test {
         uint256 startTime = _storage.startTime(_proposalId);
         uint256 endTime = _storage.endTime(_proposalId);
         vm.warp(endTime + 1);
-        vm.expectRevert(abi.encodeWithSelector(Storage.VoteNotActive.selector, _proposalId, startTime, endTime, block.timestamp));
+        vm.expectRevert(abi.encodeWithSelector(Storage.VoteNotActive.selector, _proposalId, startTime, endTime));
         _storage.voteForByShare(_proposalId, _VOTER1, uint160(_VOTER1), 1);
     }
 

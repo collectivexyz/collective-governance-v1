@@ -57,7 +57,6 @@ import "../contracts/storage/Storage.sol";
 import "../contracts/storage/StorageFactory.sol";
 import "../contracts/storage/StorageFactoryProxy.sol";
 import "../contracts/storage/MetaStorage.sol";
-import "../contracts/storage/MetaFactoryCreator.sol";
 import "../contracts/storage/MetaStorageFactory.sol";
 import "../contracts/storage/MetaStorageFactoryProxy.sol";
 import "../contracts/access/Versioned.sol";
@@ -68,7 +67,6 @@ import "../contracts/access/VersionedContract.sol";
 contract GovernanceBuilder is VersionedContract, ERC165, Ownable {
     string public constant NAME = "governance builder";
 
-    error StorageFactoryRequired(address _storage);
     error MetaStorageFactoryRequired(address meta);
     error StorageVersionMismatch(address _storage, uint32 expected, uint32 provided);
     error MetaVersionMismatch(address meta, uint32 expected, uint32 provided);
@@ -129,10 +127,10 @@ contract GovernanceBuilder is VersionedContract, ERC165, Ownable {
 
     mapping(address => GovernanceProperties) private _buildMap;
 
-    StorageFactoryCreator public immutable _storageFactory;
+    StorageFactory public immutable _storageFactory;
     StorageFactoryProxy public immutable _storageFactoryProxy;
 
-    MetaFactoryCreator public immutable _metaStorageFactory;
+    MetaStorageFactory public immutable _metaStorageFactory;
     MetaStorageFactoryProxy public immutable _metaStorageFactoryProxy;
 
     GovernanceFactory public immutable _governanceFactory;
@@ -141,12 +139,12 @@ contract GovernanceBuilder is VersionedContract, ERC165, Ownable {
     mapping(address => bool) public _governanceContractRegistered;
 
     constructor() {
-        StorageFactoryCreator storageFactory = new StorageFactory();
+        StorageFactory storageFactory = new StorageFactory();
         _storageFactoryProxy = new StorageFactoryProxy(address(storageFactory));
-        _storageFactory = StorageFactoryCreator(address(_storageFactoryProxy));
-        MetaFactoryCreator metaStorageFactory = new MetaStorageFactory();
+        _storageFactory = StorageFactory(address(_storageFactoryProxy));
+        MetaStorageFactory metaStorageFactory = new MetaStorageFactory();
         _metaStorageFactoryProxy = new MetaStorageFactoryProxy(address(metaStorageFactory));
-        _metaStorageFactory = MetaFactoryCreator(address(_metaStorageFactoryProxy));
+        _metaStorageFactory = MetaStorageFactory(address(_metaStorageFactoryProxy));
         GovernanceFactory governanceFactory = new GovernanceFactory();
         _governanceFactoryProxy = new GovernanceFactoryProxy(address(governanceFactory));
         _governanceFactory = GovernanceFactory(address(_governanceFactoryProxy));
@@ -305,16 +303,14 @@ contract GovernanceBuilder is VersionedContract, ERC165, Ownable {
     /// @dev owner required
     /// @param _governanceAddr The address of the governance factory
     /// @param _storageAddr The address of the storage factory
+    /// @param _metaAddr The address of the meta factory
     function upgrade(address _governanceAddr, address _storageAddr, address _metaAddr) external onlyOwner {
-        if (!supportsInterface(_storageAddr, type(StorageFactoryCreator).interfaceId))
-            revert StorageFactoryRequired(_storageAddr);
-        if (!supportsInterface(_metaAddr, type(MetaFactoryCreator).interfaceId)) revert MetaStorageFactoryRequired(_metaAddr);
-        StorageFactoryCreator _storage = StorageFactoryCreator(_storageAddr);
-        MetaFactoryCreator _meta = MetaFactoryCreator(_metaAddr);
+        StorageFactory _storage = StorageFactory(_storageAddr);
+        MetaStorageFactory _meta = MetaStorageFactory(_metaAddr);
         GovernanceFactory _creator = GovernanceFactory(_governanceAddr);
         uint32 version = _creator.version();
         if (version > _storage.version()) revert StorageVersionMismatch(_storageAddr, version, _storage.version());
-        if (version > _meta.version()) revert MetaVersionMismatch(_storageAddr, version, _meta.version());
+        if (version > _meta.version()) revert MetaVersionMismatch(_metaAddr, version, _meta.version());
 
         UUPSUpgradeable _upgradeableStorage = UUPSUpgradeable(address(_storageFactoryProxy));
         _upgradeableStorage.upgradeTo(_storageAddr);

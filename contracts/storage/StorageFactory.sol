@@ -48,7 +48,6 @@ import "@openzeppelin/contracts/proxy/utils/UUPSUpgradeable.sol";
 import "@openzeppelin/contracts/interfaces/IERC165.sol";
 import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
 
-import "../../contracts/storage/StorageFactoryCreator.sol";
 import "../../contracts/community/CommunityClass.sol";
 import "../../contracts/storage/GovernanceStorage.sol";
 import "../../contracts/access/Versioned.sol";
@@ -58,14 +57,7 @@ import "../../contracts/access/OwnableInitializable.sol";
 /**
  * @title CollectiveStorage creational contract
  */
-contract StorageFactory is
-    StorageFactoryCreator,
-    VersionedContract,
-    OwnableInitializable,
-    UUPSUpgradeable,
-    Initializable,
-    ERC165
-{
+contract StorageFactory is VersionedContract, OwnableInitializable, UUPSUpgradeable, Initializable, ERC165 {
     event UpgradeAuthorized(address sender, address owner);
 
     function initialize() public initializer {
@@ -82,11 +74,8 @@ contract StorageFactory is
     }
 
     /// @notice see ERC-165
-    function supportsInterface(bytes4 interfaceId) public view virtual override(IERC165, ERC165) returns (bool) {
-        return
-            interfaceId == type(StorageFactoryCreator).interfaceId ||
-            interfaceId == type(Versioned).interfaceId ||
-            super.supportsInterface(interfaceId);
+    function supportsInterface(bytes4 interfaceId) public view virtual override(ERC165) returns (bool) {
+        return interfaceId == type(Versioned).interfaceId || super.supportsInterface(interfaceId);
     }
 
     /// see UUPSUpgradeable

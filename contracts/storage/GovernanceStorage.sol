@@ -49,6 +49,7 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 
 import "../../contracts/storage/Storage.sol";
 import "../../contracts/community/CommunityClass.sol";
+import "../../contracts/collection/TransactionSet.sol";
 import "../../contracts/access/Versioned.sol";
 import "../../contracts/access/VersionedContract.sol";
 
@@ -151,7 +152,7 @@ contract GovernanceStorage is Storage, VersionedContract, ERC165, Ownable {
     modifier requireVotingActive(uint256 _proposalId) {
         Proposal storage proposal = proposalMap[_proposalId];
         if (proposal.startTime > getBlockTimestamp() || proposal.endTime < getBlockTimestamp()) {
-            revert VoteNotActive(_proposalId, proposal.startTime, proposal.endTime, getBlockTimestamp());
+            revert VoteNotActive(_proposalId, proposal.startTime, proposal.endTime);
         }
         _;
     }
@@ -546,7 +547,7 @@ contract GovernanceStorage is Storage, VersionedContract, ERC165, Ownable {
         proposal.forVotes = 0;
         proposal.againstVotes = 0;
         proposal.abstentionCount = 0;
-        proposal.transaction = new TransactionSet();
+        proposal.transaction = Constant.createTransactionSet();
         proposal.choiceCount = _choiceCount;
         proposal.isVeto = false;
         proposal.status = Status.CONFIG;
@@ -947,7 +948,7 @@ contract GovernanceStorage is Storage, VersionedContract, ERC165, Ownable {
         return NAME;
     }
 
-    function getBlockTimestamp() internal view returns (uint256) {
+    function getBlockTimestamp() private view returns (uint256) {
         // solhint-disable-next-line not-rely-on-time
         return block.timestamp;
     }

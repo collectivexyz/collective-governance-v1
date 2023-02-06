@@ -15,9 +15,9 @@ import "../../test/mock/TestData.sol";
 
 contract StorageFactoryTest is Test {
     CommunityClass private _class;
-    StorageFactoryCreator private _storageFactoryInstance;
+    StorageFactory private _storageFactoryInstance;
     StorageFactoryProxy private _factoryProxy;
-    StorageFactoryCreator private _storageFactory;
+    StorageFactory private _storageFactory;
 
     function setUp() public {
         CommunityBuilder _vcCreator = new CommunityBuilder();
@@ -25,7 +25,7 @@ contract StorageFactoryTest is Test {
         _class = CommunityClass(vcAddress);
         _storageFactoryInstance = new StorageFactory();
         _factoryProxy = new StorageFactoryProxy(address(_storageFactoryInstance));
-        _storageFactory = StorageFactoryCreator(address(_factoryProxy));
+        _storageFactory = StorageFactory(address(_factoryProxy));
     }
 
     function testSetupNewStorage() public {
@@ -41,11 +41,6 @@ contract StorageFactoryTest is Test {
 
     function testSupportsIERC165() public {
         bytes4 ifId = type(IERC165).interfaceId;
-        assertTrue(_storageFactory.supportsInterface(ifId));
-    }
-
-    function testSupportsGovernanceFactoryCreator() public {
-        bytes4 ifId = type(StorageFactoryCreator).interfaceId;
         assertTrue(_storageFactory.supportsInterface(ifId));
     }
 

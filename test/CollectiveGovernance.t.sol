@@ -8,18 +8,18 @@ import "@openzeppelin/contracts/token/ERC721/extensions/IERC721Enumerable.sol";
 
 import "forge-std/Test.sol";
 
+import "../contracts/Constant.sol";
 import "../contracts/access/Versioned.sol";
 import "../contracts/community/CommunityClass.sol";
 import "../contracts/community/CommunityClassVoterPool.sol";
 import "../contracts/community/CommunityClassOpenVote.sol";
 import "../contracts/community/CommunityClassClosedERC721.sol";
 import "../contracts/storage/Storage.sol";
-import "../contracts/storage/GovernanceStorage.sol";
-import "../contracts/Constant.sol";
 import "../contracts/VoteStrategy.sol";
 import "../contracts/Governance.sol";
 import "../contracts/CollectiveGovernance.sol";
 import "../contracts/GovernanceBuilder.sol";
+import "../contracts/access/VersionedContract.sol";
 
 import "./mock/MockERC721.sol";
 import "./mock/FlagSet.sol";
@@ -96,7 +96,7 @@ contract CollectiveGovernanceTest is Test {
     }
 
     function testVersion() public {
-        assertEq(governance.version(), Constant.VERSION_3);
+        assertEq(governance.version(), Constant.CURRENT_VERSION);
     }
 
     function testPropose() public {
@@ -912,8 +912,7 @@ contract CollectiveGovernanceTest is Test {
                 Storage.VoteNotActive.selector,
                 proposalId,
                 _storage.startTime(proposalId),
-                _storage.endTime(proposalId),
-                startTime + blockStep
+                _storage.endTime(proposalId)
             )
         );
         vm.prank(_VOTER1, _VOTER1);
@@ -941,8 +940,7 @@ contract CollectiveGovernanceTest is Test {
                 Storage.VoteNotActive.selector,
                 proposalId,
                 _storage.startTime(proposalId),
-                _storage.endTime(proposalId),
-                currentTime + blockStep
+                _storage.endTime(proposalId)
             )
         );
         vm.prank(_VOTER1, _VOTER1);
@@ -1180,13 +1178,13 @@ contract CollectiveGovernanceTest is Test {
     function testAttachTransaction(uint256 systemClock) public {
         uint256 currentTime = block.timestamp;
         vm.assume(
-            systemClock < Constant.UINT_MAX - currentTime - Constant.TIMELOCK_MAXIMUM_DELAY - Constant.TIMELOCK_GRACE_PERIOD
+            systemClock > Constant.TIMELOCK_MINIMUM_DELAY &&
+                systemClock < Constant.TIMELOCK_MINIMUM_DELAY + Constant.TIMELOCK_GRACE_PERIOD - 1 minutes
         );
-        vm.warp(currentTime + systemClock);
         FlagSet flag = new FlagSet();
         address flagMock = address(flag);
         bytes memory _calldata = abi.encodeWithSelector(flag.set.selector);
-        uint256 scheduleTime = currentTime + systemClock + 2 days + 1;
+        uint256 scheduleTime = currentTime + systemClock;
         vm.prank(_OWNER);
         governance.attachTransaction(proposalId, flagMock, 0, "", _calldata, scheduleTime);
         vm.startPrank(_SUPERVISOR, _SUPERVISOR);
@@ -1206,7 +1204,8 @@ contract CollectiveGovernanceTest is Test {
     function testAttachTransactionThenDoubleExecute(uint256 systemClock) public {
         uint256 currentTime = block.timestamp;
         vm.assume(
-            systemClock < Constant.UINT_MAX - currentTime - Constant.TIMELOCK_MAXIMUM_DELAY - Constant.TIMELOCK_GRACE_PERIOD
+            systemClock > Constant.TIMELOCK_MINIMUM_DELAY &&
+                systemClock < Constant.TIMELOCK_MINIMUM_DELAY + Constant.TIMELOCK_GRACE_PERIOD - 1 minutes
         );
         vm.warp(currentTime + systemClock);
         FlagSet flag = new FlagSet();
@@ -1221,7 +1220,7 @@ contract CollectiveGovernanceTest is Test {
         vm.stopPrank();
         vm.prank(_VOTER1, _VOTER1);
         governance.voteFor(proposalId, TOKEN_ID1);
-        vm.warp(scheduleTime + Constant.TIMELOCK_GRACE_PERIOD / 2);
+        vm.warp(scheduleTime);
         assertFalse(flag.isSet());
         vm.prank(_OWNER);
         governance.endVote(proposalId);

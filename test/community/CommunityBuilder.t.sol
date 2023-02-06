@@ -19,7 +19,7 @@ contract CommunityBuilderTest is Test {
     }
 
     function testVersion() public {
-        assertEq(_builder.version(), Constant.VERSION_3);
+        assertEq(_builder.version(), Constant.CURRENT_VERSION);
     }
 
     function testName() public {

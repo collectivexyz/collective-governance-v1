@@ -93,16 +93,26 @@ contract ProposalBuilder is VersionedContract, ERC165, Ownable {
         address _governanceAddress,
         address _storageAddress,
         address _metaAddress
-    ) requireGovernance(_governanceAddress) requireStorage(_storageAddress) requireMetaStorage(_metaAddress) {
+    )
+        requireGovernance(_governanceAddress)
+        requireVersion(_governanceAddress)
+        requireStorage(_storageAddress)
+        requireMetaStorage(_metaAddress)
+    {
         Governance _gov = Governance(_governanceAddress);
         Storage _stor = Storage(_storageAddress);
         MetaStorage _metaStor = MetaStorage(_metaAddress);
         if (_gov.version() > _stor.version()) revert VersionMismatch(_gov.version(), _stor.version());
         if (_gov.version() > _metaStor.version()) revert VersionMismatch(_gov.version(), _metaStor.version());
-        if (_gov.version() < Constant.VERSION_3) revert VersionInvalid(_gov.version(), Constant.VERSION_3);
         _governance = _gov;
         _storage = _stor;
         _meta = _metaStor;
+    }
+
+    modifier requireVersion(address _contract) {
+        Versioned _version = Versioned(_contract);
+        if (_version.version() < Constant.CURRENT_VERSION) revert VersionInvalid(_version.version(), Constant.CURRENT_VERSION);
+        _;
     }
 
     modifier requireGovernance(address _governanceAddress) {
@@ -260,6 +270,6 @@ contract ProposalBuilder is VersionedContract, ERC165, Ownable {
         _properties.description = "";
         _properties.url = "";
         _properties.transaction = new TransactionSet();
-        _properties.meta = new MetaSet();
+        _properties.meta = Constant.createMetaSet();
     }
 }

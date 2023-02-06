@@ -79,7 +79,7 @@ interface Storage is Versioned, IERC165 {
     error UndoNotEnabled(uint256 proposalId);
     error ProjectSupervisor(uint256 proposalId, address supervisor);
     error VoteInProgress(uint256 proposalId);
-    error VoteNotActive(uint256 proposalId, uint256 startTime, uint256 endTime, uint256 blockTime);
+    error VoteNotActive(uint256 proposalId, uint256 startTime, uint256 endTime);
     error ChoiceVoteRequiresSetup(uint256 proposalId);
     error NotChoiceVote(uint256 proposalId);
     error ChoiceRequired(uint256 proposalId);

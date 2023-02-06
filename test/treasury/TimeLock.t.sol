@@ -198,15 +198,14 @@ contract TimeLockTest is Test {
 
     function testExecuteTransaction(uint256 systemClock) public {
         uint256 currentTime = block.timestamp;
-        vm.assume(systemClock < Constant.UINT_MAX - _WEEK_DELAY - currentTime);
-        vm.warp(currentTime + systemClock);
+        vm.assume(systemClock > _WEEK_DELAY && systemClock < _WEEK_DELAY + Constant.TIMELOCK_GRACE_PERIOD - 1 minutes);
         vm.deal(_TYCOON, 1 ether);
         vm.prank(_TYCOON);
         payable(_timeLock).transfer(1 ether);
-        uint256 etaOfLock = currentTime + systemClock + _WEEK_DELAY;
+        uint256 etaOfLock = currentTime + systemClock;
         vm.prank(_OWNER);
         bytes32 txHash = _timeLock.queueTransaction(_JOE, 1 ether, "", "", etaOfLock);
-        vm.warp(etaOfLock);
+        vm.warp(etaOfLock + Constant.TIMELOCK_GRACE_PERIOD);
         assertTrue(_timeLock._queuedTransaction(txHash));
         vm.prank(_OWNER);
         _timeLock.executeTransaction(_JOE, 1 ether, "", "", etaOfLock);

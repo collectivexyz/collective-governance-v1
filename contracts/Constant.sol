@@ -43,6 +43,10 @@
  */
 pragma solidity ^0.8.15;
 
+import "../contracts/collection/AddressSet.sol";
+import "../contracts/collection/MetaSet.sol";
+import "../contracts/collection/TransactionSet.sol";
+
 /**
  * @notice extract global manifest constants
  */
@@ -90,8 +94,8 @@ library Constant {
     /// @notice the maximum allowed gas fee for rebate
     uint256 public constant MAXIMUM_REBATE_BASE_FEE = 200 gwei;
 
-    uint32 public constant VERSION_2 = 2;
-    uint32 public constant VERSION_3 = 3;
+    /// software versions
+    uint32 public constant CURRENT_VERSION = 3;
 
     /// @notice Compute the length of any string in solidity
     /// @dev This method is expensive and is used only for validating
@@ -123,5 +127,30 @@ library Constant {
     /// @return bool True if empty string
     function empty(string memory str) external pure returns (bool) {
         return len(str) == 0;
+    }
+
+    /// factory  implementation
+    /**
+     * @notice create an AddressSet
+     * @return AddressSet the created set
+     */
+    function createAddressSet() external returns (AddressSet) {
+        return new AddressSet();
+    }
+
+    /**
+     * @notice create an MetaSet
+     * @return MetaSet the created set
+     */
+    function createMetaSet() external returns (MetaSet) {
+        return new MetaSet();
+    }
+
+    /**
+     * @notice create an TransactionSet
+     * @return TransactionSet the created set
+     */
+    function createTransactionSet() external returns (TransactionSet) {
+        return new TransactionSet();
     }
 }
