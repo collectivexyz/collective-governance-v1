@@ -1211,7 +1211,7 @@ contract CollectiveGovernanceTest is Test {
         FlagSet flag = new FlagSet();
         address flagMock = address(flag);
         bytes memory clldata = abi.encodeWithSelector(flag.set.selector);
-        uint256 scheduleTime = currentTime + systemClock + 2 days;
+        uint256 scheduleTime = currentTime + systemClock;
         vm.prank(_OWNER);
         governance.attachTransaction(proposalId, flagMock, 0, "", clldata, scheduleTime);
         vm.startPrank(_SUPERVISOR, _SUPERVISOR);
@@ -1382,7 +1382,7 @@ contract CollectiveGovernanceTest is Test {
         governance.voteFor(proposalId, TOKEN_ID1);
         assertTrue(_VOTER1.balance > 0);
         // requires optimized build
-        // assertApproxEqAbs(_VOTER1.balance, 8671780 gwei, 10000 gwei);
+        assertApproxEqAbs(_VOTER1.balance, 9046180 gwei, 10000 gwei);
     }
 
     function testCastAgainstWithRefund() public {
@@ -1400,7 +1400,7 @@ contract CollectiveGovernanceTest is Test {
         governance.voteAgainst(proposalId, TOKEN_ID1);
         assertTrue(_VOTER1.balance > 0);
         // requires optimized build
-        // assertApproxEqAbs(_VOTER1.balance, 7620912 gwei, 10000 gwei);
+        assertApproxEqAbs(_VOTER1.balance, 8009508 gwei, 10000 gwei);
     }
 
     function testAbstainWithRefund() public {
@@ -1418,17 +1418,7 @@ contract CollectiveGovernanceTest is Test {
         governance.abstainFrom(proposalId, TOKEN_ID1);
         assertTrue(_VOTER1.balance > 0);
         // requires optimized build
-        // assertApproxEqAbs(_VOTER1.balance, 8659404 gwei, 10000 gwei);
-    }
-
-    function testChoiceVoteConfigurationRequired() public {
-        vm.startPrank(_OWNER, _OWNER);
-        governance.cancel(proposalId);
-        vm.warp(block.timestamp + Constant.MINIMUM_VOTE_DURATION);
-        proposalId = governance.propose(7);
-        vm.expectRevert(abi.encodeWithSelector(Storage.ChoiceVoteRequiresSetup.selector, proposalId));
-        governance.configure(proposalId, 2);
-        vm.stopPrank();
+        assertApproxEqAbs(_VOTER1.balance, 8659404 gwei, 10000 gwei);
     }
 
     function testChoiceVoteSimple() public {
@@ -1439,17 +1429,17 @@ contract CollectiveGovernanceTest is Test {
         address flagMock = address(flag);
         bytes memory data = abi.encodeWithSelector(flag.set.selector);
         uint256 scheduleTime = block.timestamp + 2 days;
-        proposalId = governance.propose(3);
+        proposalId = governance.propose();
         uint256 tid = governance.attachTransaction(proposalId, flagMock, 0, "", data, scheduleTime);
-        governance.setChoice(proposalId, 2, "choice", "a choice for this vote", tid);
         for (uint256 i = 0; i < 2; i++) {
-            governance.setChoice(proposalId, i, "choice", "a choice for this vote", 0);
+            governance.addChoice(proposalId, keccak256(abi.encode(i)), "a choice for this vote", 0);
         }
+        uint256 choiceId = governance.addChoice(proposalId, "choice", "a choice for this vote", tid);
         governance.configure(proposalId, 1);
         governance.startVote(proposalId);
         vm.stopPrank();
         vm.prank(_VOTER1, _VOTER1);
-        governance.voteFor(proposalId, TOKEN_ID1, 2);
+        governance.voteFor(proposalId, TOKEN_ID1, choiceId);
         vm.warp(scheduleTime);
         vm.prank(_OWNER, _OWNER);
         governance.endVote(proposalId);
@@ -1466,17 +1456,17 @@ contract CollectiveGovernanceTest is Test {
         address flagMock = address(flag);
         bytes memory data = abi.encodeWithSelector(flag.set.selector);
         uint256 scheduleTime = block.timestamp + 2 days;
-        proposalId = governance.propose(3);
+        proposalId = governance.propose();
         governance.attachTransaction(proposalId, flagMock, 0, "", data, scheduleTime);
-        governance.setChoice(proposalId, 2, "choice", "a choice for this vote", 0);
         for (uint256 i = 0; i < 2; i++) {
-            governance.setChoice(proposalId, i, "choice", "a choice for this vote", 0);
+            governance.addChoice(proposalId, keccak256(abi.encode(i)), "a choice for this vote", 0);
         }
+        uint256 choiceId = governance.addChoice(proposalId, "choice", "a choice for this vote", 0);
         governance.configure(proposalId, 1);
         governance.startVote(proposalId);
         vm.stopPrank();
         vm.prank(_VOTER1, _VOTER1);
-        governance.voteFor(proposalId, TOKEN_ID1, 2);
+        governance.voteFor(proposalId, TOKEN_ID1, choiceId);
         vm.warp(scheduleTime);
         vm.prank(_OWNER, _OWNER);
         governance.endVote(proposalId);
@@ -1492,12 +1482,12 @@ contract CollectiveGovernanceTest is Test {
         address flagMock = address(flag);
         bytes memory data = abi.encodeWithSelector(flag.set.selector);
         uint256 scheduleTime = block.timestamp + 2 days;
-        proposalId = governance.propose(3);
+        proposalId = governance.propose();
         uint256 tid = governance.attachTransaction(proposalId, flagMock, 0, "", data, scheduleTime);
-        governance.setChoice(proposalId, 2, "choice", "a choice for this vote", tid);
         for (uint256 i = 0; i < 2; i++) {
-            governance.setChoice(proposalId, i, "choice", "a choice for this vote", 0);
+            governance.addChoice(proposalId, keccak256(abi.encode(i)), "a choice for this vote", 0);
         }
+        uint256 choiceId = governance.addChoice(proposalId, "choice", "a choice for this vote", tid);
         vm.stopPrank();
         vm.startPrank(_governanceAddress, _governanceAddress);
         // hack the transaction
@@ -1510,11 +1500,13 @@ contract CollectiveGovernanceTest is Test {
         governance.startVote(proposalId);
         vm.stopPrank();
         vm.prank(_VOTER1, _VOTER1);
-        governance.voteFor(proposalId, TOKEN_ID1, 2);
+        governance.voteFor(proposalId, TOKEN_ID1, choiceId);
         vm.warp(scheduleTime);
         vm.prank(_OWNER, _OWNER);
-        vm.expectRevert(abi.encodeWithSelector(Governance.TransactionSignatureNotMatching.selector, proposalId, tid));
         governance.endVote(proposalId);
+        // nothing executed - cleared
+        assertTrue(_storage.isExecuted(proposalId));
+        assertFalse(flag.isSet());
     }
 
     function testChoiceVoteClearTheTransaction() public {
@@ -1525,11 +1517,11 @@ contract CollectiveGovernanceTest is Test {
         address flagMock = address(flag);
         bytes memory data = abi.encodeWithSelector(flag.set.selector);
         uint256 scheduleTime = block.timestamp + 2 days;
-        proposalId = governance.propose(3);
+        proposalId = governance.propose();
         uint256 tid = governance.attachTransaction(proposalId, flagMock, 0, "", data, scheduleTime);
-        governance.setChoice(proposalId, 2, "choice", "a choice for this vote", tid);
+        uint256 choiceId = governance.addChoice(proposalId, "choice", "a choice for this vote", tid);
         for (uint256 i = 0; i < 2; i++) {
-            governance.setChoice(proposalId, i, "choice", "a choice for this vote", 0);
+            governance.addChoice(proposalId, keccak256(abi.encode(i)), "a choice for this vote", 0);
         }
         vm.stopPrank();
         vm.prank(_governanceAddress, _governanceAddress);
@@ -1540,7 +1532,7 @@ contract CollectiveGovernanceTest is Test {
         governance.startVote(proposalId);
         vm.stopPrank();
         vm.prank(_VOTER1, _VOTER1);
-        governance.voteFor(proposalId, TOKEN_ID1, 2);
+        governance.voteFor(proposalId, TOKEN_ID1, choiceId);
         vm.warp(scheduleTime);
         vm.prank(_OWNER, _OWNER);
         governance.endVote(proposalId);
@@ -1557,20 +1549,20 @@ contract CollectiveGovernanceTest is Test {
         address flagMock = address(flag);
         bytes memory data = abi.encodeWithSelector(flag.set.selector);
         uint256 scheduleTime = block.timestamp + 2 days;
-        proposalId = governance.propose(3);
+        proposalId = governance.propose();
         uint256 tid = governance.attachTransaction(proposalId, flagMock, 0, "", data, scheduleTime);
-        governance.setChoice(proposalId, 2, "choice", "a choice for this vote", tid);
         for (uint256 i = 0; i < 2; i++) {
-            governance.setChoice(proposalId, i, "choice", "a choice for this vote", 0);
+            governance.addChoice(proposalId, keccak256(abi.encode(i)), "a choice for this vote", 0);
         }
+        uint256 choiceId = governance.addChoice(proposalId, "choice", "a choice for this vote", tid);
         governance.configure(proposalId, _NTOKEN);
         governance.startVote(proposalId);
         vm.stopPrank();
         vm.startPrank(_VOTER1, _VOTER1);
-        governance.voteFor(proposalId, TOKEN_ID1, 2);
-        governance.voteFor(proposalId, TOKEN_ID2, 2);
-        governance.voteFor(proposalId, TOKEN_ID3, 2);
-        governance.voteFor(proposalId, TOKEN_ID4, 0);
+        governance.voteFor(proposalId, TOKEN_ID1, choiceId);
+        governance.voteFor(proposalId, TOKEN_ID2, choiceId);
+        governance.voteFor(proposalId, TOKEN_ID3, choiceId);
+        governance.voteFor(proposalId, TOKEN_ID4, choiceId - 1);
         vm.stopPrank();
         vm.warp(scheduleTime);
         vm.prank(_OWNER, _OWNER);
@@ -1587,21 +1579,21 @@ contract CollectiveGovernanceTest is Test {
         address flagMock = address(flag);
         bytes memory data = abi.encodeWithSelector(flag.set.selector);
         uint256 scheduleTime = block.timestamp + 2 days;
-        proposalId = governance.propose(3);
+        proposalId = governance.propose();
         uint256 tid = governance.attachTransaction(proposalId, flagMock, 0, "", data, scheduleTime);
-        governance.setChoice(proposalId, 0, "choice", "a choice for this vote", 0);
-        governance.setChoice(proposalId, 1, "choice", "a choice for this vote", tid);
-        governance.setChoice(proposalId, 2, "choice", "a choice for this vote", 0);
+        uint256 c1 = governance.addChoice(proposalId, "choice1", "a choice for this vote", 0);
+        uint256 c2 = governance.addChoice(proposalId, "choice2", "a choice for this vote", tid);
+        governance.addChoice(proposalId, "choice3", "a choice for this vote", 0);
         governance.configure(proposalId, _NTOKEN);
         governance.startVote(proposalId);
         vm.stopPrank();
         // cid 1 must execute
         vm.startPrank(_VOTER1, _VOTER1);
-        governance.voteFor(proposalId, TOKEN_ID1, 1);
-        governance.voteFor(proposalId, TOKEN_ID2, 2);
-        governance.voteFor(proposalId, TOKEN_ID3, 2);
-        governance.voteFor(proposalId, TOKEN_ID4, 1);
-        governance.voteFor(proposalId, TOKEN_ID5, 1);
+        governance.voteFor(proposalId, TOKEN_ID1, c2);
+        governance.voteFor(proposalId, TOKEN_ID2, c1);
+        governance.voteFor(proposalId, TOKEN_ID3, c2);
+        governance.voteFor(proposalId, TOKEN_ID4, c2);
+        governance.voteFor(proposalId, TOKEN_ID5, c1);
         vm.stopPrank();
         vm.warp(scheduleTime);
         vm.prank(_OWNER, _OWNER);

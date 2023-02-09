@@ -55,7 +55,7 @@ contract GovernanceStorageTest is Test {
         _class.makeFinal();
         _voterClass = _class;
         _storage = new StorageFactory().create(_voterClass);
-        _proposalId = _storage.initializeProposal(0, _OWNER);
+        _proposalId = _storage.initializeProposal(_OWNER);
         assertEq(_proposalId, PROPOSAL_ID);
     }
 
@@ -439,7 +439,7 @@ contract GovernanceStorageTest is Test {
             Constant.MAXIMUM_VOTE_DURATION
         );
         _storage = new GovernanceStorage(_class);
-        _storage.initializeProposal(0, _OWNER);
+        _storage.initializeProposal(_OWNER);
         _storage.registerSupervisor(_proposalId, _SUPERVISOR, _OWNER);
         _storage.setQuorumRequired(_proposalId, 2, _SUPERVISOR);
         _storage.makeFinal(_proposalId, _SUPERVISOR);
@@ -462,7 +462,7 @@ contract GovernanceStorageTest is Test {
         );
 
         _storage = new GovernanceStorage(_class);
-        _storage.initializeProposal(0, _OWNER);
+        _storage.initializeProposal(_OWNER);
         _storage.registerSupervisor(_proposalId, _SUPERVISOR, _OWNER);
         _storage.setQuorumRequired(_proposalId, 1, _SUPERVISOR);
         _storage.makeFinal(_proposalId, _SUPERVISOR);
@@ -495,7 +495,7 @@ contract GovernanceStorageTest is Test {
         _storage.makeFinal(latestProposalId, _SUPERVISOR);
         uint256 endTime = _storage.endTime(latestProposalId);
         vm.warp(endTime);
-        uint256 nextId = _storage.initializeProposal(0, _OWNER);
+        uint256 nextId = _storage.initializeProposal(_OWNER);
         latestProposalId = _storage.latestProposal(_OWNER);
         assertEq(latestProposalId, nextId);
     }
@@ -507,7 +507,7 @@ contract GovernanceStorageTest is Test {
         _storage.cancel(latestProposalId, _SUPERVISOR);
         uint256 endTime = _storage.endTime(latestProposalId);
         vm.warp(endTime);
-        uint256 nextId = _storage.initializeProposal(0, _OWNER);
+        uint256 nextId = _storage.initializeProposal(_OWNER);
         latestProposalId = _storage.latestProposal(_OWNER);
         assertEq(latestProposalId, nextId);
     }
@@ -521,7 +521,7 @@ contract GovernanceStorageTest is Test {
         _storage.registerSupervisor(_proposalId, _SUPERVISOR, _OWNER);
         _storage.makeFinal(_proposalId, _SUPERVISOR);
         vm.warp(block.timestamp + Constant.MINIMUM_VOTE_DURATION + 1);
-        uint256 nextProposalId = _storage.initializeProposal(0, _OWNER);
+        uint256 nextProposalId = _storage.initializeProposal(_OWNER);
         assertTrue(nextProposalId > _proposalId);
     }
 
@@ -529,12 +529,12 @@ contract GovernanceStorageTest is Test {
         _storage.registerSupervisor(_proposalId, _SUPERVISOR, _OWNER);
         _storage.cancel(_proposalId, _SUPERVISOR);
         vm.expectRevert(abi.encodeWithSelector(Storage.TooManyProposals.selector, _OWNER, _proposalId));
-        _storage.initializeProposal(0, _OWNER);
+        _storage.initializeProposal(_OWNER);
     }
 
     function testRevertOnSecondProposal() public {
         vm.expectRevert(abi.encodeWithSelector(Storage.TooManyProposals.selector, _OWNER, _proposalId));
-        _storage.initializeProposal(0, _OWNER);
+        _storage.initializeProposal(_OWNER);
     }
 
     function testCancelProposalNotReady() public {
@@ -621,7 +621,7 @@ contract GovernanceStorageTest is Test {
         uint256 scheduleTime = block.timestamp + 7 days;
         Transaction memory transaction = Transaction(address(0x1), 0x10, "ziggy", "a()", scheduleTime);
         _storage.addTransaction(_proposalId, transaction, _OWNER);
-        vm.expectRevert(abi.encodeWithSelector(Storage.InvalidTransaction.selector, _proposalId, 0));
+        vm.expectRevert(abi.encodeWithSelector(TransactionSet.InvalidTransaction.selector, 0));
         _storage.getTransaction(_proposalId, 0);
     }
 
@@ -630,7 +630,7 @@ contract GovernanceStorageTest is Test {
         _storage.registerSupervisor(_proposalId, _SUPERVISOR, _OWNER);
         Transaction memory transaction = Transaction(address(0x1), 0x10, "ziggy", "a()", scheduleTime);
         uint256 tid = _storage.addTransaction(_proposalId, transaction, _OWNER);
-        vm.expectRevert(abi.encodeWithSelector(Storage.InvalidTransaction.selector, _proposalId, tid + 1));
+        vm.expectRevert(abi.encodeWithSelector(TransactionSet.InvalidTransaction.selector, tid + 1));
         _storage.getTransaction(_proposalId, tid + 1);
     }
 
@@ -669,12 +669,6 @@ contract GovernanceStorageTest is Test {
         vm.expectRevert(abi.encodeWithSelector(Storage.NotChoiceVote.selector, _proposalId));
         _storage.getWinningChoice(_proposalId);
     }
-
-    function testSetChoiceNotProposal() public {
-        _storage.registerSupervisor(_proposalId, _SUPERVISOR, _OWNER);
-        vm.expectRevert(abi.encodeWithSelector(Storage.NotChoiceVote.selector, _proposalId));
-        _storage.setChoice(_proposalId, 0, "name", "description", 0, _SUPERVISOR);
-    }
 }
 
 contract GovernanceStorageChoiceVoteTest is Test {
@@ -705,83 +699,79 @@ contract GovernanceStorageChoiceVoteTest is Test {
         _voterClass.addVoter(_VOTER3);
         _voterClass.makeFinal();
         _storage = new StorageFactory().create(_voterClass);
-        _proposalId = _storage.initializeProposal(_NCHOICE, _OWNER);
+        _proposalId = _storage.initializeProposal(_OWNER);
     }
 
-    function testSetChoiceProposal() public {
+    function testAddChoiceProposal() public {
         _storage.registerSupervisor(_proposalId, _SUPERVISOR, _OWNER);
         for (uint256 i = 0; i < _NCHOICE; i++) {
-            _storage.setChoice(_proposalId, i, "name", "description", 0, _SUPERVISOR);
+            _storage.addChoice(_proposalId, Choice(keccak256(abi.encode(i)), "description", 0, "", 0), _SUPERVISOR);
         }
         _storage.makeFinal(_proposalId, _SUPERVISOR);
         assertEq(_storage.choiceCount(_proposalId), 5);
     }
 
-    function testSetChoiceProposalReqOwner() public {
+    function testAddChoiceProposalReqOwner() public {
         _storage.registerSupervisor(_proposalId, _SUPERVISOR, _OWNER);
         vm.expectRevert("Ownable: caller is not the owner");
         vm.prank(_SUPERVISOR);
-        _storage.setChoice(_proposalId, 0, "name", "description", 0, _SUPERVISOR);
+        _storage.addChoice(_proposalId, Choice("name", "description", 0, "", 0), _SUPERVISOR);
     }
 
-    function testSetChoiceProposalReqValidProposal() public {
+    function testAddChoiceProposalReqValidProposal() public {
         _storage.registerSupervisor(_proposalId, _SUPERVISOR, _OWNER);
         vm.expectRevert(abi.encodeWithSelector(Storage.InvalidProposal.selector, _proposalId + 1));
-        _storage.setChoice(_proposalId + 1, 0, "name", "description", 0, _SUPERVISOR);
+        _storage.addChoice(_proposalId + 1, Choice("name", "description", 0, "", 0), _SUPERVISOR);
     }
 
-    function testSetChoiceNotFinal() public {
+    function testAddChoiceNotFinal() public {
         _storage.registerSupervisor(_proposalId, _SUPERVISOR, _OWNER);
         for (uint256 i = 0; i < _NCHOICE; i++) {
-            _storage.setChoice(_proposalId, i, "name", "description", 0, _SUPERVISOR);
+            _storage.addChoice(_proposalId, Choice(keccak256(abi.encode(i)), "description", 0, "", 0), _SUPERVISOR);
         }
         _storage.makeFinal(_proposalId, _SUPERVISOR);
         vm.expectRevert(abi.encodeWithSelector(Storage.VoteIsFinal.selector, _proposalId));
-        _storage.setChoice(_proposalId, 0, "name", "description", 0, _SUPERVISOR);
+        _storage.addChoice(_proposalId, Choice("name", "description", 0, "", 0), _SUPERVISOR);
     }
 
-    function testSetChoiceNotSupervisor() public {
+    function testAddChoiceNotSupervisor() public {
         _storage.registerSupervisor(_proposalId, _SUPERVISOR, _OWNER);
         vm.expectRevert(abi.encodeWithSelector(Storage.NotSupervisor.selector, _proposalId, _OWNER));
-        _storage.setChoice(_proposalId, 0, "name", "description", 0, _OWNER);
+        _storage.addChoice(_proposalId, Choice("name", "description", 0, "", 0), _OWNER);
     }
 
-    function testSetChoiceRequiresName() public {
+    function testAddChoiceWithNonZeroVote() public {
         _storage.registerSupervisor(_proposalId, _SUPERVISOR, _OWNER);
-        vm.expectRevert(abi.encodeWithSelector(Storage.ChoiceNameRequired.selector, _proposalId, 0));
-        _storage.setChoice(_proposalId, 0, 0x0, "description", 0, _SUPERVISOR);
+        vm.expectRevert(abi.encodeWithSelector(Storage.ChoiceVoteCountInvalid.selector, _proposalId));
+        _storage.addChoice(_proposalId, Choice("name", "description", 0, "", 1), _SUPERVISOR);
     }
 
-    function testSetChoiceDescriptionWrongChoiceId() public {
+    function testAddChoiceRequiresName() public {
         _storage.registerSupervisor(_proposalId, _SUPERVISOR, _OWNER);
-        vm.expectRevert(abi.encodeWithSelector(Storage.ChoiceIdInvalid.selector, _proposalId, _NCHOICE));
-        _storage.setChoice(_proposalId, _NCHOICE, "NAME", "description", 0, _SUPERVISOR);
+        vm.expectRevert(abi.encodeWithSelector(Storage.ChoiceNameRequired.selector, _proposalId));
+        _storage.addChoice(_proposalId, Choice(0x0, "description", 0, "", 0), _SUPERVISOR);
     }
 
-    function testSetChoiceDescriptionExceedsLimit() public {
+    function testAddChoiceDescriptionExceedsLimit() public {
         _storage.registerSupervisor(_proposalId, _SUPERVISOR, _OWNER);
         string memory limitedString = TestData.pi1kplus();
         uint256 descLen = Constant.len(limitedString);
         vm.expectRevert(abi.encodeWithSelector(Storage.StringSizeLimit.selector, descLen));
-        _storage.setChoice(_proposalId, 0, "NAME", limitedString, 0, _SUPERVISOR);
+        _storage.addChoice(_proposalId, Choice("NAME", limitedString, 0, "", 0), _SUPERVISOR);
     }
 
     function testGetChoice() public {
         _storage.registerSupervisor(_proposalId, _SUPERVISOR, _OWNER);
         for (uint256 i = 0; i < _NCHOICE; i++) {
-            _storage.setChoice(_proposalId, i, "name", "description", 0, _SUPERVISOR);
+            _storage.addChoice(_proposalId, Choice(keccak256(abi.encode(i)), "description", 0, "", 0), _SUPERVISOR);
         }
         _storage.makeFinal(_proposalId, _SUPERVISOR);
         for (uint256 i = 0; i < _NCHOICE; i++) {
-            (bytes32 _name, string memory description, uint256 tid, bytes32 txHash, uint256 voteCount) = _storage.getChoice(
-                _proposalId,
-                i
-            );
-            assertEq(_name, "name");
-            assertEq(description, "description");
-            assertEq(tid, 0);
-            assertEq(txHash, 0);
-            assertEq(voteCount, 0);
+            Choice memory choice = _storage.getChoice(_proposalId, i + 1);
+            assertEq(choice.name, keccak256(abi.encode(i)));
+            assertEq(choice.description, "description");
+            assertEq(choice.transactionId, 0);
+            assertEq(choice.voteCount, 0);
         }
     }
 
@@ -799,22 +789,19 @@ contract GovernanceStorageChoiceVoteTest is Test {
             Transaction memory t = Transaction(target, value, _signature, _calldata, scheduleTime);
             uint256 tid = _storage.addTransaction(_proposalId, t, _OWNER);
             assertEq(tid, i + 1);
-            _storage.setChoice(_proposalId, i, "name", "description", tid, _SUPERVISOR);
+            _storage.addChoice(_proposalId, Choice(keccak256(abi.encode(i)), "description", tid, getHash(t), 0), _SUPERVISOR);
             vm.warp(block.timestamp + 1);
         }
         _storage.makeFinal(_proposalId, _SUPERVISOR);
         for (uint256 i = 0; i < _NCHOICE; i++) {
-            (bytes32 _name, string memory description, uint256 tid, bytes32 txHash, uint256 voteCount) = _storage.getChoice(
-                _proposalId,
-                i
-            );
-            assertEq(_name, "name");
-            assertEq(description, "description");
-            assertEq(tid, i + 1);
-            assertEq(voteCount, 0);
-            Transaction memory t = _storage.getTransaction(_proposalId, tid);
+            Choice memory choice = _storage.getChoice(_proposalId, i + 1);
+            assertEq(choice.name, keccak256(abi.encode(i)));
+            assertEq(choice.description, "description");
+            assertEq(choice.transactionId, i + 1);
+            assertEq(choice.voteCount, 0);
+            Transaction memory t = _storage.getTransaction(_proposalId, choice.transactionId);
             bytes32 _txHash = getHash(t);
-            assertEq(txHash, _txHash);
+            assertEq(choice.txHash, _txHash);
         }
     }
 
@@ -834,13 +821,13 @@ contract GovernanceStorageChoiceVoteTest is Test {
             vm.warp(block.timestamp + 1);
         }
         vm.expectRevert(abi.encodeWithSelector(TransactionSet.InvalidTransaction.selector, _NCHOICE + 1));
-        _storage.setChoice(_proposalId, 0, "name", "description", _NCHOICE + 1, _SUPERVISOR);
+        _storage.addChoice(_proposalId, Choice("name", "description", _NCHOICE + 1, "", 0), _SUPERVISOR);
     }
 
     function testChoiceProposalVoteRequiresChoiceId() public {
         _storage.registerSupervisor(_proposalId, _SUPERVISOR, _OWNER);
         for (uint256 i = 0; i < _NCHOICE; i++) {
-            _storage.setChoice(_proposalId, i, "name", "description", 0, _SUPERVISOR);
+            _storage.addChoice(_proposalId, Choice(keccak256(abi.encode(i)), "description", 0, "", 0), _SUPERVISOR);
         }
         _storage.makeFinal(_proposalId, _SUPERVISOR);
         vm.expectRevert(abi.encodeWithSelector(Storage.ChoiceRequired.selector, _proposalId));
@@ -850,7 +837,7 @@ contract GovernanceStorageChoiceVoteTest is Test {
     function testChoiceProposalAgainstNotAllowed() public {
         _storage.registerSupervisor(_proposalId, _SUPERVISOR, _OWNER);
         for (uint256 i = 0; i < _NCHOICE; i++) {
-            _storage.setChoice(_proposalId, i, "name", "description", 0, _SUPERVISOR);
+            _storage.addChoice(_proposalId, Choice(keccak256(abi.encode(i)), "description", 0, "", 0), _SUPERVISOR);
         }
         _storage.makeFinal(_proposalId, _SUPERVISOR);
         vm.expectRevert(abi.encodeWithSelector(Storage.ChoiceRequired.selector, _proposalId));
@@ -860,14 +847,14 @@ contract GovernanceStorageChoiceVoteTest is Test {
     function testCastOneVote() public {
         _storage.registerSupervisor(_proposalId, _SUPERVISOR, _OWNER);
         for (uint256 i = 0; i < _NCHOICE; i++) {
-            _storage.setChoice(_proposalId, i, "name", "description", 0, _SUPERVISOR);
+            _storage.addChoice(_proposalId, Choice(keccak256(abi.encode(i)), "description", 0, "", 0), _SUPERVISOR);
         }
         _storage.makeFinal(_proposalId, _SUPERVISOR);
         _storage.voteForByShare(_proposalId, _VOTER1, uint160(_VOTER1), 1);
         assertEq(_storage.voteCount(_proposalId, 1), 1);
         for (uint256 i = 0; i < _NCHOICE; i++) {
-            if (i != 1) {
-                assertEq(_storage.voteCount(_proposalId, i), 0);
+            if (i != 0) {
+                assertEq(_storage.voteCount(_proposalId, i + 1), 0);
             }
         }
         assertEq(_storage.quorum(_proposalId), 1);
@@ -876,7 +863,7 @@ contract GovernanceStorageChoiceVoteTest is Test {
     function testCastVoteWithoutChoice() public {
         _storage.registerSupervisor(_proposalId, _SUPERVISOR, _OWNER);
         for (uint256 i = 0; i < _NCHOICE; i++) {
-            _storage.setChoice(_proposalId, i, "name", "description", 0, _SUPERVISOR);
+            _storage.addChoice(_proposalId, Choice(keccak256(abi.encode(i)), "description", 0, "", 0), _SUPERVISOR);
         }
         _storage.makeFinal(_proposalId, _SUPERVISOR);
         vm.expectRevert(abi.encodeWithSelector(Storage.ChoiceRequired.selector, _proposalId));
@@ -886,18 +873,18 @@ contract GovernanceStorageChoiceVoteTest is Test {
     function testCastMultiVote() public {
         _storage.registerSupervisor(_proposalId, _SUPERVISOR, _OWNER);
         for (uint256 i = 0; i < _NCHOICE; i++) {
-            _storage.setChoice(_proposalId, i, "name", "description", 0, _SUPERVISOR);
+            _storage.addChoice(_proposalId, Choice(keccak256(abi.encode(i)), "description", 0, "", 0), _SUPERVISOR);
         }
         _storage.makeFinal(_proposalId, _SUPERVISOR);
         for (uint256 i = 0; i < 3; i++) {
-            _storage.voteForByShare(_proposalId, address(uint160(_VOTER1) + uint160(i)), uint160(_VOTER1) + i, i);
+            _storage.voteForByShare(_proposalId, address(uint160(_VOTER1) + uint160(i)), uint160(_VOTER1) + i, i + 1);
         }
         assertEq(_storage.voteCount(_proposalId, 1), 1);
         for (uint256 i = 0; i < 3; i++) {
-            assertEq(_storage.voteCount(_proposalId, i), 1);
+            assertEq(_storage.voteCount(_proposalId, i + 1), 1);
         }
         for (uint256 i = 3; i < _NCHOICE; i++) {
-            assertEq(_storage.voteCount(_proposalId, i), 0);
+            assertEq(_storage.voteCount(_proposalId, i + 1), 0);
         }
         assertEq(_storage.quorum(_proposalId), 3);
     }
@@ -905,12 +892,12 @@ contract GovernanceStorageChoiceVoteTest is Test {
     function testAbstainVote() public {
         _storage.registerSupervisor(_proposalId, _SUPERVISOR, _OWNER);
         for (uint256 i = 0; i < _NCHOICE; i++) {
-            _storage.setChoice(_proposalId, i, "name", "description", 0, _SUPERVISOR);
+            _storage.addChoice(_proposalId, Choice(keccak256(abi.encode(i)), "description", 0, "", 0), _SUPERVISOR);
         }
         _storage.makeFinal(_proposalId, _SUPERVISOR);
         _storage.abstainForShare(_proposalId, _VOTER1, uint160(_VOTER1));
         for (uint256 i = 0; i < _NCHOICE; i++) {
-            assertEq(_storage.voteCount(_proposalId, i), 0);
+            assertEq(_storage.voteCount(_proposalId, i + 1), 0);
         }
         assertEq(_storage.quorum(_proposalId), 1);
     }
@@ -918,7 +905,7 @@ contract GovernanceStorageChoiceVoteTest is Test {
     function testCastVoteWrongShare() public {
         _storage.registerSupervisor(_proposalId, _SUPERVISOR, _OWNER);
         for (uint256 i = 0; i < _NCHOICE; i++) {
-            _storage.setChoice(_proposalId, i, "name", "description", 0, _SUPERVISOR);
+            _storage.addChoice(_proposalId, Choice(keccak256(abi.encode(i)), "description", 0, "", 0), _SUPERVISOR);
         }
         _storage.makeFinal(_proposalId, _SUPERVISOR);
         vm.expectRevert(abi.encodeWithSelector(VoterClass.UnknownToken.selector, uint160(_VOTER2)));
@@ -928,7 +915,7 @@ contract GovernanceStorageChoiceVoteTest is Test {
     function testCastVoteBadProposal() public {
         _storage.registerSupervisor(_proposalId, _SUPERVISOR, _OWNER);
         for (uint256 i = 0; i < _NCHOICE; i++) {
-            _storage.setChoice(_proposalId, i, "name", "description", 0, _SUPERVISOR);
+            _storage.addChoice(_proposalId, Choice(keccak256(abi.encode(i)), "description", 0, "", 0), _SUPERVISOR);
         }
         _storage.makeFinal(_proposalId, _SUPERVISOR);
         vm.expectRevert(abi.encodeWithSelector(Storage.InvalidProposal.selector, _proposalId + 1));
@@ -938,7 +925,7 @@ contract GovernanceStorageChoiceVoteTest is Test {
     function testCastVoteEnded() public {
         _storage.registerSupervisor(_proposalId, _SUPERVISOR, _OWNER);
         for (uint256 i = 0; i < _NCHOICE; i++) {
-            _storage.setChoice(_proposalId, i, "name", "description", 0, _SUPERVISOR);
+            _storage.addChoice(_proposalId, Choice(keccak256(abi.encode(i)), "description", 0, "", 0), _SUPERVISOR);
         }
         _storage.makeFinal(_proposalId, _SUPERVISOR);
         uint256 startTime = _storage.startTime(_proposalId);
@@ -951,7 +938,7 @@ contract GovernanceStorageChoiceVoteTest is Test {
     function testReceiptForChoice() public {
         _storage.registerSupervisor(_proposalId, _SUPERVISOR, _OWNER);
         for (uint256 i = 0; i < _NCHOICE; i++) {
-            _storage.setChoice(_proposalId, i, "name", "description", 0, _SUPERVISOR);
+            _storage.addChoice(_proposalId, Choice(keccak256(abi.encode(i)), "description", 0, "", 0), _SUPERVISOR);
         }
         _storage.makeFinal(_proposalId, _SUPERVISOR);
         _storage.voteForByShare(_proposalId, _VOTER1, uint160(_VOTER1), 1);
@@ -967,6 +954,8 @@ contract GovernanceStorageChoiceVoteTest is Test {
     }
 
     function testIsChoiceVote() public {
+        _storage.registerSupervisor(_proposalId, _SUPERVISOR, _OWNER);
+        _storage.addChoice(_proposalId, Choice("name", "description", 0, "", 0), _SUPERVISOR);
         assertTrue(_storage.isChoiceVote(_proposalId));
     }
 

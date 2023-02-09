@@ -46,6 +46,7 @@ pragma solidity ^0.8.15;
 import "../contracts/collection/AddressSet.sol";
 import "../contracts/collection/MetaSet.sol";
 import "../contracts/collection/TransactionSet.sol";
+import "../contracts/collection/ChoiceSet.sol";
 
 /**
  * @notice extract global manifest constants
@@ -152,5 +153,13 @@ library Constant {
      */
     function createTransactionSet() external returns (TransactionSet) {
         return new TransactionSet();
+    }
+
+    /**
+     * @notice create an ChoiceSet
+     * @return ChoiceSet the created set
+     */
+    function createChoiceSet() external returns (ChoiceSet) {
+        return new ChoiceSet();
     }
 }

@@ -47,6 +47,7 @@ import "@openzeppelin/contracts/interfaces/IERC165.sol";
 
 import "../../contracts/access/Versioned.sol";
 import "../../contracts/collection/TransactionSet.sol";
+import "../../contracts/collection/ChoiceSet.sol";
 
 /// @title Storage interface
 /// @dev Eternal storage of strategy proxy
@@ -83,9 +84,8 @@ interface Storage is Versioned, IERC165 {
     error ChoiceVoteRequiresSetup(uint256 proposalId);
     error NotChoiceVote(uint256 proposalId);
     error ChoiceRequired(uint256 proposalId);
-    error ChoiceNameRequired(uint256 proposalId, uint256 choiceId);
-    error ChoiceIdInvalid(uint256 proposalId, uint256 choiceId);
-    error ChoiceNotInitialized(uint256 proposalId, uint256 choiceId);
+    error ChoiceVoteCountInvalid(uint256 proposalId);
+    error ChoiceNameRequired(uint256 proposalId);
     error StringSizeLimit(uint256 length);
 
     // event section
@@ -95,7 +95,7 @@ interface Storage is Versioned, IERC165 {
     event SetQuorumRequired(uint256 proposalId, uint256 passThreshold);
     event SetVoteDelay(uint256 proposalId, uint256 voteDelay);
     event SetVoteDuration(uint256 proposalId, uint256 voteDuration);
-    event SetChoice(
+    event AddChoice(
         uint256 proposalId,
         uint256 choiceId,
         bytes32 name,
@@ -155,8 +155,6 @@ interface Storage is Versioned, IERC165 {
         uint256 againstVotes;
         /// @notice Current number of votes for abstaining for this proposal
         uint256 abstentionCount;
-        /// @notice number of choices for this vote, zero indicates a for/against vote
-        uint256 choiceCount;
         /// @notice Flag marking whether the proposal has been vetoed
         bool isVeto;
         /// @notice Flag marking whether the proposal has been executed
@@ -165,12 +163,12 @@ interface Storage is Versioned, IERC165 {
         Status status;
         /// @notice table of mapped transactions
         TransactionSet transaction;
+        /// @notice table of mapped choices
+        ChoiceSet choice;
         /// @notice Receipts of ballots for the entire set of voters
         mapping(uint256 => Receipt) voteReceipt;
         /// @notice configured supervisors
         mapping(address => Supervisor) supervisorPool;
-        /// @notice mapping of id to Choice values
-        mapping(uint256 => Choice) choice;
     }
 
     /// @notice Ballot receipt record for a voter
@@ -192,17 +190,6 @@ interface Storage is Versioned, IERC165 {
     struct Supervisor {
         bool isEnabled;
         bool isProject;
-    }
-
-    /// @notice choice for multiple choice voting
-    /// @dev choice voting is enabled by initializing the number of choices when the proposal is created
-    struct Choice {
-        uint256 id;
-        bytes32 name;
-        string description;
-        uint256 transactionId;
-        bytes32 txHash;
-        uint256 voteCount;
     }
 
     /// @notice Register a new supervisor on the specified proposal.
@@ -260,34 +247,16 @@ interface Storage is Versioned, IERC165 {
     /// @notice set a choice by choice id
     /// @dev requires supervisor
     /// @param _proposalId the id of the proposal
-    /// @param _name the name of the metadata field
-    /// @param _description the detailed description of the choice
-    /// @param _transactionId The id of the transaction to execute
+    /// @param _choice the choice
     /// @param _sender The sender of the choice
-    function setChoice(
-        uint256 _proposalId,
-        uint256 _choiceId,
-        bytes32 _name,
-        string memory _description,
-        uint256 _transactionId,
-        address _sender
-    ) external;
+    /// @return uint256 The choiceId
+    function addChoice(uint256 _proposalId, Choice memory _choice, address _sender) external returns (uint256);
 
     /// @notice get the choice by id
     /// @param _proposalId the id of the proposal
     /// @param _choiceId the id of the choice
-    /// @return _name the name of the choice field
-    /// @return _description the string choice description
-    /// @return _transactionId the transactionId to execute for this choice
-    /// @return _txHash the hash of the specified transaction
-    /// @return _voteCount the current number of votes for this choice
-    function getChoice(
-        uint256 _proposalId,
-        uint256 _choiceId
-    )
-        external
-        view
-        returns (bytes32 _name, string memory _description, uint256 _transactionId, bytes32 _txHash, uint256 _voteCount);
+    /// @return Choice the choice
+    function getChoice(uint256 _proposalId, uint256 _choiceId) external view returns (Choice memory);
 
     /// @notice return the choice with the highest vote count
     /// @dev quorum is ignored for this caluclation
@@ -405,10 +374,9 @@ interface Storage is Versioned, IERC165 {
     ) external view returns (uint256 shareId, uint256 shareFor, uint256 votesCast, uint256 choiceId, bool isAbstention);
 
     /// @notice initialize a new proposal and return the id
-    /// @param _choiceCount The number of choices for this proposal
     /// @param _sender the proposal sender
     /// @return uint256 the id of the proposal
-    function initializeProposal(uint256 _choiceCount, address _sender) external returns (uint256);
+    function initializeProposal(address _sender) external returns (uint256);
 
     /// @notice indicate the proposal is ready for voting and should be frozen
     /// @dev requires supervisor

@@ -190,16 +190,7 @@ contract CollectiveGovernance is VoteStrategy, Governance, ERC165, VersionedCont
     /// @dev Only one new proposal is allowed per msg.sender
     /// @return uint256 The id of the new proposal
     function propose() external returns (uint256) {
-        return _proposeVote(0, msg.sender);
-    }
-
-    /// @notice propose a choice vote for the community
-    /// @dev Only one new proposal is allowed per msg.sender
-    /// @param _choiceCount the number of choices for this vote
-    /// @return uint256 The id of the new proposal
-    function propose(uint256 _choiceCount) external returns (uint256) {
-        if (_choiceCount == 0) revert NotEnoughChoices();
-        return _proposeVote(_choiceCount, msg.sender);
+        return _proposeVote(msg.sender);
     }
 
     /// @notice Attach a transaction to the specified proposal.
@@ -248,15 +239,16 @@ contract CollectiveGovernance is VoteStrategy, Governance, ERC165, VersionedCont
     /// @param _name the name of the metadata field
     /// @param _description the detailed description of the choice
     /// @param _transactionId The id of the transaction to execute
-    function setChoice(
+    function addChoice(
         uint256 _proposalId,
-        uint256 _choiceId,
         bytes32 _name,
         string memory _description,
         uint256 _transactionId
-    ) external requireSender(_proposalId) {
-        _storage.setChoice(_proposalId, _choiceId, _name, _description, _transactionId, msg.sender);
+    ) external requireSender(_proposalId) returns (uint256) {
+        Choice memory choice = Choice(_name, _description, _transactionId, "", 0);
+        uint256 _choiceId = _storage.addChoice(_proposalId, choice, msg.sender);
         emit ProposalChoice(_proposalId, _choiceId, _name, _description, _transactionId);
+        return _choiceId;
     }
 
     /// @notice configure an existing proposal by id
@@ -562,15 +554,15 @@ contract CollectiveGovernance is VoteStrategy, Governance, ERC165, VersionedCont
             uint256 executedCount = 0;
             if (_storage.isChoiceVote(_proposalId)) {
                 uint256 winningChoice = _storage.getWinningChoice(_proposalId);
-                if (winningChoice >= _storage.choiceCount(_proposalId)) revert InvalidChoice(_proposalId, winningChoice);
-                (bytes32 _name, string memory _description, uint256 transactionId, bytes32 txHash, uint256 voteCount) = _storage
-                    .getChoice(_proposalId, winningChoice);
-                if (transactionId > 0) {
-                    executeTransaction(_proposalId, transactionId, txHash);
+                if (winningChoice == 0 || winningChoice > _storage.choiceCount(_proposalId))
+                    revert InvalidChoice(_proposalId, winningChoice);
+                Choice memory choice = _storage.getChoice(_proposalId, winningChoice);
+                if (choice.transactionId > 0) {
+                    executeTransaction(_proposalId, choice.transactionId, choice.txHash);
                     executedCount++;
                 }
 
-                emit WinningChoice(_proposalId, _name, _description, transactionId, voteCount);
+                emit WinningChoice(_proposalId, choice.name, choice.description, choice.transactionId, choice.voteCount);
             } else {
                 for (uint256 transactionId = 1; transactionId <= transactionCount; transactionId++) {
                     executeTransaction(_proposalId, transactionId, "");
@@ -640,9 +632,9 @@ contract CollectiveGovernance is VoteStrategy, Governance, ERC165, VersionedCont
         emit RebatePaid(recipient, rebate, gasUsed);
     }
 
-    function _proposeVote(uint256 _choiceCount, address _sender) private returns (uint256) {
+    function _proposeVote(address _sender) private returns (uint256) {
         if (!_voterClass.canPropose(_sender)) revert NotPermitted(_sender);
-        uint256 proposalId = _storage.initializeProposal(_choiceCount, _sender);
+        uint256 proposalId = _storage.initializeProposal(_sender);
         for (uint256 i = 0; i < _communitySupervisorList.length; i++) {
             _storage.registerSupervisor(proposalId, _communitySupervisorList[i], true, _sender);
         }

@@ -125,12 +125,6 @@ interface Governance is Versioned, IERC165 {
     /// @return uint256 The id of the new proposal
     function propose() external returns (uint256);
 
-    /// @notice propose a choice vote for the community
-    /// @dev Only one new proposal is allowed per msg.sender
-    /// @param _choiceCount the number of choices for this vote
-    /// @return uint256 The id of the new proposal
-    function propose(uint256 _choiceCount) external returns (uint256);
-
     /// @notice Attach a transaction to the specified proposal.
     ///         If successfull, it will be executed when voting is ended.
     /// @dev required prior to calling configure
@@ -151,19 +145,19 @@ interface Governance is Versioned, IERC165 {
         uint256 _scheduleTime
     ) external returns (uint256);
 
-    /// @notice set a choice by choice id
+    /// @notice add a choice
     /// @dev requires supervisor
     /// @param _proposalId the id of the proposal
     /// @param _name the name of the metadata field
     /// @param _description the detailed description of the choice
     /// @param _transactionId The id of the transaction to execute
-    function setChoice(
+    /// @return uint256 The choiceId
+    function addChoice(
         uint256 _proposalId,
-        uint256 _choiceId,
         bytes32 _name,
         string memory _description,
         uint256 _transactionId
-    ) external;
+    ) external returns (uint256);
 
     /// @notice cancel a proposal if it is not yet open
     /// @param _proposalId The numeric id of the proposed vote
