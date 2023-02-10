@@ -316,12 +316,10 @@ contract CollectiveGovernance is VoteStrategy, Governance, ERC165, VersionedCont
     /// @notice cast an affirmative vote for the measure by id
     /// @param _proposalId The numeric id of the proposed vote
     /// @param _choiceId The choice to vote for
-    function voteChoice(uint256 _proposalId, uint256 _choiceId)
-        public
-        requireVoteFinal(_proposalId)
-        requireVoteOpen(_proposalId)
-        requireVoteAccepted(_proposalId)
-    {
+    function voteChoice(
+        uint256 _proposalId,
+        uint256 _choiceId
+    ) public requireVoteFinal(_proposalId) requireVoteOpen(_proposalId) requireVoteAccepted(_proposalId) {
         uint256 startGas = gasleft();
         uint256[] memory _shareList = _voterClass.discover(msg.sender);
         for (uint256 i = 0; i < _shareList.length; i++) {
@@ -384,12 +382,9 @@ contract CollectiveGovernance is VoteStrategy, Governance, ERC165, VersionedCont
     /// @notice cast an against vote by id
     /// @dev auto discovery is attempted and if possible the method will proceed using the discovered shares
     /// @param _proposalId The numeric id of the proposed vote
-    function voteAgainst(uint256 _proposalId)
-        external
-        requireVoteFinal(_proposalId)
-        requireVoteOpen(_proposalId)
-        requireVoteAccepted(_proposalId)
-    {
+    function voteAgainst(
+        uint256 _proposalId
+    ) external requireVoteFinal(_proposalId) requireVoteOpen(_proposalId) requireVoteAccepted(_proposalId) {
         uint256 startGas = gasleft();
         uint256[] memory _shareList = _voterClass.discover(msg.sender);
         for (uint256 i = 0; i < _shareList.length; i++) {
@@ -401,12 +396,10 @@ contract CollectiveGovernance is VoteStrategy, Governance, ERC165, VersionedCont
     /// @notice cast an against vote by id
     /// @param _proposalId The numeric id of the proposed vote
     /// @param _shareList A array of tokens or shares that confer the right to vote
-    function voteAgainst(uint256 _proposalId, uint256[] memory _shareList)
-        external
-        requireVoteFinal(_proposalId)
-        requireVoteOpen(_proposalId)
-        requireVoteAccepted(_proposalId)
-    {
+    function voteAgainst(
+        uint256 _proposalId,
+        uint256[] memory _shareList
+    ) external requireVoteFinal(_proposalId) requireVoteOpen(_proposalId) requireVoteAccepted(_proposalId) {
         uint256 startGas = gasleft();
         for (uint256 i = 0; i < _shareList.length; i++) {
             _castVoteAgainst(_proposalId, _shareList[i]);
@@ -417,12 +410,10 @@ contract CollectiveGovernance is VoteStrategy, Governance, ERC165, VersionedCont
     /// @notice cast an against vote by id
     /// @param _proposalId The numeric id of the proposed vote
     /// @param _tokenId The id of a token or share representing the right to vote
-    function voteAgainst(uint256 _proposalId, uint256 _tokenId)
-        external
-        requireVoteFinal(_proposalId)
-        requireVoteOpen(_proposalId)
-        requireVoteAccepted(_proposalId)
-    {
+    function voteAgainst(
+        uint256 _proposalId,
+        uint256 _tokenId
+    ) external requireVoteFinal(_proposalId) requireVoteOpen(_proposalId) requireVoteAccepted(_proposalId) {
         uint256 startGas = gasleft();
         _castVoteAgainst(_proposalId, _tokenId);
         sendGasRebate(msg.sender, startGas);
@@ -431,12 +422,9 @@ contract CollectiveGovernance is VoteStrategy, Governance, ERC165, VersionedCont
     /// @notice abstain from vote by id
     /// @dev auto discovery is attempted and if possible the method will proceed using the discovered shares
     /// @param _proposalId The numeric id of the proposed vote
-    function abstainFrom(uint256 _proposalId)
-        external
-        requireVoteFinal(_proposalId)
-        requireVoteOpen(_proposalId)
-        requireVoteAccepted(_proposalId)
-    {
+    function abstainFrom(
+        uint256 _proposalId
+    ) external requireVoteFinal(_proposalId) requireVoteOpen(_proposalId) requireVoteAccepted(_proposalId) {
         uint256 startGas = gasleft();
         uint256[] memory _shareList = _voterClass.discover(msg.sender);
         for (uint256 i = 0; i < _shareList.length; i++) {
@@ -448,12 +436,10 @@ contract CollectiveGovernance is VoteStrategy, Governance, ERC165, VersionedCont
     /// @notice abstain from vote by id
     /// @param _proposalId The numeric id of the proposed vote
     /// @param _shareList A array of tokens or shares that confer the right to vote
-    function abstainFrom(uint256 _proposalId, uint256[] memory _shareList)
-        external
-        requireVoteFinal(_proposalId)
-        requireVoteOpen(_proposalId)
-        requireVoteAccepted(_proposalId)
-    {
+    function abstainFrom(
+        uint256 _proposalId,
+        uint256[] memory _shareList
+    ) external requireVoteFinal(_proposalId) requireVoteOpen(_proposalId) requireVoteAccepted(_proposalId) {
         uint256 startGas = gasleft();
         for (uint256 i = 0; i < _shareList.length; i++) {
             _castAbstention(_proposalId, _shareList[i]);
@@ -464,12 +450,10 @@ contract CollectiveGovernance is VoteStrategy, Governance, ERC165, VersionedCont
     /// @notice abstain from vote by id
     /// @param _proposalId The numeric id of the proposed vote
     /// @param _tokenId The id of a token or share representing the right to vote
-    function abstainFrom(uint256 _proposalId, uint256 _tokenId)
-        external
-        requireVoteFinal(_proposalId)
-        requireVoteOpen(_proposalId)
-        requireVoteAccepted(_proposalId)
-    {
+    function abstainFrom(
+        uint256 _proposalId,
+        uint256 _tokenId
+    ) external requireVoteFinal(_proposalId) requireVoteOpen(_proposalId) requireVoteAccepted(_proposalId) {
         uint256 startGas = gasleft();
         _castAbstention(_proposalId, _tokenId);
         sendGasRebate(msg.sender, startGas);
@@ -478,7 +462,9 @@ contract CollectiveGovernance is VoteStrategy, Governance, ERC165, VersionedCont
     /// @notice veto proposal by id
     /// @param _proposalId The numeric id of the proposed vote
     /// @dev transaction must be signed by a supervisor wallet
-    function veto(uint256 _proposalId)
+    function veto(
+        uint256 _proposalId
+    )
         external
         requireSupervisor(_proposalId)
         requireVoteFinal(_proposalId)
@@ -492,14 +478,9 @@ contract CollectiveGovernance is VoteStrategy, Governance, ERC165, VersionedCont
     /// @notice get the result of the vote
     /// @return bool True if the vote is closed and passed
     /// @dev This method will fail if the vote was vetoed
-    function getVoteSucceeded(uint256 _proposalId)
-        public
-        view
-        requireVoteAccepted(_proposalId)
-        requireVoteFinal(_proposalId)
-        requireVoteClosed(_proposalId)
-        returns (bool)
-    {
+    function getVoteSucceeded(
+        uint256 _proposalId
+    ) public view requireVoteAccepted(_proposalId) requireVoteFinal(_proposalId) requireVoteClosed(_proposalId) returns (bool) {
         uint256 totalVotesCast = _storage.quorum(_proposalId);
         bool quorumRequirementMet = totalVotesCast >= _storage.quorumRequired(_proposalId);
         return
@@ -645,11 +626,7 @@ contract CollectiveGovernance is VoteStrategy, Governance, ERC165, VersionedCont
         return proposalId;
     }
 
-    function _castVoteFor(
-        uint256 _proposalId,
-        uint256 _tokenId,
-        uint256 _choiceId
-    ) internal {
+    function _castVoteFor(uint256 _proposalId, uint256 _tokenId, uint256 _choiceId) internal {
         uint256 voteCount = 0;
         voteCount = _storage.voteForByShare(_proposalId, msg.sender, _tokenId, _choiceId);
         if (voteCount > 0) {

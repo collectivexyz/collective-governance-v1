@@ -1674,11 +1674,6 @@
         "internalType": "uint256",
         "name": "_proposalId",
         "type": "uint256"
-      },
-      {
-        "internalType": "address",
-        "name": "_sender",
-        "type": "address"
       }
     ],
     "name": "setExecuted",

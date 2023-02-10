@@ -51,6 +51,7 @@ import "../contracts/access/VersionedContract.sol";
 import "../contracts/Constant.sol";
 import "../contracts/Governance.sol";
 import "../contracts/collection/MetaSet.sol";
+import "../contracts/collection/ChoiceSet.sol";
 import "../contracts/collection/TransactionSet.sol";
 import "../contracts/storage/Storage.sol";
 import "../contracts/storage/MetaStorage.sol";
@@ -66,7 +67,7 @@ contract ProposalBuilder is VersionedContract, ERC165, Ownable {
     error StringSizeLimit(address _sender, uint256 len);
 
     event ProposalInitialized(address _sender);
-    event ProposalTransaction(address _sender, address target, uint256 value, uint256 scheduleTime);
+    event ProposalTransaction(address _sender, address target, uint256 value, uint256 scheduleTime, uint256 transactionId);
     event ProposalDescription(address _sender, string description, string url);
 
     struct ProposalProperties {
@@ -77,6 +78,7 @@ contract ProposalBuilder is VersionedContract, ERC165, Ownable {
         string url;
         TransactionSet transaction;
         MetaSet meta;
+        ChoiceSet choice;
     }
 
     Governance private _governance;
@@ -145,6 +147,20 @@ contract ProposalBuilder is VersionedContract, ERC165, Ownable {
         return this;
     }
 
+    /// @notice Attach a choice for a choice vote on this proposal
+    /// @param _name The name for this choice
+    /// @param _description The description of this choice
+    /// @param _transactionId The associated transactionId
+    function withChoice(
+        bytes32 _name,
+        string memory _description,
+        uint256 _transactionId
+    ) external requireValidString(_description) returns (ProposalBuilder) {
+        ProposalProperties storage _properties = _proposalMap[msg.sender];
+        _properties.choice.add(Choice(_name, _description, _transactionId, "", 0));
+        return this;
+    }
+
     /// @notice Attach a transaction to the proposal.
     /// @param _target the target address for this transaction
     /// @param _value the value to pass to the call
@@ -162,8 +178,8 @@ contract ProposalBuilder is VersionedContract, ERC165, Ownable {
     ) external returns (ProposalBuilder) {
         ProposalProperties storage _properties = _proposalMap[msg.sender];
         Transaction memory transaction = Transaction(_target, _value, _signature, _calldata, _scheduleTime);
-        _properties.transaction.add(transaction);
-        emit ProposalTransaction(msg.sender, _target, _value, _scheduleTime);
+        uint256 id = _properties.transaction.add(transaction);
+        emit ProposalTransaction(msg.sender, _target, _value, _scheduleTime, id);
         return this;
     }
 
@@ -236,6 +252,12 @@ contract ProposalBuilder is VersionedContract, ERC165, Ownable {
                 );
             }
         }
+        if (_properties.choice.size() > 0) {
+            for (uint256 i = 1; i <= _properties.choice.size(); ++i) {
+                Choice memory choice = _properties.choice.get(i);
+                _governance.addChoice(pid, choice.name, choice.description, choice.transactionId);
+            }
+        }
         if (!Constant.empty(_properties.url) || !Constant.empty(_properties.description) || _properties.meta.size() > 0) {
             _meta.describe(pid, _properties.url, _properties.description);
             for (uint256 i = 1; i <= _properties.meta.size(); ++i) {
@@ -271,5 +293,6 @@ contract ProposalBuilder is VersionedContract, ERC165, Ownable {
         _properties.url = "";
         _properties.transaction = new TransactionSet();
         _properties.meta = Constant.createMetaSet();
+        _properties.choice = Constant.createChoiceSet();
     }
 }
