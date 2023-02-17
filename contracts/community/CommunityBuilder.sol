@@ -48,22 +48,19 @@ import "@openzeppelin/contracts/interfaces/IERC165.sol";
 import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
 
 import "../../contracts/Constant.sol";
-import "../../contracts/collection/AddressSet.sol";
-import "../../contracts/community/CommunityClassOpenVote.sol";
-import "../../contracts/community/CommunityClassVoterPool.sol";
-import "../../contracts/community/CommunityClassERC721.sol";
-import "../../contracts/community/CommunityClassClosedERC721.sol";
 import "../../contracts/access/VersionedContract.sol";
+import "../../contracts/collection/AddressSet.sol";
+import "../../contracts/community/CommunityFactory.sol";
 
 /// @title Community Creator
 /// @notice This builder is for creating a community class for use with the Collective
 /// Governance contract
-// solhint-disable-next-line no-empty-blocks
 contract CommunityBuilder is VersionedContract, ERC165, Ownable {
     string public constant NAME = "community builder";
     uint256 public constant DEFAULT_WEIGHT = 1;
 
     error CommunityTypeRequired();
+    error CommunityTypeChange();
     error ProjectTokenRequired(address tokenAddress);
     error TokenThresholdRequired(uint256 tokenThreshold);
     error NonZeroWeightRequired(uint256 weight);
@@ -104,9 +101,24 @@ contract CommunityBuilder is VersionedContract, ERC165, Ownable {
 
     mapping(address => CommunityProperties) private _buildMap;
 
+    WeightedClassFactory private _weightedFactory;
+
+    ProjectClassFactory private _projectFactory;
+
+    constructor() {
+        _weightedFactory = new WeightedClassFactory();
+        _projectFactory = new ProjectClassFactory();
+    }
+
     modifier requirePool() {
         CommunityProperties storage _properties = _buildMap[msg.sender];
         if (_properties.communityType != CommunityType.POOL) revert VoterPoolRequired();
+        _;
+    }
+
+    modifier requireNone() {
+        CommunityProperties storage _properties = _buildMap[msg.sender];
+        if (_properties.communityType != CommunityType.NONE) revert CommunityTypeChange();
         _;
     }
 
@@ -116,14 +128,14 @@ contract CommunityBuilder is VersionedContract, ERC165, Ownable {
         return this;
     }
 
-    function asOpenCommunity() external returns (CommunityBuilder) {
+    function asOpenCommunity() external requireNone returns (CommunityBuilder) {
         CommunityProperties storage _properties = _buildMap[msg.sender];
         _properties.communityType = CommunityType.OPEN;
         emit CommunityClassType(CommunityType.OPEN);
         return this;
     }
 
-    function asPoolCommunity() external returns (CommunityBuilder) {
+    function asPoolCommunity() external requireNone returns (CommunityBuilder) {
         CommunityProperties storage _properties = _buildMap[msg.sender];
         _properties.communityType = CommunityType.POOL;
         _properties.addressSet = Constant.createAddressSet();
@@ -131,14 +143,7 @@ contract CommunityBuilder is VersionedContract, ERC165, Ownable {
         return this;
     }
 
-    function withVoter(address voter) external requirePool returns (CommunityBuilder) {
-        CommunityProperties storage _properties = _buildMap[msg.sender];
-        _properties.addressSet.add(voter);
-        emit CommunityVoter(voter);
-        return this;
-    }
-
-    function asErc721Community(address project) external returns (CommunityBuilder) {
+    function asErc721Community(address project) external requireNone returns (CommunityBuilder) {
         CommunityProperties storage _properties = _buildMap[msg.sender];
         _properties.communityType = CommunityType.ERC721;
         _properties.projectToken = project;
@@ -146,12 +151,19 @@ contract CommunityBuilder is VersionedContract, ERC165, Ownable {
         return this;
     }
 
-    function asClosedErc721Community(address project, uint256 tokenThreshold) external returns (CommunityBuilder) {
+    function asClosedErc721Community(address project, uint256 tokenThreshold) external requireNone returns (CommunityBuilder) {
         CommunityProperties storage _properties = _buildMap[msg.sender];
         _properties.communityType = CommunityType.ERC721_CLOSED;
         _properties.projectToken = project;
         _properties.tokenThreshold = tokenThreshold;
         emit CommunityClassType(CommunityType.ERC721_CLOSED);
+        return this;
+    }
+
+    function withVoter(address voter) external requirePool returns (CommunityBuilder) {
+        CommunityProperties storage _properties = _buildMap[msg.sender];
+        _properties.addressSet.add(voter);
+        emit CommunityVoter(voter);
         return this;
     }
 
@@ -197,51 +209,15 @@ contract CommunityBuilder is VersionedContract, ERC165, Ownable {
         return this;
     }
 
-    function build() external returns (address) {
+    function build() public returns (address) {
         CommunityProperties storage _properties = _buildMap[msg.sender];
+        WeightedCommunityClass _proxy;
         if (_properties.weight < 1) revert NonZeroWeightRequired(_properties.weight);
         if (_properties.minimumProjectQuorum < 1) revert NonZeroQuorumRequired(_properties.minimumProjectQuorum);
-        if (_properties.communityType == CommunityType.OPEN) {
-            CommunityClass _class = new CommunityClassOpenVote(
-                _properties.weight,
-                _properties.minimumProjectQuorum,
-                _properties.minimumVoteDelay,
-                _properties.maximumVoteDelay,
-                _properties.minimumVoteDuration,
-                _properties.maximumVoteDuration
-            );
-            return address(_class);
-        } else if (_properties.communityType == CommunityType.POOL) {
-            if (_properties.addressSet.size() == 0) revert VoterRequired();
-            CommunityClassVoterPool _pool = new CommunityClassVoterPool(
-                _properties.weight,
-                _properties.minimumProjectQuorum,
-                _properties.minimumVoteDelay,
-                _properties.maximumVoteDelay,
-                _properties.minimumVoteDuration,
-                _properties.maximumVoteDuration
-            );
-            for (uint256 i = 1; i <= _properties.addressSet.size(); ++i) {
-                _pool.addVoter(_properties.addressSet.get(i));
-            }
-            _pool.makeFinal();
-            return address(_pool);
-        } else if (_properties.communityType == CommunityType.ERC721) {
-            if (_properties.projectToken == address(0x0)) revert ProjectTokenRequired(_properties.projectToken);
-            CommunityClass _class = new CommunityClassERC721(
-                _properties.projectToken,
-                _properties.weight,
-                _properties.minimumProjectQuorum,
-                _properties.minimumVoteDelay,
-                _properties.maximumVoteDelay,
-                _properties.minimumVoteDuration,
-                _properties.maximumVoteDuration
-            );
-            return address(_class);
-        } else if (_properties.communityType == CommunityType.ERC721_CLOSED) {
+        if (_properties.communityType == CommunityType.ERC721_CLOSED) {
             if (_properties.projectToken == address(0x0)) revert ProjectTokenRequired(_properties.projectToken);
             if (_properties.tokenThreshold == 0) revert TokenThresholdRequired(_properties.tokenThreshold);
-            CommunityClass _class = new CommunityClassClosedERC721(
+            _proxy = _projectFactory.createClosedErc721(
                 _properties.projectToken,
                 _properties.tokenThreshold,
                 _properties.weight,
@@ -251,10 +227,50 @@ contract CommunityBuilder is VersionedContract, ERC165, Ownable {
                 _properties.minimumVoteDuration,
                 _properties.maximumVoteDuration
             );
-            return address(_class);
+            ConfigurableMutable _mutable = ConfigurableMutable(address(_proxy));
+            _mutable.makeFinal();
+        } else if (_properties.communityType == CommunityType.ERC721) {
+            if (_properties.projectToken == address(0x0)) revert ProjectTokenRequired(_properties.projectToken);
+            _proxy = _projectFactory.createErc721(
+                _properties.projectToken,
+                _properties.weight,
+                _properties.minimumProjectQuorum,
+                _properties.minimumVoteDelay,
+                _properties.maximumVoteDelay,
+                _properties.minimumVoteDuration,
+                _properties.maximumVoteDuration
+            );
+            ConfigurableMutable _mutable = ConfigurableMutable(address(_proxy));
+            _mutable.makeFinal();
+        } else if (_properties.communityType == CommunityType.OPEN) {
+            _proxy = _weightedFactory.createOpenVote(
+                _properties.weight,
+                _properties.minimumProjectQuorum,
+                _properties.minimumVoteDelay,
+                _properties.maximumVoteDelay,
+                _properties.minimumVoteDuration,
+                _properties.maximumVoteDuration
+            );
+        } else if (_properties.communityType == CommunityType.POOL) {
+            CommunityClassVoterPool _pool = _weightedFactory.createVoterPool(
+                _properties.weight,
+                _properties.minimumProjectQuorum,
+                _properties.minimumVoteDelay,
+                _properties.maximumVoteDelay,
+                _properties.minimumVoteDuration,
+                _properties.maximumVoteDuration
+            );
+            if (_properties.addressSet.size() == 0) revert VoterRequired();
+            for (uint256 i = 1; i <= _properties.addressSet.size(); ++i) {
+                _pool.addVoter(_properties.addressSet.get(i));
+            }
+            _pool.makeFinal();
+            _proxy = _pool;
+        } else {
+            revert CommunityTypeRequired();
         }
 
-        revert CommunityTypeRequired();
+        return payable(address(_proxy));
     }
 
     function name() external pure returns (string memory) {
@@ -272,6 +288,7 @@ contract CommunityBuilder is VersionedContract, ERC165, Ownable {
     function reset() public {
         CommunityProperties storage _properties = _buildMap[msg.sender];
         _properties.weight = DEFAULT_WEIGHT;
+        _properties.communityType = CommunityType.NONE;
         _properties.minimumProjectQuorum = 0;
         _properties.minimumVoteDelay = Constant.MINIMUM_VOTE_DELAY;
         _properties.maximumVoteDelay = Constant.MAXIMUM_VOTE_DELAY;

@@ -483,8 +483,8 @@ contract GovernanceStorage is Storage, VersionedContract, ERC165, Ownable {
     }
 
     /// @notice get the VoterClass used for this voting store
-    /// @return VoterClass the voter class for this store
-    function voterClass() external view returns (VoterClass) {
+    /// @return CommunityClass the voter class for this store
+    function communityClass() external view returns (CommunityClass) {
         return _voterClass;
     }
 

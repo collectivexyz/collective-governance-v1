@@ -81,7 +81,7 @@ contract GovernanceFactory is VersionedContract, OwnableInitializable, UUPSUpgra
     /// @param _baseFeeRebate The maximum base fee rebate
     function create(
         address[] memory _supervisorList,
-        VoterClass _class,
+        CommunityClass _class,
         Storage _storage,
         TimeLocker _timeLock,
         uint256 _gasUsedRebate,

@@ -51,9 +51,10 @@ import "../../contracts/community/VoterClass.sol";
 /// @notice defines the configurable parameters for a community
 /// @custom:type interface
 interface CommunityClass is VoterClass {
-    error MinimumDelayNotPermitted(uint256 delay, uint256 minimumDelay);
+    error VoteWeightMustBeNonZero();
+    error MinimumDelayExceedsMaximum(uint256 delay, uint256 minimumDelay);
     error MaximumDelayNotPermitted(uint256 delay, uint256 maximumDelay);
-    error MinimumDurationNotPermitted(uint256 duration, uint256 minimumDuration);
+    error MinimumDurationExceedsMaximum(uint256 duration, uint256 minimumDuration);
     error MaximumDurationNotPermitted(uint256 duration, uint256 maximumDuration);
     error MinimumQuorumNotPermitted(uint256 quorum, uint256 minimumProjectQuorum);
 
@@ -76,4 +77,67 @@ interface CommunityClass is VoterClass {
     /// @notice get the project quorum requirement
     /// @return uint256 the least quorum allowed for any vote
     function minimumProjectQuorum() external view returns (uint256);
+
+    /// @notice determine if adding a proposal is approved for this voter
+    /// @param _sender The address of the sender
+    /// @return bool true if this address is approved
+    function canPropose(address _sender) external view returns (bool);
+}
+
+interface WeightedCommunityClass is CommunityClass {
+    /// @notice create a new community class representing community preferences
+    /// @param _voteWeight the weight of a vote
+    /// @param _minimumQuorum the least possible quorum for any vote
+    /// @param _minimumDelay the least possible vote delay
+    /// @param _maximumDelay the least possible vote delay
+    /// @param _minimumDuration the least possible voting duration
+    /// @param _maximumDuration the least possible voting duration
+    function initialize(
+        uint256 _voteWeight,
+        uint256 _minimumQuorum,
+        uint256 _minimumDelay,
+        uint256 _maximumDelay,
+        uint256 _minimumDuration,
+        uint256 _maximumDuration
+    ) external;
+
+    /// @notice reset voting parameters for upgrade
+    /// @param _voteWeight the weight of a vote
+    /// @param _minimumQuorum the least possible quorum for any vote
+    /// @param _minimumDelay the least possible vote delay
+    /// @param _maximumDelay the least possible vote delay
+    /// @param _minimumDuration the least possible voting duration
+    /// @param _maximumDuration the least possible voting duration
+    function upgrade(
+        uint256 _voteWeight,
+        uint256 _minimumQuorum,
+        uint256 _minimumDelay,
+        uint256 _maximumDelay,
+        uint256 _minimumDuration,
+        uint256 _maximumDuration
+    ) external;
+
+    /// @notice return voting weight of each confirmed share
+    /// @return uint256 weight applied to one share
+    function weight() external view returns (uint256);
+}
+
+interface ProjectCommunityClass is WeightedCommunityClass {
+    /// @notice create a new community class representing community preferences
+    /// @param _contract the token project contract address
+    /// @param _voteWeight the weight of a vote
+    /// @param _minimumQuorum the least possible quorum for any vote
+    /// @param _minimumDelay the least possible vote delay
+    /// @param _maximumDelay the least possible vote delay
+    /// @param _minimumDuration the least possible voting duration
+    /// @param _maximumDuration the least possible voting duration
+    function initialize(
+        address _contract,
+        uint256 _voteWeight,
+        uint256 _minimumQuorum,
+        uint256 _minimumDelay,
+        uint256 _maximumDelay,
+        uint256 _minimumDuration,
+        uint256 _maximumDuration
+    ) external;
 }

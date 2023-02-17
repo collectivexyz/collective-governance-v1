@@ -50,43 +50,45 @@ import "../../contracts/community/CommunityClassERC721.sol";
 /// @title Closed ERC721 VoterClass
 /// @notice similar to CommunityClassERC721 however proposals are only allowed for voters
 contract CommunityClassClosedERC721 is CommunityClassERC721 {
+    error RequiredParameterIsZero();
+
     // number of tokens required to propose
-    uint256 public immutable _tokenRequirement;
+    uint256 public _tokenRequirement;
 
     /// @param _contract Address of the token contract
-    /// @param _tokenThreshold Number of tokens required to propose an issue
+    /// @param _requirement The token requirement
     /// @param _voteWeight The integral weight to apply to each token held by the wallet
     /// @param _minimumQuorum the least possible quorum for any vote
     /// @param _minimumDelay the least possible vote delay
     /// @param _maximumDelay the least possible vote delay
     /// @param _minimumDuration the least possible voting duration
     /// @param _maximumDuration the least possible voting duration
-    constructor(
+    function initialize(
         address _contract,
-        uint256 _tokenThreshold,
+        uint256 _requirement,
         uint256 _voteWeight,
         uint256 _minimumQuorum,
         uint256 _minimumDelay,
         uint256 _maximumDelay,
         uint256 _minimumDuration,
         uint256 _maximumDuration
-    )
-        CommunityClassERC721(
-            _contract,
-            _voteWeight,
-            _minimumQuorum,
-            _minimumDelay,
-            _maximumDelay,
-            _minimumDuration,
-            _maximumDuration
-        )
-    {
-        _tokenRequirement = _tokenThreshold;
+    ) public requireNonZero(_requirement) {
+        initialize(_contract, _voteWeight, _minimumQuorum, _minimumDelay, _maximumDelay, _minimumDuration, _maximumDuration);
+        _tokenRequirement = _requirement;
+    }
+
+    modifier requireNonZero(uint256 _requirement) {
+        if (_requirement < 1) revert RequiredParameterIsZero();
+        _;
+    }
+
+    function setTokenRequirement(uint256 _requirement) external requireNonZero(_tokenRequirement) onlyMutable {
+        _tokenRequirement = _requirement;
     }
 
     /// @notice determine if adding a proposal is approved for this voter
     /// @return bool true if this address is approved
-    function canPropose(address _wallet) external view virtual override(CommunityClassERC721) returns (bool) {
+    function canPropose(address _wallet) external view virtual override(CommunityClassERC721) onlyFinal returns (bool) {
         uint256 balance = IERC721(_contractAddress).balanceOf(_wallet);
         return balance >= _tokenRequirement;
     }

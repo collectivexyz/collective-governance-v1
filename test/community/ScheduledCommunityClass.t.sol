@@ -6,20 +6,27 @@ import "@openzeppelin/contracts/interfaces/IERC165.sol";
 import "forge-std/Test.sol";
 
 import "../../contracts/community/ScheduledCommunityClass.sol";
-import "../../contracts/community/CommunityClassOpenVote.sol";
+import "../../contracts/community/CommunityBuilder.sol";
 
 contract ScheduledCommunityClassTest is Test {
     ScheduledCommunityClass private _class;
 
     function setUp() public {
-        _class = new CommunityClassOpenVote(
-            1,
-            Constant.MINIMUM_PROJECT_QUORUM,
-            Constant.MINIMUM_VOTE_DELAY + 1 days,
-            Constant.MAXIMUM_VOTE_DELAY - 2 seconds,
-            Constant.MINIMUM_VOTE_DURATION + 1 days,
-            Constant.MAXIMUM_VOTE_DURATION - 10 seconds
-        );
+        address _classLocation = new CommunityBuilder()
+            .aCommunity()
+            .asOpenCommunity()
+            .withWeight(75)
+            .withQuorum(Constant.MINIMUM_PROJECT_QUORUM + 100)
+            .withMinimumVoteDelay(Constant.MINIMUM_VOTE_DELAY + 1 days)
+            .withMaximumVoteDelay(Constant.MAXIMUM_VOTE_DELAY - 2 seconds)
+            .withMinimumVoteDuration(Constant.MINIMUM_VOTE_DURATION + 1 days)
+            .withMaximumVoteDuration(Constant.MAXIMUM_VOTE_DURATION - 10 seconds)
+            .build();
+        _class = ScheduledCommunityClass(_classLocation);
+    }
+
+    function testWeight() public {
+        assertEq(75, _class.weight());
     }
 
     function testMinimumVoteDelay() public {
@@ -36,5 +43,35 @@ contract ScheduledCommunityClassTest is Test {
 
     function testMaximumVoteDuration() public {
         assertEq(Constant.MAXIMUM_VOTE_DURATION - 10 seconds, _class.maximumVoteDuration());
+    }
+
+    function testIsWeightedCommunityClass() public {
+        IERC165 _erc165 = IERC165(address(_class));
+        assertTrue(_erc165.supportsInterface(type(WeightedCommunityClass).interfaceId));
+    }
+
+    function testIsCommunityClass() public {
+        IERC165 _erc165 = IERC165(address(_class));
+        assertTrue(_erc165.supportsInterface(type(CommunityClass).interfaceId));
+    }
+
+    function testIsVoterClass() public {
+        IERC165 _erc165 = IERC165(address(_class));
+        assertTrue(_erc165.supportsInterface(type(VoterClass).interfaceId));
+    }
+
+    function testIsVersioned() public {
+        IERC165 _erc165 = IERC165(address(_class));
+        assertTrue(_erc165.supportsInterface(type(Versioned).interfaceId));
+    }
+
+    function testIsInitializable() public {
+        IERC165 _erc165 = IERC165(address(_class));
+        assertTrue(_erc165.supportsInterface(type(Initializable).interfaceId));
+    }
+
+    function testIsIERC165() public {
+        IERC165 _erc165 = IERC165(address(_class));
+        assertTrue(_erc165.supportsInterface(type(IERC165).interfaceId));
     }
 }

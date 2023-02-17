@@ -11,118 +11,102 @@ contract CommunityClassVoterPoolTest is Test {
     address private immutable _NOTVOTER = address(0x55);
     address private immutable _NOBODY = address(0x0);
 
-    CommunityClassVoterPool private _class;
+    CommunityClass private _class;
 
     function setUp() public {
-        _class = new CommunityClassVoterPool(
-            1,
-            Constant.MINIMUM_PROJECT_QUORUM,
-            Constant.MINIMUM_VOTE_DELAY,
-            Constant.MAXIMUM_VOTE_DELAY,
-            Constant.MINIMUM_VOTE_DURATION,
-            Constant.MAXIMUM_VOTE_DURATION
-        );
+        CommunityBuilder _builder = new CommunityBuilder();
+        address _classLocation = _builder.asPoolCommunity().withVoter(_VOTER).build();
+        _class = CommunityClass(_classLocation);
     }
 
     function testOpenToMemberPropose() public {
-        _class.addVoter(_VOTER);
-        _class.makeFinal();
         assertTrue(_class.canPropose(_VOTER));
     }
 
     function testClosedToPropose() public {
-        _class.addVoter(_VOTER);
-        _class.makeFinal();
         assertFalse(_class.canPropose(_NOTVOTER));
     }
 
     function testFailEmptyCommunity() public {
-        _class.makeFinal();
+        CommunityClassVoterPool _emptyClass = new CommunityClassVoterPool();
+        _emptyClass.makeFinal();
     }
 
     function testDiscoverVoter() public {
-        _class.addVoter(_VOTER);
-        _class.makeFinal();
         uint256[] memory shareList = _class.discover(_VOTER);
         assertEq(shareList.length, 1);
         assertEq(uint160(_VOTER), shareList[0]);
     }
 
     function testRemoveVoter() public {
-        _class.addVoter(_VOTER);
-        assertTrue(_class.isVoter(_VOTER));
-        _class.removeVoter(_VOTER);
-        assertFalse(_class.isVoter(_VOTER));
+        CommunityClassVoterPool _editClass = new CommunityClassVoterPool();
+        assertTrue(_editClass.isVoter(_VOTER));
+        _editClass.removeVoter(_VOTER);
+        assertFalse(_editClass.isVoter(_VOTER));
+        assertEq(_editClass.confirm(_VOTER, uint160(_VOTER)), 0);
     }
 
     function testFailRemoveVoter() public {
-        _class.addVoter(_VOTER);
-        assertTrue(_class.isVoter(_VOTER));
-        _class.removeVoter(_VOTER);
-        _class.makeFinal();
-        assertEq(_class.confirm(_VOTER, uint160(_VOTER)), 0);
+        CommunityClassVoterPool _pool = CommunityClassVoterPool(address(_class));
+        _pool.removeVoter(_VOTER);
     }
 
-    function testFailDiscoverNonVoter() public {
-        _class.addVoter(_VOTER);
-        _class.makeFinal();
+    function testFailDiscoverNonVoter() public view {
         _class.discover(_NOTVOTER);
     }
 
     function testConfirmVoter() public {
-        _class.addVoter(_VOTER);
-        _class.makeFinal();
         uint256 shareCount = _class.confirm(_VOTER, uint160(_VOTER));
         assertEq(shareCount, 1);
     }
 
     function testConfirmVoterIfNotAdded() public {
-        _class.addVoter(_NOTVOTER);
-        _class.makeFinal();
-        vm.expectRevert(abi.encodeWithSelector(VoterClass.NotVoter.selector, _VOTER));
-        vm.prank(_VOTER);
-        _class.confirm(_VOTER, uint160(_VOTER));
-    }
-
-    function testFailConfirmNotVoter() public {
-        _class.makeFinal();
+        vm.expectRevert(abi.encodeWithSelector(VoterClass.NotVoter.selector, _NOTVOTER));
+        vm.prank(_NOTVOTER);
         _class.confirm(_NOTVOTER, uint160(_NOTVOTER));
     }
 
     function testFailMakeFinalNotOwner() public {
+        CommunityClassVoterPool _editClass = new CommunityClassVoterPool();
+        _editClass.addVoter(_VOTER);
         vm.prank(_VOTER);
-        _class.makeFinal();
+        _editClass.makeFinal();
     }
 
-    function testFailConfirmNotFinal() public view {
+    function testFailConfirmNotFinal() public {
         _class.confirm(_VOTER, uint160(_VOTER));
     }
 
     function testFailAddVoterByVoter() public {
+        CommunityClassVoterPool _editClass = new CommunityClassVoterPool();
         vm.prank(_VOTER);
-        _class.addVoter(_VOTER);
+        _editClass.addVoter(_VOTER);
     }
 
     function testFailAddVoterByNobody() public {
+        CommunityClassVoterPool _editClass = new CommunityClassVoterPool();
         vm.prank(_NOBODY);
-        _class.addVoter(_NOBODY);
+        _editClass.addVoter(_NOBODY);
+    }
+
+    function testFailDuplicateVoter() public {
+        CommunityClassVoterPool _editClass = new CommunityClassVoterPool();
+        _editClass.addVoter(_VOTER);
+        _editClass.addVoter(_VOTER);
     }
 
     function testFailAddIfFinal() public {
-        _class.makeFinal();
-        _class.addVoter(_VOTER);
+        CommunityClassVoterPool _pool = CommunityClassVoterPool(address(_class));
+        _pool.addVoter(_NOTVOTER);
     }
 
     function testMakeFinal() public {
-        _class.addVoter(_VOTER);
-        _class.makeFinal();
         assertTrue(_class.isFinal());
     }
 
     function testFailRemoveIfFinal() public {
-        _class.addVoter(_VOTER);
-        _class.makeFinal();
-        _class.removeVoter(_VOTER);
+        CommunityClassVoterPool _pool = CommunityClassVoterPool(address(_class));
+        _pool.removeVoter(_VOTER);
     }
 
     function testSupportsInterface() public {

@@ -15,7 +15,7 @@ contract CommunityClassClosedERC721Test is Test {
     address private constant _NOTOWNER = address(0x55);
 
     IERC721 private _tokenContract;
-    VoterClass private _class;
+    CommunityClass private _class;
 
     function setUp() public {
         MockERC721 merc721 = new MockERC721();
@@ -25,7 +25,7 @@ contract CommunityClassClosedERC721Test is Test {
         _tokenContract = merc721;
         CommunityBuilder _builder = new CommunityBuilder();
         address _classAddress = _builder.aCommunity().asClosedErc721Community(address(_tokenContract), 2).withQuorum(1).build();
-        _class = VoterClass(_classAddress);
+        _class = CommunityClass(_classAddress);
     }
 
     function testOpenToMemberPropose() public {

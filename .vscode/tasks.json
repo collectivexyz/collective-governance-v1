@@ -167,7 +167,7 @@
             "options": {
                 "cwd": "${workspaceFolder}",
                 "env": {
-                    "CONSTANT_LIB_ADDRESS": "0x7e3C8cf2F6d02b37CAaBcc5f0163B58C4b619e87"
+                    "CONSTANT_LIB_ADDRESS": "0x41B110041D064Bad31a9828118C1f70b7d7D9f5d"
                 }
             },
             "dependsOn": "production",

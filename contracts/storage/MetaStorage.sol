@@ -102,7 +102,7 @@ interface MetaStorage is Versioned, IERC165 {
     /// @notice get the number of attached metadata
     /// @param _metaId the id of the metadata
     /// @return uint256 current number of meta elements
-    function metaCount(uint256 _metaId) external view returns (uint256);
+    function size(uint256 _metaId) external view returns (uint256);
 
     /// @notice attach arbitrary metadata to metadata
     /// @dev requires ownera
@@ -110,13 +110,13 @@ interface MetaStorage is Versioned, IERC165 {
     /// @param _name the name of the metadata field
     /// @param _value the value of the metadata
     /// @return uint256 the meta element id
-    function addMeta(uint256 _metaId, bytes32 _name, string memory _value) external returns (uint256);
+    function add(uint256 _metaId, bytes32 _name, string memory _value) external returns (uint256);
 
     /// @notice get arbitrary metadata from metadata
     /// @param _metaId the id of the metadata
     /// @param _metaElementId the id of the metadata
     /// @return Meta the meta data
-    function getMeta(uint256 _metaId, uint256 _metaElementId) external returns (Meta memory);
+    function get(uint256 _metaId, uint256 _metaElementId) external returns (Meta memory);
 
     /// @notice return the name of this implementation
     /// @return string memory representation of name

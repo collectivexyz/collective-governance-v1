@@ -71,8 +71,6 @@ interface VoterPool {
 contract CommunityClassVoterPool is ScheduledCommunityClass, ConfigurableMutable, VoterPool {
     string public constant NAME = "CommunityClassVoterPool";
 
-    uint256 private immutable _weight;
-
     // whitelisted voters
     AddressSet private _voterPool;
 
@@ -82,16 +80,16 @@ contract CommunityClassVoterPool is ScheduledCommunityClass, ConfigurableMutable
     /// @param _maximumDelay the least possible vote delay
     /// @param _minimumDuration the least possible voting duration
     /// @param _maximumDuration the least possible voting duration
-    constructor(
+    function initialize(
         uint256 _voteWeight,
         uint256 _minimumQuorum,
         uint256 _minimumDelay,
         uint256 _maximumDelay,
         uint256 _minimumDuration,
         uint256 _maximumDuration
-    ) ScheduledCommunityClass(_minimumQuorum, _minimumDelay, _maximumDelay, _minimumDuration, _maximumDuration) {
-        _weight = _voteWeight;
-        _voterPool = new AddressSet();
+    ) public override(ScheduledCommunityClass) {
+        super.initialize(_voteWeight, _minimumQuorum, _minimumDelay, _maximumDelay, _minimumDuration, _maximumDuration);
+        _voterPool = Constant.createAddressSet();
     }
 
     modifier requireValidShare(address _wallet, uint256 _shareId) {
@@ -152,12 +150,7 @@ contract CommunityClassVoterPool is ScheduledCommunityClass, ConfigurableMutable
         address _wallet,
         uint256 _shareId
     ) external view onlyFinal requireVoter(_wallet) requireValidShare(_wallet, _shareId) returns (uint256) {
-        return _weight;
-    }
-
-    /// @notice return voting weight of each confirmed share
-    function weight() external view returns (uint256) {
-        return _weight;
+        return weight();
     }
 
     /// @notice set the voterpool final.   No further changes may be made to the voting pool.

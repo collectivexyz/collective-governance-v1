@@ -43,63 +43,181 @@
  */
 pragma solidity ^0.8.15;
 
+import "@openzeppelin/contracts/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
-import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/proxy/utils/UUPSUpgradeable.sol";
 
 import "../../contracts/Constant.sol";
 import "../../contracts/access/ConfigurableMutable.sol";
 import "../../contracts/access/VersionedContract.sol";
 import "../../contracts/community/CommunityClass.sol";
+import "../../contracts/access/OwnableInitializable.sol";
 
 /// @title ScheduledCommunityClass
 /// @notice defines the configurable parameters for a community
-abstract contract ScheduledCommunityClass is CommunityClass, VersionedContract, Ownable, ERC165 {
+abstract contract ScheduledCommunityClass is
+    WeightedCommunityClass,
+    VersionedContract,
+    OwnableInitializable,
+    UUPSUpgradeable,
+    Initializable,
+    ERC165
+{
+    event UpgradeAuthorized(address sender, address owner);
+    event Initialized(
+        uint256 voteWeight,
+        uint256 minimumQuorum,
+        uint256 minimumDelay,
+        uint256 maximumDelay,
+        uint256 minimumDuration,
+        uint256 maximumDuration
+    );
+    event Upgraded(
+        uint256 voteWeight,
+        uint256 minimumQuorum,
+        uint256 minimumDelay,
+        uint256 maximumDelay,
+        uint256 minimumDuration,
+        uint256 maximumDuration
+    );
+
+    /// @notice weight of a single voting share
+    uint256 private _weight;
+
     /// @notice minimum vote delay for any vote
-    uint256 private immutable _minimumVoteDelay;
+    uint256 private _minimumVoteDelay;
 
     /// @notice maximum vote delay for any vote
-    uint256 private immutable _maximumVoteDelay;
+    uint256 private _maximumVoteDelay;
 
     /// @notice minimum time for any vote
-    uint256 private immutable _minimumVoteDuration;
+    uint256 private _minimumVoteDuration;
 
     /// @notice maximum time for any vote
-    uint256 private immutable _maximumVoteDuration;
+    uint256 private _maximumVoteDuration;
 
     /// @notice minimum quorum for any vote
-    uint256 private immutable _minimumProjectQuorum;
+    uint256 private _minimumProjectQuorum;
 
     /// @notice create a new community class representing community preferences
+    /// @param _voteWeight the weight of a single voting share
     /// @param _minimumQuorum the least possible quorum for any vote
     /// @param _minimumDelay the least possible vote delay
     /// @param _maximumDelay the least possible vote delay
     /// @param _minimumDuration the least possible voting duration
     /// @param _maximumDuration the least possible voting duration
-    constructor(
+    function initialize(
+        uint256 _voteWeight,
         uint256 _minimumQuorum,
         uint256 _minimumDelay,
         uint256 _maximumDelay,
         uint256 _minimumDuration,
         uint256 _maximumDuration
-    ) {
-        if (_minimumDelay < Constant.MINIMUM_VOTE_DELAY)
-            revert MinimumDelayNotPermitted(_minimumDelay, Constant.MINIMUM_VOTE_DELAY);
-        if (_maximumDelay > Constant.MAXIMUM_VOTE_DELAY)
-            revert MaximumDelayNotPermitted(_minimumDelay, Constant.MAXIMUM_VOTE_DELAY);
-        if (_minimumDelay >= _maximumDelay) revert MinimumDelayNotPermitted(_minimumDelay, _maximumDelay);
-        if (_minimumDuration < Constant.MINIMUM_VOTE_DURATION)
-            revert MinimumDurationNotPermitted(_minimumDuration, Constant.MINIMUM_VOTE_DURATION);
-        if (_maximumDuration > Constant.MAXIMUM_VOTE_DURATION)
-            revert MaximumDurationNotPermitted(_minimumDuration, Constant.MAXIMUM_VOTE_DURATION);
-        if (_minimumDuration >= _maximumDuration) revert MinimumDurationNotPermitted(_minimumDuration, _maximumDuration);
-        if (_minimumQuorum < Constant.MINIMUM_PROJECT_QUORUM)
-            revert MinimumQuorumNotPermitted(_minimumQuorum, Constant.MINIMUM_PROJECT_QUORUM);
+    )
+        public
+        virtual
+        initializer
+        requireValidWeight(_voteWeight)
+        requireProjectQuorum(_minimumQuorum)
+        requireMinimumDelay(_minimumDelay)
+        requireMaximumDelay(_maximumDelay)
+        requireMinimumDuration(_minimumDuration)
+    {
+        if (_minimumDelay > _maximumDelay) revert MinimumDelayExceedsMaximum(_minimumDelay, _maximumDelay);
+        if (_minimumDuration >= _maximumDuration) revert MinimumDurationExceedsMaximum(_minimumDuration, _maximumDuration);
+        ownerInitialize(msg.sender);
 
+        _weight = _voteWeight;
         _minimumVoteDelay = _minimumDelay;
         _maximumVoteDelay = _maximumDelay;
         _minimumVoteDuration = _minimumDuration;
         _maximumVoteDuration = _maximumDuration;
         _minimumProjectQuorum = _minimumQuorum;
+
+        emit Initialized(_voteWeight, _minimumQuorum, _minimumDelay, _maximumDelay, _minimumDuration, _maximumDuration);
+    }
+
+    /// @notice reset voting parameters for upgrade
+    /// @param _voteWeight the weight of a single voting share
+    /// @param _minimumQuorum the least possible quorum for any vote
+    /// @param _minimumDelay the least possible vote delay
+    /// @param _maximumDelay the least possible vote delay
+    /// @param _minimumDuration the least possible voting duration
+    /// @param _maximumDuration the least possible voting duration
+    function upgrade(
+        uint256 _voteWeight,
+        uint256 _minimumQuorum,
+        uint256 _minimumDelay,
+        uint256 _maximumDelay,
+        uint256 _minimumDuration,
+        uint256 _maximumDuration
+    )
+        public
+        onlyOwner
+        requireValidWeight(_voteWeight)
+        requireProjectQuorum(_minimumQuorum)
+        requireMinimumDelay(_minimumDelay)
+        requireMaximumDelay(_maximumDelay)
+        requireMinimumDuration(_minimumDuration)
+    {
+        if (_minimumDelay > _maximumDelay) revert MinimumDelayExceedsMaximum(_minimumDelay, _maximumDelay);
+        if (_minimumDuration >= _maximumDuration) revert MinimumDurationExceedsMaximum(_minimumDuration, _maximumDuration);
+
+        _weight = _voteWeight;
+        _minimumVoteDelay = _minimumDelay;
+        _maximumVoteDelay = _maximumDelay;
+        _minimumVoteDuration = _minimumDuration;
+        _maximumVoteDuration = _maximumDuration;
+        _minimumProjectQuorum = _minimumQuorum;
+
+        emit Upgraded(_voteWeight, _minimumQuorum, _minimumDelay, _maximumDelay, _minimumDuration, _maximumDuration);
+    }
+
+    modifier requireValidWeight(uint256 _voteWeight) {
+        if (_voteWeight < 1) revert VoteWeightMustBeNonZero();
+        _;
+    }
+
+    modifier requireProjectQuorum(uint256 _minimumQuorum) {
+        if (_minimumQuorum < Constant.MINIMUM_PROJECT_QUORUM)
+            revert MinimumQuorumNotPermitted(_minimumQuorum, Constant.MINIMUM_PROJECT_QUORUM);
+        _;
+    }
+
+    modifier requireMinimumDelay(uint256 _minimumDelay) {
+        if (_minimumDelay < Constant.MINIMUM_VOTE_DELAY)
+            revert MinimumDelayExceedsMaximum(_minimumDelay, Constant.MINIMUM_VOTE_DELAY);
+        _;
+    }
+
+    modifier requireMaximumDelay(uint256 _maximumDelay) {
+        if (_maximumDelay > Constant.MAXIMUM_VOTE_DELAY)
+            revert MaximumDelayNotPermitted(_maximumDelay, Constant.MAXIMUM_VOTE_DELAY);
+        _;
+    }
+
+    modifier requireMinimumDuration(uint256 _minimumDuration) {
+        if (_minimumDuration < Constant.MINIMUM_VOTE_DURATION)
+            revert MinimumDurationExceedsMaximum(_minimumDuration, Constant.MINIMUM_VOTE_DURATION);
+        _;
+    }
+
+    modifier requireMaximumDuration(uint256 _maximumDuration) {
+        if (_maximumDuration > Constant.MAXIMUM_VOTE_DURATION)
+            revert MaximumDurationNotPermitted(_maximumDuration, Constant.MAXIMUM_VOTE_DURATION);
+        _;
+    }
+
+    /// @notice return voting weight of each confirmed share
+    /// @return uint256 weight applied to one share
+    function weight() public view returns (uint256) {
+        return _weight;
+    }
+
+    /// @notice get the project quorum requirement
+    /// @return uint256 the least quorum allowed for any vote
+    function minimumProjectQuorum() public view returns (uint256) {
+        return _minimumProjectQuorum;
     }
 
     /// @notice get the project vote delay requirement
@@ -126,20 +244,19 @@ abstract contract ScheduledCommunityClass is CommunityClass, VersionedContract, 
         return _maximumVoteDuration;
     }
 
-    /// @notice get the project quorum requirement
-    /// @return uint256 the least quorum allowed for any vote
-    function minimumProjectQuorum() public view returns (uint256) {
-        return _minimumProjectQuorum;
-    }
-
     /// @notice see ERC-165
     function supportsInterface(bytes4 interfaceId) public view virtual override(IERC165, ERC165) returns (bool) {
         return
             interfaceId == type(Mutable).interfaceId ||
             interfaceId == type(VoterClass).interfaceId ||
             interfaceId == type(CommunityClass).interfaceId ||
+            interfaceId == type(WeightedCommunityClass).interfaceId ||
             interfaceId == type(Versioned).interfaceId ||
-            interfaceId == type(Ownable).interfaceId ||
             super.supportsInterface(interfaceId);
+    }
+
+    /// see UUPSUpgradeable
+    function _authorizeUpgrade(address _caller) internal virtual override(UUPSUpgradeable) onlyOwner {
+        emit UpgradeAuthorized(_caller, owner());
     }
 }

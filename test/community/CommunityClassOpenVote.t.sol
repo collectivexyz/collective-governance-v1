@@ -11,12 +11,12 @@ contract CommunityClassOpenVoteTest is Test {
     address private immutable _OWNER = address(0xffeeeeff);
     address private immutable _NOTOWNER = address(0x55);
 
-    VoterClass private _class;
+    WeightedCommunityClass private _class;
 
     function setUp() public {
         CommunityBuilder _builder = new CommunityBuilder();
         address _classAddress = _builder.aCommunity().asOpenCommunity().withQuorum(1).build();
-        _class = CommunityClass(_classAddress);
+        _class = WeightedCommunityClass(_classAddress);
     }
 
     function testOpenToPropose() public {

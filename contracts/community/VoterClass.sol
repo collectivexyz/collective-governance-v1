@@ -56,18 +56,12 @@ import "../../contracts/access/Versioned.sol";
 /// @custom:type interface
 interface VoterClass is Mutable, Versioned, IERC165 {
     error NotVoter(address wallet);
-    error NotOwner(address tokenContract, address wallet);
     error EmptyCommunity();
     error UnknownToken(uint256 tokenId);
 
     /// @notice test if wallet represents an allowed voter for this class
     /// @return bool true if wallet is a voter
     function isVoter(address _wallet) external view returns (bool);
-
-    /// @notice determine if adding a proposal is approved for this voter
-    /// @param _sender The address of the sender
-    /// @return bool true if this address is approved
-    function canPropose(address _sender) external view returns (bool);
 
     /// @notice discover an array of shareIds associated with the specified wallet
     /// @return uint256[] array in memory of share ids
@@ -76,10 +70,6 @@ interface VoterClass is Mutable, Versioned, IERC165 {
     /// @notice confirm shareid is associated with wallet for voting
     /// @return uint256 The number of weighted votes confirmed
     function confirm(address _wallet, uint256 shareId) external returns (uint256);
-
-    /// @notice return voting weight of each confirmed share
-    /// @return uint256 weight applied to one share
-    function weight() external view returns (uint256);
 
     /// @notice return the name of this implementation
     /// @return string memory representation of name

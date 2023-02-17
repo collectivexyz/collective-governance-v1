@@ -21,4 +21,3 @@ yul = true
 
 [profile.default.optimizer_details.yulDetails]
 stackAllocation = true
-

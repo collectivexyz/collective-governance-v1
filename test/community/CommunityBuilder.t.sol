@@ -26,6 +26,17 @@ contract CommunityBuilderTest is Test {
         assertEq(_builder.name(), "community builder");
     }
 
+    function testCommunityTypeChangeForbidden() public {
+        vm.expectRevert(abi.encodeWithSelector(CommunityBuilder.CommunityTypeChange.selector));
+        _builder.asOpenCommunity().asPoolCommunity();
+        vm.expectRevert(abi.encodeWithSelector(CommunityBuilder.CommunityTypeChange.selector));
+        _builder.asPoolCommunity().asOpenCommunity();
+        vm.expectRevert(abi.encodeWithSelector(CommunityBuilder.CommunityTypeChange.selector));
+        _builder.asPoolCommunity().asErc721Community(address(0x1234));
+        vm.expectRevert(abi.encodeWithSelector(CommunityBuilder.CommunityTypeChange.selector));
+        _builder.asErc721Community(address(0x1234)).asClosedErc721Community(address(0x1234), 10);
+    }
+
     function testRequiresWeight() public {
         _builder.asOpenCommunity().withQuorum(1).withWeight(0);
         vm.expectRevert(abi.encodeWithSelector(CommunityBuilder.NonZeroWeightRequired.selector, 0));
@@ -47,7 +58,7 @@ contract CommunityBuilderTest is Test {
     function testSuitableDefaultWeight() public {
         _builder.asOpenCommunity().withQuorum(1);
         address _classAddress = _builder.build();
-        CommunityClass _class = CommunityClass(_classAddress);
+        WeightedCommunityClass _class = WeightedCommunityClass(_classAddress);
         assertEq(_class.weight(), 1);
     }
 
@@ -82,7 +93,7 @@ contract CommunityBuilderTest is Test {
     function testSetWeight() public {
         _builder.asOpenCommunity().withQuorum(1).withWeight(75);
         address _classAddress = _builder.build();
-        CommunityClass _class = CommunityClass(_classAddress);
+        WeightedCommunityClass _class = WeightedCommunityClass(_classAddress);
         assertEq(_class.weight(), 75);
     }
 
@@ -104,7 +115,7 @@ contract CommunityBuilderTest is Test {
         _builder.asOpenCommunity().withQuorum(1).withMinimumVoteDuration(Constant.MINIMUM_VOTE_DURATION - 1);
         vm.expectRevert(
             abi.encodeWithSelector(
-                CommunityClass.MinimumDurationNotPermitted.selector,
+                CommunityClass.MinimumDurationExceedsMaximum.selector,
                 Constant.MINIMUM_VOTE_DURATION - 1,
                 Constant.MINIMUM_VOTE_DURATION
             )

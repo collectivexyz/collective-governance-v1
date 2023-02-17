@@ -45,7 +45,7 @@ pragma solidity ^0.8.15;
 
 import "@openzeppelin/contracts/token/ERC721/extensions/IERC721Enumerable.sol";
 
-import "../../contracts/access/AlwaysFinal.sol";
+import "../../contracts/access/ConfigurableMutable.sol";
 import "../../contracts/community/ScheduledCommunityClass.sol";
 
 /// @title ERC721 Implementation of CommunityClass
@@ -54,14 +54,12 @@ import "../../contracts/community/ScheduledCommunityClass.sol";
 /// ownerOf a token of the specified address
 /// @dev ERC721Enumerable is supported for discovery, however if the token contract does not support enumeration
 /// then vote by specific tokenId is still supported
-contract CommunityClassERC721 is ScheduledCommunityClass, AlwaysFinal {
+contract CommunityClassERC721 is ScheduledCommunityClass, ProjectCommunityClass, ConfigurableMutable {
     error ERC721EnumerableRequired(address contractAddress);
 
     string public constant NAME = "CommunityClassERC721";
 
-    address internal immutable _contractAddress;
-
-    uint256 internal immutable _weight;
+    address internal _contractAddress;
 
     /// @param _contract Address of the token contract
     /// @param _voteWeight The integral weight to apply to each token held by the wallet
@@ -70,7 +68,7 @@ contract CommunityClassERC721 is ScheduledCommunityClass, AlwaysFinal {
     /// @param _maximumDelay the least possible vote delay
     /// @param _minimumDuration the least possible voting duration
     /// @param _maximumDuration the least possible voting duration
-    constructor(
+    function initialize(
         address _contract,
         uint256 _voteWeight,
         uint256 _minimumQuorum,
@@ -78,9 +76,9 @@ contract CommunityClassERC721 is ScheduledCommunityClass, AlwaysFinal {
         uint256 _maximumDelay,
         uint256 _minimumDuration,
         uint256 _maximumDuration
-    ) ScheduledCommunityClass(_minimumQuorum, _minimumDelay, _maximumDelay, _minimumDuration, _maximumDuration) {
+    ) public virtual {
+        initialize(_voteWeight, _minimumQuorum, _minimumDelay, _maximumDelay, _minimumDuration, _maximumDuration);
         _contractAddress = _contract;
-        _weight = _voteWeight;
     }
 
     modifier requireValidToken(uint256 _shareId) {
@@ -90,20 +88,20 @@ contract CommunityClassERC721 is ScheduledCommunityClass, AlwaysFinal {
 
     /// @notice determine if wallet holds at least one token from the ERC-721 contract
     /// @return bool true if wallet can sign for votes on this class
-    function isVoter(address _wallet) public view returns (bool) {
+    function isVoter(address _wallet) public view onlyFinal returns (bool) {
         return IERC721(_contractAddress).balanceOf(_wallet) > 0;
     }
 
     /// @notice determine if adding a proposal is approved for this voter
     /// @return bool true if this address is approved
-    function canPropose(address) external view virtual returns (bool) {
+    function canPropose(address) external view virtual onlyFinal returns (bool) {
         return true;
     }
 
     /// @notice tabulate the number of votes available for the specific wallet and tokenId
     /// @param _wallet The wallet to test for ownership
     /// @param _tokenId The id of the token associated with the ERC-721 contract
-    function votesAvailable(address _wallet, uint256 _tokenId) external view returns (uint256) {
+    function votesAvailable(address _wallet, uint256 _tokenId) external view onlyFinal returns (uint256) {
         address tokenOwner = IERC721(_contractAddress).ownerOf(_tokenId);
         if (_wallet == tokenOwner) {
             return 1;
@@ -114,13 +112,13 @@ contract CommunityClassERC721 is ScheduledCommunityClass, AlwaysFinal {
     /// @notice discover an array of tokenIds associated with the specified wallet
     /// @dev discovery requires support for ERC721Enumerable, otherwise execution will revert
     /// @return uint256[] array in memory of share ids
-    function discover(address _wallet) external view returns (uint256[] memory) {
+    function discover(address _wallet) external view onlyFinal returns (uint256[] memory) {
         bytes4 interfaceId721 = type(IERC721Enumerable).interfaceId;
         if (!IERC721(_contractAddress).supportsInterface(interfaceId721)) revert ERC721EnumerableRequired(_contractAddress);
         IERC721Enumerable enumContract = IERC721Enumerable(_contractAddress);
         IERC721 _nft = IERC721(_contractAddress);
         uint256 tokenBalance = _nft.balanceOf(_wallet);
-        if (tokenBalance == 0) revert NotOwner(_contractAddress, _wallet);
+        if (tokenBalance == 0) revert NotVoter(_wallet);
         uint256[] memory tokenIdList = new uint256[](tokenBalance);
         for (uint256 i = 0; i < tokenBalance; i++) {
             tokenIdList[i] = enumContract.tokenOfOwnerByIndex(_wallet, i);
@@ -131,16 +129,10 @@ contract CommunityClassERC721 is ScheduledCommunityClass, AlwaysFinal {
     /// @notice confirm tokenId is associated with wallet for voting
     /// @dev does not require IERC721Enumerable, tokenId ownership is checked directly using ERC-721
     /// @return uint256 The number of weighted votes confirmed
-    function confirm(address _wallet, uint256 _tokenId) external view requireValidToken(_tokenId) returns (uint256) {
+    function confirm(address _wallet, uint256 _tokenId) external view onlyFinal requireValidToken(_tokenId) returns (uint256) {
         uint256 voteCount = this.votesAvailable(_wallet, _tokenId);
-        if (voteCount == 0) revert NotOwner(_contractAddress, _wallet);
-        return _weight * voteCount;
-    }
-
-    /// @notice return voting weight of each confirmed share
-    /// @return uint256 weight applied to one share
-    function weight() external view returns (uint256) {
-        return _weight;
+        if (voteCount == 0) revert NotVoter(_wallet);
+        return weight() * voteCount;
     }
 
     /// @notice return the name of this implementation

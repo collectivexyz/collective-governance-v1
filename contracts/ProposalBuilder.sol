@@ -65,10 +65,16 @@ contract ProposalBuilder is VersionedContract, ERC165, Ownable {
     error NotStorage(address _address);
     error NotMetaStorage(address _address);
     error StringSizeLimit(address _sender, uint256 len);
+    error ProposalNotInitialized(address _sender);
 
     event ProposalInitialized(address _sender);
     event ProposalTransaction(address _sender, address target, uint256 value, uint256 scheduleTime, uint256 transactionId);
     event ProposalDescription(address _sender, string description, string url);
+    event ProposalMeta(address _sender, bytes32 name, string value);
+    event ProposalQuorum(address _sender, uint256 quorum);
+    event ProposalDelay(address _sender, uint256 delay);
+    event ProposalDuration(address _sender, uint256 duration);
+    event ProposalBuild(address _sender, uint256 proposalId);
 
     struct ProposalProperties {
         uint256 quorum;
@@ -141,6 +147,16 @@ contract ProposalBuilder is VersionedContract, ERC165, Ownable {
         _;
     }
 
+    modifier requireAProposal() {
+        ProposalProperties storage _properties = _proposalMap[msg.sender];
+        if (
+            address(_properties.transaction) == address(0x0) ||
+            address(_properties.meta) == address(0x0) ||
+            address(_properties.choice) == address(0x0)
+        ) revert ProposalNotInitialized(msg.sender);
+        _;
+    }
+
     function aProposal() external returns (ProposalBuilder) {
         clear();
         emit ProposalInitialized(msg.sender);
@@ -155,7 +171,7 @@ contract ProposalBuilder is VersionedContract, ERC165, Ownable {
         bytes32 _name,
         string memory _description,
         uint256 _transactionId
-    ) external requireValidString(_description) returns (ProposalBuilder) {
+    ) external requireAProposal requireValidString(_description) returns (ProposalBuilder) {
         ProposalProperties storage _properties = _proposalMap[msg.sender];
         _properties.choice.add(Choice(_name, _description, _transactionId, "", 0));
         return this;
@@ -175,7 +191,7 @@ contract ProposalBuilder is VersionedContract, ERC165, Ownable {
         string memory _signature,
         bytes memory _calldata,
         uint256 _scheduleTime
-    ) external returns (ProposalBuilder) {
+    ) external requireAProposal returns (ProposalBuilder) {
         ProposalProperties storage _properties = _proposalMap[msg.sender];
         Transaction memory transaction = Transaction(_target, _value, _signature, _calldata, _scheduleTime);
         uint256 id = _properties.transaction.add(transaction);
@@ -190,10 +206,11 @@ contract ProposalBuilder is VersionedContract, ERC165, Ownable {
     function withDescription(
         string memory _description,
         string memory _url
-    ) external requireValidString(_description) requireValidString(_url) returns (ProposalBuilder) {
+    ) external requireAProposal requireValidString(_description) requireValidString(_url) returns (ProposalBuilder) {
         ProposalProperties storage _properties = _proposalMap[msg.sender];
         _properties.description = _description;
         _properties.url = _url;
+        emit ProposalDescription(msg.sender, _description, _url);
         return this;
     }
 
@@ -201,72 +218,73 @@ contract ProposalBuilder is VersionedContract, ERC165, Ownable {
     /// @param _name the name of the metadata field
     /// @param _value the value of the metadata
     /// @return ProposalBuilder this builder
-    function withMeta(bytes32 _name, string memory _value) external returns (ProposalBuilder) {
+    function withMeta(bytes32 _name, string memory _value) external requireAProposal returns (ProposalBuilder) {
         ProposalProperties storage _properties = _proposalMap[msg.sender];
         _properties.meta.add(Meta(_name, _value));
+        emit ProposalMeta(msg.sender, _name, _value);
         return this;
     }
 
     /// @notice set the minimum quorum
     /// @param _quorum the quorum
     /// @return ProposalBuilder this builder
-    function withQuorum(uint256 _quorum) external returns (ProposalBuilder) {
+    function withQuorum(uint256 _quorum) external requireAProposal returns (ProposalBuilder) {
         ProposalProperties storage _properties = _proposalMap[msg.sender];
         _properties.quorum = _quorum;
+        emit ProposalQuorum(msg.sender, _quorum);
         return this;
     }
 
     /// @notice set the vote delay
     /// @param _delay the delay
     /// @return ProposalBuilder this builder
-    function withDelay(uint256 _delay) external returns (ProposalBuilder) {
+    function withDelay(uint256 _delay) external requireAProposal returns (ProposalBuilder) {
         ProposalProperties storage _properties = _proposalMap[msg.sender];
         _properties.voteDelay = _delay;
+        emit ProposalDelay(msg.sender, _delay);
         return this;
     }
 
     /// @notice set the vote duration
     /// @param _duration the duration
     /// @return ProposalBuilder this builder
-    function withDuration(uint256 _duration) external returns (ProposalBuilder) {
+    function withDuration(uint256 _duration) external requireAProposal returns (ProposalBuilder) {
         ProposalProperties storage _properties = _proposalMap[msg.sender];
         _properties.voteDuration = _duration;
+        emit ProposalDuration(msg.sender, _duration);
         return this;
     }
 
     /// @notice build the proposal
     /// @return uint256 the propposal id
-    function build() external returns (uint256) {
+    function build() external requireAProposal returns (uint256) {
         ProposalProperties storage _properties = _proposalMap[msg.sender];
         uint256 pid = _governance.propose();
-        if (_properties.transaction.size() > 0) {
-            for (uint256 i = 1; i <= _properties.transaction.size(); ++i) {
-                Transaction memory transaction = _properties.transaction.get(i);
-                _governance.attachTransaction(
-                    pid,
-                    transaction.target,
-                    transaction.value,
-                    transaction.signature,
-                    transaction._calldata,
-                    transaction.scheduleTime
-                );
-            }
+        for (uint256 i = 1; i <= _properties.transaction.size(); ++i) {
+            Transaction memory transaction = _properties.transaction.get(i);
+            _governance.attachTransaction(
+                pid,
+                transaction.target,
+                transaction.value,
+                transaction.signature,
+                transaction._calldata,
+                transaction.scheduleTime
+            );
         }
-        if (_properties.choice.size() > 0) {
-            for (uint256 i = 1; i <= _properties.choice.size(); ++i) {
-                Choice memory choice = _properties.choice.get(i);
-                _governance.addChoice(pid, choice.name, choice.description, choice.transactionId);
-            }
+        for (uint256 i = 1; i <= _properties.choice.size(); ++i) {
+            Choice memory choice = _properties.choice.get(i);
+            _governance.addChoice(pid, choice.name, choice.description, choice.transactionId);
         }
         if (!Constant.empty(_properties.url) || !Constant.empty(_properties.description) || _properties.meta.size() > 0) {
             _meta.describe(pid, _properties.url, _properties.description);
             for (uint256 i = 1; i <= _properties.meta.size(); ++i) {
                 Meta memory meta = _properties.meta.get(i);
-                _meta.addMeta(pid, meta.name, meta.value);
+                _meta.add(pid, meta.name, meta.value);
             }
         }
 
         _governance.configure(pid, _properties.quorum, _properties.voteDelay, _properties.voteDuration);
+        emit ProposalBuild(msg.sender, pid);
         return pid;
     }
 
@@ -285,10 +303,11 @@ contract ProposalBuilder is VersionedContract, ERC165, Ownable {
     }
 
     function clear() public {
+        CommunityClass _class = _storage.communityClass();
         ProposalProperties storage _properties = _proposalMap[msg.sender];
-        _properties.quorum = 0;
-        _properties.voteDelay = 0;
-        _properties.voteDuration = 0;
+        _properties.quorum = _class.minimumProjectQuorum();
+        _properties.voteDelay = _class.minimumVoteDelay();
+        _properties.voteDuration = _class.minimumVoteDuration();
         _properties.description = "";
         _properties.url = "";
         _properties.transaction = new TransactionSet();

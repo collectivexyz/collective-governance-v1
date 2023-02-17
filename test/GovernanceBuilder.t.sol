@@ -16,10 +16,7 @@ import "../contracts/GovernanceFactory.sol";
 import "../contracts/GovernanceBuilder.sol";
 import "../contracts/Governance.sol";
 import "../contracts/CollectiveGovernance.sol";
-import "../contracts/community/VoterClass.sol";
-import "../contracts/community/CommunityClassVoterPool.sol";
-import "../contracts/community/CommunityClassERC721.sol";
-import "../contracts/community/CommunityClassOpenVote.sol";
+import "../contracts/community/CommunityBuilder.sol";
 
 import "./mock/MockERC721.sol";
 
@@ -29,6 +26,7 @@ contract GovernanceBuilderTest is Test {
     address private constant _VOTER1 = address(0xfff1);
 
     GovernanceBuilder private _builder;
+    CommunityBuilder private _communityBuilder;
 
     CommunityClass private _class;
 
@@ -36,17 +34,9 @@ contract GovernanceBuilderTest is Test {
         vm.clearMockedCalls();
         vm.prank(_OWNER, _OWNER);
         _builder = new GovernanceBuilder();
-        CommunityClassVoterPool _poolClass = new CommunityClassVoterPool(
-            1,
-            Constant.MINIMUM_PROJECT_QUORUM,
-            Constant.MINIMUM_VOTE_DELAY,
-            Constant.MAXIMUM_VOTE_DELAY,
-            Constant.MINIMUM_VOTE_DURATION,
-            Constant.MAXIMUM_VOTE_DURATION
-        );
-        _poolClass.addVoter(_VOTER1);
-        _poolClass.makeFinal();
-        _class = _poolClass;
+        _communityBuilder = new CommunityBuilder();
+        address _communityLocation = _communityBuilder.asPoolCommunity().withVoter(_VOTER1).build();
+        _class = CommunityClass(_communityLocation);
     }
 
     function testWithSupervisor() public {
@@ -62,17 +52,8 @@ contract GovernanceBuilderTest is Test {
     }
 
     function testWithMinimumVoteDelay() public {
-        CommunityClassVoterPool _poolClass = new CommunityClassVoterPool(
-            1,
-            Constant.MINIMUM_PROJECT_QUORUM,
-            1 hours,
-            Constant.MAXIMUM_VOTE_DELAY,
-            Constant.MINIMUM_VOTE_DURATION,
-            Constant.MAXIMUM_VOTE_DURATION
-        );
-        _poolClass.addVoter(_VOTER1);
-        _poolClass.makeFinal();
-        _class = _poolClass;
+        address _communityLocation = _communityBuilder.asPoolCommunity().withVoter(_VOTER1).withMinimumVoteDelay(1 hours).build();
+        _class = CommunityClass(_communityLocation);
         (address payable _governance, , ) = _builder.aGovernance().withSupervisor(_SUPERVISOR).withCommunityClass(_class).build();
         Governance _gov = Governance(_governance);
         vm.prank(_VOTER1, _VOTER1);
@@ -91,17 +72,8 @@ contract GovernanceBuilderTest is Test {
     }
 
     function testWithMaximumVoteDelay() public {
-        CommunityClassVoterPool _poolClass = new CommunityClassVoterPool(
-            1,
-            Constant.MINIMUM_PROJECT_QUORUM,
-            Constant.MINIMUM_VOTE_DELAY,
-            1 hours,
-            Constant.MINIMUM_VOTE_DURATION,
-            Constant.MAXIMUM_VOTE_DURATION
-        );
-        _poolClass.addVoter(_VOTER1);
-        _poolClass.makeFinal();
-        _class = _poolClass;
+        address _communityLocation = _communityBuilder.asPoolCommunity().withVoter(_VOTER1).withMaximumVoteDelay(1 hours).build();
+        _class = CommunityClass(_communityLocation);
         (address payable _governance, , ) = _builder.aGovernance().withSupervisor(_SUPERVISOR).withCommunityClass(_class).build();
         Governance _gov = Governance(_governance);
         vm.prank(_VOTER1, _VOTER1);
@@ -120,17 +92,12 @@ contract GovernanceBuilderTest is Test {
     }
 
     function testWithMinimumVoteDuration() public {
-        CommunityClassVoterPool _poolClass = new CommunityClassVoterPool(
-            1,
-            Constant.MINIMUM_PROJECT_QUORUM,
-            Constant.MINIMUM_VOTE_DELAY,
-            Constant.MAXIMUM_VOTE_DELAY,
-            2 * Constant.MINIMUM_VOTE_DURATION,
-            Constant.MAXIMUM_VOTE_DURATION
-        );
-        _poolClass.addVoter(_VOTER1);
-        _poolClass.makeFinal();
-        _class = _poolClass;
+        address _communityLocation = _communityBuilder
+            .asPoolCommunity()
+            .withVoter(_VOTER1)
+            .withMinimumVoteDuration(2 * Constant.MINIMUM_VOTE_DURATION)
+            .build();
+        _class = CommunityClass(_communityLocation);
         (address payable _governance, , ) = _builder.aGovernance().withSupervisor(_SUPERVISOR).withCommunityClass(_class).build();
         Governance _gov = Governance(_governance);
         vm.prank(_VOTER1, _VOTER1);
@@ -149,17 +116,12 @@ contract GovernanceBuilderTest is Test {
     }
 
     function testWithMaximumVoteDuration() public {
-        CommunityClassVoterPool _poolClass = new CommunityClassVoterPool(
-            1,
-            Constant.MINIMUM_PROJECT_QUORUM,
-            Constant.MINIMUM_VOTE_DELAY,
-            Constant.MAXIMUM_VOTE_DELAY,
-            Constant.MINIMUM_VOTE_DURATION,
-            2 * Constant.MINIMUM_VOTE_DURATION
-        );
-        _poolClass.addVoter(_VOTER1);
-        _poolClass.makeFinal();
-        _class = _poolClass;
+        address _communityLocation = _communityBuilder
+            .asPoolCommunity()
+            .withVoter(_VOTER1)
+            .withMaximumVoteDuration(2 * Constant.MINIMUM_VOTE_DURATION)
+            .build();
+        _class = CommunityClass(_communityLocation);
         (address payable _governance, , ) = _builder.aGovernance().withSupervisor(_SUPERVISOR).withCommunityClass(_class).build();
         Governance _gov = Governance(_governance);
         vm.prank(_VOTER1, _VOTER1);
@@ -204,15 +166,8 @@ contract GovernanceBuilderTest is Test {
     function testWithERC721() public {
         MockERC721 merc721 = new MockERC721();
         merc721.mintTo(_VOTER1, 0x10);
-        _class = new CommunityClassERC721(
-            address(merc721),
-            1,
-            Constant.MINIMUM_PROJECT_QUORUM,
-            Constant.MINIMUM_VOTE_DELAY,
-            Constant.MAXIMUM_VOTE_DELAY,
-            Constant.MINIMUM_VOTE_DURATION,
-            Constant.MAXIMUM_VOTE_DURATION
-        );
+        address _communityLocation = _communityBuilder.asErc721Community(address(merc721)).build();
+        _class = CommunityClass(_communityLocation);
         (address payable _governance, address _storage, ) = _builder
             .aGovernance()
             .withSupervisor(_SUPERVISOR)
@@ -227,15 +182,8 @@ contract GovernanceBuilderTest is Test {
     function testMetaStoreIsReturned() public {
         MockERC721 merc721 = new MockERC721();
         merc721.mintTo(_VOTER1, 0x10);
-        _class = new CommunityClassERC721(
-            address(merc721),
-            1,
-            Constant.MINIMUM_PROJECT_QUORUM,
-            Constant.MINIMUM_VOTE_DELAY,
-            Constant.MAXIMUM_VOTE_DELAY,
-            Constant.MINIMUM_VOTE_DURATION,
-            Constant.MAXIMUM_VOTE_DURATION
-        );
+        address _communityLocation = _communityBuilder.asErc721Community(address(merc721)).build();
+        _class = CommunityClass(_communityLocation);
         (, , address _metaStore) = _builder.aGovernance().withSupervisor(_SUPERVISOR).withCommunityClass(_class).build();
         assertTrue(_metaStore != address(0x0));
     }

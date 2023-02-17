@@ -93,7 +93,7 @@ contract MappedMetaStorage is MetaStorage, VersionedContract, ERC165, Ownable {
     /// @notice get the number of attached metadata
     /// @param _metaId the id of the metadata
     /// @return uint256 current number of meta elements
-    function metaCount(uint256 _metaId) external view requireValid(_metaId) returns (uint256) {
+    function size(uint256 _metaId) external view requireValid(_metaId) returns (uint256) {
         MetaStore storage metaStore = metaStoreMap[_metaId];
         return metaStore.meta.size();
     }
@@ -138,7 +138,7 @@ contract MappedMetaStorage is MetaStorage, VersionedContract, ERC165, Ownable {
     /// @param _name the name of the metadata field
     /// @param _value the value of the metadata
     /// @return uint256 the id of the attached element
-    function addMeta(
+    function add(
         uint256 _metaId,
         bytes32 _name,
         string memory _value
@@ -153,7 +153,7 @@ contract MappedMetaStorage is MetaStorage, VersionedContract, ERC165, Ownable {
     /// @param _metaId the id of the metadata
     /// @param _metaElementId the id of the element
     /// @return Meta the metadata element
-    function getMeta(uint256 _metaId, uint256 _metaElementId) external view requireValid(_metaId) returns (Meta memory) {
+    function get(uint256 _metaId, uint256 _metaElementId) external view requireValid(_metaId) returns (Meta memory) {
         MetaStore storage metaStore = metaStoreMap[_metaId];
         return metaStore.meta.get(_metaElementId);
     }

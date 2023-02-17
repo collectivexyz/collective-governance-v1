@@ -50,25 +50,6 @@ import "../../contracts/community/ScheduledCommunityClass.sol";
 contract CommunityClassOpenVote is ScheduledCommunityClass, AlwaysFinal {
     string public constant NAME = "CommunityClassOpenVote";
 
-    uint256 private immutable _weight;
-
-    /// @param _voteWeight The integral weight to apply to each token held by the wallet
-    /// @param _minimumQuorum the least possible quorum for any vote
-    /// @param _minimumDelay the least possible vote delay
-    /// @param _maximumDelay the least possible vote delay
-    /// @param _minimumDuration the least possible voting duration
-    /// @param _maximumDuration the least possible voting duration
-    constructor(
-        uint256 _voteWeight,
-        uint256 _minimumQuorum,
-        uint256 _minimumDelay,
-        uint256 _maximumDelay,
-        uint256 _minimumDuration,
-        uint256 _maximumDuration
-    ) ScheduledCommunityClass(_minimumQuorum, _minimumDelay, _maximumDelay, _minimumDuration, _maximumDuration) {
-        _weight = _voteWeight;
-    }
-
     modifier requireValidShare(address _wallet, uint256 _shareId) {
         if (_shareId != uint160(_wallet)) revert UnknownToken(_shareId);
         _;
@@ -99,13 +80,7 @@ contract CommunityClassOpenVote is ScheduledCommunityClass, AlwaysFinal {
     /// @notice confirm shareid is associated with wallet for voting
     /// @return uint256 The number of weighted votes confirmed
     function confirm(address _wallet, uint256 _shareId) external view requireValidShare(_wallet, _shareId) returns (uint256) {
-        return _weight;
-    }
-
-    /// @notice return voting weight of each confirmed share
-    /// @return uint256 weight applied to one share
-    function weight() external view returns (uint256) {
-        return _weight;
+        return weight();
     }
 
     /// @notice return the name of this implementation

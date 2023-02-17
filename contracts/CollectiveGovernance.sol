@@ -96,7 +96,7 @@ function calculateGasRebate(
 contract CollectiveGovernance is VoteStrategy, Governance, ERC165, VersionedContract {
     string public constant NAME = "collective governance";
 
-    VoterClass public immutable _voterClass;
+    CommunityClass public immutable _voterClass;
 
     Storage public immutable _storage;
 
@@ -121,7 +121,7 @@ contract CollectiveGovernance is VoteStrategy, Governance, ERC165, VersionedCont
     /// @param _baseFeeRebate The maximum base fee rebate
     constructor(
         address[] memory _supervisorList,
-        VoterClass _class,
+        CommunityClass _class,
         Storage _governanceStorage,
         TimeLocker _timeLocker,
         uint256 _gasUsedRebate,

@@ -14,22 +14,30 @@ import "../contracts/access/Versioned.sol";
 import "../contracts/GovernanceBuilder.sol";
 import "../contracts/community/CommunityBuilder.sol";
 
+import "./mock/TestData.sol";
+
 contract ProposalBuilderTest is Test {
     address private constant _OWNER = address(0x1);
     address private constant _CREATOR = address(0x2);
     address private constant _VOTER1 = address(0xfff1);
 
-    ProposalBuilder private _proposalBuilder;
+    CommunityClass private _class;
+    Storage private _storage;
+    MetaStorage private _meta;
+    ProposalBuilder private _builder;
 
     function setUp() public {
-        address _class = new CommunityBuilder().aCommunity().asOpenCommunity().withQuorum(1).build();
+        address _classAddr = new CommunityBuilder().aCommunity().asOpenCommunity().withQuorum(1).build();
         (address payable _govAddr, address _stoAddr, address _metaAddr) = new GovernanceBuilder()
             .aGovernance()
             .withSupervisor(_CREATOR)
-            .withCommunityClassAddress(_class)
+            .withCommunityClassAddress(_classAddr)
             .build();
-        transferOwnership(_metaAddr, address(this));
-        _proposalBuilder = new ProposalBuilder(_govAddr, _stoAddr, _metaAddr);
+        _builder = new ProposalBuilder(_govAddr, _stoAddr, _metaAddr);
+        transferOwnership(_metaAddr, address(_builder));
+        _storage = Storage(_stoAddr);
+        _meta = MetaStorage(_metaAddr);
+        _class = CommunityClass(_classAddr);
     }
 
     function testRequiresGovernanceLessThanStorageVersion() public {
@@ -48,8 +56,8 @@ contract ProposalBuilderTest is Test {
 
     function testRequiresGovernanceLessThanMetaStorageVersion() public {
         address _gov = mockGovernance();
-        address _storage = mockStorage();
-        address _meta = mockConforming(address(0x10), Constant.CURRENT_VERSION - 1, true);
+        address _mockStorage = mockStorage();
+        address _mockMeta = mockConforming(address(0x10), Constant.CURRENT_VERSION - 1, true);
         vm.expectRevert(
             abi.encodeWithSelector(
                 ProposalBuilder.VersionMismatch.selector,
@@ -57,31 +65,126 @@ contract ProposalBuilderTest is Test {
                 Constant.CURRENT_VERSION - 1
             )
         );
-        new ProposalBuilder(_gov, _storage, _meta);
+        new ProposalBuilder(_gov, _mockStorage, _mockMeta);
     }
 
     function testRequiresGovernance() public {
         address _gov = mockConforming(address(0x10), Constant.CURRENT_VERSION, false);
-        address _storage = mockStorage();
-        address _meta = mockMetaStorage();
+        address _mockStorage = mockStorage();
+        address _mockMeta = mockMetaStorage();
         vm.expectRevert(abi.encodeWithSelector(ProposalBuilder.NotGovernance.selector, _gov));
-        new ProposalBuilder(_gov, _storage, _meta);
+        new ProposalBuilder(_gov, _mockStorage, _mockMeta);
     }
 
     function testRequiresStorage() public {
         address _gov = mockGovernance();
-        address _storage = mockConforming(address(0x11), Constant.CURRENT_VERSION, false);
-        address _meta = mockMetaStorage();
-        vm.expectRevert(abi.encodeWithSelector(ProposalBuilder.NotStorage.selector, _storage));
-        new ProposalBuilder(_gov, _storage, _meta);
+        address _mockStorage = mockConforming(address(0x11), Constant.CURRENT_VERSION, false);
+        address _mockMeta = mockMetaStorage();
+        vm.expectRevert(abi.encodeWithSelector(ProposalBuilder.NotStorage.selector, _mockStorage));
+        new ProposalBuilder(_gov, _mockStorage, _mockMeta);
     }
 
     function testRequiresMeta() public {
         address _gov = mockGovernance();
-        address _storage = mockStorage();
-        address _meta = mockConforming(address(0x12), Constant.CURRENT_VERSION, false);
-        vm.expectRevert(abi.encodeWithSelector(ProposalBuilder.NotMetaStorage.selector, _meta));
-        new ProposalBuilder(_gov, _storage, _meta);
+        address _mockStorage = mockStorage();
+        address _mockMeta = mockConforming(address(0x12), Constant.CURRENT_VERSION, false);
+        vm.expectRevert(abi.encodeWithSelector(ProposalBuilder.NotMetaStorage.selector, _mockMeta));
+        new ProposalBuilder(_gov, _mockStorage, _mockMeta);
+    }
+
+    function testFailChoiceDescriptionSizeChecked() public {
+        string memory _excessiveString = TestData.pi1kplus();
+        _builder.withChoice("abc", _excessiveString, 0);
+    }
+
+    function testInitializationRequired() public {
+        vm.expectRevert(abi.encodeWithSelector(ProposalBuilder.ProposalNotInitialized.selector, address(this)));
+        _builder.withQuorum(1);
+        vm.expectRevert(abi.encodeWithSelector(ProposalBuilder.ProposalNotInitialized.selector, address(this)));
+        _builder.withChoice("a", "first", 0);
+        vm.expectRevert(abi.encodeWithSelector(ProposalBuilder.ProposalNotInitialized.selector, address(this)));
+        _builder.withTransaction(address(0x123), 0, "", "", 0);
+        vm.expectRevert(abi.encodeWithSelector(ProposalBuilder.ProposalNotInitialized.selector, address(this)));
+        _builder.withDescription("desc", "url");
+        vm.expectRevert(abi.encodeWithSelector(ProposalBuilder.ProposalNotInitialized.selector, address(this)));
+        _builder.withMeta("name", "value");
+        vm.expectRevert(abi.encodeWithSelector(ProposalBuilder.ProposalNotInitialized.selector, address(this)));
+        _builder.withDelay(0);
+        vm.expectRevert(abi.encodeWithSelector(ProposalBuilder.ProposalNotInitialized.selector, address(this)));
+        _builder.withDuration(0);
+        vm.expectRevert(abi.encodeWithSelector(ProposalBuilder.ProposalNotInitialized.selector, address(this)));
+        _builder.build();
+    }
+
+    function testWithDuration(uint256 _duration) public {
+        vm.assume(
+            _duration >= _class.minimumVoteDuration() &&
+                _duration <= _class.maximumVoteDuration() &&
+                _duration < Constant.UINT_MAX - _class.minimumVoteDelay() - block.timestamp
+        );
+        uint256 pid = _builder.aProposal().withDuration(_duration).build();
+        uint256 voteDuration = _storage.voteDuration(pid);
+        assertEq(voteDuration, _duration);
+    }
+
+    function testWithDelay(uint256 _delay) public {
+        vm.assume(
+            _delay >= _class.minimumVoteDelay() &&
+                _delay <= _class.maximumVoteDelay() &&
+                _delay < Constant.UINT_MAX - _class.minimumVoteDuration() - block.timestamp
+        );
+        uint256 pid = _builder.aProposal().withDelay(_delay).build();
+        uint256 voteDelay = _storage.voteDelay(pid);
+        assertEq(voteDelay, _delay);
+    }
+
+    function testWithQuorum(uint256 _quorum) public {
+        vm.assume(_quorum >= _class.minimumProjectQuorum());
+        uint256 pid = _builder.aProposal().withQuorum(_quorum).build();
+        uint256 quorum = _storage.quorumRequired(pid);
+        assertEq(quorum, _quorum);
+    }
+
+    function testWithMeta() public {
+        uint256 pid = _builder.aProposal().withMeta("bab", "zy").build();
+        Meta memory meta = _meta.get(pid, _meta.size(pid));
+        assertEq(meta.name, "bab");
+        assertEq(meta.value, "zy");
+    }
+
+    function testWithDescription() public {
+        uint256 pid = _builder.aProposal().withDescription("a fair proposal", "https://collective.xyz").build();
+        assertEq(_meta.description(pid), "a fair proposal");
+        assertEq(_meta.url(pid), "https://collective.xyz");
+    }
+
+    function testWithTransaction() public {
+        uint256 scheduleTime = block.timestamp + Constant.TIMELOCK_MINIMUM_DELAY;
+        Transaction memory t = Transaction(address(0x123), 4, "get()", "000000", scheduleTime);
+        uint256 pid = _builder.aProposal().withTransaction(t.target, t.value, t.signature, t._calldata, t.scheduleTime).build();
+        Transaction memory storedT = _storage.getTransaction(pid, _storage.transactionCount(pid));
+        assertEq(storedT.target, t.target);
+        assertEq(storedT.value, t.value);
+        assertEq(storedT.signature, t.signature);
+        assertEq(storedT._calldata, t._calldata);
+        assertEq(storedT.scheduleTime, t.scheduleTime);
+    }
+
+    function testWithoutChoice() public {
+        uint256 pid = _builder.aProposal().build();
+        assertFalse(_storage.isChoiceVote(pid));
+    }
+
+    function testAddChoice() public {
+        Choice memory choice = Choice("zz", "first choice", 0, 0x0, 0);
+        uint256 pid = _builder.aProposal().withChoice(choice.name, choice.description, choice.transactionId).build();
+        Choice memory storeChoice = _storage.getChoice(pid, _storage.choiceCount(pid));
+        assertEq(storeChoice.name, choice.name);
+        assertEq(storeChoice.description, choice.description);
+        assertEq(storeChoice.transactionId, choice.transactionId);
+        assertEq(storeChoice.txHash, choice.txHash);
+        assertEq(storeChoice.voteCount, choice.voteCount);
+        assertTrue(_storage.isChoiceVote(pid));
     }
 
     function mockGovernance() private returns (address) {

@@ -48,6 +48,7 @@ import "@openzeppelin/contracts/interfaces/IERC165.sol";
 import "../../contracts/access/Versioned.sol";
 import "../../contracts/collection/TransactionSet.sol";
 import "../../contracts/collection/ChoiceSet.sol";
+import "../../contracts/community/CommunityClass.sol";
 
 /// @title Storage interface
 /// @dev Eternal storage of strategy proxy
@@ -323,6 +324,10 @@ interface Storage is Versioned, IERC165 {
     /// @param _proposalId the id of the proposal
     /// @return uint256 the amount of participation
     function quorum(uint256 _proposalId) external view returns (uint256);
+
+    /// @notice get the CommunityClass
+    /// @return CommunityClass the voter class
+    function communityClass() external view returns (CommunityClass);
 
     /// @notice test if the address is a supervisor on the specified proposal
     /// @param _proposalId the id of the proposal
