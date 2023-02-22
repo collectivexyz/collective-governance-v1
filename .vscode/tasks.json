@@ -148,11 +148,14 @@
             }
         },
         {
-            "label": "deployfactory",
+            "label": "deploycommunitybuilder",
             "type": "shell",
-            "command": "forge create --contracts contracts/VoterClassFactory.sol --rpc-url ${DEVNET_RPC_URL} --private-key ${ETH_DEV_PRIVATE} --etherscan-api-key ${ETHERSCAN_API_KEY} --verify VoterClassFactory",
+            "command": "forge create --libraries contracts/Constant.sol:Constant:${CONSTANT_LIB_ADDRESS} --contracts contracts/community/CommunityBuilder.sol --rpc-url ${DEVNET_RPC_URL} --private-key ${ETH_DEV_PRIVATE} --etherscan-api-key ${ETHERSCAN_API_KEY} --verify CommunityBuilder",
             "options": {
-                "cwd": "${workspaceFolder}"
+                "cwd": "${workspaceFolder}",
+                "env": {
+                    "CONSTANT_LIB_ADDRESS": "0xF5890ac663A7dbE92560D6B8B88A6A89704b204e"
+                }
             },
             "dependsOn": "production",
             "group": {
@@ -161,13 +164,32 @@
             }
         },
         {
-            "label": "deploybuilder",
+            "label": "deploygovernancebuilder",
             "type": "shell",
             "command": "forge create --libraries contracts/Constant.sol:Constant:${CONSTANT_LIB_ADDRESS} --contracts contracts/GovernanceBuilder.sol --rpc-url ${DEVNET_RPC_URL} --private-key ${ETH_DEV_PRIVATE} --etherscan-api-key ${ETHERSCAN_API_KEY} --verify GovernanceBuilder",
             "options": {
                 "cwd": "${workspaceFolder}",
                 "env": {
-                    "CONSTANT_LIB_ADDRESS": "0x41B110041D064Bad31a9828118C1f70b7d7D9f5d"
+                    "CONSTANT_LIB_ADDRESS": "0xF5890ac663A7dbE92560D6B8B88A6A89704b204e"
+                }
+            },
+            "dependsOn": "production",
+            "group": {
+                "kind": "test",
+                "isDefault": false
+            }
+        },
+        {
+            "label": "deployproposalbuilder",
+            "type": "shell",
+            "command": "forge create --libraries contracts/Constant.sol:Constant:${CONSTANT_LIB_ADDRESS} --contracts contracts/ProposalBuilder.sol --rpc-url ${DEVNET_RPC_URL} --private-key ${ETH_DEV_PRIVATE} --etherscan-api-key ${ETHERSCAN_API_KEY} --verify ProposalBuilder --constructor-args ${GOVERNANCE_ADDRESS} ${STORAGE_ADDRESS} ${META_ADDRESS}",
+            "options": {
+                "cwd": "${workspaceFolder}",
+                "env": {
+                    "CONSTANT_LIB_ADDRESS": "0xF5890ac663A7dbE92560D6B8B88A6A89704b204e",
+                    "GOVERNANCE_ADDRESS": "",
+                    "STORAGE_ADDRESS": "",
+                    "META_ADDRESS": ""
                 }
             },
             "dependsOn": "production",
