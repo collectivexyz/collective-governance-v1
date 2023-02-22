@@ -45,7 +45,7 @@ pragma solidity ^0.8.15;
 
 import "@openzeppelin/contracts/token/ERC721/extensions/IERC721Enumerable.sol";
 
-import "../../contracts/access/ConfigurableMutable.sol";
+import "../../contracts/access/AlwaysFinal.sol";
 import "../../contracts/community/ScheduledCommunityClass.sol";
 
 /// @title ERC721 Implementation of CommunityClass
@@ -54,7 +54,7 @@ import "../../contracts/community/ScheduledCommunityClass.sol";
 /// ownerOf a token of the specified address
 /// @dev ERC721Enumerable is supported for discovery, however if the token contract does not support enumeration
 /// then vote by specific tokenId is still supported
-contract CommunityClassERC721 is ScheduledCommunityClass, ProjectCommunityClass, ConfigurableMutable {
+contract CommunityClassERC721 is ScheduledCommunityClass, ProjectCommunityClass, AlwaysFinal {
     error ERC721EnumerableRequired(address contractAddress);
 
     string public constant NAME = "CommunityClassERC721";
@@ -79,6 +79,23 @@ contract CommunityClassERC721 is ScheduledCommunityClass, ProjectCommunityClass,
     ) public virtual {
         initialize(_voteWeight, _minimumQuorum, _minimumDelay, _maximumDelay, _minimumDuration, _maximumDuration);
         _contractAddress = _contract;
+    }
+
+    /// @param _voteWeight The integral weight to apply to each token held by the wallet
+    /// @param _minimumQuorum the least possible quorum for any vote
+    /// @param _minimumDelay the least possible vote delay
+    /// @param _maximumDelay the least possible vote delay
+    /// @param _minimumDuration the least possible voting duration
+    /// @param _maximumDuration the least possible voting duration
+    function initialize(
+        uint256 _voteWeight,
+        uint256 _minimumQuorum,
+        uint256 _minimumDelay,
+        uint256 _maximumDelay,
+        uint256 _minimumDuration,
+        uint256 _maximumDuration
+    ) public virtual {
+        initialize(_voteWeight, _minimumQuorum, _minimumDelay, _maximumDelay, _minimumDuration, _maximumDuration, msg.sender);
     }
 
     modifier requireValidToken(uint256 _shareId) {

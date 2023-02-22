@@ -82,10 +82,6 @@ contract CommunityClassClosedERC721 is CommunityClassERC721 {
         _;
     }
 
-    function setTokenRequirement(uint256 _requirement) external requireNonZero(_tokenRequirement) onlyMutable {
-        _tokenRequirement = _requirement;
-    }
-
     /// @notice determine if adding a proposal is approved for this voter
     /// @return bool true if this address is approved
     function canPropose(address _wallet) external view virtual override(CommunityClassERC721) onlyFinal returns (bool) {

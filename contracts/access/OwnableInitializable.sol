@@ -76,7 +76,7 @@ abstract contract OwnableInitializable {
         return _owner;
     }
 
-    function transferOwnership(address _delegateOwner) external onlyOwner {
+    function transferOwnership(address _delegateOwner) public onlyOwner {
         address _current = _owner;
         _owner = _delegateOwner;
         emit OwnershipTransferred(_current, _owner);

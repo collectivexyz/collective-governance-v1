@@ -106,15 +106,17 @@ abstract contract ScheduledCommunityClass is
     /// @param _maximumDelay the least possible vote delay
     /// @param _minimumDuration the least possible voting duration
     /// @param _maximumDuration the least possible voting duration
+    /// @param _owner the owner for the class
     function initialize(
         uint256 _voteWeight,
         uint256 _minimumQuorum,
         uint256 _minimumDelay,
         uint256 _maximumDelay,
         uint256 _minimumDuration,
-        uint256 _maximumDuration
+        uint256 _maximumDuration,
+        address _owner
     )
-        public
+        internal
         virtual
         initializer
         requireValidWeight(_voteWeight)
@@ -125,7 +127,7 @@ abstract contract ScheduledCommunityClass is
     {
         if (_minimumDelay > _maximumDelay) revert MinimumDelayExceedsMaximum(_minimumDelay, _maximumDelay);
         if (_minimumDuration >= _maximumDuration) revert MinimumDurationExceedsMaximum(_minimumDuration, _maximumDuration);
-        ownerInitialize(msg.sender);
+        ownerInitialize(_owner);
 
         _weight = _voteWeight;
         _minimumVoteDelay = _minimumDelay;
@@ -252,6 +254,7 @@ abstract contract ScheduledCommunityClass is
             interfaceId == type(CommunityClass).interfaceId ||
             interfaceId == type(WeightedCommunityClass).interfaceId ||
             interfaceId == type(Versioned).interfaceId ||
+            interfaceId == type(Initializable).interfaceId ||
             super.supportsInterface(interfaceId);
     }
 

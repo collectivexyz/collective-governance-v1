@@ -87,8 +87,16 @@ contract CommunityClassVoterPool is ScheduledCommunityClass, ConfigurableMutable
         uint256 _maximumDelay,
         uint256 _minimumDuration,
         uint256 _maximumDuration
-    ) public override(ScheduledCommunityClass) {
-        super.initialize(_voteWeight, _minimumQuorum, _minimumDelay, _maximumDelay, _minimumDuration, _maximumDuration);
+    ) public {
+        super.initialize(
+            _voteWeight,
+            _minimumQuorum,
+            _minimumDelay,
+            _maximumDelay,
+            _minimumDuration,
+            _maximumDuration,
+            msg.sender
+        );
         _voterPool = Constant.createAddressSet();
     }
 

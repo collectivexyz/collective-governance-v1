@@ -55,6 +55,31 @@ contract CommunityClassOpenVote is ScheduledCommunityClass, AlwaysFinal {
         _;
     }
 
+    /// @param _voteWeight The integral weight to apply to each token held by the wallet
+    /// @param _minimumQuorum the least possible quorum for any vote
+    /// @param _minimumDelay the least possible vote delay
+    /// @param _maximumDelay the least possible vote delay
+    /// @param _minimumDuration the least possible voting duration
+    /// @param _maximumDuration the least possible voting duration
+    function initialize(
+        uint256 _voteWeight,
+        uint256 _minimumQuorum,
+        uint256 _minimumDelay,
+        uint256 _maximumDelay,
+        uint256 _minimumDuration,
+        uint256 _maximumDuration
+    ) public {
+        super.initialize(
+            _voteWeight,
+            _minimumQuorum,
+            _minimumDelay,
+            _maximumDelay,
+            _minimumDuration,
+            _maximumDuration,
+            msg.sender
+        );
+    }
+
     /// @notice return true for all wallets
     /// @dev always returns true
     /// @return bool true if voter

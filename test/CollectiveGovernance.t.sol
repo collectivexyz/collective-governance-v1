@@ -386,7 +386,7 @@ contract CollectiveGovernanceTest is Test {
         governance.configure(proposalId, 2);
         governance.startVote(proposalId);
         vm.stopPrank();
-        vm.expectRevert(abi.encodeWithSelector(VoterClass.NotVoter.selector, address(_erc721), _NOT_VOTER));
+        vm.expectRevert(abi.encodeWithSelector(VoterClass.NotVoter.selector, _NOT_VOTER));
         vm.prank(_NOT_VOTER, _NOT_VOTER);
         governance.voteFor(proposalId, TOKEN_ID1);
     }
@@ -406,7 +406,7 @@ contract CollectiveGovernanceTest is Test {
         governance.configure(proposalId, 2);
         governance.startVote(proposalId);
         vm.stopPrank();
-        vm.expectRevert(abi.encodeWithSelector(VoterClass.NotVoter.selector, address(_erc721), _NOT_VOTER));
+        vm.expectRevert(abi.encodeWithSelector(VoterClass.NotVoter.selector, _NOT_VOTER));
         vm.prank(_NOT_VOTER, _NOT_VOTER);
         governance.voteAgainst(proposalId, TOKEN_ID1);
     }
@@ -426,7 +426,7 @@ contract CollectiveGovernanceTest is Test {
         governance.configure(proposalId, 2);
         governance.startVote(proposalId);
         vm.stopPrank();
-        vm.expectRevert(abi.encodeWithSelector(VoterClass.NotVoter.selector, address(_erc721), _NOT_VOTER));
+        vm.expectRevert(abi.encodeWithSelector(VoterClass.NotVoter.selector, _NOT_VOTER));
         vm.prank(_NOT_VOTER, _NOT_VOTER);
         governance.abstainFrom(proposalId, TOKEN_ID1);
     }
@@ -511,7 +511,13 @@ contract CollectiveGovernanceTest is Test {
 
     function testOwnerCastVote() public {
         CommunityBuilder _communityBuilder = new CommunityBuilder();
-        address _communityLocation = _communityBuilder.asPoolCommunity().withVoter(_VOTER1).withVoter(_SUPERVISOR).build();
+        address _communityLocation = _communityBuilder
+            .aCommunity()
+            .asPoolCommunity()
+            .withVoter(_VOTER1)
+            .withVoter(_SUPERVISOR)
+            .withQuorum(1)
+            .build();
         CommunityClass _class = CommunityClass(_communityLocation);
         (_governanceAddress, _storageAddress, ) = _builder
             .aGovernance()
@@ -768,10 +774,12 @@ contract CollectiveGovernanceTest is Test {
     function testMeasureIsVeto() public {
         CommunityBuilder _communityBuilder = new CommunityBuilder();
         address _communityLocation = _communityBuilder
+            .aCommunity()
             .asPoolCommunity()
             .withVoter(_VOTER1)
             .withVoter(_VOTER2)
             .withVoter(_OWNER)
+            .withQuorum(1)
             .build();
         CommunityClass _class = CommunityClass(_communityLocation);
         _builder.aGovernance().withCommunityClass(_class).withSupervisor(_SUPERVISOR);
@@ -805,10 +813,12 @@ contract CollectiveGovernanceTest is Test {
         uint256 blockTimestamp = block.timestamp;
         CommunityBuilder _communityBuilder = new CommunityBuilder();
         address _communityLocation = _communityBuilder
+            .aCommunity()
             .asPoolCommunity()
             .withVoter(_VOTER1)
             .withVoter(_VOTER2)
             .withVoter(_OWNER)
+            .withQuorum(1)
             .build();
         CommunityClass _class = CommunityClass(_communityLocation);
         _builder.aGovernance().withCommunityClass(_class).withSupervisor(_SUPERVISOR);
@@ -1357,7 +1367,7 @@ contract CollectiveGovernanceTest is Test {
         governance.voteFor(proposalId, TOKEN_ID1);
         assertTrue(_VOTER1.balance > 0);
         // requires optimized build
-        assertApproxEqAbs(_VOTER1.balance, 9046180 gwei, 10000 gwei);
+        assertApproxEqAbs(_VOTER1.balance, 9325160 gwei, 10000 gwei);
     }
 
     function testCastAgainstWithRefund() public {
@@ -1375,7 +1385,7 @@ contract CollectiveGovernanceTest is Test {
         governance.voteAgainst(proposalId, TOKEN_ID1);
         assertTrue(_VOTER1.balance > 0);
         // requires optimized build
-        assertApproxEqAbs(_VOTER1.balance, 8009508 gwei, 10000 gwei);
+        assertApproxEqAbs(_VOTER1.balance, 8286304 gwei, 10000 gwei);
     }
 
     function testAbstainWithRefund() public {
@@ -1393,7 +1403,7 @@ contract CollectiveGovernanceTest is Test {
         governance.abstainFrom(proposalId, TOKEN_ID1);
         assertTrue(_VOTER1.balance > 0);
         // requires optimized build
-        assertApproxEqAbs(_VOTER1.balance, 8659404 gwei, 10000 gwei);
+        assertApproxEqAbs(_VOTER1.balance, 8941036 gwei, 10000 gwei);
     }
 
     function testChoiceVoteSimple() public {
@@ -1596,7 +1606,11 @@ contract CollectiveGovernanceTest is Test {
 
     function buildERC721(address projectAddress) private returns (address payable, address, address) {
         CommunityBuilder _communityBuilder = new CommunityBuilder();
-        address _communityLocation = _communityBuilder.asClosedErc721Community(projectAddress, 1).build();
+        address _communityLocation = _communityBuilder
+            .aCommunity()
+            .asClosedErc721Community(projectAddress, 1)
+            .withQuorum(1)
+            .build();
         CommunityClass _class = CommunityClass(_communityLocation);
         return _builder.aGovernance().withCommunityClass(_class).withSupervisor(_SUPERVISOR).build();
     }
@@ -1609,6 +1623,7 @@ contract CollectiveGovernanceTest is Test {
     ) private returns (address payable, address, address) {
         CommunityBuilder _communityBuilder = new CommunityBuilder();
         address _communityLocation = _communityBuilder
+            .aCommunity()
             .asClosedErc721Community(projectAddress, 1)
             .withQuorum(minimumProjectQuorum)
             .withMinimumVoteDelay(minimumVoteDelay)
@@ -1620,14 +1635,20 @@ contract CollectiveGovernanceTest is Test {
 
     function buildVoterPool() private returns (address payable, address, address) {
         CommunityBuilder _communityBuilder = new CommunityBuilder();
-        address _communityLocation = _communityBuilder.asPoolCommunity().withVoter(_VOTER1).build();
+        address _communityLocation = _communityBuilder
+            .aCommunity()
+            .asPoolCommunity()
+            .withQuorum(1)
+            .withVoter(_VOTER1)
+            .withVoter(_OWNER)
+            .build();
         CommunityClass _class = CommunityClass(_communityLocation);
         return _builder.aGovernance().withCommunityClass(_class).withSupervisor(_SUPERVISOR).build();
     }
 
     function buildOpenVote() private returns (address payable, address, address) {
         CommunityBuilder _communityBuilder = new CommunityBuilder();
-        address _communityLocation = _communityBuilder.asOpenCommunity().build();
+        address _communityLocation = _communityBuilder.aCommunity().asOpenCommunity().withQuorum(1).build();
         CommunityClass _class = CommunityClass(_communityLocation);
         return _builder.aGovernance().withCommunityClass(_class).withSupervisor(_SUPERVISOR).build();
     }

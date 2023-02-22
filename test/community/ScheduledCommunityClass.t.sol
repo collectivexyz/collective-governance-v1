@@ -9,6 +9,8 @@ import "../../contracts/community/ScheduledCommunityClass.sol";
 import "../../contracts/community/CommunityBuilder.sol";
 
 contract ScheduledCommunityClassTest is Test {
+    address private constant _OTHER = address(0x1234);
+
     ScheduledCommunityClass private _class;
 
     function setUp() public {
@@ -73,5 +75,18 @@ contract ScheduledCommunityClassTest is Test {
     function testIsIERC165() public {
         IERC165 _erc165 = IERC165(address(_class));
         assertTrue(_erc165.supportsInterface(type(IERC165).interfaceId));
+    }
+
+    function testUpgradeRequiresOwner() public {
+        vm.expectRevert(abi.encodeWithSelector(OwnableInitializable.NotOwner.selector, _OTHER));
+        vm.prank(_OTHER, _OTHER);
+        _class.upgrade(
+            1,
+            Constant.MINIMUM_PROJECT_QUORUM,
+            Constant.MINIMUM_VOTE_DELAY,
+            Constant.MAXIMUM_VOTE_DELAY,
+            Constant.MINIMUM_VOTE_DURATION,
+            Constant.MAXIMUM_VOTE_DURATION
+        );
     }
 }

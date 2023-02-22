@@ -3,11 +3,13 @@
 pragma solidity ^0.8.15;
 
 import "forge-std/Test.sol";
+import "../../contracts/community/CommunityFactory.sol";
 import "../../contracts/community/CommunityBuilder.sol";
 import "../../contracts/access/Versioned.sol";
 
 contract CommunityClassVoterPoolTest is Test {
     address private immutable _VOTER = address(0xffeeeeff);
+    address private immutable _VOTER1 = address(0xffeeeeee);
     address private immutable _NOTVOTER = address(0x55);
     address private immutable _NOBODY = address(0x0);
 
@@ -15,7 +17,7 @@ contract CommunityClassVoterPoolTest is Test {
 
     function setUp() public {
         CommunityBuilder _builder = new CommunityBuilder();
-        address _classLocation = _builder.asPoolCommunity().withVoter(_VOTER).build();
+        address _classLocation = _builder.aCommunity().asPoolCommunity().withVoter(_VOTER).withQuorum(1).build();
         _class = CommunityClass(_classLocation);
     }
 
@@ -27,9 +29,18 @@ contract CommunityClassVoterPoolTest is Test {
         assertFalse(_class.canPropose(_NOTVOTER));
     }
 
-    function testFailEmptyCommunity() public {
-        CommunityClassVoterPool _emptyClass = new CommunityClassVoterPool();
-        _emptyClass.makeFinal();
+    function testEmptyCommunity() public {
+        WeightedClassFactory _factory = new WeightedClassFactory();
+        CommunityClassVoterPool _pool = _factory.createVoterPool(
+            1,
+            1,
+            Constant.MINIMUM_VOTE_DELAY,
+            Constant.MAXIMUM_VOTE_DELAY,
+            Constant.MINIMUM_VOTE_DURATION,
+            Constant.MAXIMUM_VOTE_DURATION
+        );
+        vm.expectRevert(abi.encodeWithSelector(VoterClass.EmptyCommunity.selector));
+        _pool.makeFinal();
     }
 
     function testDiscoverVoter() public {
@@ -39,11 +50,21 @@ contract CommunityClassVoterPoolTest is Test {
     }
 
     function testRemoveVoter() public {
-        CommunityClassVoterPool _editClass = new CommunityClassVoterPool();
-        assertTrue(_editClass.isVoter(_VOTER));
-        _editClass.removeVoter(_VOTER);
-        assertFalse(_editClass.isVoter(_VOTER));
-        assertEq(_editClass.confirm(_VOTER, uint160(_VOTER)), 0);
+        WeightedClassFactory _factory = new WeightedClassFactory();
+        CommunityClassVoterPool _pool = _factory.createVoterPool(
+            1,
+            1,
+            Constant.MINIMUM_VOTE_DELAY,
+            Constant.MAXIMUM_VOTE_DELAY,
+            Constant.MINIMUM_VOTE_DURATION,
+            Constant.MAXIMUM_VOTE_DURATION
+        );
+        _pool.addVoter(_VOTER);
+        _pool.addVoter(_VOTER1);
+        assertTrue(_pool.isVoter(_VOTER));
+        _pool.removeVoter(_VOTER);
+        _pool.makeFinal();
+        assertFalse(_pool.isVoter(_VOTER));
     }
 
     function testFailRemoveVoter() public {
@@ -67,14 +88,32 @@ contract CommunityClassVoterPoolTest is Test {
     }
 
     function testFailMakeFinalNotOwner() public {
-        CommunityClassVoterPool _editClass = new CommunityClassVoterPool();
-        _editClass.addVoter(_VOTER);
+        WeightedClassFactory _factory = new WeightedClassFactory();
+        CommunityClassVoterPool _pool = _factory.createVoterPool(
+            1,
+            1,
+            Constant.MINIMUM_VOTE_DELAY,
+            Constant.MAXIMUM_VOTE_DELAY,
+            Constant.MINIMUM_VOTE_DURATION,
+            Constant.MAXIMUM_VOTE_DURATION
+        );
+        _pool.addVoter(_VOTER);
         vm.prank(_VOTER);
-        _editClass.makeFinal();
+        _pool.makeFinal();
     }
 
     function testFailConfirmNotFinal() public {
-        _class.confirm(_VOTER, uint160(_VOTER));
+        WeightedClassFactory _factory = new WeightedClassFactory();
+        CommunityClassVoterPool _pool = _factory.createVoterPool(
+            1,
+            1,
+            Constant.MINIMUM_VOTE_DELAY,
+            Constant.MAXIMUM_VOTE_DELAY,
+            Constant.MINIMUM_VOTE_DURATION,
+            Constant.MAXIMUM_VOTE_DURATION
+        );
+        _pool.addVoter(_VOTER);
+        _pool.confirm(_VOTER, uint160(_VOTER));
     }
 
     function testFailAddVoterByVoter() public {
@@ -101,7 +140,18 @@ contract CommunityClassVoterPoolTest is Test {
     }
 
     function testMakeFinal() public {
-        assertTrue(_class.isFinal());
+        WeightedClassFactory _factory = new WeightedClassFactory();
+        CommunityClassVoterPool _pool = _factory.createVoterPool(
+            1,
+            1,
+            Constant.MINIMUM_VOTE_DELAY,
+            Constant.MAXIMUM_VOTE_DELAY,
+            Constant.MINIMUM_VOTE_DURATION,
+            Constant.MAXIMUM_VOTE_DURATION
+        );
+        _pool.addVoter(_VOTER);
+        _pool.makeFinal();
+        assertTrue(_pool.isFinal());
     }
 
     function testFailRemoveIfFinal() public {
@@ -115,7 +165,6 @@ contract CommunityClassVoterPoolTest is Test {
         assertTrue(_erc165.supportsInterface(type(VoterClass).interfaceId));
         assertTrue(_erc165.supportsInterface(type(CommunityClass).interfaceId));
         assertTrue(_erc165.supportsInterface(type(Mutable).interfaceId));
-        assertTrue(_erc165.supportsInterface(type(Ownable).interfaceId));
         assertTrue(_erc165.supportsInterface(type(IERC165).interfaceId));
     }
 

@@ -227,8 +227,6 @@ contract CommunityBuilder is VersionedContract, ERC165, Ownable {
                 _properties.minimumVoteDuration,
                 _properties.maximumVoteDuration
             );
-            ConfigurableMutable _mutable = ConfigurableMutable(address(_proxy));
-            _mutable.makeFinal();
         } else if (_properties.communityType == CommunityType.ERC721) {
             if (_properties.projectToken == address(0x0)) revert ProjectTokenRequired(_properties.projectToken);
             _proxy = _projectFactory.createErc721(
@@ -240,8 +238,6 @@ contract CommunityBuilder is VersionedContract, ERC165, Ownable {
                 _properties.minimumVoteDuration,
                 _properties.maximumVoteDuration
             );
-            ConfigurableMutable _mutable = ConfigurableMutable(address(_proxy));
-            _mutable.makeFinal();
         } else if (_properties.communityType == CommunityType.OPEN) {
             _proxy = _weightedFactory.createOpenVote(
                 _properties.weight,

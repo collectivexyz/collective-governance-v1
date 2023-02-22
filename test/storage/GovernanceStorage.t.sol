@@ -39,7 +39,14 @@ contract GovernanceStorageTest is Test {
     function setUp() public {
         vm.clearMockedCalls();
         _builder = new CommunityBuilder();
-        address _communityLocation = _builder.asPoolCommunity().withVoter(_VOTER1).withVoter(_VOTER2).withVoter(_VOTER3).build();
+        address _communityLocation = _builder
+            .aCommunity()
+            .asPoolCommunity()
+            .withVoter(_VOTER1)
+            .withVoter(_VOTER2)
+            .withVoter(_VOTER3)
+            .withQuorum(1)
+            .build();
         _voterClass = CommunityClass(_communityLocation);
         _storage = new StorageFactory().create(_voterClass);
         _proposalId = _storage.initializeProposal(_OWNER);
@@ -417,7 +424,7 @@ contract GovernanceStorageTest is Test {
     }
 
     function testCastOneVoteFromAll() public {
-        address _classLocation = _builder.asOpenCommunity().build();
+        address _classLocation = _builder.aCommunity().asOpenCommunity().withQuorum(1).build();
         CommunityClass _class = CommunityClass(_classLocation);
         _storage = new GovernanceStorage(_class);
         _storage.initializeProposal(_OWNER);
@@ -432,7 +439,7 @@ contract GovernanceStorageTest is Test {
         uint256 tokenId = 0x71;
         MockERC721 token = new MockERC721();
         token.mintTo(_VOTER2, tokenId);
-        address _classLocation = _builder.asErc721Community(address(token)).build();
+        address _classLocation = _builder.aCommunity().asErc721Community(address(token)).withQuorum(1).build();
         CommunityClass _class = CommunityClass(_classLocation);
         _storage = new GovernanceStorage(_class);
         _storage.initializeProposal(_OWNER);
@@ -660,7 +667,14 @@ contract GovernanceStorageChoiceVoteTest is Test {
     function setUp() public {
         vm.clearMockedCalls();
         CommunityBuilder _builder = new CommunityBuilder();
-        address _communityLocation = _builder.asPoolCommunity().withVoter(_VOTER1).withVoter(_VOTER2).withVoter(_VOTER3).build();
+        address _communityLocation = _builder
+            .aCommunity()
+            .asPoolCommunity()
+            .withVoter(_VOTER1)
+            .withVoter(_VOTER2)
+            .withVoter(_VOTER3)
+            .withQuorum(1)
+            .build();
         CommunityClass _voterClass = CommunityClass(_communityLocation);
         _storage = new StorageFactory().create(_voterClass);
         _proposalId = _storage.initializeProposal(_OWNER);

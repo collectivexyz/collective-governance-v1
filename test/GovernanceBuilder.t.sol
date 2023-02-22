@@ -35,7 +35,7 @@ contract GovernanceBuilderTest is Test {
         vm.prank(_OWNER, _OWNER);
         _builder = new GovernanceBuilder();
         _communityBuilder = new CommunityBuilder();
-        address _communityLocation = _communityBuilder.asPoolCommunity().withVoter(_VOTER1).build();
+        address _communityLocation = _communityBuilder.aCommunity().asPoolCommunity().withVoter(_VOTER1).withQuorum(1).build();
         _class = CommunityClass(_communityLocation);
     }
 
@@ -52,7 +52,13 @@ contract GovernanceBuilderTest is Test {
     }
 
     function testWithMinimumVoteDelay() public {
-        address _communityLocation = _communityBuilder.asPoolCommunity().withVoter(_VOTER1).withMinimumVoteDelay(1 hours).build();
+        address _communityLocation = _communityBuilder
+            .aCommunity()
+            .asPoolCommunity()
+            .withVoter(_VOTER1)
+            .withMinimumVoteDelay(1 hours)
+            .withQuorum(1)
+            .build();
         _class = CommunityClass(_communityLocation);
         (address payable _governance, , ) = _builder.aGovernance().withSupervisor(_SUPERVISOR).withCommunityClass(_class).build();
         Governance _gov = Governance(_governance);
@@ -72,7 +78,13 @@ contract GovernanceBuilderTest is Test {
     }
 
     function testWithMaximumVoteDelay() public {
-        address _communityLocation = _communityBuilder.asPoolCommunity().withVoter(_VOTER1).withMaximumVoteDelay(1 hours).build();
+        address _communityLocation = _communityBuilder
+            .aCommunity()
+            .asPoolCommunity()
+            .withVoter(_VOTER1)
+            .withMaximumVoteDelay(1 hours)
+            .withQuorum(1)
+            .build();
         _class = CommunityClass(_communityLocation);
         (address payable _governance, , ) = _builder.aGovernance().withSupervisor(_SUPERVISOR).withCommunityClass(_class).build();
         Governance _gov = Governance(_governance);
@@ -93,9 +105,11 @@ contract GovernanceBuilderTest is Test {
 
     function testWithMinimumVoteDuration() public {
         address _communityLocation = _communityBuilder
+            .aCommunity()
             .asPoolCommunity()
             .withVoter(_VOTER1)
             .withMinimumVoteDuration(2 * Constant.MINIMUM_VOTE_DURATION)
+            .withQuorum(1)
             .build();
         _class = CommunityClass(_communityLocation);
         (address payable _governance, , ) = _builder.aGovernance().withSupervisor(_SUPERVISOR).withCommunityClass(_class).build();
@@ -117,9 +131,11 @@ contract GovernanceBuilderTest is Test {
 
     function testWithMaximumVoteDuration() public {
         address _communityLocation = _communityBuilder
+            .aCommunity()
             .asPoolCommunity()
             .withVoter(_VOTER1)
             .withMaximumVoteDuration(2 * Constant.MINIMUM_VOTE_DURATION)
+            .withQuorum(1)
             .build();
         _class = CommunityClass(_communityLocation);
         (address payable _governance, , ) = _builder.aGovernance().withSupervisor(_SUPERVISOR).withCommunityClass(_class).build();
@@ -166,7 +182,7 @@ contract GovernanceBuilderTest is Test {
     function testWithERC721() public {
         MockERC721 merc721 = new MockERC721();
         merc721.mintTo(_VOTER1, 0x10);
-        address _communityLocation = _communityBuilder.asErc721Community(address(merc721)).build();
+        address _communityLocation = _communityBuilder.aCommunity().asErc721Community(address(merc721)).withQuorum(1).build();
         _class = CommunityClass(_communityLocation);
         (address payable _governance, address _storage, ) = _builder
             .aGovernance()
@@ -182,7 +198,7 @@ contract GovernanceBuilderTest is Test {
     function testMetaStoreIsReturned() public {
         MockERC721 merc721 = new MockERC721();
         merc721.mintTo(_VOTER1, 0x10);
-        address _communityLocation = _communityBuilder.asErc721Community(address(merc721)).build();
+        address _communityLocation = _communityBuilder.aCommunity().asErc721Community(address(merc721)).withQuorum(1).build();
         _class = CommunityClass(_communityLocation);
         (, , address _metaStore) = _builder.aGovernance().withSupervisor(_SUPERVISOR).withCommunityClass(_class).build();
         assertTrue(_metaStore != address(0x0));

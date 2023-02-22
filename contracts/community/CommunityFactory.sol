@@ -171,7 +171,9 @@ contract WeightedClassFactory {
             minimumVoteDuration,
             maximumVoteDuration
         );
-        return WeightedCommunityClass(address(_proxy));
+        ScheduledCommunityClass _proxyClass = ScheduledCommunityClass(address(_proxy));
+        _proxyClass.transferOwnership(msg.sender);
+        return _proxyClass;
     }
 
     /// @notice create a new community class representing a voter pool
@@ -199,7 +201,9 @@ contract WeightedClassFactory {
             minimumVoteDuration,
             maximumVoteDuration
         );
-        return CommunityClassVoterPool(address(_proxy));
+        CommunityClassVoterPool _proxyClass = CommunityClassVoterPool(address(_proxy));
+        _proxyClass.transferOwnership(msg.sender);
+        return _proxyClass;
     }
 }
 
@@ -236,7 +240,9 @@ contract ProjectClassFactory {
             minimumVoteDuration,
             maximumVoteDuration
         );
-        return ProjectCommunityClass(address(_proxy));
+        CommunityClassERC721 _proxyClass = CommunityClassERC721(address(_proxy));
+        _proxyClass.transferOwnership(msg.sender);
+        return _proxyClass;
     }
 
     /// @notice create a new community class representing a closed ERC-721 token based community
@@ -270,6 +276,8 @@ contract ProjectClassFactory {
             minimumVoteDuration,
             maximumVoteDuration
         );
-        return ProjectCommunityClass(address(_proxy));
+        CommunityClassClosedERC721 _proxyClass = CommunityClassClosedERC721(address(_proxy));
+        _proxyClass.transferOwnership(msg.sender);
+        return _proxyClass;
     }
 }

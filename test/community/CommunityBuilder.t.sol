@@ -27,14 +27,15 @@ contract CommunityBuilderTest is Test {
     }
 
     function testCommunityTypeChangeForbidden() public {
+        _builder.asOpenCommunity();
         vm.expectRevert(abi.encodeWithSelector(CommunityBuilder.CommunityTypeChange.selector));
-        _builder.asOpenCommunity().asPoolCommunity();
+        _builder.asPoolCommunity();
         vm.expectRevert(abi.encodeWithSelector(CommunityBuilder.CommunityTypeChange.selector));
-        _builder.asPoolCommunity().asOpenCommunity();
+        _builder.asOpenCommunity();
         vm.expectRevert(abi.encodeWithSelector(CommunityBuilder.CommunityTypeChange.selector));
-        _builder.asPoolCommunity().asErc721Community(address(0x1234));
+        _builder.asErc721Community(address(0x1234));
         vm.expectRevert(abi.encodeWithSelector(CommunityBuilder.CommunityTypeChange.selector));
-        _builder.asErc721Community(address(0x1234)).asClosedErc721Community(address(0x1234), 10);
+        _builder.asClosedErc721Community(address(0x1234), 10);
     }
 
     function testRequiresWeight() public {
