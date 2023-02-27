@@ -77,6 +77,7 @@ contract CommunityBuilder is VersionedContract, ERC165, Ownable {
     event CommunityClassMaximumVoteDelay(uint256 delay);
     event CommunityClassMinimumVoteDuration(uint256 duration);
     event CommunityClassMaximumVoteDuration(uint256 duration);
+    event CommunityClassCreated(address class);
 
     enum CommunityType {
         NONE,
@@ -122,12 +123,22 @@ contract CommunityBuilder is VersionedContract, ERC165, Ownable {
         _;
     }
 
+    /**
+     * reset the community class builder for this address
+     *
+     * @return CommunityBuilder - this contract
+     */
     function aCommunity() external returns (CommunityBuilder) {
         reset();
         emit CommunityClassInitialized(msg.sender);
         return this;
     }
 
+    /**
+     * build an open community
+     *
+     * @return CommunityBuilder - this contract
+     */
     function asOpenCommunity() external requireNone returns (CommunityBuilder) {
         CommunityProperties storage _properties = _buildMap[msg.sender];
         _properties.communityType = CommunityType.OPEN;
@@ -135,6 +146,11 @@ contract CommunityBuilder is VersionedContract, ERC165, Ownable {
         return this;
     }
 
+    /**
+     * build a pool community
+     *
+     * @return CommunityBuilder - this contract
+     */
     function asPoolCommunity() external requireNone returns (CommunityBuilder) {
         CommunityProperties storage _properties = _buildMap[msg.sender];
         _properties.communityType = CommunityType.POOL;
@@ -143,6 +159,13 @@ contract CommunityBuilder is VersionedContract, ERC165, Ownable {
         return this;
     }
 
+    /**
+     * build ERC-721 community
+     *
+     * @param project the token contract address
+     *
+     * @return CommunityBuilder - this contract
+     */
     function asErc721Community(address project) external requireNone returns (CommunityBuilder) {
         CommunityProperties storage _properties = _buildMap[msg.sender];
         _properties.communityType = CommunityType.ERC721;
@@ -151,6 +174,14 @@ contract CommunityBuilder is VersionedContract, ERC165, Ownable {
         return this;
     }
 
+    /**
+     * build Closed ERC-721 community
+     *
+     * @param project the token contract address
+     * @param tokenThreshold the number of tokens required to propose
+     *
+     * @return CommunityBuilder - this contract
+     */
     function asClosedErc721Community(address project, uint256 tokenThreshold) external requireNone returns (CommunityBuilder) {
         CommunityProperties storage _properties = _buildMap[msg.sender];
         _properties.communityType = CommunityType.ERC721_CLOSED;
@@ -160,6 +191,13 @@ contract CommunityBuilder is VersionedContract, ERC165, Ownable {
         return this;
     }
 
+    /**
+     * append a voter for a pool community
+     *
+     * @param voter the wallet address
+     *
+     * @return CommunityBuilder - this contract
+     */
     function withVoter(address voter) external requirePool returns (CommunityBuilder) {
         CommunityProperties storage _properties = _buildMap[msg.sender];
         _properties.addressSet.add(voter);
@@ -167,6 +205,13 @@ contract CommunityBuilder is VersionedContract, ERC165, Ownable {
         return this;
     }
 
+    /**
+     * set the voting weight for each authorized voter
+     *
+     * @param _weight the voting weight
+     *
+     * @return CommunityBuilder - this contract
+     */
     function withWeight(uint256 _weight) external returns (CommunityBuilder) {
         CommunityProperties storage _properties = _buildMap[msg.sender];
         _properties.weight = _weight;
@@ -174,6 +219,13 @@ contract CommunityBuilder is VersionedContract, ERC165, Ownable {
         return this;
     }
 
+    /**
+     * set the minimum quorum for this community
+     *
+     * @param _quorum the minimum quorum
+     *
+     * @return CommunityBuilder - this contract
+     */
     function withQuorum(uint256 _quorum) external returns (CommunityBuilder) {
         CommunityProperties storage _properties = _buildMap[msg.sender];
         _properties.minimumProjectQuorum = _quorum;
@@ -181,6 +233,13 @@ contract CommunityBuilder is VersionedContract, ERC165, Ownable {
         return this;
     }
 
+    /**
+     * set the minimum vote delay for the community
+     *
+     * @param _delay - minimum vote delay in Ethereum (epoch) seconds
+     *
+     * @return CommunityBuilder - this contract
+     */
     function withMinimumVoteDelay(uint256 _delay) external returns (CommunityBuilder) {
         CommunityProperties storage _properties = _buildMap[msg.sender];
         _properties.minimumVoteDelay = _delay;
@@ -188,6 +247,13 @@ contract CommunityBuilder is VersionedContract, ERC165, Ownable {
         return this;
     }
 
+    /**
+     * set the maximum vote delay for the community
+     *
+     * @param _delay - maximum vote delay in Ethereum (epoch) seconds
+     *
+     * @return CommunityBuilder - this contract
+     */
     function withMaximumVoteDelay(uint256 _delay) external returns (CommunityBuilder) {
         CommunityProperties storage _properties = _buildMap[msg.sender];
         _properties.maximumVoteDelay = _delay;
@@ -195,6 +261,13 @@ contract CommunityBuilder is VersionedContract, ERC165, Ownable {
         return this;
     }
 
+    /**
+     * set the minimum vote duration for the community
+     *
+     * @param _duration - minimum vote duration in Ethereum (epoch) seconds
+     *
+     * @return CommunityBuilder - this contract
+     */
     function withMinimumVoteDuration(uint256 _duration) external returns (CommunityBuilder) {
         CommunityProperties storage _properties = _buildMap[msg.sender];
         _properties.minimumVoteDuration = _duration;
@@ -202,6 +275,13 @@ contract CommunityBuilder is VersionedContract, ERC165, Ownable {
         return this;
     }
 
+    /**
+     * set the maximum vote duration for the community
+     *
+     * @param _duration - maximum vote duration in Ethereum (epoch) seconds
+     *
+     * @return CommunityBuilder - this contract
+     */
     function withMaximumVoteDuration(uint256 _duration) external returns (CommunityBuilder) {
         CommunityProperties storage _properties = _buildMap[msg.sender];
         _properties.maximumVoteDuration = _duration;
@@ -209,6 +289,11 @@ contract CommunityBuilder is VersionedContract, ERC165, Ownable {
         return this;
     }
 
+    /**
+     * Build the contract with the configured settings.
+     *
+     * @return address - The address of the newly created contract
+     */
     function build() public returns (address) {
         CommunityProperties storage _properties = _buildMap[msg.sender];
         WeightedCommunityClass _proxy;
@@ -265,8 +350,9 @@ contract CommunityBuilder is VersionedContract, ERC165, Ownable {
         } else {
             revert CommunityTypeRequired();
         }
-
-        return payable(address(_proxy));
+        address payable proxyAddress = payable(address(_proxy));
+        emit CommunityClassCreated(proxyAddress);
+        return proxyAddress;
     }
 
     function name() external pure returns (string memory) {

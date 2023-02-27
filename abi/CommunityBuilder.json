@@ -1,6 +1,16 @@
 [
   {
     "inputs": [],
+    "stateMutability": "nonpayable",
+    "type": "constructor"
+  },
+  {
+    "inputs": [],
+    "name": "CommunityTypeChange",
+    "type": "error"
+  },
+  {
+    "inputs": [],
     "name": "CommunityTypeRequired",
     "type": "error"
   },
@@ -57,6 +67,19 @@
     "inputs": [],
     "name": "VoterRequired",
     "type": "error"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "class",
+        "type": "address"
+      }
+    ],
+    "name": "CommunityClassCreated",
+    "type": "event"
   },
   {
     "anonymous": false,
