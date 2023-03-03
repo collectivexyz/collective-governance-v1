@@ -157,6 +157,11 @@ contract ProposalBuilder is VersionedContract, ERC165, Ownable {
         _;
     }
 
+    /**
+     * reset the proposal builder for this address
+     *
+     * @return Builder - this contract
+     */
     function aProposal() external returns (ProposalBuilder) {
         clear();
         emit ProposalInitialized(msg.sender);
