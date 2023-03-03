@@ -10,7 +10,13 @@ Collective Governance
 Open Source Community Governance Smart Contract
 -------------------------------------------------
 
-This is an Ethereum based smart contract with support for open voting and token voting.  It is open for all communities on the public blockchain.
+Governance smart contracts are a type of smart contract that allow a community to influence an on-chain governance system or treasury through voting. They can be used to define who participates in the decision-making process, how votes are weighted and counted, and what actions can be taken based on the outcomes. Governance smart contracts can also provide security and transparency for the participants, as well as enable innovation and flexibility for the group or collective.
+
+However, governance smart contracts also face some challenges and limitations. For example, they may require a high level of technical expertise and trust from users, they may be vulnerable to attacks or bugs, and they may not be able to capture all the nuances and complexities of human interactions and agreements. Therefore, governance smart contracts need to be carefully designed, tested and audited before deployment.
+
+Collective Governance attempts to address all of the above concerns by providing an on-chain voting system with flexible plug-and-play community definitions and easy building blocks for creating communities. Communities may each determine the rules for voting and interacting separately from one another without requiring code changes, reviews or deployments. Collective Governance also provides a pluggable mechanism for defining the community itself, possibly as membership in a pre-defined voting pool or as a collective who all hold a particular token.
+
+Collective Governance has been designed from the ground up to be very easy to use. It uses an easily-understandable building block approach to creating a community and managing proposals and voting on that community. Therefore Collective Governance addresses many of the concerns and issues present in existing Governance contracts.
 
 .. toctree::
    :maxdepth: 2
