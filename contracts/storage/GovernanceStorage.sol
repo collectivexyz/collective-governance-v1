@@ -197,11 +197,7 @@ contract GovernanceStorage is Storage, VersionedContract, ERC165, Ownable {
     /// @param _proposalId the id of the proposal
     /// @param _supervisor the supervisor address
     /// @param _sender original wallet for this request
-    function registerSupervisor(
-        uint256 _proposalId,
-        address _supervisor,
-        address _sender
-    ) external {
+    function registerSupervisor(uint256 _proposalId, address _supervisor, address _sender) external {
         registerSupervisor(_proposalId, _supervisor, false, _sender);
     }
 
@@ -371,13 +367,10 @@ contract GovernanceStorage is Storage, VersionedContract, ERC165, Ownable {
     /// @param _proposalId the id of the proposal
     /// @param _choiceId the id of the choice
     /// @return uint256 the number of votes in favor
-    function voteCount(uint256 _proposalId, uint256 _choiceId)
-        public
-        view
-        requireValid(_proposalId)
-        requireChoiceVote(_proposalId)
-        returns (uint256)
-    {
+    function voteCount(
+        uint256 _proposalId,
+        uint256 _choiceId
+    ) public view requireValid(_proposalId) requireChoiceVote(_proposalId) returns (uint256) {
         Proposal storage proposal = proposalMap[_proposalId];
         Choice memory choice = proposal.choice.get(_choiceId);
         return choice.voteCount;
@@ -464,18 +457,15 @@ contract GovernanceStorage is Storage, VersionedContract, ERC165, Ownable {
     /// @return votesCast the number of votes cast
     /// @return choiceId the choice voted, 0 if not a choice vote
     /// @return isAbstention true if vote was an abstention
-    function getVoteReceipt(uint256 _proposalId, uint256 _shareId)
+    function getVoteReceipt(
+        uint256 _proposalId,
+        uint256 _shareId
+    )
         external
         view
         requireValid(_proposalId)
         requireValidReceipt(_proposalId, _shareId)
-        returns (
-            uint256 shareId,
-            uint256 shareFor,
-            uint256 votesCast,
-            uint256 choiceId,
-            bool isAbstention
-        )
+        returns (uint256 shareId, uint256 shareFor, uint256 votesCast, uint256 choiceId, bool isAbstention)
     {
         Proposal storage proposal = proposalMap[_proposalId];
         Receipt memory receipt = proposal.voteReceipt[_shareId];
@@ -528,13 +518,10 @@ contract GovernanceStorage is Storage, VersionedContract, ERC165, Ownable {
     /// @dev requires supervisor
     /// @param _proposalId the id of the proposal
     /// @param _sender original wallet for this request
-    function makeFinal(uint256 _proposalId, address _sender)
-        public
-        onlyOwner
-        requireValid(_proposalId)
-        requireConfig(_proposalId)
-        requireSupervisor(_proposalId, _sender)
-    {
+    function makeFinal(
+        uint256 _proposalId,
+        address _sender
+    ) public onlyOwner requireValid(_proposalId) requireConfig(_proposalId) requireSupervisor(_proposalId, _sender) {
         Proposal storage proposal = proposalMap[_proposalId];
         proposal.startTime = getBlockTimestamp() + proposal.voteDelay;
         proposal.endTime = proposal.startTime + proposal.voteDuration;
@@ -546,12 +533,10 @@ contract GovernanceStorage is Storage, VersionedContract, ERC165, Ownable {
     /// @dev requires supervisor
     /// @param _proposalId the id of the proposal
     /// @param _sender original wallet for this request
-    function cancel(uint256 _proposalId, address _sender)
-        external
-        onlyOwner
-        requireValid(_proposalId)
-        requireSupervisor(_proposalId, _sender)
-    {
+    function cancel(
+        uint256 _proposalId,
+        address _sender
+    ) external onlyOwner requireValid(_proposalId) requireSupervisor(_proposalId, _sender) {
         if (!isFinal(_proposalId)) {
             // calculate start and end time
             makeFinal(_proposalId, _sender);
@@ -565,12 +550,10 @@ contract GovernanceStorage is Storage, VersionedContract, ERC165, Ownable {
     /// @dev supervisor is required
     /// @param _proposalId the id of the proposal
     /// @param _sender the address of the veto sender
-    function veto(uint256 _proposalId, address _sender)
-        external
-        onlyOwner
-        requireValid(_proposalId)
-        requireSupervisor(_proposalId, _sender)
-    {
+    function veto(
+        uint256 _proposalId,
+        address _sender
+    ) external onlyOwner requireValid(_proposalId) requireSupervisor(_proposalId, _sender) {
         Proposal storage proposal = proposalMap[_proposalId];
         if (!proposal.isVeto) {
             proposal.isVeto = true;
@@ -730,12 +713,10 @@ contract GovernanceStorage is Storage, VersionedContract, ERC165, Ownable {
     /// @param _proposalId the proposal where the transaction is stored
     /// @param _transactionId The id of the transaction on the proposal
     /// @return Transaction the transaction
-    function getTransaction(uint256 _proposalId, uint256 _transactionId)
-        external
-        view
-        requireValid(_proposalId)
-        returns (Transaction memory)
-    {
+    function getTransaction(
+        uint256 _proposalId,
+        uint256 _transactionId
+    ) external view requireValid(_proposalId) returns (Transaction memory) {
         Proposal storage proposal = proposalMap[_proposalId];
         return proposal.transaction.get(_transactionId);
     }
@@ -824,13 +805,10 @@ contract GovernanceStorage is Storage, VersionedContract, ERC165, Ownable {
     /// @param _proposalId the id of the proposal
     /// @param _choiceId the id of the choice
     /// @return Choice the choice
-    function getChoice(uint256 _proposalId, uint256 _choiceId)
-        external
-        view
-        requireValid(_proposalId)
-        requireChoiceVote(_proposalId)
-        returns (Choice memory)
-    {
+    function getChoice(
+        uint256 _proposalId,
+        uint256 _choiceId
+    ) external view requireValid(_proposalId) requireChoiceVote(_proposalId) returns (Choice memory) {
         Proposal storage proposal = proposalMap[_proposalId];
         return proposal.choice.get(_choiceId);
     }
