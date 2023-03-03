@@ -77,7 +77,7 @@ contract CommunityBuilder is VersionedContract, ERC165, Ownable {
     event CommunityClassMaximumVoteDelay(uint256 delay);
     event CommunityClassMinimumVoteDuration(uint256 duration);
     event CommunityClassMaximumVoteDuration(uint256 duration);
-    event CommunityClassCreated(address classAddress);
+    event CommunityClassCreated(address class);
 
     enum CommunityType {
         NONE,
