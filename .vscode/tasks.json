@@ -187,9 +187,9 @@
                 "cwd": "${workspaceFolder}",
                 "env": {
                     "CONSTANT_LIB_ADDRESS": "0xF5890ac663A7dbE92560D6B8B88A6A89704b204e",
-                    "GOVERNANCE_ADDRESS": "",
-                    "STORAGE_ADDRESS": "",
-                    "META_ADDRESS": ""
+                    "GOVERNANCE_ADDRESS": "0x62Ee89399824fCf1978C0675E2d720644B4Dd0B4",
+                    "STORAGE_ADDRESS": "0x01Ac08Fd002d569E9D6BcB2b1974a43b3698e04e",
+                    "META_ADDRESS": "0xf6f99CF1Ab1C72F23B7422676E2aC70f0605d77A"
                 }
             },
             "dependsOn": "production",

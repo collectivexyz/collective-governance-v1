@@ -152,6 +152,15 @@ contract ProposalBuilderTest is Test {
         assertEq(meta.value, "zy");
     }
 
+    function testMetaMustBeOwnedByBuilder() public {
+        _builder.aProposal().withMeta("bab", "zy");
+        vm.prank(address(_builder), address(_builder));
+        Ownable mOwnable = Ownable(address(_meta));
+        mOwnable.transferOwnership(address(this));
+        vm.expectRevert(abi.encodeWithSelector(ProposalBuilder.MetaNotOwned.selector, address(_meta)));
+        _builder.build();
+    }
+
     function testWithDescription() public {
         uint256 pid = _builder.aProposal().withDescription("a fair proposal", "https://collective.xyz").build();
         assertEq(_meta.description(pid), "a fair proposal");

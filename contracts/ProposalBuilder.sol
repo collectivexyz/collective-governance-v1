@@ -61,9 +61,10 @@ contract ProposalBuilder is VersionedContract, ERC165, Ownable {
 
     error VersionMismatch(uint256 expected, uint256 provided);
     error VersionInvalid(uint256 expected, uint256 provided);
-    error NotGovernance(address _address);
-    error NotStorage(address _address);
-    error NotMetaStorage(address _address);
+    error NotGovernance(address governance);
+    error NotStorage(address _storage);
+    error NotMetaStorage(address meta);
+    error MetaNotOwned(address meta);
     error StringSizeLimit(address _sender, uint256 len);
     error ProposalNotInitialized(address _sender);
 
@@ -138,6 +139,12 @@ contract ProposalBuilder is VersionedContract, ERC165, Ownable {
     modifier requireMetaStorage(address _metaAddress) {
         MetaStorage _metaStorage = MetaStorage(_metaAddress);
         if (!_metaStorage.supportsInterface(type(MetaStorage).interfaceId)) revert NotMetaStorage(_metaAddress);
+        _;
+    }
+
+    modifier requireMetaOwner() {
+        Ownable ownable = Ownable(address(_meta));
+        if (ownable.owner() != address(this)) revert MetaNotOwned(address(_meta));
         _;
     }
 
@@ -262,7 +269,7 @@ contract ProposalBuilder is VersionedContract, ERC165, Ownable {
 
     /// @notice build the proposal
     /// @return uint256 the propposal id
-    function build() external requireAProposal returns (uint256) {
+    function build() external requireAProposal requireMetaOwner returns (uint256) {
         ProposalProperties storage _properties = _proposalMap[msg.sender];
         uint256 pid = _governance.propose();
         for (uint256 i = 1; i <= _properties.transaction.size(); ++i) {
