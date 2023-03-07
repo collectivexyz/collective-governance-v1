@@ -24,7 +24,18 @@
     "inputs": [
       {
         "internalType": "address",
-        "name": "_address",
+        "name": "meta",
+        "type": "address"
+      }
+    ],
+    "name": "MetaNotOwned",
+    "type": "error"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "governance",
         "type": "address"
       }
     ],
@@ -35,7 +46,7 @@
     "inputs": [
       {
         "internalType": "address",
-        "name": "_address",
+        "name": "meta",
         "type": "address"
       }
     ],
@@ -46,7 +57,7 @@
     "inputs": [
       {
         "internalType": "address",
-        "name": "_address",
+        "name": "_storage",
         "type": "address"
       }
     ],
