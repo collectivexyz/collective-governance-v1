@@ -44,16 +44,20 @@ The following code block demonstrates how to connect to the Ethereum RPC client
 
 The next step is to create a VoterClass
 
-VoterClass
+CommunityClass
 ----------
 
-The first step to build a :ref:`VoterClass <voterclass>` for your project is to use the Factory.  This can be reused for all future projects.
+The first step to build a :ref:`CommunityClass <communityclass>` for your project is to use the Builder.  The community class can be reused for every :ref:`CollectiveGovernance <collectivegovernance>` contract.
 
 .. code-block:: javascript
                 
-      const voterClassFactory = new VoterClassFactory(...);
-      const classAddress = await voterClassFactory.createERC721(config.tokenContract, 1);
-      logger.info(`VoterClass created at ${classAddress}`);
+    logger.info('Building CommunityClass');
+    const communityBuilder = new CommunityBuilder(config.abiPath, config.communityAddress, web3, wallet, config.getGas());
+    await communityBuilder.aCommunity();
+    await communityBuilder.asErc721Community(config.tokenContract);
+    await communityBuilder.withQuorum(100);
+    const classAddress = await communityBuilder.build();
+    logger.info(`CommunityClass created at ${classAddress}`);
 
 Make a note of the Ethereum address for the class you created.  For example `0x6bAc373e27f844259F3B79A6E7dAFf3868eBDc13 <https://goerli.etherscan.io/address/0x6bAc373e27f844259F3B79A6E7dAFf3868eBDc13>`_
 
