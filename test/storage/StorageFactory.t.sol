@@ -14,6 +14,7 @@ import "../../contracts/access/Versioned.sol";
 import "../../test/mock/TestData.sol";
 
 contract StorageFactoryTest is Test {
+    address private constant _SUPERVISOR = address(0x1234);
     CommunityClass private _class;
     StorageFactory private _storageFactoryInstance;
     StorageFactoryProxy private _factoryProxy;
@@ -21,7 +22,7 @@ contract StorageFactoryTest is Test {
 
     function setUp() public {
         CommunityBuilder _vcCreator = new CommunityBuilder();
-        address vcAddress = _vcCreator.aCommunity().asOpenCommunity().withQuorum(1).build();
+        address vcAddress = _vcCreator.aCommunity().asOpenCommunity().withQuorum(1).withCommunitySupervisor(_SUPERVISOR).build();
         _class = CommunityClass(vcAddress);
         _storageFactoryInstance = new StorageFactory();
         _factoryProxy = new StorageFactoryProxy(address(_storageFactoryInstance));

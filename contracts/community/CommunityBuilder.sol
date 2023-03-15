@@ -77,6 +77,9 @@ contract CommunityBuilder is VersionedContract, ERC165, Ownable {
     event CommunityClassMaximumVoteDelay(uint256 delay);
     event CommunityClassMinimumVoteDuration(uint256 duration);
     event CommunityClassMaximumVoteDuration(uint256 duration);
+    event CommunityClassGasUsedRebate(uint256 gasRebate);
+    event CommunityClassBaseFeeRebate(uint256 baseFeeRebate);
+    event CommunityClassSupervisor(address supervisor);    
     event CommunityClassCreated(address class);
 
     enum CommunityType {
@@ -94,6 +97,9 @@ contract CommunityBuilder is VersionedContract, ERC165, Ownable {
         uint256 maximumVoteDelay;
         uint256 minimumVoteDuration;
         uint256 maximumVoteDuration;
+        uint256 maximumGasUsedRebate;
+        uint256 maximumBaseFeeRebate;
+        AddressSet communitySupervisor;
         CommunityType communityType;
         address projectToken;
         uint256 tokenThreshold;
@@ -289,6 +295,49 @@ contract CommunityBuilder is VersionedContract, ERC165, Ownable {
         return this;
     }
 
+    /** 
+     * set the maximum gas used rebate
+     *
+     * @param _gasRebate the gas used rebate
+     *
+     * @return CommunityBuilder - this contract     
+     */
+    function withMaximumGasUsedRebate(uint256 _gasRebate) external returns (CommunityBuilder) {
+        CommunityProperties storage _properties = _buildMap[msg.sender];
+        _properties.maximumGasUsedRebate = _gasRebate;
+        emit CommunityClassGasUsedRebate(_gasRebate);
+        return this;
+    }
+
+    /** 
+     * set the maximum base fee rebate
+     *
+     * @param _baseFeeRebate the base fee rebate
+     *
+     * @return CommunityBuilder - this contract     
+     */
+    function withMaximumBaseFeeRebate(uint256 _baseFeeRebate) external returns (CommunityBuilder) {
+        CommunityProperties storage _properties = _buildMap[msg.sender];
+        _properties.maximumBaseFeeRebate = _baseFeeRebate;
+        emit CommunityClassBaseFeeRebate(_baseFeeRebate);
+        return this;
+    }
+
+    /** 
+     * add community supervisor
+     *
+     * @param _supervisor the supervisor address
+     *
+     * @return CommunityBuilder - this contract     
+     */
+    function withCommunitySupervisor(address _supervisor) external returns (CommunityBuilder) {
+        CommunityProperties storage _properties = _buildMap[msg.sender];
+        _properties.communitySupervisor.add(_supervisor);
+        emit CommunityClassSupervisor(_supervisor);
+        return this;
+    }
+
+
     /**
      * Build the contract with the configured settings.
      *
@@ -310,7 +359,10 @@ contract CommunityBuilder is VersionedContract, ERC165, Ownable {
                 _properties.minimumVoteDelay,
                 _properties.maximumVoteDelay,
                 _properties.minimumVoteDuration,
-                _properties.maximumVoteDuration
+                _properties.maximumVoteDuration,
+                _properties.maximumGasUsedRebate,
+                _properties.maximumBaseFeeRebate,
+                _properties.communitySupervisor
             );
         } else if (_properties.communityType == CommunityType.ERC721) {
             if (_properties.projectToken == address(0x0)) revert ProjectTokenRequired(_properties.projectToken);
@@ -321,7 +373,10 @@ contract CommunityBuilder is VersionedContract, ERC165, Ownable {
                 _properties.minimumVoteDelay,
                 _properties.maximumVoteDelay,
                 _properties.minimumVoteDuration,
-                _properties.maximumVoteDuration
+                _properties.maximumVoteDuration,
+                _properties.maximumGasUsedRebate,
+                _properties.maximumBaseFeeRebate,
+                _properties.communitySupervisor
             );
         } else if (_properties.communityType == CommunityType.OPEN) {
             _proxy = _weightedFactory.createOpenVote(
@@ -330,7 +385,10 @@ contract CommunityBuilder is VersionedContract, ERC165, Ownable {
                 _properties.minimumVoteDelay,
                 _properties.maximumVoteDelay,
                 _properties.minimumVoteDuration,
-                _properties.maximumVoteDuration
+                _properties.maximumVoteDuration,
+                _properties.maximumGasUsedRebate,
+                _properties.maximumBaseFeeRebate,
+                _properties.communitySupervisor
             );
         } else if (_properties.communityType == CommunityType.POOL) {
             CommunityClassVoterPool _pool = _weightedFactory.createVoterPool(
@@ -339,7 +397,10 @@ contract CommunityBuilder is VersionedContract, ERC165, Ownable {
                 _properties.minimumVoteDelay,
                 _properties.maximumVoteDelay,
                 _properties.minimumVoteDuration,
-                _properties.maximumVoteDuration
+                _properties.maximumVoteDuration,
+                _properties.maximumGasUsedRebate,
+                _properties.maximumBaseFeeRebate,
+                _properties.communitySupervisor
             );
             if (_properties.addressSet.size() == 0) revert VoterRequired();
             for (uint256 i = 1; i <= _properties.addressSet.size(); ++i) {
@@ -376,5 +437,8 @@ contract CommunityBuilder is VersionedContract, ERC165, Ownable {
         _properties.maximumVoteDelay = Constant.MAXIMUM_VOTE_DELAY;
         _properties.minimumVoteDuration = Constant.MINIMUM_VOTE_DURATION;
         _properties.maximumVoteDuration = Constant.MAXIMUM_VOTE_DURATION;
+        _properties.maximumGasUsedRebate = Constant.MAXIMUM_REBATE_GAS_USED;
+        _properties.maximumBaseFeeRebate = Constant.MAXIMUM_REBATE_BASE_FEE;
+        _properties.communitySupervisor = Constant.createAddressSet();
     }
 }

@@ -23,6 +23,9 @@ contract ScheduledCommunityClassTest is Test {
             .withMaximumVoteDelay(Constant.MAXIMUM_VOTE_DELAY - 2 seconds)
             .withMinimumVoteDuration(Constant.MINIMUM_VOTE_DURATION + 1 days)
             .withMaximumVoteDuration(Constant.MAXIMUM_VOTE_DURATION - 10 seconds)
+            .withMaximumGasUsedRebate(Constant.MAXIMUM_REBATE_GAS_USED + 1)
+            .withMaximumBaseFeeRebate(Constant.MAXIMUM_REBATE_BASE_FEE + 2)
+            .withCommunitySupervisor(address(0x1234))
             .build();
         _class = ScheduledCommunityClass(_classLocation);
     }
@@ -77,7 +80,21 @@ contract ScheduledCommunityClassTest is Test {
         assertTrue(_erc165.supportsInterface(type(IERC165).interfaceId));
     }
 
+    function testGasUsedRebate() public {
+        assertEq(_class.maximumGasUsedRebate(), Constant.MAXIMUM_REBATE_GAS_USED + 1);
+    }
+
+    function testBaseFeeRebate() public {
+        assertEq(_class.maximumBaseFeeRebate(), Constant.MAXIMUM_REBATE_BASE_FEE + 2);
+    }
+
+    function testSupervisor() public {
+        assertTrue(_class.communitySupervisorSet().contains(address(0x1234)));
+    }
+
     function testUpgradeRequiresOwner() public {
+        AddressSet _supervisorSet = new AddressSet();
+        _supervisorSet.add(address(0x1235));
         vm.expectRevert(abi.encodeWithSelector(OwnableInitializable.NotOwner.selector, _OTHER));
         vm.prank(_OTHER, _OTHER);
         _class.upgrade(
@@ -86,7 +103,10 @@ contract ScheduledCommunityClassTest is Test {
             Constant.MINIMUM_VOTE_DELAY,
             Constant.MAXIMUM_VOTE_DELAY,
             Constant.MINIMUM_VOTE_DURATION,
-            Constant.MAXIMUM_VOTE_DURATION
+            Constant.MAXIMUM_VOTE_DURATION,
+            Constant.MAXIMUM_REBATE_GAS_USED,
+            Constant.MAXIMUM_REBATE_BASE_FEE,
+            _supervisorSet
         );
     }
 }

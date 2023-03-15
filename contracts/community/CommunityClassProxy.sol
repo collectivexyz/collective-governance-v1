@@ -57,6 +57,9 @@ contract WeightedCommunityClassProxy is ERC1967Proxy {
     /// @param _maximumDelay the least possible vote delay
     /// @param _minimumDuration the least possible voting duration
     /// @param _maximumDuration the least possible voting duration
+    /// @param _gasUsedRebate The maximum rebate for gas used
+    /// @param _baseFeeRebate The maximum base fee rebate
+    /// @param _supervisorList the list of supervisors for this project
     constructor(
         address _implementation,
         uint256 _voteWeight,
@@ -64,7 +67,11 @@ contract WeightedCommunityClassProxy is ERC1967Proxy {
         uint256 _minimumDelay,
         uint256 _maximumDelay,
         uint256 _minimumDuration,
-        uint256 _maximumDuration
+        uint256 _maximumDuration,
+        uint256 _gasUsedRebate,
+        uint256 _baseFeeRebate,
+        AddressSet _supervisorList
+
     )
         ERC1967Proxy(
             _implementation,
@@ -75,7 +82,10 @@ contract WeightedCommunityClassProxy is ERC1967Proxy {
                 _minimumDelay,
                 _maximumDelay,
                 _minimumDuration,
-                _maximumDuration
+                _maximumDuration,
+                _gasUsedRebate,
+                _baseFeeRebate,
+                _supervisorList
             )
         )
     // solhint-disable-next-line no-empty-blocks
@@ -90,7 +100,10 @@ contract WeightedCommunityClassProxy is ERC1967Proxy {
         uint256 _minimumDelay,
         uint256 _maximumDelay,
         uint256 _minimumDuration,
-        uint256 _maximumDuration
+        uint256 _maximumDuration,
+        uint256 _gasUsedRebate,
+        uint256 _baseFeeRebate,
+        AddressSet _supervisorList
     ) external {
         _upgradeToAndCallUUPS(
             _implementation,
@@ -101,7 +114,10 @@ contract WeightedCommunityClassProxy is ERC1967Proxy {
                 _minimumDelay,
                 _maximumDelay,
                 _minimumDuration,
-                _maximumDuration
+                _maximumDuration,
+                _gasUsedRebate,
+                _baseFeeRebate,
+                _supervisorList
             ),
             false
         );
@@ -118,6 +134,9 @@ contract ProjectCommunityClassProxy is ERC1967Proxy {
     /// @param _maximumDelay the least possible vote delay
     /// @param _minimumDuration the least possible voting duration
     /// @param _maximumDuration the least possible voting duration
+    /// @param _gasUsedRebate The maximum rebate for gas used
+    /// @param _baseFeeRebate The maximum base fee rebate
+    /// @param _supervisorList the list of supervisors for this project
     constructor(
         address _implementation,
         address _contract,
@@ -126,7 +145,10 @@ contract ProjectCommunityClassProxy is ERC1967Proxy {
         uint256 _minimumDelay,
         uint256 _maximumDelay,
         uint256 _minimumDuration,
-        uint256 _maximumDuration
+        uint256 _maximumDuration,
+        uint256 _gasUsedRebate,
+        uint256 _baseFeeRebate,
+        AddressSet _supervisorList
     )
         ERC1967Proxy(
             _implementation,
@@ -138,7 +160,10 @@ contract ProjectCommunityClassProxy is ERC1967Proxy {
                 _minimumDelay,
                 _maximumDelay,
                 _minimumDuration,
-                _maximumDuration
+                _maximumDuration,
+                _gasUsedRebate,
+                _baseFeeRebate,
+                _supervisorList
             )
         )
     // solhint-disable-next-line no-empty-blocks
@@ -153,7 +178,10 @@ contract ProjectCommunityClassProxy is ERC1967Proxy {
         uint256 _minimumDelay,
         uint256 _maximumDelay,
         uint256 _minimumDuration,
-        uint256 _maximumDuration
+        uint256 _maximumDuration,
+        uint256 _gasUsedRebate,
+        uint256 _baseFeeRebate,
+        AddressSet _supervisorList
     ) external {
         _upgradeToAndCallUUPS(
             _implementation,
@@ -164,7 +192,10 @@ contract ProjectCommunityClassProxy is ERC1967Proxy {
                 _minimumDelay,
                 _maximumDelay,
                 _minimumDuration,
-                _maximumDuration
+                _maximumDuration,
+                _gasUsedRebate,
+                _baseFeeRebate,
+                _supervisorList
             ),
             false
         );
@@ -181,6 +212,9 @@ contract ClosedProjectCommunityClassProxy is ERC1967Proxy {
     /// @param _maximumDelay the least possible vote delay
     /// @param _minimumDuration the least possible voting duration
     /// @param _maximumDuration the least possible voting duration
+    /// @param _gasUsedRebate The maximum rebate for gas used
+    /// @param _baseFeeRebate The maximum base fee rebate
+    /// @param _supervisorList the list of supervisors for this project
     constructor(
         address _implementation,
         address _contract,
@@ -190,7 +224,10 @@ contract ClosedProjectCommunityClassProxy is ERC1967Proxy {
         uint256 _minimumDelay,
         uint256 _maximumDelay,
         uint256 _minimumDuration,
-        uint256 _maximumDuration
+        uint256 _maximumDuration,
+        uint256 _gasUsedRebate,
+        uint256 _baseFeeRebate,
+        AddressSet _supervisorList
     )
         ERC1967Proxy(
             _implementation,
@@ -203,7 +240,10 @@ contract ClosedProjectCommunityClassProxy is ERC1967Proxy {
                 _minimumDelay,
                 _maximumDelay,
                 _minimumDuration,
-                _maximumDuration
+                _maximumDuration,
+                _gasUsedRebate,
+                _baseFeeRebate,
+                _supervisorList
             )
         )
     // solhint-disable-next-line no-empty-blocks
@@ -218,7 +258,10 @@ contract ClosedProjectCommunityClassProxy is ERC1967Proxy {
         uint256 _minimumDelay,
         uint256 _maximumDelay,
         uint256 _minimumDuration,
-        uint256 _maximumDuration
+        uint256 _maximumDuration,
+        uint256 _gasUsedRebate,
+        uint256 _baseFeeRebate,
+        AddressSet _supervisorList
     ) external {
         _upgradeToAndCallUUPS(
             _implementation,
@@ -229,7 +272,11 @@ contract ClosedProjectCommunityClassProxy is ERC1967Proxy {
                 _minimumDelay,
                 _maximumDelay,
                 _minimumDuration,
-                _maximumDuration
+                _maximumDuration,
+                _gasUsedRebate,
+                _baseFeeRebate,
+                _supervisorList
+
             ),
             false
         );

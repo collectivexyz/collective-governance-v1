@@ -63,6 +63,9 @@ contract CommunityClassClosedERC721 is CommunityClassERC721 {
     /// @param _maximumDelay the least possible vote delay
     /// @param _minimumDuration the least possible voting duration
     /// @param _maximumDuration the least possible voting duration
+    /// @param _gasUsedRebate The maximum rebate for gas used
+    /// @param _baseFeeRebate The maximum base fee rebate
+    /// @param _supervisorList the list of supervisors for this project
     function initialize(
         address _contract,
         uint256 _requirement,
@@ -71,9 +74,15 @@ contract CommunityClassClosedERC721 is CommunityClassERC721 {
         uint256 _minimumDelay,
         uint256 _maximumDelay,
         uint256 _minimumDuration,
-        uint256 _maximumDuration
+        uint256 _maximumDuration,
+        uint256 _gasUsedRebate,
+        uint256 _baseFeeRebate,
+        AddressSet _supervisorList
     ) public requireNonZero(_requirement) {
-        initialize(_contract, _voteWeight, _minimumQuorum, _minimumDelay, _maximumDelay, _minimumDuration, _maximumDuration);
+        initialize(_contract, _voteWeight, _minimumQuorum, _minimumDelay, _maximumDelay, _minimumDuration, _maximumDuration,
+            _gasUsedRebate,
+            _baseFeeRebate,
+            _supervisorList);
         _tokenRequirement = _requirement;
     }
 

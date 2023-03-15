@@ -24,7 +24,12 @@ contract CommunityClassClosedERC721Test is Test {
         merc721.mintTo(_PARTOWNER, _TOKENID + 2);
         _tokenContract = merc721;
         CommunityBuilder _builder = new CommunityBuilder();
-        address _classAddress = _builder.aCommunity().asClosedErc721Community(address(_tokenContract), 2).withQuorum(1).build();
+        address _classAddress = _builder
+            .aCommunity()
+            .asClosedErc721Community(address(_tokenContract), 2)
+            .withQuorum(1)
+            .withCommunitySupervisor(address(0x1234))
+            .build();
         _class = CommunityClass(_classAddress);
     }
 

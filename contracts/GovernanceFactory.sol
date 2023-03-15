@@ -73,28 +73,11 @@ contract GovernanceFactory is VersionedContract, OwnableInitializable, UUPSUpgra
 
     /// @notice create a new collective governance contract
     /// @dev this should be invoked through the GovernanceBuilder
-    /// @param _supervisorList the list of supervisors for this project
     /// @param _class the VoterClass for this project
     /// @param _storage The storage contract for this governance
     /// @param _timeLock The timelock for the contract
-    /// @param _gasUsedRebate The maximum rebate for gas used
-    /// @param _baseFeeRebate The maximum base fee rebate
-    function create(
-        address[] memory _supervisorList,
-        CommunityClass _class,
-        Storage _storage,
-        TimeLocker _timeLock,
-        uint256 _gasUsedRebate,
-        uint256 _baseFeeRebate
-    ) external returns (Governance) {
-        Governance governance = new CollectiveGovernance(
-            _supervisorList,
-            _class,
-            _storage,
-            _timeLock,
-            _gasUsedRebate,
-            _baseFeeRebate
-        );
+    function create(CommunityClass _class, Storage _storage, TimeLocker _timeLock) external returns (Governance) {
+        Governance governance = new CollectiveGovernance(_class, _storage, _timeLock);
         return governance;
     }
 

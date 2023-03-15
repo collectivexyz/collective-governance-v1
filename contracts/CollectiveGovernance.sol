@@ -96,17 +96,11 @@ function calculateGasRebate(
 contract CollectiveGovernance is VoteStrategy, Governance, ERC165, VersionedContract {
     string public constant NAME = "collective governance";
 
-    CommunityClass public immutable _voterClass;
+    CommunityClass public immutable _communityClass;
 
     Storage public immutable _storage;
 
     TimeLocker public immutable _timeLock;
-
-    uint256 public immutable _maximumGasUsedRebate;
-
-    uint256 public immutable _maximumBaseFeeRebate;
-
-    address[] private _communitySupervisorList;
 
     /// @notice voting is open or not
     mapping(uint256 => bool) private isVoteOpenByProposalId;
@@ -114,30 +108,13 @@ contract CollectiveGovernance is VoteStrategy, Governance, ERC165, VersionedCont
     /// @notice create a new collective governance contract
     /// @dev This should be invoked through the GovernanceBuilder.  Gas Rebate
     /// is contingent on contract being funded through a transfer.
-    /// @param _supervisorList the list of supervisors for this project
     /// @param _class the VoterClass for this project
     /// @param _governanceStorage The storage contract for this governance
-    /// @param _gasUsedRebate The maximum rebate for gas used
-    /// @param _baseFeeRebate The maximum base fee rebate
-    constructor(
-        address[] memory _supervisorList,
-        CommunityClass _class,
-        Storage _governanceStorage,
-        TimeLocker _timeLocker,
-        uint256 _gasUsedRebate,
-        uint256 _baseFeeRebate
-    ) {
-        if (_supervisorList.length == 0) revert SupervisorListEmpty();
-        if (_gasUsedRebate < Constant.MAXIMUM_REBATE_GAS_USED)
-            revert GasUsedRebateMustBeLarger(_gasUsedRebate, Constant.MAXIMUM_REBATE_GAS_USED);
-        if (_baseFeeRebate < Constant.MAXIMUM_REBATE_BASE_FEE)
-            revert BaseFeeRebateMustBeLarger(_baseFeeRebate, Constant.MAXIMUM_REBATE_BASE_FEE);
-        _voterClass = _class;
+
+    constructor(CommunityClass _class, Storage _governanceStorage, TimeLocker _timeLocker) {
+        _communityClass = _class;
         _storage = _governanceStorage;
         _timeLock = _timeLocker;
-        _maximumGasUsedRebate = _gasUsedRebate;
-        _maximumBaseFeeRebate = _baseFeeRebate;
-        _communitySupervisorList = _supervisorList;
     }
 
     modifier requireNotFinal(uint256 _proposalId) {
@@ -321,7 +298,7 @@ contract CollectiveGovernance is VoteStrategy, Governance, ERC165, VersionedCont
         uint256 _choiceId
     ) public requireVoteFinal(_proposalId) requireVoteOpen(_proposalId) requireVoteAccepted(_proposalId) {
         uint256 startGas = gasleft();
-        uint256[] memory _shareList = _voterClass.discover(msg.sender);
+        uint256[] memory _shareList = _communityClass.discover(msg.sender);
         for (uint256 i = 0; i < _shareList.length; i++) {
             _castVoteFor(_proposalId, _shareList[i], _choiceId);
         }
@@ -386,7 +363,7 @@ contract CollectiveGovernance is VoteStrategy, Governance, ERC165, VersionedCont
         uint256 _proposalId
     ) external requireVoteFinal(_proposalId) requireVoteOpen(_proposalId) requireVoteAccepted(_proposalId) {
         uint256 startGas = gasleft();
-        uint256[] memory _shareList = _voterClass.discover(msg.sender);
+        uint256[] memory _shareList = _communityClass.discover(msg.sender);
         for (uint256 i = 0; i < _shareList.length; i++) {
             _castVoteAgainst(_proposalId, _shareList[i]);
         }
@@ -426,7 +403,7 @@ contract CollectiveGovernance is VoteStrategy, Governance, ERC165, VersionedCont
         uint256 _proposalId
     ) external requireVoteFinal(_proposalId) requireVoteOpen(_proposalId) requireVoteAccepted(_proposalId) {
         uint256 startGas = gasleft();
-        uint256[] memory _shareList = _voterClass.discover(msg.sender);
+        uint256[] memory _shareList = _communityClass.discover(msg.sender);
         for (uint256 i = 0; i < _shareList.length; i++) {
             _castAbstention(_proposalId, _shareList[i]);
         }
@@ -608,16 +585,22 @@ contract CollectiveGovernance is VoteStrategy, Governance, ERC165, VersionedCont
             return;
         }
         // determine rebate and transfer
-        (uint256 rebate, uint256 gasUsed) = calculateGasRebate(startGas, balance, _maximumBaseFeeRebate, _maximumGasUsedRebate);
+        (uint256 rebate, uint256 gasUsed) = calculateGasRebate(
+            startGas,
+            balance,
+            _communityClass.maximumBaseFeeRebate(),
+            _communityClass.maximumGasUsedRebate()
+        );
         payable(recipient).transfer(rebate);
         emit RebatePaid(recipient, rebate, gasUsed);
     }
 
     function _proposeVote(address _sender) private returns (uint256) {
-        if (!_voterClass.canPropose(_sender)) revert NotPermitted(_sender);
+        if (!_communityClass.canPropose(_sender)) revert NotPermitted(_sender);
         uint256 proposalId = _storage.initializeProposal(_sender);
-        for (uint256 i = 0; i < _communitySupervisorList.length; i++) {
-            _storage.registerSupervisor(proposalId, _communitySupervisorList[i], true, _sender);
+        AddressSet _supervisorSet = _communityClass.communitySupervisorSet();
+        for (uint256 i = 1; i <= _supervisorSet.size(); ++i) {
+            _storage.registerSupervisor(proposalId, _supervisorSet.get(i), true, _sender);
         }
         if (!_storage.isSupervisor(proposalId, _sender)) {
             _storage.registerSupervisor(proposalId, _sender, _sender);

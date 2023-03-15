@@ -12,13 +12,23 @@ contract CommunityClassVoterPoolTest is Test {
     address private immutable _VOTER1 = address(0xffeeeeee);
     address private immutable _NOTVOTER = address(0x55);
     address private immutable _NOBODY = address(0x0);
+    address private immutable _SUPERVISOR = address(0x1234);
 
     CommunityClass private _class;
+    AddressSet private _supervisorSet;
 
     function setUp() public {
         CommunityBuilder _builder = new CommunityBuilder();
-        address _classLocation = _builder.aCommunity().asPoolCommunity().withVoter(_VOTER).withQuorum(1).build();
+        address _classLocation = _builder
+            .aCommunity()
+            .asPoolCommunity()
+            .withCommunitySupervisor(_SUPERVISOR)
+            .withVoter(_VOTER)
+            .withQuorum(1)
+            .build();
         _class = CommunityClass(_classLocation);
+        _supervisorSet = new AddressSet();
+        _supervisorSet.add(_SUPERVISOR);
     }
 
     function testOpenToMemberPropose() public {
@@ -37,7 +47,10 @@ contract CommunityClassVoterPoolTest is Test {
             Constant.MINIMUM_VOTE_DELAY,
             Constant.MAXIMUM_VOTE_DELAY,
             Constant.MINIMUM_VOTE_DURATION,
-            Constant.MAXIMUM_VOTE_DURATION
+            Constant.MAXIMUM_VOTE_DURATION,
+            Constant.MAXIMUM_REBATE_GAS_USED,
+            Constant.MAXIMUM_REBATE_BASE_FEE,
+            _supervisorSet
         );
         vm.expectRevert(abi.encodeWithSelector(VoterClass.EmptyCommunity.selector));
         _pool.makeFinal();
@@ -57,7 +70,10 @@ contract CommunityClassVoterPoolTest is Test {
             Constant.MINIMUM_VOTE_DELAY,
             Constant.MAXIMUM_VOTE_DELAY,
             Constant.MINIMUM_VOTE_DURATION,
-            Constant.MAXIMUM_VOTE_DURATION
+            Constant.MAXIMUM_VOTE_DURATION,
+            Constant.MAXIMUM_REBATE_GAS_USED,
+            Constant.MAXIMUM_REBATE_BASE_FEE,
+            _supervisorSet
         );
         _pool.addVoter(_VOTER);
         _pool.addVoter(_VOTER1);
@@ -95,7 +111,10 @@ contract CommunityClassVoterPoolTest is Test {
             Constant.MINIMUM_VOTE_DELAY,
             Constant.MAXIMUM_VOTE_DELAY,
             Constant.MINIMUM_VOTE_DURATION,
-            Constant.MAXIMUM_VOTE_DURATION
+            Constant.MAXIMUM_VOTE_DURATION,
+            Constant.MAXIMUM_REBATE_GAS_USED,
+            Constant.MAXIMUM_REBATE_BASE_FEE,
+            _supervisorSet
         );
         _pool.addVoter(_VOTER);
         vm.prank(_VOTER);
@@ -110,7 +129,10 @@ contract CommunityClassVoterPoolTest is Test {
             Constant.MINIMUM_VOTE_DELAY,
             Constant.MAXIMUM_VOTE_DELAY,
             Constant.MINIMUM_VOTE_DURATION,
-            Constant.MAXIMUM_VOTE_DURATION
+            Constant.MAXIMUM_VOTE_DURATION,
+            Constant.MAXIMUM_REBATE_GAS_USED,
+            Constant.MAXIMUM_REBATE_BASE_FEE,
+            _supervisorSet
         );
         _pool.addVoter(_VOTER);
         _pool.confirm(_VOTER, uint160(_VOTER));
@@ -147,7 +169,10 @@ contract CommunityClassVoterPoolTest is Test {
             Constant.MINIMUM_VOTE_DELAY,
             Constant.MAXIMUM_VOTE_DELAY,
             Constant.MINIMUM_VOTE_DURATION,
-            Constant.MAXIMUM_VOTE_DURATION
+            Constant.MAXIMUM_VOTE_DURATION,
+            Constant.MAXIMUM_REBATE_GAS_USED,
+            Constant.MAXIMUM_REBATE_BASE_FEE,
+            _supervisorSet
         );
         _pool.addVoter(_VOTER);
         _pool.makeFinal();
@@ -157,6 +182,11 @@ contract CommunityClassVoterPoolTest is Test {
     function testFailRemoveIfFinal() public {
         CommunityClassVoterPool _pool = CommunityClassVoterPool(address(_class));
         _pool.removeVoter(_VOTER);
+    }
+
+    function testSupervisor() public {
+        AddressSet _supervisor = _class.communitySupervisorSet();
+        assertTrue(_supervisor.contains(_SUPERVISOR));
     }
 
     function testSupportsInterface() public {

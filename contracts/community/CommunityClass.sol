@@ -43,14 +43,19 @@
  */
 pragma solidity ^0.8.15;
 
-import "@openzeppelin/contracts/interfaces/IERC165.sol";
+import {IERC165} from "@openzeppelin/contracts/interfaces/IERC165.sol";
 
-import "../../contracts/community/VoterClass.sol";
+import {VoterClass} from "../community/VoterClass.sol";
+import {AddressSet} from "../collection/AddressSet.sol";
 
 /// @title CommunityClass interface
 /// @notice defines the configurable parameters for a community
 /// @custom:type interface
 interface CommunityClass is VoterClass {
+    // setup errors
+    error SupervisorListEmpty();
+    error GasUsedRebateMustBeLarger(uint256 gasUsedRebate, uint256 minimumRebate);
+    error BaseFeeRebateMustBeLarger(uint256 baseFee, uint256 minimumBaseFee);
     error VoteWeightMustBeNonZero();
     error MinimumDelayExceedsMaximum(uint256 delay, uint256 minimumDelay);
     error MaximumDelayNotPermitted(uint256 delay, uint256 maximumDelay);
@@ -78,6 +83,18 @@ interface CommunityClass is VoterClass {
     /// @return uint256 the least quorum allowed for any vote
     function minimumProjectQuorum() external view returns (uint256);
 
+    /// @notice maximum gas used rebate
+    /// @return uint256 the maximum rebate
+    function maximumGasUsedRebate() external view returns (uint256);
+
+    /// @notice maximum base fee rebate
+    /// @return uint256 the base fee rebate
+    function maximumBaseFeeRebate() external view returns (uint256);
+
+    /// @notice return the community supervisors
+    /// @return AddressSet the supervisor set
+    function communitySupervisorSet() external view returns (AddressSet);
+
     /// @notice determine if adding a proposal is approved for this voter
     /// @param _sender The address of the sender
     /// @return bool true if this address is approved
@@ -92,13 +109,19 @@ interface WeightedCommunityClass is CommunityClass {
     /// @param _maximumDelay the least possible vote delay
     /// @param _minimumDuration the least possible voting duration
     /// @param _maximumDuration the least possible voting duration
+    /// @param _gasUsedRebate The maximum rebate for gas used
+    /// @param _baseFeeRebate The maximum base fee rebate
+    /// @param _supervisorList the list of supervisors for this project
     function initialize(
         uint256 _voteWeight,
         uint256 _minimumQuorum,
         uint256 _minimumDelay,
         uint256 _maximumDelay,
         uint256 _minimumDuration,
-        uint256 _maximumDuration
+        uint256 _maximumDuration,
+        uint256 _gasUsedRebate,
+        uint256 _baseFeeRebate,
+        AddressSet _supervisorList
     ) external;
 
     /// @notice reset voting parameters for upgrade
@@ -108,13 +131,19 @@ interface WeightedCommunityClass is CommunityClass {
     /// @param _maximumDelay the least possible vote delay
     /// @param _minimumDuration the least possible voting duration
     /// @param _maximumDuration the least possible voting duration
+    /// @param _gasUsedRebate The maximum rebate for gas used
+    /// @param _baseFeeRebate The maximum base fee rebate
+    /// @param _supervisorList the list of supervisors for this project
     function upgrade(
         uint256 _voteWeight,
         uint256 _minimumQuorum,
         uint256 _minimumDelay,
         uint256 _maximumDelay,
         uint256 _minimumDuration,
-        uint256 _maximumDuration
+        uint256 _maximumDuration,
+        uint256 _gasUsedRebate,
+        uint256 _baseFeeRebate,
+        AddressSet _supervisorList
     ) external;
 
     /// @notice return voting weight of each confirmed share
@@ -131,6 +160,9 @@ interface ProjectCommunityClass is WeightedCommunityClass {
     /// @param _maximumDelay the least possible vote delay
     /// @param _minimumDuration the least possible voting duration
     /// @param _maximumDuration the least possible voting duration
+    /// @param _gasUsedRebate The maximum rebate for gas used
+    /// @param _baseFeeRebate The maximum base fee rebate
+    /// @param _supervisorList the list of supervisors for this project
     function initialize(
         address _contract,
         uint256 _voteWeight,
@@ -138,6 +170,9 @@ interface ProjectCommunityClass is WeightedCommunityClass {
         uint256 _minimumDelay,
         uint256 _maximumDelay,
         uint256 _minimumDuration,
-        uint256 _maximumDuration
+        uint256 _maximumDuration,
+        uint256 _gasUsedRebate,
+        uint256 _baseFeeRebate,
+        AddressSet _supervisorList
     ) external;
 }

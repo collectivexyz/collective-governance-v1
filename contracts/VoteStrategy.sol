@@ -55,9 +55,6 @@ interface VoteStrategy {
     event VoteCount(uint256 proposalId, address wallet, uint256 shareId, uint256 count, uint256 againstCount);
 
     // setup errors
-    error SupervisorListEmpty();
-    error GasUsedRebateMustBeLarger(uint256 gasUsedRebate, uint256 minimumRebate);
-    error BaseFeeRebateMustBeLarger(uint256 baseFee, uint256 minimumBaseFee);
     error NotVoter(uint256 proposalId, address sender);
 
     /// @notice cast an affirmative vote for the measure by id

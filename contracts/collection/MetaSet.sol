@@ -43,6 +43,8 @@
  */
 pragma solidity ^0.8.15;
 
+import "@openzeppelin/contracts/access/Ownable.sol";
+
 /// @notice User defined metadata
 struct Meta {
     /// @notice metadata key or name
@@ -57,7 +59,7 @@ function getHash(Meta memory meta) pure returns (bytes32) {
 }
 
 /// @title dynamic collection of metadata
-contract MetaSet {
+contract MetaSet is Ownable {
     error IndexInvalid(uint256 index);
     error HashCollision(bytes32 txId);
 
@@ -82,7 +84,7 @@ contract MetaSet {
     /// @notice add meta
     /// @param _element the meta
     /// @return uint256 the elementId of the meta
-    function add(Meta memory _element) external returns (uint256) {
+    function add(Meta memory _element) external onlyOwner returns (uint256) {
         uint256 elementIndex = ++_elementCount;
         _elementMap[elementIndex] = _element;
         bytes32 _elementHash = getHash(_element);
@@ -92,7 +94,7 @@ contract MetaSet {
         return elementIndex;
     }
 
-    function erase(Meta memory _meta) public returns (bool) {
+    function erase(Meta memory _meta) public onlyOwner returns (bool) {
         bytes32 metaHash = getHash(_meta);
         uint256 index = _elementPresent[metaHash];
         return erase(index);
@@ -101,7 +103,7 @@ contract MetaSet {
     /// @notice erase a meta
     /// @param _index the index to remove
     /// @return bool True if element was removed
-    function erase(uint256 _index) public returns (bool) {
+    function erase(uint256 _index) public onlyOwner returns (bool) {
         Meta memory meta = _elementMap[_index];
         bytes32 metaHash = getHash(meta);
         uint256 elementIndex = _elementPresent[metaHash];

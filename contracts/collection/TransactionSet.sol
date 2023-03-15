@@ -43,6 +43,7 @@
  */
 pragma solidity ^0.8.15;
 
+import "@openzeppelin/contracts/access/Ownable.sol";
 import "../../contracts/Constant.sol";
 
 /// @notice The executable transaction
@@ -65,7 +66,7 @@ function getHash(Transaction memory transaction) pure returns (bytes32) {
 }
 
 /// @title dynamic collection of transaction
-contract TransactionSet {
+contract TransactionSet is Ownable {
     error InvalidTransaction(uint256 index);
     error HashCollision(bytes32 txId);
 
@@ -89,7 +90,7 @@ contract TransactionSet {
     /// @notice add transaction
     /// @param _element the transaction
     /// @return uint256 the elementId of the transaction
-    function add(Transaction memory _element) external returns (uint256) {
+    function add(Transaction memory _element) external onlyOwner returns (uint256) {
         uint256 elementIndex = ++_elementCount;
         _elementMap[elementIndex] = _element;
         bytes32 _elementHash = getHash(_element);
@@ -99,7 +100,7 @@ contract TransactionSet {
         return elementIndex;
     }
 
-    function erase(Transaction memory _transaction) public returns (bool) {
+    function erase(Transaction memory _transaction) public onlyOwner returns (bool) {
         bytes32 transactionHash = getHash(_transaction);
         uint256 index = _elementPresent[transactionHash];
         return erase(index);
@@ -108,7 +109,7 @@ contract TransactionSet {
     /// @notice erase a transaction
     /// @param _index the index to remove
     /// @return bool True if element was removed
-    function erase(uint256 _index) public returns (bool) {
+    function erase(uint256 _index) public onlyOwner returns (bool) {
         Transaction memory transaction = _elementMap[_index];
         bytes32 transactionHash = getHash(transaction);
         uint256 elementIndex = _elementPresent[transactionHash];

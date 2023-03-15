@@ -10,12 +10,18 @@ import "../../contracts/access/Versioned.sol";
 contract CommunityClassOpenVoteTest is Test {
     address private immutable _OWNER = address(0xffeeeeff);
     address private immutable _NOTOWNER = address(0x55);
+    address private immutable _SUPERVISOR = address(0x1234);
 
     WeightedCommunityClass private _class;
 
     function setUp() public {
         CommunityBuilder _builder = new CommunityBuilder();
-        address _classAddress = _builder.aCommunity().asOpenCommunity().withQuorum(1).build();
+        address _classAddress = _builder
+            .aCommunity()
+            .asOpenCommunity()
+            .withQuorum(1)
+            .withCommunitySupervisor(_SUPERVISOR)
+            .build();
         _class = WeightedCommunityClass(_classAddress);
     }
 

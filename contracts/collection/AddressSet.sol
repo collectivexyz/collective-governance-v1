@@ -43,8 +43,10 @@
  */
 pragma solidity ^0.8.15;
 
+import "@openzeppelin/contracts/access/Ownable.sol";
+
 /// @title dynamic collection of addresses
-contract AddressSet {
+contract AddressSet is Ownable {
     error IndexInvalid(uint256 index);
     error DuplicateAddress(address _address);
 
@@ -69,7 +71,7 @@ contract AddressSet {
     /// @notice add an element
     /// @param _element the address
     /// @return uint256 the elementId of the transaction
-    function add(address _element) external returns (uint256) {
+    function add(address _element) external onlyOwner returns (uint256) {
         uint256 elementIndex = ++_elementCount;
         _elementMap[elementIndex] = _element;
         if (_elementPresent[_element] > 0) revert DuplicateAddress(_element);
@@ -82,7 +84,7 @@ contract AddressSet {
     /// @dev swaps element to end and deletes the end
     /// @param _index The address to erase
     /// @return bool True if element was removed
-    function erase(uint256 _index) external returns (bool) {
+    function erase(uint256 _index) external onlyOwner returns (bool) {
         address _element = _elementMap[_index];
         return erase(_element);
     }
@@ -91,7 +93,7 @@ contract AddressSet {
     /// @dev swaps element to end and deletes the end
     /// @param _element The address to erase
     /// @return bool True if element was removed
-    function erase(address _element) public returns (bool) {
+    function erase(address _element) public onlyOwner returns (bool) {
         uint256 elementIndex = _elementPresent[_element];
         if (elementIndex > 0) {
             address _lastElement = _elementMap[_elementCount];

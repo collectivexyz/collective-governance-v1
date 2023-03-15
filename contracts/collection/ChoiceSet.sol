@@ -43,6 +43,8 @@
  */
 pragma solidity ^0.8.15;
 
+import "@openzeppelin/contracts/access/Ownable.sol";
+
 /// @notice choice for multiple choice voting
 /// @dev choice voting is enabled by initializing the number of choices when the proposal is created
 struct Choice {
@@ -59,7 +61,7 @@ function getHash(Choice memory choice) pure returns (bytes32) {
 }
 
 /// @title dynamic collection of choicedata
-contract ChoiceSet {
+contract ChoiceSet is Ownable {
     error IndexInvalid(uint256 index);
     error HashCollision(bytes32 txId);
 
@@ -85,7 +87,7 @@ contract ChoiceSet {
     /// @notice add choice
     /// @param _element the choice
     /// @return uint256 the elementId of the choice
-    function add(Choice memory _element) external returns (uint256) {
+    function add(Choice memory _element) external onlyOwner returns (uint256) {
         uint256 elementIndex = ++_elementCount;
         _elementMap[elementIndex] = _element;
         bytes32 _elementHash = getHash(_element);
@@ -95,7 +97,7 @@ contract ChoiceSet {
         return elementIndex;
     }
 
-    function erase(Choice memory _choice) public returns (bool) {
+    function erase(Choice memory _choice) public onlyOwner returns (bool) {
         bytes32 choiceHash = getHash(_choice);
         uint256 index = _elementPresent[choiceHash];
         return erase(index);
@@ -104,7 +106,7 @@ contract ChoiceSet {
     /// @notice erase a choice
     /// @param _index the index to remove
     /// @return bool True if element was removed
-    function erase(uint256 _index) public returns (bool) {
+    function erase(uint256 _index) public onlyOwner returns (bool) {
         Choice memory choice = _elementMap[_index];
         bytes32 choiceHash = getHash(choice);
         uint256 elementIndex = _elementPresent[choiceHash];

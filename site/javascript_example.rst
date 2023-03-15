@@ -73,7 +73,7 @@ The next step is to build the Governance Contract for your community.   This wil
       logger.info(name);
       await governanceBuilder.aGovernance();
       await governanceBuilder.withSupervisor(wallet.getAddress());
-      await governanceBuilder.withCommunityClassAddress(config.voterClass);
+      await governanceBuilder.withCommunityClassAddress(config.communityClass);
       const governanceAddress = await governanceBuilder.build();
       logger.info(`Governance contract created at ${governanceAddress}`);
 

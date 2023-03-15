@@ -91,15 +91,13 @@ contract System is Ownable, VersionedContract {
         address _erc721,
         uint256 _quorumRequirement
     ) external returns (address payable governanceAddress, address storageAddress, address metaAddress) {
-        address erc721Class = _classCreator.aCommunity().asErc721Community(_erc721).withQuorum(_quorumRequirement).build();
-        address supervisor = msg.sender;
-        return
-            _creator
-                .aGovernance()
-                .withSupervisor(supervisor)
-                .withCommunityClassAddress(erc721Class)
-                .withDescription(_name, _url, _description)
-                .build();
+        address erc721Class = _classCreator
+            .aCommunity()
+            .asErc721Community(_erc721)
+            .withQuorum(_quorumRequirement)
+            .withCommunitySupervisor(msg.sender)
+            .build();
+        return _creator.aGovernance().withCommunityClassAddress(erc721Class).withDescription(_name, _url, _description).build();
     }
 
     /// @notice one-shot factory creation method for Collective Governance System
@@ -129,15 +127,8 @@ contract System is Ownable, VersionedContract {
         } else {
             _classCreator.asErc721Community(_erc721);
         }
-        address erc721Class = _classCreator.withQuorum(_quorumRequirement).build();
-        address supervisor = msg.sender;
-        return
-            _creator
-                .aGovernance()
-                .withSupervisor(supervisor)
-                .withCommunityClassAddress(erc721Class)
-                .withDescription(_name, _url, _description)
-                .build();
+        address erc721Class = _classCreator.withQuorum(_quorumRequirement).withCommunitySupervisor(msg.sender).build();
+        return _creator.aGovernance().withCommunityClassAddress(erc721Class).withDescription(_name, _url, _description).build();
     }
 
     /// @notice System factory upgrade

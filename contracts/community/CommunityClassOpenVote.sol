@@ -61,13 +61,19 @@ contract CommunityClassOpenVote is ScheduledCommunityClass, AlwaysFinal {
     /// @param _maximumDelay the least possible vote delay
     /// @param _minimumDuration the least possible voting duration
     /// @param _maximumDuration the least possible voting duration
+    /// @param _gasUsedRebate The maximum rebate for gas used
+    /// @param _baseFeeRebate The maximum base fee rebate
+    /// @param _supervisorList the list of supervisors for this project
     function initialize(
         uint256 _voteWeight,
         uint256 _minimumQuorum,
         uint256 _minimumDelay,
         uint256 _maximumDelay,
         uint256 _minimumDuration,
-        uint256 _maximumDuration
+        uint256 _maximumDuration,
+        uint256 _gasUsedRebate,
+        uint256 _baseFeeRebate,
+        AddressSet _supervisorList
     ) public {
         super.initialize(
             _voteWeight,
@@ -76,6 +82,9 @@ contract CommunityClassOpenVote is ScheduledCommunityClass, AlwaysFinal {
             _maximumDelay,
             _minimumDuration,
             _maximumDuration,
+            _gasUsedRebate,
+            _baseFeeRebate,
+            _supervisorList,
             msg.sender
         );
     }

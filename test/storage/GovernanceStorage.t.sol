@@ -46,6 +46,7 @@ contract GovernanceStorageTest is Test {
             .withVoter(_VOTER2)
             .withVoter(_VOTER3)
             .withQuorum(1)
+            .withCommunitySupervisor(_SUPERVISOR)
             .build();
         _voterClass = CommunityClass(_communityLocation);
         _storage = new StorageFactory().create(_voterClass);
@@ -424,7 +425,12 @@ contract GovernanceStorageTest is Test {
     }
 
     function testCastOneVoteFromAll() public {
-        address _classLocation = _builder.aCommunity().asOpenCommunity().withQuorum(1).build();
+        address _classLocation = _builder
+            .aCommunity()
+            .asOpenCommunity()
+            .withQuorum(1)
+            .withCommunitySupervisor(_SUPERVISOR)
+            .build();
         CommunityClass _class = CommunityClass(_classLocation);
         _storage = new GovernanceStorage(_class);
         _storage.initializeProposal(_OWNER);
@@ -439,7 +445,12 @@ contract GovernanceStorageTest is Test {
         uint256 tokenId = 0x71;
         MockERC721 token = new MockERC721();
         token.mintTo(_VOTER2, tokenId);
-        address _classLocation = _builder.aCommunity().asErc721Community(address(token)).withQuorum(1).build();
+        address _classLocation = _builder
+            .aCommunity()
+            .asErc721Community(address(token))
+            .withQuorum(1)
+            .withCommunitySupervisor(_SUPERVISOR)
+            .build();
         CommunityClass _class = CommunityClass(_classLocation);
         _storage = new GovernanceStorage(_class);
         _storage.initializeProposal(_OWNER);
@@ -674,6 +685,7 @@ contract GovernanceStorageChoiceVoteTest is Test {
             .withVoter(_VOTER2)
             .withVoter(_VOTER3)
             .withQuorum(1)
+            .withCommunitySupervisor(_SUPERVISOR)
             .build();
         CommunityClass _voterClass = CommunityClass(_communityLocation);
         _storage = new StorageFactory().create(_voterClass);

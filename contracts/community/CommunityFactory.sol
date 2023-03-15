@@ -57,7 +57,10 @@ function upgradeOpenVote(
     uint256 minimumVoteDelay,
     uint256 maximumVoteDelay,
     uint256 minimumVoteDuration,
-    uint256 maximumVoteDuration
+    uint256 maximumVoteDuration,
+    uint256 _gasUsedRebate,
+    uint256 _baseFeeRebate,
+    AddressSet _supervisorList
 ) {
     CommunityClass _class = new CommunityClassOpenVote();
     WeightedCommunityClassProxy _proxy = WeightedCommunityClassProxy(proxyAddress);
@@ -68,7 +71,10 @@ function upgradeOpenVote(
         minimumVoteDelay,
         maximumVoteDelay,
         minimumVoteDuration,
-        maximumVoteDuration
+        maximumVoteDuration,
+            _gasUsedRebate,
+            _baseFeeRebate,
+            _supervisorList
     );
 }
 
@@ -80,7 +86,10 @@ function upgradeVoterPool(
     uint256 minimumVoteDelay,
     uint256 maximumVoteDelay,
     uint256 minimumVoteDuration,
-    uint256 maximumVoteDuration
+    uint256 maximumVoteDuration,
+    uint256 _gasUsedRebate,
+    uint256 _baseFeeRebate,
+    AddressSet _supervisorList
 ) {
     CommunityClass _class = new CommunityClassVoterPool();
     WeightedCommunityClassProxy _proxy = WeightedCommunityClassProxy(proxyAddress);
@@ -91,7 +100,10 @@ function upgradeVoterPool(
         minimumVoteDelay,
         maximumVoteDelay,
         minimumVoteDuration,
-        maximumVoteDuration
+        maximumVoteDuration,
+            _gasUsedRebate,
+            _baseFeeRebate,
+            _supervisorList
     );
 }
 
@@ -103,7 +115,10 @@ function upgradeErc721(
     uint256 minimumVoteDelay,
     uint256 maximumVoteDelay,
     uint256 minimumVoteDuration,
-    uint256 maximumVoteDuration
+    uint256 maximumVoteDuration,
+    uint256 _gasUsedRebate,
+    uint256 _baseFeeRebate,
+    AddressSet _supervisorList
 ) {
     CommunityClass _class = new CommunityClassERC721();
     ProjectCommunityClassProxy _proxy = ProjectCommunityClassProxy(proxyAddress);
@@ -114,7 +129,10 @@ function upgradeErc721(
         minimumVoteDelay,
         maximumVoteDelay,
         minimumVoteDuration,
-        maximumVoteDuration
+        maximumVoteDuration,
+            _gasUsedRebate,
+            _baseFeeRebate,
+            _supervisorList
     );
 }
 
@@ -126,7 +144,10 @@ function upgradeClosedErc721(
     uint256 minimumVoteDelay,
     uint256 maximumVoteDelay,
     uint256 minimumVoteDuration,
-    uint256 maximumVoteDuration
+    uint256 maximumVoteDuration,
+    uint256 _gasUsedRebate,
+    uint256 _baseFeeRebate,
+    AddressSet _supervisorList
 ) {
     CommunityClass _class = new CommunityClassClosedERC721();
     ProjectCommunityClassProxy _proxy = ProjectCommunityClassProxy(proxyAddress);
@@ -137,7 +158,10 @@ function upgradeClosedErc721(
         minimumVoteDelay,
         maximumVoteDelay,
         minimumVoteDuration,
-        maximumVoteDuration
+        maximumVoteDuration,
+            _gasUsedRebate,
+            _baseFeeRebate,
+            _supervisorList
     );
 }
 
@@ -153,13 +177,19 @@ contract WeightedClassFactory {
     /// @param maximumVoteDelay the least possible vote delay
     /// @param minimumVoteDuration the least possible voting duration
     /// @param maximumVoteDuration the least possible voting duration
+    /// @param _gasUsedRebate The maximum rebate for gas used
+    /// @param _baseFeeRebate The maximum base fee rebate
+    /// @param _supervisorList the list of supervisors for this project
     function createOpenVote(
         uint256 weight,
         uint256 minimumProjectQuorum,
         uint256 minimumVoteDelay,
         uint256 maximumVoteDelay,
         uint256 minimumVoteDuration,
-        uint256 maximumVoteDuration
+        uint256 maximumVoteDuration,
+        uint256 _gasUsedRebate,
+        uint256 _baseFeeRebate,
+        AddressSet _supervisorList
     ) external returns (WeightedCommunityClass) {
         CommunityClass _class = new CommunityClassOpenVote();
         ERC1967Proxy _proxy = new WeightedCommunityClassProxy(
@@ -169,7 +199,10 @@ contract WeightedClassFactory {
             minimumVoteDelay,
             maximumVoteDelay,
             minimumVoteDuration,
-            maximumVoteDuration
+            maximumVoteDuration,
+            _gasUsedRebate,
+            _baseFeeRebate,
+            _supervisorList
         );
         ScheduledCommunityClass _proxyClass = ScheduledCommunityClass(address(_proxy));
         _proxyClass.transferOwnership(msg.sender);
@@ -183,13 +216,19 @@ contract WeightedClassFactory {
     /// @param maximumVoteDelay the least possible vote delay
     /// @param minimumVoteDuration the least possible voting duration
     /// @param maximumVoteDuration the least possible voting duration
+    /// @param _gasUsedRebate The maximum rebate for gas used
+    /// @param _baseFeeRebate The maximum base fee rebate
+    /// @param _supervisorList the list of supervisors for this project
     function createVoterPool(
         uint256 weight,
         uint256 minimumProjectQuorum,
         uint256 minimumVoteDelay,
         uint256 maximumVoteDelay,
         uint256 minimumVoteDuration,
-        uint256 maximumVoteDuration
+        uint256 maximumVoteDuration,
+        uint256 _gasUsedRebate,
+        uint256 _baseFeeRebate,
+        AddressSet _supervisorList
     ) external returns (CommunityClassVoterPool) {
         CommunityClass _class = new CommunityClassVoterPool();
         ERC1967Proxy _proxy = new WeightedCommunityClassProxy(
@@ -199,7 +238,10 @@ contract WeightedClassFactory {
             minimumVoteDelay,
             maximumVoteDelay,
             minimumVoteDuration,
-            maximumVoteDuration
+            maximumVoteDuration,
+            _gasUsedRebate,
+            _baseFeeRebate,
+            _supervisorList
         );
         CommunityClassVoterPool _proxyClass = CommunityClassVoterPool(address(_proxy));
         _proxyClass.transferOwnership(msg.sender);
@@ -220,6 +262,9 @@ contract ProjectClassFactory {
     /// @param maximumVoteDelay the least possible vote delay
     /// @param minimumVoteDuration the least possible voting duration
     /// @param maximumVoteDuration the least possible voting duration
+    /// @param _gasUsedRebate The maximum rebate for gas used
+    /// @param _baseFeeRebate The maximum base fee rebate
+    /// @param _supervisorList the list of supervisors for this project
     function createErc721(
         address projectToken,
         uint256 weight,
@@ -227,7 +272,11 @@ contract ProjectClassFactory {
         uint256 minimumVoteDelay,
         uint256 maximumVoteDelay,
         uint256 minimumVoteDuration,
-        uint256 maximumVoteDuration
+        uint256 maximumVoteDuration,
+        uint256 _gasUsedRebate,
+        uint256 _baseFeeRebate,
+        AddressSet _supervisorList
+
     ) external returns (ProjectCommunityClass) {
         CommunityClass _class = new CommunityClassERC721();
         ERC1967Proxy _proxy = new ProjectCommunityClassProxy(
@@ -238,7 +287,10 @@ contract ProjectClassFactory {
             minimumVoteDelay,
             maximumVoteDelay,
             minimumVoteDuration,
-            maximumVoteDuration
+            maximumVoteDuration,
+            _gasUsedRebate,
+            _baseFeeRebate,
+            _supervisorList
         );
         CommunityClassERC721 _proxyClass = CommunityClassERC721(address(_proxy));
         _proxyClass.transferOwnership(msg.sender);
@@ -254,6 +306,9 @@ contract ProjectClassFactory {
     /// @param maximumVoteDelay the least possible vote delay
     /// @param minimumVoteDuration the least possible voting duration
     /// @param maximumVoteDuration the least possible voting duration
+    /// @param _gasUsedRebate The maximum rebate for gas used
+    /// @param _baseFeeRebate The maximum base fee rebate
+    /// @param _supervisorList the list of supervisors for this project
     function createClosedErc721(
         address projectToken,
         uint256 tokenThreshold,
@@ -262,7 +317,10 @@ contract ProjectClassFactory {
         uint256 minimumVoteDelay,
         uint256 maximumVoteDelay,
         uint256 minimumVoteDuration,
-        uint256 maximumVoteDuration
+        uint256 maximumVoteDuration,
+        uint256 _gasUsedRebate,
+        uint256 _baseFeeRebate,
+        AddressSet _supervisorList
     ) external returns (ProjectCommunityClass) {
         CommunityClass _class = new CommunityClassClosedERC721();
         ERC1967Proxy _proxy = new ClosedProjectCommunityClassProxy(
@@ -274,7 +332,10 @@ contract ProjectClassFactory {
             minimumVoteDelay,
             maximumVoteDelay,
             minimumVoteDuration,
-            maximumVoteDuration
+            maximumVoteDuration,
+            _gasUsedRebate,
+            _baseFeeRebate,
+            _supervisorList
         );
         CommunityClassClosedERC721 _proxyClass = CommunityClassClosedERC721(address(_proxy));
         _proxyClass.transferOwnership(msg.sender);

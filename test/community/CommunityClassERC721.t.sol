@@ -16,6 +16,7 @@ contract CommunityClassERC721Test is Test {
     uint256 private constant _TOKENID = 0xf733b17d;
     address private constant _OWNER = address(0xffeeeeff);
     address private constant _NOTOWNER = address(0x55);
+    address private constant _SUPERVISOR = address(0x1234);
 
     IERC721 private _tokenContract;
     WeightedCommunityClass private _class;
@@ -26,7 +27,12 @@ contract CommunityClassERC721Test is Test {
         merc721.mintTo(_OWNER, _TOKENID);
         _tokenContract = merc721;
         _builder = new CommunityBuilder();
-        address _classAddress = _builder.aCommunity().asErc721Community(address(_tokenContract)).withQuorum(1).build();
+        address _classAddress = _builder
+            .aCommunity()
+            .asErc721Community(address(_tokenContract))
+            .withQuorum(1)
+            .withCommunitySupervisor(_SUPERVISOR)
+            .build();
         _class = WeightedCommunityClass(_classAddress);
     }
 
@@ -41,7 +47,12 @@ contract CommunityClassERC721Test is Test {
         merc721.mintTo(_OWNER, _TOKENID + 1);
         merc721.mintTo(_OWNER, _TOKENID + 2);
         merc721.mintTo(_OWNER, _TOKENID + 3);
-        address _classAddress = _builder.aCommunity().asErc721Community(address(address(merc721))).withQuorum(1).build();
+        address _classAddress = _builder
+            .aCommunity()
+            .asErc721Community(address(address(merc721)))
+            .withQuorum(1)
+            .withCommunitySupervisor(_SUPERVISOR)
+            .build();
         _class = WeightedCommunityClass(_classAddress);
         uint256[] memory tokenIdList = _class.discover(_OWNER);
         assertEq(tokenIdList.length, 4);

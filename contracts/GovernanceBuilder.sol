@@ -86,7 +86,7 @@ contract GovernanceBuilder is VersionedContract, ERC165, Ownable {
     /// @notice add supervisor
     event GovernanceContractWithSupervisor(address creator, address supervisor);
     /// @notice set voterclass
-    event GovernanceContractwithCommunityClass(address creator, address class, string name, uint32 version);
+    event GovernanceContractWithCommunityClass(address creator, address class, string name, uint32 version);
     /// @notice set minimum delay
     event GovernanceContractWithMinimumVoteDelay(address creator, uint256 delay);
     /// @notice set maximum delay
@@ -115,12 +115,6 @@ contract GovernanceBuilder is VersionedContract, ERC165, Ownable {
         string url;
         /// @notice community description
         string description;
-        /// @notice max gas used for rebate
-        uint256 maxGasUsed;
-        /// @notice max base fee for rebate
-        uint256 maxBaseFee;
-        /// @notice array of supervisors
-        address[] supervisorList;
         /// @notice voting class
         CommunityClass class;
     }
@@ -158,17 +152,6 @@ contract GovernanceBuilder is VersionedContract, ERC165, Ownable {
         return this;
     }
 
-    /// @notice add a supervisor to the supervisor list for the next constructed contract contract
-    /// @dev maintains an internal list which increases with every call
-    /// @param _supervisor the address of the wallet representing a supervisor for the project
-    /// @return GovernanceBuilder this contract
-    function withSupervisor(address _supervisor) external returns (GovernanceBuilder) {
-        GovernanceProperties storage _properties = _buildMap[msg.sender];
-        _properties.supervisorList.push(_supervisor);
-        emit GovernanceContractWithSupervisor(msg.sender, _supervisor);
-        return this;
-    }
-
     /// @notice set the VoterClass to be used for the next constructed contract
     /// @param _classAddress the address of the VoterClass contract
     /// @return GovernanceBuilder this contract
@@ -185,7 +168,7 @@ contract GovernanceBuilder is VersionedContract, ERC165, Ownable {
     function withCommunityClass(CommunityClass _class) public returns (GovernanceBuilder) {
         GovernanceProperties storage _properties = _buildMap[msg.sender];
         _properties.class = _class;
-        emit GovernanceContractwithCommunityClass(msg.sender, address(_class), _class.name(), _class.version());
+        emit GovernanceContractWithCommunityClass(msg.sender, address(_class), _class.name(), _class.version());
         return this;
     }
 
@@ -232,17 +215,6 @@ contract GovernanceBuilder is VersionedContract, ERC165, Ownable {
         return withDescription(_description);
     }
 
-    /// @notice setup gas rebate parameters
-    /// @param _gasUsed the maximum gas used for rebate
-    /// @param _baseFee the maximum base fee for rebate
-    /// @return GovernanceBuilder this contract
-    function withGasRebate(uint256 _gasUsed, uint256 _baseFee) external returns (GovernanceBuilder) {
-        GovernanceProperties storage _properties = _buildMap[msg.sender];
-        _properties.maxGasUsed = _gasUsed;
-        _properties.maxBaseFee = _baseFee;
-        return this;
-    }
-
     /// @notice build the specified contract
     /// @dev contructs a new contract and may require a large gas fee, does not reinitialize context
     /// @return governanceAddress address of the new Governance contract
@@ -254,14 +226,7 @@ contract GovernanceBuilder is VersionedContract, ERC165, Ownable {
         TimeLocker _timeLock = createTimelock(_properties.class.minimumVoteDuration());
         MetaStorage _metaStore = _metaStorageFactory.create(_properties.name, _properties.url, _properties.description);
         transferOwnership(address(_metaStore), msg.sender);
-        Governance _governance = _governanceFactory.create(
-            _properties.supervisorList,
-            _properties.class,
-            _storage,
-            _timeLock,
-            _properties.maxGasUsed,
-            _properties.maxBaseFee
-        );
+        Governance _governance = _governanceFactory.create(_properties.class, _storage, _timeLock);
         address payable _governanceAddress = payable(address(_governance));
         transferOwnership(address(_timeLock), _governanceAddress);
         transferOwnership(address(_storage), _governanceAddress);
@@ -343,9 +308,6 @@ contract GovernanceBuilder is VersionedContract, ERC165, Ownable {
     function clear(address sender) internal {
         GovernanceProperties storage _properties = _buildMap[sender];
         _properties.class = CommunityClass(address(0x0));
-        _properties.supervisorList = new address[](0);
-        _properties.maxGasUsed = Constant.MAXIMUM_REBATE_GAS_USED;
-        _properties.maxBaseFee = Constant.MAXIMUM_REBATE_BASE_FEE;
         _properties.name = "";
         _properties.url = "";
         _properties.description = "";

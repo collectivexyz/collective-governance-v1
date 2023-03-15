@@ -27,10 +27,14 @@ contract ProposalBuilderTest is Test {
     ProposalBuilder private _builder;
 
     function setUp() public {
-        address _classAddr = new CommunityBuilder().aCommunity().asOpenCommunity().withQuorum(1).build();
+        address _classAddr = new CommunityBuilder()
+            .aCommunity()
+            .withCommunitySupervisor(_CREATOR)
+            .asOpenCommunity()
+            .withQuorum(1)
+            .build();
         (address payable _govAddr, address _stoAddr, address _metaAddr) = new GovernanceBuilder()
             .aGovernance()
-            .withSupervisor(_CREATOR)
             .withCommunityClassAddress(_classAddr)
             .build();
         _builder = new ProposalBuilder(_govAddr, _stoAddr, _metaAddr);

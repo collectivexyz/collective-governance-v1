@@ -48,6 +48,7 @@ import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
 import "@openzeppelin/contracts/proxy/utils/UUPSUpgradeable.sol";
 
 import "../../contracts/Constant.sol";
+import "../../contracts/collection/AddressSet.sol";
 import "../../contracts/access/ConfigurableMutable.sol";
 import "../../contracts/access/VersionedContract.sol";
 import "../../contracts/community/CommunityClass.sol";
@@ -70,7 +71,9 @@ abstract contract ScheduledCommunityClass is
         uint256 minimumDelay,
         uint256 maximumDelay,
         uint256 minimumDuration,
-        uint256 maximumDuration
+        uint256 maximumDuration,
+        uint256 _gasUsedRebate,
+        uint256 _baseFeeRebate
     );
     event Upgraded(
         uint256 voteWeight,
@@ -78,7 +81,9 @@ abstract contract ScheduledCommunityClass is
         uint256 minimumDelay,
         uint256 maximumDelay,
         uint256 minimumDuration,
-        uint256 maximumDuration
+        uint256 maximumDuration,
+        uint256 _gasUsedRebate,
+        uint256 _baseFeeRebate
     );
 
     /// @notice weight of a single voting share
@@ -99,6 +104,12 @@ abstract contract ScheduledCommunityClass is
     /// @notice minimum quorum for any vote
     uint256 private _minimumProjectQuorum;
 
+    uint256 private _maximumGasUsedRebate;
+
+    uint256 private _maximumBaseFeeRebate;
+
+    AddressSet private _communitySupervisorSet;
+
     /// @notice create a new community class representing community preferences
     /// @param _voteWeight the weight of a single voting share
     /// @param _minimumQuorum the least possible quorum for any vote
@@ -106,6 +117,9 @@ abstract contract ScheduledCommunityClass is
     /// @param _maximumDelay the least possible vote delay
     /// @param _minimumDuration the least possible voting duration
     /// @param _maximumDuration the least possible voting duration
+    /// @param _gasUsedRebate The maximum rebate for gas used
+    /// @param _baseFeeRebate The maximum base fee rebate
+    /// @param _supervisorList the list of supervisors for this project
     /// @param _owner the owner for the class
     function initialize(
         uint256 _voteWeight,
@@ -114,6 +128,9 @@ abstract contract ScheduledCommunityClass is
         uint256 _maximumDelay,
         uint256 _minimumDuration,
         uint256 _maximumDuration,
+        uint256 _gasUsedRebate,
+        uint256 _baseFeeRebate,
+        AddressSet _supervisorList,
         address _owner
     )
         internal
@@ -124,6 +141,9 @@ abstract contract ScheduledCommunityClass is
         requireMinimumDelay(_minimumDelay)
         requireMaximumDelay(_maximumDelay)
         requireMinimumDuration(_minimumDuration)
+        requireMaximumGasUsedRebate(_gasUsedRebate)
+        requireMaximumBaseFeeRebate(_baseFeeRebate)
+        requireNonEmptySupervisorList(_supervisorList)
     {
         if (_minimumDelay > _maximumDelay) revert MinimumDelayExceedsMaximum(_minimumDelay, _maximumDelay);
         if (_minimumDuration >= _maximumDuration) revert MinimumDurationExceedsMaximum(_minimumDuration, _maximumDuration);
@@ -135,8 +155,13 @@ abstract contract ScheduledCommunityClass is
         _minimumVoteDuration = _minimumDuration;
         _maximumVoteDuration = _maximumDuration;
         _minimumProjectQuorum = _minimumQuorum;
-
-        emit Initialized(_voteWeight, _minimumQuorum, _minimumDelay, _maximumDelay, _minimumDuration, _maximumDuration);
+        _maximumGasUsedRebate = _gasUsedRebate;
+        _maximumBaseFeeRebate = _baseFeeRebate;
+        _communitySupervisorSet = Constant.createAddressSet();
+        for(uint256 i = 1; i <= _supervisorList.size(); ++i) {
+            _communitySupervisorSet.add(_supervisorList.get(i));
+        }
+        emit Initialized(_voteWeight, _minimumQuorum, _minimumDelay, _maximumDelay, _minimumDuration, _maximumDuration, _maximumGasUsedRebate, _maximumBaseFeeRebate);
     }
 
     /// @notice reset voting parameters for upgrade
@@ -146,13 +171,19 @@ abstract contract ScheduledCommunityClass is
     /// @param _maximumDelay the least possible vote delay
     /// @param _minimumDuration the least possible voting duration
     /// @param _maximumDuration the least possible voting duration
+    /// @param _gasUsedRebate The maximum rebate for gas used
+    /// @param _baseFeeRebate The maximum base fee rebate
+    /// @param _supervisorList the list of supervisors for this project
     function upgrade(
         uint256 _voteWeight,
         uint256 _minimumQuorum,
         uint256 _minimumDelay,
         uint256 _maximumDelay,
         uint256 _minimumDuration,
-        uint256 _maximumDuration
+        uint256 _maximumDuration,
+        uint256 _gasUsedRebate,
+        uint256 _baseFeeRebate,
+        AddressSet _supervisorList
     )
         public
         onlyOwner
@@ -161,6 +192,9 @@ abstract contract ScheduledCommunityClass is
         requireMinimumDelay(_minimumDelay)
         requireMaximumDelay(_maximumDelay)
         requireMinimumDuration(_minimumDuration)
+        requireMaximumGasUsedRebate(_gasUsedRebate)
+        requireMaximumBaseFeeRebate(_baseFeeRebate)
+        requireNonEmptySupervisorList(_supervisorList)
     {
         if (_minimumDelay > _maximumDelay) revert MinimumDelayExceedsMaximum(_minimumDelay, _maximumDelay);
         if (_minimumDuration >= _maximumDuration) revert MinimumDurationExceedsMaximum(_minimumDuration, _maximumDuration);
@@ -171,8 +205,13 @@ abstract contract ScheduledCommunityClass is
         _minimumVoteDuration = _minimumDuration;
         _maximumVoteDuration = _maximumDuration;
         _minimumProjectQuorum = _minimumQuorum;
-
-        emit Upgraded(_voteWeight, _minimumQuorum, _minimumDelay, _maximumDelay, _minimumDuration, _maximumDuration);
+        _maximumGasUsedRebate = _gasUsedRebate;
+        _maximumBaseFeeRebate = _baseFeeRebate;
+        _communitySupervisorSet = Constant.createAddressSet();
+        for(uint256 i = 1; i <= _supervisorList.size(); ++i) {
+            _communitySupervisorSet.add(_supervisorList.get(i));
+        }
+        emit Upgraded(_voteWeight, _minimumQuorum, _minimumDelay, _maximumDelay, _minimumDuration, _maximumDuration, _maximumGasUsedRebate, _maximumBaseFeeRebate);
     }
 
     modifier requireValidWeight(uint256 _voteWeight) {
@@ -210,6 +249,23 @@ abstract contract ScheduledCommunityClass is
         _;
     }
 
+    modifier requireNonEmptySupervisorList(AddressSet _supervisorList) {
+        if (_supervisorList.size() == 0) revert SupervisorListEmpty();
+        _;
+    }
+
+    modifier requireMaximumGasUsedRebate(uint256 _gasUsedRebate) {
+        if (_gasUsedRebate < Constant.MAXIMUM_REBATE_GAS_USED)
+            revert GasUsedRebateMustBeLarger(_gasUsedRebate, Constant.MAXIMUM_REBATE_GAS_USED);
+        _;
+    }
+
+    modifier requireMaximumBaseFeeRebate(uint256 _baseFeeRebate) {
+        if (_baseFeeRebate < Constant.MAXIMUM_REBATE_BASE_FEE)
+            revert BaseFeeRebateMustBeLarger(_baseFeeRebate, Constant.MAXIMUM_REBATE_BASE_FEE);
+        _;
+    }
+
     /// @notice return voting weight of each confirmed share
     /// @return uint256 weight applied to one share
     function weight() public view returns (uint256) {
@@ -244,6 +300,24 @@ abstract contract ScheduledCommunityClass is
     /// @return uint256 the vote duration of a vote in seconds
     function maximumVoteDuration() public view returns (uint256) {
         return _maximumVoteDuration;
+    }
+
+        /// @notice maximum gas used rebate
+    /// @return uint256 the maximum rebate
+    function maximumGasUsedRebate() external view returns (uint256) {
+        return _maximumGasUsedRebate;
+    }
+
+    /// @notice maximum base fee rebate
+    /// @return uint256 the base fee rebate
+    function maximumBaseFeeRebate() external view returns (uint256) {
+        return _maximumBaseFeeRebate;
+    }
+
+    /// @notice return the community supervisors
+    /// @return AddressSet the supervisor set
+    function communitySupervisorSet() external view returns (AddressSet) {
+        return _communitySupervisorSet;
     }
 
     /// @notice see ERC-165

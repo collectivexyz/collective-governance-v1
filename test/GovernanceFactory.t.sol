@@ -21,13 +21,12 @@ contract GovernanceFactoryTest is Test {
     Storage private _storage;
     MetaStorage private _metaStorage;
     TimeLocker private _timeLock;
-    address[] private _supervisorList;
     GovernanceFactoryProxy private _factoryProxy;
     GovernanceFactory private _governanceFactory;
 
     function setUp() public {
         CommunityBuilder _vcCreator = new CommunityBuilder();
-        address vcAddress = _vcCreator.aCommunity().asOpenCommunity().withQuorum(1).build();
+        address vcAddress = _vcCreator.aCommunity().asOpenCommunity().withQuorum(1).withCommunitySupervisor(_OWNER).build();
         _class = CommunityClass(vcAddress);
         _metaStorage = new MappedMetaStorage(
             "collective",
@@ -36,70 +35,14 @@ contract GovernanceFactoryTest is Test {
         );
         _storage = new StorageFactory().create(_class);
         _timeLock = new TimeLock(Constant.TIMELOCK_MINIMUM_DELAY);
-        _supervisorList = new address[](1);
-        _supervisorList[0] = _OWNER;
         GovernanceFactory _factoryInstance = new GovernanceFactory();
         _factoryProxy = new GovernanceFactoryProxy(address(_factoryInstance));
         _governanceFactory = GovernanceFactory(address(_factoryProxy));
     }
 
-    function testFailSupervisorListIsEmpty() public {
-        _governanceFactory.create(
-            new address[](0),
-            _class,
-            _storage,
-            _timeLock,
-            Constant.MAXIMUM_REBATE_GAS_USED,
-            Constant.MAXIMUM_REBATE_BASE_FEE
-        );
-    }
-
-    function testFailGasUsedTooLow() public {
-        _governanceFactory.create(
-            _supervisorList,
-            _class,
-            _storage,
-            _timeLock,
-            Constant.MAXIMUM_REBATE_GAS_USED - 1,
-            Constant.MAXIMUM_REBATE_BASE_FEE
-        );
-    }
-
-    function testFailBaseFeeTooLow() public {
-        _governanceFactory.create(
-            _supervisorList,
-            _class,
-            _storage,
-            _timeLock,
-            Constant.MAXIMUM_REBATE_GAS_USED,
-            Constant.MAXIMUM_REBATE_BASE_FEE - 1
-        );
-    }
-
     function testCreateNewGovernance() public {
-        Governance governance = _governanceFactory.create(
-            _supervisorList,
-            _class,
-            _storage,
-            _timeLock,
-            Constant.MAXIMUM_REBATE_GAS_USED,
-            Constant.MAXIMUM_REBATE_BASE_FEE
-        );
+        Governance governance = _governanceFactory.create(_class, _storage, _timeLock);
         assertTrue(governance.supportsInterface(type(Governance).interfaceId));
-    }
-
-    function testCreateNewGovernanceGasRebate() public {
-        Governance governance = _governanceFactory.create(
-            _supervisorList,
-            _class,
-            _storage,
-            _timeLock,
-            Constant.MAXIMUM_REBATE_GAS_USED + 1,
-            Constant.MAXIMUM_REBATE_BASE_FEE + 7
-        );
-        CollectiveGovernance cGovernance = CollectiveGovernance(payable(address(governance)));
-        assertEq(cGovernance._maximumGasUsedRebate(), Constant.MAXIMUM_REBATE_GAS_USED + 1);
-        assertEq(cGovernance._maximumBaseFeeRebate(), Constant.MAXIMUM_REBATE_BASE_FEE + 7);
     }
 
     function testSupportsIERC165() public {

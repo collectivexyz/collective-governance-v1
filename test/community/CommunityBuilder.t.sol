@@ -11,11 +11,13 @@ import "../../contracts/community/CommunityBuilder.sol";
 import "../../contracts/community/CommunityClass.sol";
 
 contract CommunityBuilderTest is Test {
+    address private constant _SUPERVISOR = address(0x1234);
+
     CommunityBuilder private _builder;
 
     function setUp() public {
         _builder = new CommunityBuilder();
-        _builder.aCommunity();
+        _builder.aCommunity().withCommunitySupervisor(_SUPERVISOR);
     }
 
     function testVersion() public {
@@ -175,7 +177,12 @@ contract CommunityBuilderTest is Test {
     function testErc721Project() public {
         MockERC721 merc721 = new MockERC721();
         merc721.mintTo(address(0x1), 0x100);
-        address _classAddress = _builder.aCommunity().asErc721Community(address(merc721)).withQuorum(1).build();
+        address _classAddress = _builder
+            .aCommunity()
+            .asErc721Community(address(merc721))
+            .withQuorum(1)
+            .withCommunitySupervisor(_SUPERVISOR)
+            .build();
         VoterClass _class = VoterClass(_classAddress);
         assertTrue(_class.isVoter(address(0x1)));
     }
@@ -183,7 +190,12 @@ contract CommunityBuilderTest is Test {
     function testClosedErc721Project() public {
         MockERC721 merc721 = new MockERC721();
         merc721.mintTo(address(0x1), 0x100);
-        address _classAddress = _builder.aCommunity().asClosedErc721Community(address(merc721), 1).withQuorum(1).build();
+        address _classAddress = _builder
+            .aCommunity()
+            .asClosedErc721Community(address(merc721), 1)
+            .withQuorum(1)
+            .withCommunitySupervisor(_SUPERVISOR)
+            .build();
         VoterClass _class = VoterClass(_classAddress);
         assertTrue(_class.isVoter(address(0x1)));
     }
@@ -191,5 +203,51 @@ contract CommunityBuilderTest is Test {
     function testSupportsInterfaceVersioned() public {
         bytes4 ifId = type(Versioned).interfaceId;
         assertTrue(_builder.supportsInterface(ifId));
+    }
+
+    function testWithGasRebate() public {
+        address _classAddress = _builder
+            .asOpenCommunity()
+            .withQuorum(1)
+            .withMaximumGasUsedRebate(Constant.MAXIMUM_REBATE_GAS_USED + 0x7)
+            .build();
+        CommunityClass _class = CommunityClass(_classAddress);
+        assertEq(_class.maximumGasUsedRebate(), Constant.MAXIMUM_REBATE_GAS_USED + 0x7);
+    }
+
+    function testWithBaseFeeRebate() public {
+        address _classAddress = _builder
+            .asOpenCommunity()
+            .withQuorum(1)
+            .withMaximumBaseFeeRebate(Constant.MAXIMUM_REBATE_BASE_FEE + 0x13)
+            .build();
+        CommunityClass _class = CommunityClass(_classAddress);
+        assertEq(_class.maximumBaseFeeRebate(), Constant.MAXIMUM_REBATE_BASE_FEE + 0x13);
+    }
+
+    function testFailWithGasRebateGasUsedBelowMinimumRequired() public {
+        _builder.asOpenCommunity().withQuorum(1).withMaximumGasUsedRebate(Constant.MAXIMUM_REBATE_GAS_USED - 0x1).build();
+    }
+
+    function testFailWithBaseFeeBelowMinimumRequired() public {
+        _builder.asOpenCommunity().withQuorum(1).withMaximumBaseFeeRebate(Constant.MAXIMUM_REBATE_BASE_FEE - 0x1).build();
+    }
+
+    function testWithSupervisor() public {
+        address _classAddress = _builder
+            .asOpenCommunity()
+            .withQuorum(1)
+            .withCommunitySupervisor(address(0x1235))
+            .withCommunitySupervisor(address(0x1236))
+            .build();
+        CommunityClass _class = CommunityClass(_classAddress);
+        AddressSet _supervisorSet = _class.communitySupervisorSet();
+        assertTrue(_supervisorSet.contains(address(0x1234)));
+        assertTrue(_supervisorSet.contains(address(0x1235)));
+        assertTrue(_supervisorSet.contains(address(0x1236)));
+    }
+
+    function testFailWithNoSupervisor() public {
+        _builder.aCommunity().asOpenCommunity().withQuorum(1).build();
     }
 }
