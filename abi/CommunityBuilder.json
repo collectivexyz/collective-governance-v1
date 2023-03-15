@@ -73,12 +73,38 @@
     "inputs": [
       {
         "indexed": false,
+        "internalType": "uint256",
+        "name": "baseFeeRebate",
+        "type": "uint256"
+      }
+    ],
+    "name": "CommunityClassBaseFeeRebate",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
         "internalType": "address",
         "name": "class",
         "type": "address"
       }
     ],
     "name": "CommunityClassCreated",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "gasRebate",
+        "type": "uint256"
+      }
+    ],
+    "name": "CommunityClassGasUsedRebate",
     "type": "event"
   },
   {
@@ -157,6 +183,19 @@
       }
     ],
     "name": "CommunityClassQuorum",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "supervisor",
+        "type": "address"
+      }
+    ],
+    "name": "CommunityClassSupervisor",
     "type": "event"
   },
   {
@@ -421,6 +460,63 @@
       }
     ],
     "stateMutability": "pure",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_supervisor",
+        "type": "address"
+      }
+    ],
+    "name": "withCommunitySupervisor",
+    "outputs": [
+      {
+        "internalType": "contract CommunityBuilder",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_baseFeeRebate",
+        "type": "uint256"
+      }
+    ],
+    "name": "withMaximumBaseFeeRebate",
+    "outputs": [
+      {
+        "internalType": "contract CommunityBuilder",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_gasRebate",
+        "type": "uint256"
+      }
+    ],
+    "name": "withMaximumGasUsedRebate",
+    "outputs": [
+      {
+        "internalType": "contract CommunityBuilder",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "nonpayable",
     "type": "function"
   },
   {

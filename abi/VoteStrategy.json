@@ -3,38 +3,6 @@
     "inputs": [
       {
         "internalType": "uint256",
-        "name": "baseFee",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "minimumBaseFee",
-        "type": "uint256"
-      }
-    ],
-    "name": "BaseFeeRebateMustBeLarger",
-    "type": "error"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "gasUsedRebate",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "minimumRebate",
-        "type": "uint256"
-      }
-    ],
-    "name": "GasUsedRebateMustBeLarger",
-    "type": "error"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
         "name": "proposalId",
         "type": "uint256"
       },
@@ -45,11 +13,6 @@
       }
     ],
     "name": "NotVoter",
-    "type": "error"
-  },
-  {
-    "inputs": [],
-    "name": "SupervisorListEmpty",
     "type": "error"
   },
   {
