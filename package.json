@@ -21,13 +21,13 @@
     "url": "git+https://github.com/collectivexyz/collective-governance-v1.git"
   },
   "devDependencies": {
-    "prettier": "2.8.3",
-    "prettier-plugin-solidity": "1.1.3",
     "solhint": "3.3.8"
   },
   "dependencies": {
     "@openzeppelin/contracts": "4.8.1",
-    "nvm": "0.0.4"
+    "nvm": "0.0.4",
+    "prettier": "2.8.3",
+    "prettier-plugin-solidity": "1.1.3"
   },
   "keywords": [],
   "author": "collective",
