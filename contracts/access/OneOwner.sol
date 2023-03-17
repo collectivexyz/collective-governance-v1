@@ -13,7 +13,7 @@
 /*
  * BSD 3-Clause License
  *
- * Copyright (c) 2022, collective
+ * Copyright (c) 2023, collective
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -43,33 +43,32 @@
  */
 pragma solidity ^0.8.15;
 
-import { Mutable } from "../../contracts/access/Mutable.sol";
+/// @title minimal implementation of Ownable
+/// Ownable pushed some contracts over the initsize limit
+/// this is the absolute minimum implementation to secure methods
+/// while controlling the initsize cost
+/// @dev only one owner is permitted ever
+abstract contract OneOwner {
+    error NotOwner(address sender);
 
-/// @title ConfigurableMutable
-/// @notice Allow configuration during a period of mutability that ends
-/// when finalized
-contract ConfigurableMutable is Mutable {
-    bool internal contractFinal = false;
+    address private immutable _owner;
 
-    /// @notice call to confirm mutability during configuration
-    modifier onlyMutable() {
-        if (contractFinal) revert ContractFinal();
+    constructor() {
+        _owner = msg.sender;
+    }
+
+    /**
+     * @dev revert if called by any account other than the owner.
+     */
+    modifier onlyOwner() {
+        if (_owner != msg.sender) revert NotOwner(msg.sender);
         _;
     }
 
-    modifier onlyFinal() {
-        if (!contractFinal) revert NotFinal();
-        _;
-    }
-
-    /// @return bool True if this object is final
-    function isFinal() external view returns (bool) {
-        return contractFinal;
-    }
-
-    /// @notice set the control object to final.
-    /// no further change is allowed via onlyMutable
-    function makeFinal() public virtual onlyMutable {
-        contractFinal = true;
+    /**
+     * @return address the owner address
+     */
+    function owner() public view returns (address) {
+        return _owner;
     }
 }

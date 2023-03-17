@@ -2,14 +2,18 @@
 // solhint-disable var-name-mixedcase
 pragma solidity ^0.8.15;
 
-import "@openzeppelin/contracts/interfaces/IERC165.sol";
+import { IERC165 } from "@openzeppelin/contracts/interfaces/IERC165.sol";
+import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
 
-import "forge-std/Test.sol";
+import { Test } from "forge-std/Test.sol";
 
-import "../../contracts/storage/MetaStorage.sol";
-import "../../contracts/storage/MetaStorageFactory.sol";
-import "../../contracts/access/Versioned.sol";
-import "../../test/mock/TestData.sol";
+import { Constant } from "../../contracts/Constant.sol";
+import { Meta } from "../../contracts/collection/MetaSet.sol";
+import { MetaStorage } from "../../contracts/storage/MetaStorage.sol";
+import { MappedMetaStorage } from "../../contracts/storage/MappedMetaStorage.sol";
+import { MetaStorageFactory } from "../../contracts/storage/MetaStorageFactory.sol";
+import { Versioned } from "../../contracts/access/Versioned.sol";
+import { TestData } from "../../test/mock/TestData.sol";
 
 contract MetaStorageTest is Test {
     uint256 private constant META_ID = 7;

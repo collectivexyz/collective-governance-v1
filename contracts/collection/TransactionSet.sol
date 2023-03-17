@@ -43,8 +43,7 @@
  */
 pragma solidity ^0.8.15;
 
-import "@openzeppelin/contracts/access/Ownable.sol";
-import "../../contracts/Constant.sol";
+import { OneOwner } from "../../contracts/access/OneOwner.sol";
 
 /// @notice The executable transaction
 struct Transaction {
@@ -65,14 +64,24 @@ function getHash(Transaction memory transaction) pure returns (bytes32) {
     return keccak256(abi.encode(transaction));
 }
 
-/// @title dynamic collection of transaction
-contract TransactionSet is Ownable {
+interface TransactionCollection {
     error InvalidTransaction(uint256 index);
     error HashCollision(bytes32 txId);
 
     event TransactionAdded(bytes32 transactionHash);
     event TransactionRemoved(bytes32 transactionHash);
 
+    function add(Transaction memory transaction) external returns (uint256);
+
+    function size() external view returns (uint256);
+
+    function get(uint256 index) external view returns (Transaction memory);
+
+    function erase(uint256 _index) external returns (bool);
+}
+
+/// @title dynamic collection of transaction
+contract TransactionSet is OneOwner, TransactionCollection {
     uint256 private _elementCount;
 
     mapping(uint256 => Transaction) private _elementMap;

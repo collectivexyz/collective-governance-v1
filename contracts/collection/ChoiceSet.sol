@@ -43,7 +43,7 @@
  */
 pragma solidity ^0.8.15;
 
-import "@openzeppelin/contracts/access/Ownable.sol";
+import { OneOwner } from "../access/OneOwner.sol";
 
 /// @notice choice for multiple choice voting
 /// @dev choice voting is enabled by initializing the number of choices when the proposal is created
@@ -60,8 +60,7 @@ function getHash(Choice memory choice) pure returns (bytes32) {
     return keccak256(abi.encode(choice));
 }
 
-/// @title dynamic collection of choicedata
-contract ChoiceSet is Ownable {
+interface ChoiceCollection {
     error IndexInvalid(uint256 index);
     error HashCollision(bytes32 txId);
 
@@ -69,6 +68,19 @@ contract ChoiceSet is Ownable {
     event ChoiceRemoved(bytes32 choiceHash);
     event ChoiceIncrement(uint256 index, uint256 voteCount);
 
+    function add(Choice memory choice) external returns (uint256);
+
+    function size() external view returns (uint256);
+
+    function get(uint256 index) external view returns (Choice memory);
+
+    function contains(uint256 _choiceId) external view returns (bool);
+
+    function incrementVoteCount(uint256 index) external returns (uint256);
+}
+
+/// @title dynamic collection of choicedata
+contract ChoiceSet is OneOwner, ChoiceCollection {
     uint256 private _elementCount;
 
     mapping(uint256 => Choice) private _elementMap;

@@ -43,12 +43,12 @@
  */
 pragma solidity ^0.8.15;
 
-import "@openzeppelin/contracts/interfaces/IERC165.sol";
+import { IERC165 } from "@openzeppelin/contracts/interfaces/IERC165.sol";
 
-import "../../contracts/access/Versioned.sol";
-import "../../contracts/collection/TransactionSet.sol";
-import "../../contracts/collection/ChoiceSet.sol";
-import "../../contracts/community/CommunityClass.sol";
+import { Versioned } from "../../contracts/access/Versioned.sol";
+import { Transaction, TransactionCollection } from "../../contracts/collection/TransactionSet.sol";
+import { Choice, ChoiceCollection } from "../../contracts/collection/ChoiceSet.sol";
+import { CommunityClass } from "../../contracts/community/CommunityClass.sol";
 
 /// @title Storage interface
 /// @dev Eternal storage of strategy proxy
@@ -163,9 +163,9 @@ interface Storage is Versioned, IERC165 {
         /// @notice current status for this proposal
         Status status;
         /// @notice table of mapped transactions
-        TransactionSet transaction;
+        TransactionCollection transaction;
         /// @notice table of mapped choices
-        ChoiceSet choice;
+        ChoiceCollection choice;
         /// @notice Receipts of ballots for the entire set of voters
         mapping(uint256 => Receipt) voteReceipt;
         /// @notice configured supervisors

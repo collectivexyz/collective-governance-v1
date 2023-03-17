@@ -43,7 +43,7 @@
  */
 pragma solidity ^0.8.15;
 
-import "@openzeppelin/contracts/access/Ownable.sol";
+import { OneOwner } from "../access/OneOwner.sol";
 
 /// @notice User defined metadata
 struct Meta {
@@ -58,14 +58,22 @@ function getHash(Meta memory meta) pure returns (bytes32) {
     return keccak256(abi.encode(meta));
 }
 
-/// @title dynamic collection of metadata
-contract MetaSet is Ownable {
+interface MetaCollection {
     error IndexInvalid(uint256 index);
     error HashCollision(bytes32 txId);
 
     event MetaAdded(bytes32 metaHash);
     event MetaRemoved(bytes32 metaHash);
 
+    function add(Meta memory meta) external returns (uint256);
+
+    function size() external view returns (uint256);
+
+    function get(uint256 index) external view returns (Meta memory);
+}
+
+/// @title dynamic collection of metadata
+contract MetaSet is OneOwner, MetaCollection {
     uint256 private _elementCount;
 
     mapping(uint256 => Meta) private _elementMap;

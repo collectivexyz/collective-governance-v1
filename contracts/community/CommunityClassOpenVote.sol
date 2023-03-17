@@ -43,8 +43,9 @@
  */
 pragma solidity ^0.8.15;
 
-import "../../contracts/access/AlwaysFinal.sol";
-import "../../contracts/community/ScheduledCommunityClass.sol";
+import { AddressCollection } from "../../contracts/collection/AddressSet.sol";
+import { AlwaysFinal } from "../../contracts/access/AlwaysFinal.sol";
+import { ScheduledCommunityClass } from "../../contracts/community/ScheduledCommunityClass.sol";
 
 /// @notice OpenVote CommunityClass allows every wallet to participate in an open vote
 contract CommunityClassOpenVote is ScheduledCommunityClass, AlwaysFinal {
@@ -73,7 +74,7 @@ contract CommunityClassOpenVote is ScheduledCommunityClass, AlwaysFinal {
         uint256 _maximumDuration,
         uint256 _gasUsedRebate,
         uint256 _baseFeeRebate,
-        AddressSet _supervisorList
+        AddressCollection _supervisorList
     ) public {
         super.initialize(
             _voteWeight,

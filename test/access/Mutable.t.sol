@@ -2,11 +2,11 @@
 // solhint-disable no-empty-blocks
 pragma solidity ^0.8.15;
 
-import "forge-std/Test.sol";
+import { Test } from "forge-std/Test.sol";
 
-import "../../contracts/access/Mutable.sol";
-import "../../contracts/access/ConfigurableMutable.sol";
-import "../../contracts/access/AlwaysFinal.sol";
+import { Mutable } from "../../contracts/access/Mutable.sol";
+import { ConfigurableMutable } from "../../contracts/access/ConfigurableMutable.sol";
+import { AlwaysFinal } from "../../contracts/access/AlwaysFinal.sol";
 
 contract MutableTest is Test {
     ConfigMutable private _config;

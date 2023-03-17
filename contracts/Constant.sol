@@ -43,10 +43,10 @@
  */
 pragma solidity ^0.8.15;
 
-import "../contracts/collection/AddressSet.sol";
-import "../contracts/collection/MetaSet.sol";
-import "../contracts/collection/TransactionSet.sol";
-import "../contracts/collection/ChoiceSet.sol";
+import { AddressCollection, AddressSet } from "../contracts/collection/AddressSet.sol";
+import { MetaCollection, MetaSet } from "../contracts/collection/MetaSet.sol";
+import { TransactionCollection, TransactionSet } from "../contracts/collection/TransactionSet.sol";
+import { ChoiceCollection, ChoiceSet } from "../contracts/collection/ChoiceSet.sol";
 
 /**
  * @notice extract global manifest constants
@@ -135,7 +135,7 @@ library Constant {
      * @notice create an AddressSet
      * @return AddressSet the created set
      */
-    function createAddressSet() external returns (AddressSet) {
+    function createAddressSet() external returns (AddressCollection) {
         return new AddressSet();
     }
 
@@ -143,7 +143,7 @@ library Constant {
      * @notice create an MetaSet
      * @return MetaSet the created set
      */
-    function createMetaSet() external returns (MetaSet) {
+    function createMetaSet() external returns (MetaCollection) {
         return new MetaSet();
     }
 
@@ -151,7 +151,7 @@ library Constant {
      * @notice create an TransactionSet
      * @return TransactionSet the created set
      */
-    function createTransactionSet() external returns (TransactionSet) {
+    function createTransactionSet() external returns (TransactionCollection) {
         return new TransactionSet();
     }
 
@@ -159,7 +159,7 @@ library Constant {
      * @notice create an ChoiceSet
      * @return ChoiceSet the created set
      */
-    function createChoiceSet() external returns (ChoiceSet) {
+    function createChoiceSet() external returns (ChoiceCollection) {
         return new ChoiceSet();
     }
 }

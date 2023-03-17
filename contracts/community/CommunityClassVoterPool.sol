@@ -43,9 +43,10 @@
  */
 pragma solidity ^0.8.15;
 
-import "../../contracts/access/ConfigurableMutable.sol";
-import "../../contracts/collection/AddressSet.sol";
-import "../../contracts/community/ScheduledCommunityClass.sol";
+import { Constant } from "../../contracts/Constant.sol";
+import { ConfigurableMutable } from "../../contracts/access/ConfigurableMutable.sol";
+import { AddressCollection } from "../../contracts/collection/AddressSet.sol";
+import { ScheduledCommunityClass } from "../../contracts/community/ScheduledCommunityClass.sol";
 
 /// @title interface for VoterPool
 /// @notice sets the requirements for contracts implementing a VoterPool
@@ -72,7 +73,7 @@ contract CommunityClassVoterPool is ScheduledCommunityClass, ConfigurableMutable
     string public constant NAME = "CommunityClassVoterPool";
 
     // whitelisted voters
-    AddressSet private _voterPool;
+    AddressCollection private _voterPool;
 
     /// @param _voteWeight The integral weight to apply to each token held by the wallet
     /// @param _minimumQuorum the least possible quorum for any vote
@@ -92,7 +93,7 @@ contract CommunityClassVoterPool is ScheduledCommunityClass, ConfigurableMutable
         uint256 _maximumDuration,
         uint256 _gasUsedRebate,
         uint256 _baseFeeRebate,
-        AddressSet _supervisorList
+        AddressCollection _supervisorList
     ) public {
         super.initialize(
             _voteWeight,

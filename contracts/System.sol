@@ -43,12 +43,13 @@
  */
 pragma solidity ^0.8.15;
 
-import "@openzeppelin/contracts/access/Ownable.sol";
+import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
 
-import "../contracts/GovernanceBuilder.sol";
-import "../contracts/Governance.sol";
-import "../contracts/access/VersionedContract.sol";
-import "../contracts/community/CommunityBuilder.sol";
+import { Constant } from "../contracts/Constant.sol";
+import { Governance } from "../contracts/Governance.sol";
+import { GovernanceBuilder } from "../contracts/GovernanceBuilder.sol";
+import { VersionedContract } from "../contracts/access/VersionedContract.sol";
+import { CommunityBuilder } from "../contracts/community/CommunityBuilder.sol";
 
 contract System is Ownable, VersionedContract {
     string public constant NAME = "governance system creator";

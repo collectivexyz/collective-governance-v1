@@ -43,10 +43,10 @@
  */
 pragma solidity ^0.8.15;
 
-import {IERC165} from "@openzeppelin/contracts/interfaces/IERC165.sol";
+import { IERC165 } from "@openzeppelin/contracts/interfaces/IERC165.sol";
 
-import {VoterClass} from "../community/VoterClass.sol";
-import {AddressSet} from "../collection/AddressSet.sol";
+import { VoterClass } from "../community/VoterClass.sol";
+import { AddressCollection } from "../../contracts/collection/AddressSet.sol";
 
 /// @title CommunityClass interface
 /// @notice defines the configurable parameters for a community
@@ -93,7 +93,7 @@ interface CommunityClass is VoterClass {
 
     /// @notice return the community supervisors
     /// @return AddressSet the supervisor set
-    function communitySupervisorSet() external view returns (AddressSet);
+    function communitySupervisorSet() external view returns (AddressCollection);
 
     /// @notice determine if adding a proposal is approved for this voter
     /// @param _sender The address of the sender
@@ -121,7 +121,7 @@ interface WeightedCommunityClass is CommunityClass {
         uint256 _maximumDuration,
         uint256 _gasUsedRebate,
         uint256 _baseFeeRebate,
-        AddressSet _supervisorList
+        AddressCollection _supervisorList
     ) external;
 
     /// @notice reset voting parameters for upgrade
@@ -143,7 +143,7 @@ interface WeightedCommunityClass is CommunityClass {
         uint256 _maximumDuration,
         uint256 _gasUsedRebate,
         uint256 _baseFeeRebate,
-        AddressSet _supervisorList
+        AddressCollection _supervisorList
     ) external;
 
     /// @notice return voting weight of each confirmed share
@@ -173,6 +173,6 @@ interface ProjectCommunityClass is WeightedCommunityClass {
         uint256 _maximumDuration,
         uint256 _gasUsedRebate,
         uint256 _baseFeeRebate,
-        AddressSet _supervisorList
+        AddressCollection _supervisorList
     ) external;
 }

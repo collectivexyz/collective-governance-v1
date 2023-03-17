@@ -43,8 +43,8 @@
  */
 pragma solidity ^0.8.15;
 
-import "../../contracts/Constant.sol";
-import "../../contracts/access/Versioned.sol";
+import { Constant } from "../../contracts/Constant.sol";
+import { Versioned } from "../../contracts/access/Versioned.sol";
 
 /// @title Versioned contract
 abstract contract VersionedContract is Versioned {

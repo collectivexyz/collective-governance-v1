@@ -43,10 +43,10 @@
  */
 pragma solidity ^0.8.15;
 
-import "@openzeppelin/contracts/interfaces/IERC165.sol";
+import { IERC165 } from "@openzeppelin/contracts/interfaces/IERC165.sol";
 
-import "../../contracts/access/Mutable.sol";
-import "../../contracts/access/Versioned.sol";
+import { Mutable } from "../../contracts/access/Mutable.sol";
+import { Versioned } from "../../contracts/access/Versioned.sol";
 
 /// @title VoterClass interface
 /// @notice The VoterClass interface defines the requirements for specifying a

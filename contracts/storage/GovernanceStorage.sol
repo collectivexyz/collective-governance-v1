@@ -43,15 +43,17 @@
  */
 pragma solidity ^0.8.15;
 
-import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
-import "@openzeppelin/contracts/interfaces/IERC165.sol";
-import "@openzeppelin/contracts/access/Ownable.sol";
+import { ERC165 } from "@openzeppelin/contracts/utils/introspection/ERC165.sol";
+import { IERC165 } from "@openzeppelin/contracts/interfaces/IERC165.sol";
+import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
 
-import "../../contracts/storage/Storage.sol";
-import "../../contracts/community/CommunityClass.sol";
-import "../../contracts/collection/TransactionSet.sol";
-import "../../contracts/access/Versioned.sol";
-import "../../contracts/access/VersionedContract.sol";
+import { Storage } from "../../contracts/storage/Storage.sol";
+import { CommunityClass } from "../../contracts/community/CommunityClass.sol";
+import { Transaction, getHash } from "../../contracts/collection/TransactionSet.sol";
+import { Choice } from "../../contracts/collection/ChoiceSet.sol";
+import { Versioned } from "../../contracts/access/Versioned.sol";
+import { VersionedContract } from "../../contracts/access/VersionedContract.sol";
+import { Constant } from "../../contracts/Constant.sol";
 
 /// @title GovernanceStorage implementation
 /// @notice GovernanceStorage implements the necessary infrastructure for

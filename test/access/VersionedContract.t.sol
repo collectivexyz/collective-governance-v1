@@ -2,9 +2,11 @@
 // solhint-disable no-empty-blocks
 pragma solidity ^0.8.15;
 
-import "forge-std/Test.sol";
+import { Test } from "forge-std/Test.sol";
 
-import "../../contracts/access/VersionedContract.sol";
+import { Constant } from "../../contracts/Constant.sol";
+import { Versioned } from "../../contracts/access/Versioned.sol";
+import { VersionedContract } from "../../contracts/access/VersionedContract.sol";
 
 contract VersionedContractTest is Test {
     Versioned private _trinket;

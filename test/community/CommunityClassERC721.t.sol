@@ -1,16 +1,20 @@
 // SPDX-License-Identifier: BSD-3-Clause
 pragma solidity ^0.8.15;
 
-import "@openzeppelin/contracts/interfaces/IERC165.sol";
-import "@openzeppelin/contracts/interfaces/IERC721.sol";
+import { IERC165 } from "@openzeppelin/contracts/interfaces/IERC165.sol";
+import { IERC721 } from "@openzeppelin/contracts/interfaces/IERC721.sol";
 
-import "forge-std/Test.sol";
+import { Test } from "forge-std/Test.sol";
 
-import "../../contracts/community/CommunityBuilder.sol";
+import { Mutable } from "../../contracts/access/Mutable.sol";
+import { VoterClass } from "../../contracts/community/VoterClass.sol";
+import { WeightedCommunityClass } from "../../contracts/community/CommunityClass.sol";
+import { CommunityBuilder } from "../../contracts/community/CommunityBuilder.sol";
+import { CommunityClassERC721 } from "../../contracts/community/CommunityClassERC721.sol";
 
-import "../../contracts/access/Versioned.sol";
-import "../../test/mock/MockERC721.sol";
-import "../../test/mock/MockERC721Enum.sol";
+import { Versioned } from "../../contracts/access/Versioned.sol";
+import { MockERC721 } from "../mock/MockERC721.sol";
+import { MockERC721Enum } from "../mock/MockERC721Enum.sol";
 
 contract CommunityClassERC721Test is Test {
     uint256 private constant _TOKENID = 0xf733b17d;

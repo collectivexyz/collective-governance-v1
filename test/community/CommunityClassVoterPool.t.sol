@@ -2,10 +2,19 @@
 // solhint-disable var-name-mixedcase
 pragma solidity ^0.8.15;
 
-import "forge-std/Test.sol";
-import "../../contracts/community/CommunityFactory.sol";
-import "../../contracts/community/CommunityBuilder.sol";
-import "../../contracts/access/Versioned.sol";
+import { IERC165 } from "@openzeppelin/contracts/interfaces/IERC165.sol";
+
+import { Test } from "forge-std/Test.sol";
+
+import { Constant } from "../../contracts/Constant.sol";
+import { Mutable } from "../../contracts/access/Mutable.sol";
+import { AddressCollection, AddressSet } from "../../contracts/collection/AddressSet.sol";
+import { VoterClass } from "../../contracts/community/VoterClass.sol";
+import { CommunityClass } from "../../contracts/community/CommunityClass.sol";
+import { VoterPool, CommunityClassVoterPool } from "../../contracts/community/CommunityClassVoterPool.sol";
+import { WeightedClassFactory } from "../../contracts/community/CommunityFactory.sol";
+import { CommunityBuilder } from "../../contracts/community/CommunityBuilder.sol";
+import { Versioned } from "../../contracts/access/Versioned.sol";
 
 contract CommunityClassVoterPoolTest is Test {
     address private immutable _VOTER = address(0xffeeeeff);
@@ -15,7 +24,7 @@ contract CommunityClassVoterPoolTest is Test {
     address private immutable _SUPERVISOR = address(0x1234);
 
     CommunityClass private _class;
-    AddressSet private _supervisorSet;
+    AddressCollection private _supervisorSet;
 
     function setUp() public {
         CommunityBuilder _builder = new CommunityBuilder();
@@ -185,7 +194,7 @@ contract CommunityClassVoterPoolTest is Test {
     }
 
     function testSupervisor() public {
-        AddressSet _supervisor = _class.communitySupervisorSet();
+        AddressCollection _supervisor = _class.communitySupervisorSet();
         assertTrue(_supervisor.contains(_SUPERVISOR));
     }
 

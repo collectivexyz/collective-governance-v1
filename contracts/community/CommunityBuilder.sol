@@ -43,14 +43,20 @@
  */
 pragma solidity ^0.8.15;
 
-import "@openzeppelin/contracts/access/Ownable.sol";
-import "@openzeppelin/contracts/interfaces/IERC165.sol";
-import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
+import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
+import { IERC165 } from "@openzeppelin/contracts/interfaces/IERC165.sol";
+import { ERC165 } from "@openzeppelin/contracts/utils/introspection/ERC165.sol";
 
-import "../../contracts/Constant.sol";
-import "../../contracts/access/VersionedContract.sol";
-import "../../contracts/collection/AddressSet.sol";
-import "../../contracts/community/CommunityFactory.sol";
+import { Constant } from "../../contracts/Constant.sol";
+import { Versioned } from "../../contracts/access/Versioned.sol";
+import { VersionedContract } from "../../contracts/access/VersionedContract.sol";
+import { AddressCollection } from "../../contracts/collection/AddressSet.sol";
+import { WeightedCommunityClass } from "../../contracts/community/CommunityClass.sol";
+import { WeightedClassFactory, ProjectClassFactory } from "../../contracts/community/CommunityFactory.sol";
+import { CommunityClassVoterPool } from "../../contracts/community/CommunityClassVoterPool.sol";
+import { CommunityClassOpenVote } from "../../contracts/community/CommunityClassOpenVote.sol";
+import { CommunityClassERC721 } from "../../contracts/community/CommunityClassERC721.sol";
+import { CommunityClassClosedERC721 } from "../../contracts/community/CommunityClassClosedERC721.sol";
 
 /// @title Community Creator
 /// @notice This builder is for creating a community class for use with the Collective
@@ -79,7 +85,7 @@ contract CommunityBuilder is VersionedContract, ERC165, Ownable {
     event CommunityClassMaximumVoteDuration(uint256 duration);
     event CommunityClassGasUsedRebate(uint256 gasRebate);
     event CommunityClassBaseFeeRebate(uint256 baseFeeRebate);
-    event CommunityClassSupervisor(address supervisor);    
+    event CommunityClassSupervisor(address supervisor);
     event CommunityClassCreated(address class);
 
     enum CommunityType {
@@ -99,11 +105,11 @@ contract CommunityBuilder is VersionedContract, ERC165, Ownable {
         uint256 maximumVoteDuration;
         uint256 maximumGasUsedRebate;
         uint256 maximumBaseFeeRebate;
-        AddressSet communitySupervisor;
+        AddressCollection communitySupervisor;
         CommunityType communityType;
         address projectToken;
         uint256 tokenThreshold;
-        AddressSet addressSet;
+        AddressCollection poolSet;
     }
 
     mapping(address => CommunityProperties) private _buildMap;
@@ -160,7 +166,7 @@ contract CommunityBuilder is VersionedContract, ERC165, Ownable {
     function asPoolCommunity() external requireNone returns (CommunityBuilder) {
         CommunityProperties storage _properties = _buildMap[msg.sender];
         _properties.communityType = CommunityType.POOL;
-        _properties.addressSet = Constant.createAddressSet();
+        _properties.poolSet = Constant.createAddressSet();
         emit CommunityClassType(CommunityType.POOL);
         return this;
     }
@@ -206,7 +212,7 @@ contract CommunityBuilder is VersionedContract, ERC165, Ownable {
      */
     function withVoter(address voter) external requirePool returns (CommunityBuilder) {
         CommunityProperties storage _properties = _buildMap[msg.sender];
-        _properties.addressSet.add(voter);
+        _properties.poolSet.add(voter);
         emit CommunityVoter(voter);
         return this;
     }
@@ -295,12 +301,12 @@ contract CommunityBuilder is VersionedContract, ERC165, Ownable {
         return this;
     }
 
-    /** 
+    /**
      * set the maximum gas used rebate
      *
      * @param _gasRebate the gas used rebate
      *
-     * @return CommunityBuilder - this contract     
+     * @return CommunityBuilder - this contract
      */
     function withMaximumGasUsedRebate(uint256 _gasRebate) external returns (CommunityBuilder) {
         CommunityProperties storage _properties = _buildMap[msg.sender];
@@ -309,12 +315,12 @@ contract CommunityBuilder is VersionedContract, ERC165, Ownable {
         return this;
     }
 
-    /** 
+    /**
      * set the maximum base fee rebate
      *
      * @param _baseFeeRebate the base fee rebate
      *
-     * @return CommunityBuilder - this contract     
+     * @return CommunityBuilder - this contract
      */
     function withMaximumBaseFeeRebate(uint256 _baseFeeRebate) external returns (CommunityBuilder) {
         CommunityProperties storage _properties = _buildMap[msg.sender];
@@ -323,12 +329,12 @@ contract CommunityBuilder is VersionedContract, ERC165, Ownable {
         return this;
     }
 
-    /** 
+    /**
      * add community supervisor
      *
      * @param _supervisor the supervisor address
      *
-     * @return CommunityBuilder - this contract     
+     * @return CommunityBuilder - this contract
      */
     function withCommunitySupervisor(address _supervisor) external returns (CommunityBuilder) {
         CommunityProperties storage _properties = _buildMap[msg.sender];
@@ -336,7 +342,6 @@ contract CommunityBuilder is VersionedContract, ERC165, Ownable {
         emit CommunityClassSupervisor(_supervisor);
         return this;
     }
-
 
     /**
      * Build the contract with the configured settings.
@@ -402,9 +407,9 @@ contract CommunityBuilder is VersionedContract, ERC165, Ownable {
                 _properties.maximumBaseFeeRebate,
                 _properties.communitySupervisor
             );
-            if (_properties.addressSet.size() == 0) revert VoterRequired();
-            for (uint256 i = 1; i <= _properties.addressSet.size(); ++i) {
-                _pool.addVoter(_properties.addressSet.get(i));
+            if (_properties.poolSet.size() == 0) revert VoterRequired();
+            for (uint256 i = 1; i <= _properties.poolSet.size(); ++i) {
+                _pool.addVoter(_properties.poolSet.get(i));
             }
             _pool.makeFinal();
             _proxy = _pool;

@@ -1,12 +1,19 @@
 // SPDX-License-Identifier: BSD-3-Clause
 pragma solidity ^0.8.15;
 
-import "@openzeppelin/contracts/interfaces/IERC165.sol";
+import { IERC165 } from "@openzeppelin/contracts/interfaces/IERC165.sol";
+import { Initializable } from "@openzeppelin/contracts/proxy/utils/Initializable.sol";
 
-import "forge-std/Test.sol";
+import { Test } from "forge-std/Test.sol";
 
-import "../../contracts/community/ScheduledCommunityClass.sol";
-import "../../contracts/community/CommunityBuilder.sol";
+import { Constant } from "../../contracts/Constant.sol";
+import { AddressCollection, AddressSet } from "../../contracts/collection/AddressSet.sol";
+import { Versioned } from "../../contracts/access/Versioned.sol";
+import { OwnableInitializable } from "../../contracts/access/OwnableInitializable.sol";
+import { ScheduledCommunityClass } from "../../contracts/community/ScheduledCommunityClass.sol";
+import { CommunityBuilder } from "../../contracts/community/CommunityBuilder.sol";
+import { VoterClass } from "../../contracts/community/VoterClass.sol";
+import { WeightedCommunityClass, CommunityClass } from "../../contracts/community/CommunityClass.sol";
 
 contract ScheduledCommunityClassTest is Test {
     address private constant _OTHER = address(0x1234);
@@ -93,7 +100,7 @@ contract ScheduledCommunityClassTest is Test {
     }
 
     function testUpgradeRequiresOwner() public {
-        AddressSet _supervisorSet = new AddressSet();
+        AddressCollection _supervisorSet = new AddressSet();
         _supervisorSet.add(address(0x1235));
         vm.expectRevert(abi.encodeWithSelector(OwnableInitializable.NotOwner.selector, _OTHER));
         vm.prank(_OTHER, _OTHER);

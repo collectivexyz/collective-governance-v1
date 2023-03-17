@@ -2,8 +2,8 @@
 // solhint-disable not-rely-on-time
 pragma solidity ^0.8.15;
 
-import "forge-std/Test.sol";
-import "../contracts/Constant.sol";
+import { Test } from "forge-std/Test.sol";
+import { Constant } from "../contracts/Constant.sol";
 
 contract ConstantTest is Test {
     function testStringLength() public {

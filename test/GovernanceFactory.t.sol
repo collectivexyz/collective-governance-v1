@@ -1,18 +1,24 @@
 // SPDX-License-Identifier: BSD-3-Clause
 pragma solidity ^0.8.15;
 
-import "@openzeppelin/contracts/interfaces/IERC165.sol";
+import { IERC165 } from "@openzeppelin/contracts/interfaces/IERC165.sol";
+import { UUPSUpgradeable } from "@openzeppelin/contracts/proxy/utils/UUPSUpgradeable.sol";
 
-import "forge-std/Test.sol";
+import { Test } from "forge-std/Test.sol";
 
-import "../contracts/storage/Storage.sol";
-import "../contracts/storage/StorageFactory.sol";
-import "../contracts/storage/MetaStorage.sol";
-import "../contracts/storage/MappedMetaStorage.sol";
-import "../contracts/community/CommunityBuilder.sol";
-import "../contracts/GovernanceFactory.sol";
-import "../contracts/GovernanceFactoryProxy.sol";
-import "../contracts/access/Versioned.sol";
+import { Constant } from "../contracts/Constant.sol";
+import { Storage } from "../contracts/storage/Storage.sol";
+import { StorageFactory } from "../contracts/storage/StorageFactory.sol";
+import { MetaStorage } from "../contracts/storage/MetaStorage.sol";
+import { MappedMetaStorage } from "../contracts/storage/MappedMetaStorage.sol";
+import { CommunityClass } from "../contracts/community/CommunityClass.sol";
+import { CommunityBuilder } from "../contracts/community/CommunityBuilder.sol";
+import { Governance } from "../contracts/Governance.sol";
+import { GovernanceFactory } from "../contracts/GovernanceFactory.sol";
+import { GovernanceFactoryProxy } from "../contracts/GovernanceFactoryProxy.sol";
+import { TimeLocker } from "../contracts/treasury/TimeLocker.sol";
+import { TimeLock } from "../contracts/treasury/TimeLock.sol";
+import { Versioned } from "../contracts/access/Versioned.sol";
 
 contract GovernanceFactoryTest is Test {
     address public constant _OWNER = address(0x1001);

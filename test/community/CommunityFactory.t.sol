@@ -1,17 +1,19 @@
 // SPDX-License-Identifier: BSD-3-Clause
 pragma solidity ^0.8.15;
 
-import "forge-std/Test.sol";
+import { Test } from "forge-std/Test.sol";
 
-import "../../contracts/Constant.sol";
-import "../../contracts/community/CommunityFactory.sol";
-import "../../contracts/community/CommunityClass.sol";
+import { Constant } from "../../contracts/Constant.sol";
+import { Mutable } from "../../contracts/access/Mutable.sol";
+import { AddressCollection, AddressSet } from "../../contracts/collection/AddressSet.sol";
+import { WeightedClassFactory, ProjectClassFactory } from "../../contracts/community/CommunityFactory.sol";
+import { WeightedCommunityClass, ProjectCommunityClass } from "../../contracts/community/CommunityClass.sol";
 
-import "../../test/mock/MockERC721.sol";
+import { MockERC721 } from "../../test/mock/MockERC721.sol";
 
 contract WeightedCommunityFactoryTest is Test {
     WeightedClassFactory private _weightedFactory;
-    AddressSet private _supervisorSet;
+    AddressCollection private _supervisorSet;
 
     function setUp() public {
         _weightedFactory = new WeightedClassFactory();
@@ -20,7 +22,6 @@ contract WeightedCommunityFactoryTest is Test {
     }
 
     function testOpenVote() public {
-
         WeightedCommunityClass _class = _weightedFactory.createOpenVote(
             19,
             Constant.MINIMUM_PROJECT_QUORUM,

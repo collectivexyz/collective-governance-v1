@@ -43,14 +43,15 @@
  */
 pragma solidity ^0.8.15;
 
-import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
-import "@openzeppelin/contracts/interfaces/IERC165.sol";
-import "@openzeppelin/contracts/access/Ownable.sol";
+import { ERC165 } from "@openzeppelin/contracts/utils/introspection/ERC165.sol";
+import { IERC165 } from "@openzeppelin/contracts/interfaces/IERC165.sol";
+import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
 
-import "../../contracts/Constant.sol";
-import "../../contracts/storage/MetaStorage.sol";
-import "../../contracts/access/Versioned.sol";
-import "../../contracts/access/VersionedContract.sol";
+import { Constant } from "../../contracts/Constant.sol";
+import { Meta } from "../../contracts/collection/MetaSet.sol";
+import { MetaStorage } from "../../contracts/storage/MetaStorage.sol";
+import { Versioned } from "../../contracts/access/Versioned.sol";
+import { VersionedContract } from "../../contracts/access/VersionedContract.sol";
 
 contract MappedMetaStorage is MetaStorage, VersionedContract, ERC165, Ownable {
     string public constant NAME = "meta storage";

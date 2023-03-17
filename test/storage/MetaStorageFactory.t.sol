@@ -1,13 +1,16 @@
 // SPDX-License-Identifier: BSD-3-Clause
 pragma solidity ^0.8.15;
 
-import "@openzeppelin/contracts/interfaces/IERC165.sol";
+import { IERC165 } from "@openzeppelin/contracts/interfaces/IERC165.sol";
+import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
+import { UUPSUpgradeable } from "@openzeppelin/contracts/proxy/utils/UUPSUpgradeable.sol";
 
-import "forge-std/Test.sol";
+import { Test } from "forge-std/Test.sol";
 
-import "../../contracts/access/Versioned.sol";
-import "../../contracts/storage/MetaStorageFactory.sol";
-import "../../contracts/storage/MetaStorageFactoryProxy.sol";
+import { Versioned } from "../../contracts/access/Versioned.sol";
+import { MetaStorage } from "../../contracts/storage/MetaStorage.sol";
+import { MetaStorageFactory } from "../../contracts/storage/MetaStorageFactory.sol";
+import { MetaStorageFactoryProxy } from "../../contracts/storage/MetaStorageFactoryProxy.sol";
 
 contract MetaStorageFactoryTest is Test {
     MetaStorageFactory private _metaInstance;

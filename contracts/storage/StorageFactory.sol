@@ -43,15 +43,16 @@
  */
 pragma solidity ^0.8.15;
 
-import "@openzeppelin/contracts/proxy/utils/Initializable.sol";
-import "@openzeppelin/contracts/proxy/utils/UUPSUpgradeable.sol";
-import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
+import { Initializable } from "@openzeppelin/contracts/proxy/utils/Initializable.sol";
+import { UUPSUpgradeable } from "@openzeppelin/contracts/proxy/utils/UUPSUpgradeable.sol";
+import { ERC165 } from "@openzeppelin/contracts/utils/introspection/ERC165.sol";
 
-import "../../contracts/community/CommunityClass.sol";
-import "../../contracts/storage/GovernanceStorage.sol";
-import "../../contracts/access/Versioned.sol";
-import "../../contracts/access/VersionedContract.sol";
-import "../../contracts/access/OwnableInitializable.sol";
+import { CommunityClass } from "../../contracts/community/CommunityClass.sol";
+import { Storage } from "../../contracts/storage/Storage.sol";
+import { GovernanceStorage } from "../../contracts/storage/GovernanceStorage.sol";
+import { Versioned } from "../../contracts/access/Versioned.sol";
+import { VersionedContract } from "../../contracts/access/VersionedContract.sol";
+import { OwnableInitializable } from "../../contracts/access/OwnableInitializable.sol";
 
 /**
  * @title CollectiveStorage creational contract

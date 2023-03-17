@@ -2,11 +2,13 @@
 // solhint-disable not-rely-on-time
 pragma solidity ^0.8.15;
 
-import "forge-std/Test.sol";
+import { Test } from "forge-std/Test.sol";
 
-import "../../contracts/treasury/TimeLocker.sol";
-import "../../contracts/treasury/TimeLock.sol";
-import "../mock/FlagSet.sol";
+import { Constant } from "../../contracts/Constant.sol";
+import { Transaction, getHash } from "../../contracts/collection/TransactionSet.sol";
+import { TimeLocker } from "../../contracts/treasury/TimeLocker.sol";
+import { TimeLock } from "../../contracts/treasury/TimeLock.sol";
+import { FlagSet, ValueSet } from "../mock/FlagSet.sol";
 
 contract TimeLockTest is Test {
     uint256 private constant _WEEK_DELAY = 7 days;

@@ -2,25 +2,30 @@
 // solhint-disable not-rely-on-time
 pragma solidity ^0.8.15;
 
-import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
-import "@openzeppelin/contracts/interfaces/IERC721.sol";
-import "@openzeppelin/contracts/token/ERC721/extensions/IERC721Enumerable.sol";
+import { IERC165 } from "@openzeppelin/contracts/interfaces/IERC165.sol";
+import { ERC165 } from "@openzeppelin/contracts/utils/introspection/ERC165.sol";
+import { IERC721 } from "@openzeppelin/contracts/interfaces/IERC721.sol";
+import { IERC721Enumerable } from "@openzeppelin/contracts/token/ERC721/extensions/IERC721Enumerable.sol";
 
-import "forge-std/Test.sol";
+import { Test } from "forge-std/Test.sol";
 
-import "../contracts/Constant.sol";
-import "../contracts/access/Versioned.sol";
-import "../contracts/community/CommunityBuilder.sol";
-import "../contracts/storage/Storage.sol";
-import "../contracts/VoteStrategy.sol";
-import "../contracts/Governance.sol";
-import "../contracts/CollectiveGovernance.sol";
-import "../contracts/GovernanceBuilder.sol";
-import "../contracts/access/VersionedContract.sol";
+import { Constant } from "../contracts/Constant.sol";
+import { Versioned } from "../contracts/access/Versioned.sol";
+import { Transaction, getHash } from "../contracts/collection/TransactionSet.sol";
+import { VoterClass } from "../contracts/community/VoterClass.sol";
+import { CommunityClass } from "../contracts/community/CommunityClass.sol";
+import { CommunityBuilder } from "../contracts/community/CommunityBuilder.sol";
+import { Storage } from "../contracts/storage/Storage.sol";
+import { VoteStrategy } from "../contracts/VoteStrategy.sol";
+import { Governance } from "../contracts/Governance.sol";
+import { CollectiveGovernance, calculateGasRebate } from "../contracts/CollectiveGovernance.sol";
+import { GovernanceBuilder } from "../contracts/GovernanceBuilder.sol";
+import { TimeLocker } from "../contracts/treasury/TimeLocker.sol";
+import { VersionedContract } from "../contracts/access/VersionedContract.sol";
 
-import "./mock/MockERC721.sol";
-import "./mock/FlagSet.sol";
-import "./mock/TestData.sol";
+import { MockERC721 } from "./mock/MockERC721.sol";
+import { FlagSet } from "./mock/FlagSet.sol";
+import { TestData } from "./mock/TestData.sol";
 
 contract GasRebateTest is Test {
     function testGasRebate() public {

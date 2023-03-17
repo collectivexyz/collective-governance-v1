@@ -43,9 +43,10 @@
  */
 pragma solidity ^0.8.15;
 
-import "@openzeppelin/contracts/interfaces/IERC721.sol";
+import { IERC721 } from "@openzeppelin/contracts/interfaces/IERC721.sol";
 
-import "../../contracts/community/CommunityClassERC721.sol";
+import { AddressCollection } from "../../contracts/collection/AddressSet.sol";
+import { CommunityClassERC721 } from "../../contracts/community/CommunityClassERC721.sol";
 
 /// @title Closed ERC721 VoterClass
 /// @notice similar to CommunityClassERC721 however proposals are only allowed for voters
@@ -77,12 +78,20 @@ contract CommunityClassClosedERC721 is CommunityClassERC721 {
         uint256 _maximumDuration,
         uint256 _gasUsedRebate,
         uint256 _baseFeeRebate,
-        AddressSet _supervisorList
+        AddressCollection _supervisorList
     ) public requireNonZero(_requirement) {
-        initialize(_contract, _voteWeight, _minimumQuorum, _minimumDelay, _maximumDelay, _minimumDuration, _maximumDuration,
+        initialize(
+            _contract,
+            _voteWeight,
+            _minimumQuorum,
+            _minimumDelay,
+            _maximumDelay,
+            _minimumDuration,
+            _maximumDuration,
             _gasUsedRebate,
             _baseFeeRebate,
-            _supervisorList);
+            _supervisorList
+        );
         _tokenRequirement = _requirement;
     }
 

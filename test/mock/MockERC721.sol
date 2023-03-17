@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: BSD-3-Clause
 pragma solidity ^0.8.15;
 
-import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
-import "@openzeppelin/contracts/token/ERC721/extensions/IERC721Enumerable.sol";
-import "@openzeppelin/contracts/interfaces/IERC721.sol";
+import { IERC165 } from "@openzeppelin/contracts/interfaces/IERC165.sol";
+import { ERC165 } from "@openzeppelin/contracts/utils/introspection/ERC165.sol";
+import { IERC721 } from "@openzeppelin/contracts/interfaces/IERC721.sol";
 
 contract MockERC721 is IERC721, ERC165 {
     mapping(address => uint256) private _ownerBalanceMap;

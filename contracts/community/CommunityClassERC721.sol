@@ -43,10 +43,13 @@
  */
 pragma solidity ^0.8.15;
 
-import "@openzeppelin/contracts/token/ERC721/extensions/IERC721Enumerable.sol";
+import { IERC721 } from "@openzeppelin/contracts/interfaces/IERC721.sol";
+import { IERC721Enumerable } from "@openzeppelin/contracts/token/ERC721/extensions/IERC721Enumerable.sol";
 
-import "../../contracts/access/AlwaysFinal.sol";
-import "../../contracts/community/ScheduledCommunityClass.sol";
+import { AlwaysFinal } from "../../contracts/access/AlwaysFinal.sol";
+import { AddressCollection } from "../../contracts/collection/AddressSet.sol";
+import { ProjectCommunityClass } from "../../contracts/community/CommunityClass.sol";
+import { ScheduledCommunityClass } from "../../contracts/community/ScheduledCommunityClass.sol";
 
 /// @title ERC721 Implementation of CommunityClass
 /// @notice This contract implements a voter pool based on ownership of an ERC-721 token.
@@ -81,12 +84,19 @@ contract CommunityClassERC721 is ScheduledCommunityClass, ProjectCommunityClass,
         uint256 _maximumDuration,
         uint256 _gasUsedRebate,
         uint256 _baseFeeRebate,
-        AddressSet _supervisorList
+        AddressCollection _supervisorList
     ) public virtual {
-        initialize(_voteWeight, _minimumQuorum, _minimumDelay, _maximumDelay, _minimumDuration, _maximumDuration,
+        initialize(
+            _voteWeight,
+            _minimumQuorum,
+            _minimumDelay,
+            _maximumDelay,
+            _minimumDuration,
+            _maximumDuration,
             _gasUsedRebate,
             _baseFeeRebate,
-            _supervisorList);
+            _supervisorList
+        );
         _contractAddress = _contract;
     }
 
@@ -108,11 +118,20 @@ contract CommunityClassERC721 is ScheduledCommunityClass, ProjectCommunityClass,
         uint256 _maximumDuration,
         uint256 _gasUsedRebate,
         uint256 _baseFeeRebate,
-        AddressSet _supervisorList
+        AddressCollection _supervisorList
     ) public virtual {
-        initialize(_voteWeight, _minimumQuorum, _minimumDelay, _maximumDelay, _minimumDuration, _maximumDuration,             _gasUsedRebate,
+        initialize(
+            _voteWeight,
+            _minimumQuorum,
+            _minimumDelay,
+            _maximumDelay,
+            _minimumDuration,
+            _maximumDuration,
+            _gasUsedRebate,
             _baseFeeRebate,
-            _supervisorList, msg.sender);
+            _supervisorList,
+            msg.sender
+        );
     }
 
     modifier requireValidToken(uint256 _shareId) {

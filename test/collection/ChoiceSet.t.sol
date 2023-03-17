@@ -1,9 +1,10 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.15;
 
-import "forge-std/Test.sol";
+import { Test } from "forge-std/Test.sol";
 
-import "../../contracts/collection/ChoiceSet.sol";
+import { Choice, ChoiceSet, ChoiceCollection, getHash } from "../../contracts/collection/ChoiceSet.sol";
+import { OneOwner } from "../../contracts/access/OneOwner.sol";
 
 contract ChoiceSetTest is Test {
     ChoiceSet private _set;
@@ -42,7 +43,7 @@ contract ChoiceSetTest is Test {
     function testDuplicateForbidden() public {
         Choice memory choice = Choice("a1", "a choice", 53, "2123", 22);
         _set.add(choice);
-        vm.expectRevert(abi.encodeWithSelector(ChoiceSet.HashCollision.selector, getHash(choice)));
+        vm.expectRevert(abi.encodeWithSelector(ChoiceCollection.HashCollision.selector, getHash(choice)));
         _set.add(choice);
     }
 
@@ -117,7 +118,7 @@ contract ChoiceSetTest is Test {
     function testGetZer0() public {
         Choice memory choice = Choice("z1", "a choice", 53, "2123", 22);
         _set.add(choice);
-        vm.expectRevert(abi.encodeWithSelector(ChoiceSet.IndexInvalid.selector, 0));
+        vm.expectRevert(abi.encodeWithSelector(ChoiceCollection.IndexInvalid.selector, 0));
         _set.get(0);
     }
 
@@ -125,7 +126,38 @@ contract ChoiceSetTest is Test {
         Choice memory choice = Choice("z1", "a choice", 53, "2123", 22);
         _set.add(choice);
         uint256 _maxIndex = _set.size() + 1;
-        vm.expectRevert(abi.encodeWithSelector(ChoiceSet.IndexInvalid.selector, _maxIndex));
+        vm.expectRevert(abi.encodeWithSelector(ChoiceCollection.IndexInvalid.selector, _maxIndex));
         _set.get(_maxIndex);
+    }
+
+    function testGetAllowed() public {
+        Choice memory choice = Choice("z1", "a choice", 53, "2123", 22);
+        _set.add(choice);
+        vm.prank(address(0x123));
+        Choice memory indexedChoice = _set.get(1);
+        assertEq("z1", indexedChoice.name);
+    }
+
+    function testAddProtected() public {
+        Choice memory choice = Choice("z1", "a choice", 53, "2123", 22);
+        vm.expectRevert(abi.encodeWithSelector(OneOwner.NotOwner.selector, address(0x123)));
+        vm.prank(address(0x123));
+        _set.add(choice);
+    }
+
+    function testEraseProtected() public {
+        Choice memory choice = Choice("z1", "a choice", 53, "2123", 22);
+        _set.add(choice);
+        vm.expectRevert(abi.encodeWithSelector(OneOwner.NotOwner.selector, address(0x123)));
+        vm.prank(address(0x123));
+        _set.erase(choice);
+    }
+
+    function testEraseIndexProtected() public {
+        Choice memory choice = Choice("z1", "a choice", 53, "2123", 22);
+        _set.add(choice);
+        vm.expectRevert(abi.encodeWithSelector(OneOwner.NotOwner.selector, address(0x123)));
+        vm.prank(address(0x123));
+        _set.erase(1);
     }
 }

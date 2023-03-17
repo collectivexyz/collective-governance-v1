@@ -1,9 +1,10 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.15;
 
-import "forge-std/Test.sol";
+import { Test } from "forge-std/Test.sol";
 
-import "../../contracts/collection/MetaSet.sol";
+import { Meta, MetaSet, MetaCollection, getHash } from "../../contracts/collection/MetaSet.sol";
+import { OneOwner } from "../../contracts/access/OneOwner.sol";
 
 contract MetaSetTest is Test {
     MetaSet private _set;
@@ -31,7 +32,7 @@ contract MetaSetTest is Test {
     function testDuplicateForbidden() public {
         Meta memory meta = Meta("ziggy", "stardust");
         _set.add(meta);
-        vm.expectRevert(abi.encodeWithSelector(MetaSet.HashCollision.selector, getHash(meta)));
+        vm.expectRevert(abi.encodeWithSelector(MetaCollection.HashCollision.selector, getHash(meta)));
         _set.add(meta);
     }
 
@@ -96,7 +97,7 @@ contract MetaSetTest is Test {
     function testGetZer0() public {
         Meta memory meta = Meta("ziggy", "stardust");
         _set.add(meta);
-        vm.expectRevert(abi.encodeWithSelector(MetaSet.IndexInvalid.selector, 0));
+        vm.expectRevert(abi.encodeWithSelector(MetaCollection.IndexInvalid.selector, 0));
         _set.get(0);
     }
 
@@ -104,7 +105,38 @@ contract MetaSetTest is Test {
         Meta memory meta = Meta("ziggy", "stardust");
         _set.add(meta);
         uint256 _maxIndex = _set.size() + 1;
-        vm.expectRevert(abi.encodeWithSelector(MetaSet.IndexInvalid.selector, _maxIndex));
+        vm.expectRevert(abi.encodeWithSelector(MetaCollection.IndexInvalid.selector, _maxIndex));
         _set.get(_maxIndex);
+    }
+
+    function testGetAllowed() public {
+        Meta memory meta = Meta("ziggy", "stardust");
+        _set.add(meta);
+        vm.prank(address(0x123));
+        Meta memory imeta = _set.get(1);
+        assertEq("ziggy", imeta.name);
+    }
+
+    function testAddProtected() public {
+        Meta memory meta = Meta("ziggy", "stardust");
+        vm.expectRevert(abi.encodeWithSelector(OneOwner.NotOwner.selector, address(0x123)));
+        vm.prank(address(0x123));
+        _set.add(meta);
+    }
+
+    function testEraseProtected() public {
+        Meta memory meta = Meta("ziggy", "stardust");
+        _set.add(meta);
+        vm.expectRevert(abi.encodeWithSelector(OneOwner.NotOwner.selector, address(0x123)));
+        vm.prank(address(0x123));
+        _set.erase(meta);
+    }
+
+    function testEraseIndexProtected() public {
+        Meta memory meta = Meta("ziggy", "stardust");
+        _set.add(meta);
+        vm.expectRevert(abi.encodeWithSelector(OneOwner.NotOwner.selector, address(0x123)));
+        vm.prank(address(0x123));
+        _set.erase(1);
     }
 }

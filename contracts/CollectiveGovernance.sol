@@ -43,19 +43,22 @@
  */
 pragma solidity ^0.8.15;
 
-import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
-import "@openzeppelin/contracts/utils/math/Math.sol";
+import { IERC165 } from "@openzeppelin/contracts/interfaces/IERC165.sol";
+import { ERC165 } from "@openzeppelin/contracts/utils/introspection/ERC165.sol";
+import { Math } from "@openzeppelin/contracts/utils/math/Math.sol";
 
-import "../contracts/Constant.sol";
-import "../contracts/storage/Storage.sol";
-import "../contracts/storage/MetaStorage.sol";
-import "../contracts/Governance.sol";
-import "../contracts/VoteStrategy.sol";
-import "../contracts/community/VoterClass.sol";
-import "../contracts/treasury/TimeLocker.sol";
-import "../contracts/treasury/TimeLock.sol";
-import "../contracts/access/Versioned.sol";
-import "../contracts/access/VersionedContract.sol";
+import { Constant } from "../contracts/Constant.sol";
+import { Storage } from "../contracts/storage/Storage.sol";
+import { MetaStorage } from "../contracts/storage/MetaStorage.sol";
+import { Governance } from "../contracts/Governance.sol";
+import { VoteStrategy } from "../contracts/VoteStrategy.sol";
+import { CommunityClass } from "../contracts/community/CommunityClass.sol";
+import { TimeLocker } from "../contracts/treasury/TimeLocker.sol";
+import { Versioned } from "../contracts/access/Versioned.sol";
+import { VersionedContract } from "../contracts/access/VersionedContract.sol";
+import { Transaction, getHash } from "../contracts/collection/TransactionSet.sol";
+import { Choice } from "../contracts/collection/ChoiceSet.sol";
+import { AddressCollection } from "../contracts/collection/AddressSet.sol";
 
 /// @notice bounded gas rebate calculation
 /// @param startGas the initial value of gasleft() function
@@ -598,7 +601,7 @@ contract CollectiveGovernance is VoteStrategy, Governance, ERC165, VersionedCont
     function _proposeVote(address _sender) private returns (uint256) {
         if (!_communityClass.canPropose(_sender)) revert NotPermitted(_sender);
         uint256 proposalId = _storage.initializeProposal(_sender);
-        AddressSet _supervisorSet = _communityClass.communitySupervisorSet();
+        AddressCollection _supervisorSet = _communityClass.communitySupervisorSet();
         for (uint256 i = 1; i <= _supervisorSet.size(); ++i) {
             _storage.registerSupervisor(proposalId, _supervisorSet.get(i), true, _sender);
         }

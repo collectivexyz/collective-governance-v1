@@ -2,10 +2,15 @@
 // solhint-disable var-name-mixedcase
 pragma solidity ^0.8.15;
 
-import "forge-std/Test.sol";
+import { IERC165 } from "@openzeppelin/contracts/interfaces/IERC165.sol";
 
-import "../../contracts/community/CommunityBuilder.sol";
-import "../../contracts/access/Versioned.sol";
+import { Test } from "forge-std/Test.sol";
+
+import { Mutable } from "../../contracts/access/Mutable.sol";
+import { VoterClass } from "../../contracts/community/VoterClass.sol";
+import { WeightedCommunityClass } from "../../contracts/community/CommunityClass.sol";
+import { CommunityBuilder } from "../../contracts/community/CommunityBuilder.sol";
+import { Versioned } from "../../contracts/access/Versioned.sol";
 
 contract CommunityClassOpenVoteTest is Test {
     address private immutable _OWNER = address(0xffeeeeff);

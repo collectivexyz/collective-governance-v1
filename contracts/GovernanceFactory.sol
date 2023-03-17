@@ -43,19 +43,20 @@
  */
 pragma solidity ^0.8.15;
 
-import "@openzeppelin/contracts/proxy/utils/Initializable.sol";
-import "@openzeppelin/contracts/proxy/utils/UUPSUpgradeable.sol";
-import "@openzeppelin/contracts/interfaces/IERC165.sol";
-import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
+import { Initializable } from "@openzeppelin/contracts/proxy/utils/Initializable.sol";
+import { UUPSUpgradeable } from "@openzeppelin/contracts/proxy/utils/UUPSUpgradeable.sol";
+import { IERC165 } from "@openzeppelin/contracts/interfaces/IERC165.sol";
+import { ERC165 } from "@openzeppelin/contracts/utils/introspection/ERC165.sol";
 
-import "../contracts/community/VoterClass.sol";
-import "../contracts/storage/Storage.sol";
-import "../contracts/storage/MetaStorage.sol";
-import "../contracts/treasury/TimeLocker.sol";
-import "../contracts/CollectiveGovernance.sol";
-import "../contracts/access/Versioned.sol";
-import "../contracts/access/VersionedContract.sol";
-import "../contracts/access/OwnableInitializable.sol";
+import { CommunityClass } from "../contracts/community/CommunityClass.sol";
+import { Storage } from "../contracts/storage/Storage.sol";
+import { MetaStorage } from "../contracts/storage/MetaStorage.sol";
+import { TimeLocker } from "../contracts/treasury/TimeLocker.sol";
+import { Governance } from "../contracts/Governance.sol";
+import { CollectiveGovernance } from "../contracts/CollectiveGovernance.sol";
+import { Versioned } from "../contracts/access/Versioned.sol";
+import { VersionedContract } from "../contracts/access/VersionedContract.sol";
+import { OwnableInitializable } from "../contracts/access/OwnableInitializable.sol";
 
 /**
  * @title CollectiveGovernance creator
@@ -77,8 +78,7 @@ contract GovernanceFactory is VersionedContract, OwnableInitializable, UUPSUpgra
     /// @param _storage The storage contract for this governance
     /// @param _timeLock The timelock for the contract
     function create(CommunityClass _class, Storage _storage, TimeLocker _timeLock) external returns (Governance) {
-        Governance governance = new CollectiveGovernance(_class, _storage, _timeLock);
-        return governance;
+        return new CollectiveGovernance(_class, _storage, _timeLock);
     }
 
     /// @notice see ERC-165

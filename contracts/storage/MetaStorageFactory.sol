@@ -43,16 +43,16 @@
  */
 pragma solidity ^0.8.15;
 
-import "@openzeppelin/contracts/proxy/utils/Initializable.sol";
-import "@openzeppelin/contracts/proxy/utils/UUPSUpgradeable.sol";
-import "@openzeppelin/contracts/interfaces/IERC165.sol";
-import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
+import { Initializable } from "@openzeppelin/contracts/proxy/utils/Initializable.sol";
+import { UUPSUpgradeable } from "@openzeppelin/contracts/proxy/utils/UUPSUpgradeable.sol";
+import { IERC165 } from "@openzeppelin/contracts/interfaces/IERC165.sol";
+import { ERC165 } from "@openzeppelin/contracts/utils/introspection/ERC165.sol";
 
-import "../../contracts/storage/MetaStorage.sol";
-import "../../contracts/storage/MappedMetaStorage.sol";
-import "../../contracts/access/Versioned.sol";
-import "../../contracts/access/VersionedContract.sol";
-import "../../contracts/access/OwnableInitializable.sol";
+import { MetaStorage } from "../../contracts/storage/MetaStorage.sol";
+import { MappedMetaStorage } from "../../contracts/storage/MappedMetaStorage.sol";
+import { Versioned } from "../../contracts/access/Versioned.sol";
+import { VersionedContract } from "../../contracts/access/VersionedContract.sol";
+import { OwnableInitializable } from "../../contracts/access/OwnableInitializable.sol";
 
 /**
  * @title CollectiveStorage creational contract

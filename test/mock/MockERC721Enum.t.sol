@@ -1,11 +1,12 @@
 // SPDX-License-Identifier: BSD-3-Clause
 pragma solidity ^0.8.15;
 
-import "@openzeppelin/contracts/interfaces/IERC721.sol";
-import "@openzeppelin/contracts/token/ERC721/extensions/IERC721Enumerable.sol";
+import { IERC721 } from "@openzeppelin/contracts/interfaces/IERC721.sol";
+import { IERC721Enumerable } from "@openzeppelin/contracts/token/ERC721/extensions/IERC721Enumerable.sol";
 
-import "forge-std/Test.sol";
-import "./MockERC721Enum.sol";
+import { Test } from "forge-std/Test.sol";
+
+import { MockERC721Enum } from "./MockERC721Enum.sol";
 
 contract MockERC721EnumTest is Test {
     IERC721Enumerable private erc721;

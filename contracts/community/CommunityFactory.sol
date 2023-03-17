@@ -43,11 +43,16 @@
  */
 pragma solidity ^0.8.15;
 
-import "../../contracts/community/CommunityClassOpenVote.sol";
-import "../../contracts/community/CommunityClassVoterPool.sol";
-import "../../contracts/community/CommunityClassERC721.sol";
-import "../../contracts/community/CommunityClassClosedERC721.sol";
-import "../../contracts/community/CommunityClassProxy.sol";
+import { ERC1967Proxy } from "@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.sol";
+
+import { AddressCollection } from "../../contracts/collection/AddressSet.sol";
+import { ScheduledCommunityClass } from "../../contracts/community/ScheduledCommunityClass.sol";
+import { WeightedCommunityClass, ProjectCommunityClass, CommunityClass } from "../../contracts/community/CommunityClass.sol";
+import { CommunityClassOpenVote } from "../../contracts/community/CommunityClassOpenVote.sol";
+import { CommunityClassVoterPool } from "../../contracts/community/CommunityClassVoterPool.sol";
+import { CommunityClassERC721 } from "../../contracts/community/CommunityClassERC721.sol";
+import { CommunityClassClosedERC721 } from "../../contracts/community/CommunityClassClosedERC721.sol";
+import { WeightedCommunityClassProxy, ProjectCommunityClassProxy, ClosedProjectCommunityClassProxy } from "../../contracts/community/CommunityClassProxy.sol";
 
 // solhint-disable-next-line func-visibility
 function upgradeOpenVote(
@@ -60,7 +65,7 @@ function upgradeOpenVote(
     uint256 maximumVoteDuration,
     uint256 _gasUsedRebate,
     uint256 _baseFeeRebate,
-    AddressSet _supervisorList
+    AddressCollection _supervisorList
 ) {
     CommunityClass _class = new CommunityClassOpenVote();
     WeightedCommunityClassProxy _proxy = WeightedCommunityClassProxy(proxyAddress);
@@ -72,9 +77,9 @@ function upgradeOpenVote(
         maximumVoteDelay,
         minimumVoteDuration,
         maximumVoteDuration,
-            _gasUsedRebate,
-            _baseFeeRebate,
-            _supervisorList
+        _gasUsedRebate,
+        _baseFeeRebate,
+        _supervisorList
     );
 }
 
@@ -89,7 +94,7 @@ function upgradeVoterPool(
     uint256 maximumVoteDuration,
     uint256 _gasUsedRebate,
     uint256 _baseFeeRebate,
-    AddressSet _supervisorList
+    AddressCollection _supervisorList
 ) {
     CommunityClass _class = new CommunityClassVoterPool();
     WeightedCommunityClassProxy _proxy = WeightedCommunityClassProxy(proxyAddress);
@@ -101,9 +106,9 @@ function upgradeVoterPool(
         maximumVoteDelay,
         minimumVoteDuration,
         maximumVoteDuration,
-            _gasUsedRebate,
-            _baseFeeRebate,
-            _supervisorList
+        _gasUsedRebate,
+        _baseFeeRebate,
+        _supervisorList
     );
 }
 
@@ -118,7 +123,7 @@ function upgradeErc721(
     uint256 maximumVoteDuration,
     uint256 _gasUsedRebate,
     uint256 _baseFeeRebate,
-    AddressSet _supervisorList
+    AddressCollection _supervisorList
 ) {
     CommunityClass _class = new CommunityClassERC721();
     ProjectCommunityClassProxy _proxy = ProjectCommunityClassProxy(proxyAddress);
@@ -130,9 +135,9 @@ function upgradeErc721(
         maximumVoteDelay,
         minimumVoteDuration,
         maximumVoteDuration,
-            _gasUsedRebate,
-            _baseFeeRebate,
-            _supervisorList
+        _gasUsedRebate,
+        _baseFeeRebate,
+        _supervisorList
     );
 }
 
@@ -147,7 +152,7 @@ function upgradeClosedErc721(
     uint256 maximumVoteDuration,
     uint256 _gasUsedRebate,
     uint256 _baseFeeRebate,
-    AddressSet _supervisorList
+    AddressCollection _supervisorList
 ) {
     CommunityClass _class = new CommunityClassClosedERC721();
     ProjectCommunityClassProxy _proxy = ProjectCommunityClassProxy(proxyAddress);
@@ -159,9 +164,9 @@ function upgradeClosedErc721(
         maximumVoteDelay,
         minimumVoteDuration,
         maximumVoteDuration,
-            _gasUsedRebate,
-            _baseFeeRebate,
-            _supervisorList
+        _gasUsedRebate,
+        _baseFeeRebate,
+        _supervisorList
     );
 }
 
@@ -189,7 +194,7 @@ contract WeightedClassFactory {
         uint256 maximumVoteDuration,
         uint256 _gasUsedRebate,
         uint256 _baseFeeRebate,
-        AddressSet _supervisorList
+        AddressCollection _supervisorList
     ) external returns (WeightedCommunityClass) {
         CommunityClass _class = new CommunityClassOpenVote();
         ERC1967Proxy _proxy = new WeightedCommunityClassProxy(
@@ -228,7 +233,7 @@ contract WeightedClassFactory {
         uint256 maximumVoteDuration,
         uint256 _gasUsedRebate,
         uint256 _baseFeeRebate,
-        AddressSet _supervisorList
+        AddressCollection _supervisorList
     ) external returns (CommunityClassVoterPool) {
         CommunityClass _class = new CommunityClassVoterPool();
         ERC1967Proxy _proxy = new WeightedCommunityClassProxy(
@@ -275,8 +280,7 @@ contract ProjectClassFactory {
         uint256 maximumVoteDuration,
         uint256 _gasUsedRebate,
         uint256 _baseFeeRebate,
-        AddressSet _supervisorList
-
+        AddressCollection _supervisorList
     ) external returns (ProjectCommunityClass) {
         CommunityClass _class = new CommunityClassERC721();
         ERC1967Proxy _proxy = new ProjectCommunityClassProxy(
@@ -320,7 +324,7 @@ contract ProjectClassFactory {
         uint256 maximumVoteDuration,
         uint256 _gasUsedRebate,
         uint256 _baseFeeRebate,
-        AddressSet _supervisorList
+        AddressCollection _supervisorList
     ) external returns (ProjectCommunityClass) {
         CommunityClass _class = new CommunityClassClosedERC721();
         ERC1967Proxy _proxy = new ClosedProjectCommunityClassProxy(

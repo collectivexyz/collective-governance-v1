@@ -1,9 +1,10 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.15;
 
-import "forge-std/Test.sol";
+import { Test } from "forge-std/Test.sol";
 
-import "../../contracts/collection/TransactionSet.sol";
+import { Transaction, TransactionSet, TransactionCollection, getHash } from "../../contracts/collection/TransactionSet.sol";
+import { OneOwner } from "../../contracts/access/OneOwner.sol";
 
 contract TransactionSetTest is Test {
     TransactionSet private _set;
@@ -27,7 +28,7 @@ contract TransactionSetTest is Test {
     function testDuplicateAdd() public {
         Transaction memory transaction = Transaction(address(0x123), 45, "six", "seven", 890);
         _set.add(transaction);
-        vm.expectRevert(abi.encodeWithSelector(TransactionSet.HashCollision.selector, getHash(transaction)));
+        vm.expectRevert(abi.encodeWithSelector(TransactionCollection.HashCollision.selector, getHash(transaction)));
         _set.add(transaction);
     }
 
@@ -84,7 +85,7 @@ contract TransactionSetTest is Test {
     function testGetZer0() public {
         Transaction memory transaction = Transaction(address(0x123), 45, "six", "seven", 890);
         _set.add(transaction);
-        vm.expectRevert(abi.encodeWithSelector(TransactionSet.InvalidTransaction.selector, 0));
+        vm.expectRevert(abi.encodeWithSelector(TransactionCollection.InvalidTransaction.selector, 0));
         _set.get(0);
     }
 
@@ -92,7 +93,38 @@ contract TransactionSetTest is Test {
         Transaction memory transaction = Transaction(address(0x123), 45, "six", "seven", 890);
         _set.add(transaction);
         uint256 _maxIndex = _set.size() + 1;
-        vm.expectRevert(abi.encodeWithSelector(TransactionSet.InvalidTransaction.selector, _maxIndex));
+        vm.expectRevert(abi.encodeWithSelector(TransactionCollection.InvalidTransaction.selector, _maxIndex));
         _set.get(_maxIndex);
+    }
+
+    function testGetAllowed() public {
+        Transaction memory transaction = Transaction(address(0x123), 45, "six", "seven", 890);
+        _set.add(transaction);
+        vm.prank(address(0x123));
+        Transaction memory itrans = _set.get(1);
+        assertEq(address(0x123), itrans.target);
+    }
+
+    function testAddProtected() public {
+        Transaction memory transaction = Transaction(address(0x123), 45, "six", "seven", 890);
+        vm.expectRevert(abi.encodeWithSelector(OneOwner.NotOwner.selector, address(0x123)));
+        vm.prank(address(0x123));
+        _set.add(transaction);
+    }
+
+    function testEraseProtected() public {
+        Transaction memory transaction = Transaction(address(0x123), 45, "six", "seven", 890);
+        _set.add(transaction);
+        vm.expectRevert(abi.encodeWithSelector(OneOwner.NotOwner.selector, address(0x123)));
+        vm.prank(address(0x123));
+        _set.erase(transaction);
+    }
+
+    function testEraseIndexProtected() public {
+        Transaction memory transaction = Transaction(address(0x123), 45, "six", "seven", 890);
+        _set.add(transaction);
+        vm.expectRevert(abi.encodeWithSelector(OneOwner.NotOwner.selector, address(0x123)));
+        vm.prank(address(0x123));
+        _set.erase(1);
     }
 }

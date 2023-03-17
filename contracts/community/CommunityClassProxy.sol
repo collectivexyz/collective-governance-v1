@@ -43,10 +43,11 @@
  */
 pragma solidity ^0.8.15;
 
-import "@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.sol";
+import { ERC1967Proxy } from "@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.sol";
 
-import "../../contracts/community/CommunityClass.sol";
-import "../../contracts/community/CommunityClassClosedERC721.sol";
+import { CommunityClass, WeightedCommunityClass, ProjectCommunityClass } from "../../contracts/community/CommunityClass.sol";
+import { CommunityClassClosedERC721 } from "../../contracts/community/CommunityClassClosedERC721.sol";
+import { AddressCollection } from "../../contracts/collection/AddressSet.sol";
 
 contract WeightedCommunityClassProxy is ERC1967Proxy {
     /// @notice create a new community class proxy
@@ -70,8 +71,7 @@ contract WeightedCommunityClassProxy is ERC1967Proxy {
         uint256 _maximumDuration,
         uint256 _gasUsedRebate,
         uint256 _baseFeeRebate,
-        AddressSet _supervisorList
-
+        AddressCollection _supervisorList
     )
         ERC1967Proxy(
             _implementation,
@@ -103,7 +103,7 @@ contract WeightedCommunityClassProxy is ERC1967Proxy {
         uint256 _maximumDuration,
         uint256 _gasUsedRebate,
         uint256 _baseFeeRebate,
-        AddressSet _supervisorList
+        AddressCollection _supervisorList
     ) external {
         _upgradeToAndCallUUPS(
             _implementation,
@@ -148,7 +148,7 @@ contract ProjectCommunityClassProxy is ERC1967Proxy {
         uint256 _maximumDuration,
         uint256 _gasUsedRebate,
         uint256 _baseFeeRebate,
-        AddressSet _supervisorList
+        AddressCollection _supervisorList
     )
         ERC1967Proxy(
             _implementation,
@@ -181,7 +181,7 @@ contract ProjectCommunityClassProxy is ERC1967Proxy {
         uint256 _maximumDuration,
         uint256 _gasUsedRebate,
         uint256 _baseFeeRebate,
-        AddressSet _supervisorList
+        AddressCollection _supervisorList
     ) external {
         _upgradeToAndCallUUPS(
             _implementation,
@@ -227,7 +227,7 @@ contract ClosedProjectCommunityClassProxy is ERC1967Proxy {
         uint256 _maximumDuration,
         uint256 _gasUsedRebate,
         uint256 _baseFeeRebate,
-        AddressSet _supervisorList
+        AddressCollection _supervisorList
     )
         ERC1967Proxy(
             _implementation,
@@ -261,7 +261,7 @@ contract ClosedProjectCommunityClassProxy is ERC1967Proxy {
         uint256 _maximumDuration,
         uint256 _gasUsedRebate,
         uint256 _baseFeeRebate,
-        AddressSet _supervisorList
+        AddressCollection _supervisorList
     ) external {
         _upgradeToAndCallUUPS(
             _implementation,
@@ -276,7 +276,6 @@ contract ClosedProjectCommunityClassProxy is ERC1967Proxy {
                 _gasUsedRebate,
                 _baseFeeRebate,
                 _supervisorList
-
             ),
             false
         );

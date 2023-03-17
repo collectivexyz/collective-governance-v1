@@ -43,7 +43,7 @@
  */
 pragma solidity ^0.8.15;
 
-import "../../contracts/access/Mutable.sol";
+import { Mutable } from "../../contracts/access/Mutable.sol";
 
 /// @title AlwaysFinal
 /// @notice Marker indicating this contract is never mutable

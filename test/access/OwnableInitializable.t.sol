@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.15;
 
-import "@openzeppelin/contracts/proxy/utils/Initializable.sol";
+import { Initializable } from "@openzeppelin/contracts/proxy/utils/Initializable.sol";
 
-import "forge-std/Test.sol";
+import { Test } from "forge-std/Test.sol";
 
-import "../../contracts/access/OwnableInitializable.sol";
+import { OwnableInitializable } from "../../contracts/access/OwnableInitializable.sol";
 
 contract OwnableInitializableTest is Test {
     address private constant _OWNER = address(0xfffe);

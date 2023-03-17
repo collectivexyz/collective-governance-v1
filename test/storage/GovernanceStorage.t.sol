@@ -2,21 +2,26 @@
 // solhint-disable not-rely-on-time
 pragma solidity ^0.8.15;
 
-import "@openzeppelin/contracts/interfaces/IERC721.sol";
+import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
+import { IERC721 } from "@openzeppelin/contracts/interfaces/IERC721.sol";
 
-import "forge-std/Test.sol";
+import { Test } from "forge-std/Test.sol";
 
-import "../../contracts/Constant.sol";
-import "../../contracts/CollectiveGovernance.sol";
-import "../../contracts/VoteStrategy.sol";
-import "../../contracts/community/CommunityBuilder.sol";
-import "../../contracts/access/Versioned.sol";
-import "../../contracts/storage/Storage.sol";
-import "../../contracts/storage/GovernanceStorage.sol";
-import "../../contracts/storage/StorageFactory.sol";
+import { Constant } from "../../contracts/Constant.sol";
+import { Transaction, TransactionCollection, getHash } from "../../contracts/collection/TransactionSet.sol";
+import { Choice, getHash } from "../../contracts/collection/ChoiceSet.sol";
+import { CollectiveGovernance } from "../../contracts/CollectiveGovernance.sol";
+import { VoteStrategy } from "../../contracts/VoteStrategy.sol";
+import { CommunityBuilder } from "../../contracts/community/CommunityBuilder.sol";
+import { CommunityClass } from "../../contracts/community/CommunityClass.sol";
+import { VoterClass } from "../../contracts/community/VoterClass.sol";
+import { Versioned } from "../../contracts/access/Versioned.sol";
+import { Storage } from "../../contracts/storage/Storage.sol";
+import { GovernanceStorage } from "../../contracts/storage/GovernanceStorage.sol";
+import { StorageFactory } from "../../contracts/storage/StorageFactory.sol";
 
-import "../mock/TestData.sol";
-import "../mock/MockERC721.sol";
+import { TestData } from "../mock/TestData.sol";
+import { MockERC721 } from "../mock/MockERC721.sol";
 
 contract GovernanceStorageTest is Test {
     address private constant _OWNER = address(0x155);
@@ -612,7 +617,7 @@ contract GovernanceStorageTest is Test {
         uint256 scheduleTime = block.timestamp + 7 days;
         Transaction memory transaction = Transaction(address(0x1), 0x10, "ziggy", "a()", scheduleTime);
         _storage.addTransaction(_proposalId, transaction, _OWNER);
-        vm.expectRevert(abi.encodeWithSelector(TransactionSet.InvalidTransaction.selector, 0));
+        vm.expectRevert(abi.encodeWithSelector(TransactionCollection.InvalidTransaction.selector, 0));
         _storage.getTransaction(_proposalId, 0);
     }
 
@@ -621,7 +626,7 @@ contract GovernanceStorageTest is Test {
         _storage.registerSupervisor(_proposalId, _SUPERVISOR, _OWNER);
         Transaction memory transaction = Transaction(address(0x1), 0x10, "ziggy", "a()", scheduleTime);
         uint256 tid = _storage.addTransaction(_proposalId, transaction, _OWNER);
-        vm.expectRevert(abi.encodeWithSelector(TransactionSet.InvalidTransaction.selector, tid + 1));
+        vm.expectRevert(abi.encodeWithSelector(TransactionCollection.InvalidTransaction.selector, tid + 1));
         _storage.getTransaction(_proposalId, tid + 1);
     }
 
@@ -810,7 +815,7 @@ contract GovernanceStorageChoiceVoteTest is Test {
             _storage.addTransaction(_proposalId, t, _OWNER);
             vm.warp(block.timestamp + 1);
         }
-        vm.expectRevert(abi.encodeWithSelector(TransactionSet.InvalidTransaction.selector, _NCHOICE + 1));
+        vm.expectRevert(abi.encodeWithSelector(TransactionCollection.InvalidTransaction.selector, _NCHOICE + 1));
         _storage.addChoice(_proposalId, Choice("name", "description", _NCHOICE + 1, "", 0), _SUPERVISOR);
     }
 

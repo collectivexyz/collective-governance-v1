@@ -1,14 +1,18 @@
 // SPDX-License-Identifier: BSD-3-Clause
 pragma solidity ^0.8.15;
 
-import "@openzeppelin/contracts/interfaces/IERC165.sol";
+import { IERC165 } from "@openzeppelin/contracts/interfaces/IERC165.sol";
 
-import "forge-std/Test.sol";
+import { Test } from "forge-std/Test.sol";
 
-import "../../contracts/Constant.sol";
-import "../../test/mock/MockERC721.sol";
-import "../../contracts/community/CommunityBuilder.sol";
-import "../../contracts/community/CommunityClass.sol";
+import { Constant } from "../../contracts/Constant.sol";
+import { Versioned } from "../../contracts/access/Versioned.sol";
+import { AddressCollection } from "../../contracts/collection/AddressSet.sol";
+import { CommunityBuilder } from "../../contracts/community/CommunityBuilder.sol";
+import { VoterClass } from "../../contracts/community/VoterClass.sol";
+import { CommunityClass, WeightedCommunityClass } from "../../contracts/community/CommunityClass.sol";
+
+import { MockERC721 } from "../mock/MockERC721.sol";
 
 contract CommunityBuilderTest is Test {
     address private constant _SUPERVISOR = address(0x1234);
@@ -241,7 +245,7 @@ contract CommunityBuilderTest is Test {
             .withCommunitySupervisor(address(0x1236))
             .build();
         CommunityClass _class = CommunityClass(_classAddress);
-        AddressSet _supervisorSet = _class.communitySupervisorSet();
+        AddressCollection _supervisorSet = _class.communitySupervisorSet();
         assertTrue(_supervisorSet.contains(address(0x1234)));
         assertTrue(_supervisorSet.contains(address(0x1235)));
         assertTrue(_supervisorSet.contains(address(0x1236)));

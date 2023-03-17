@@ -1,24 +1,26 @@
 // SPDX-License-Identifier: BSD-3-Clause
 pragma solidity ^0.8.15;
 
-import "forge-std/Test.sol";
+import { Test } from "forge-std/Test.sol";
 
-import "@openzeppelin/contracts/access/Ownable.sol";
-import "@openzeppelin/contracts/interfaces/IERC165.sol";
-import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
+import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
+import { IERC165 } from "@openzeppelin/contracts/interfaces/IERC165.sol";
+import { ERC165 } from "@openzeppelin/contracts/utils/introspection/ERC165.sol";
 
-import "../contracts/access/Versioned.sol";
-import "../contracts/storage/MetaStorage.sol";
-import "../contracts/storage/MetaStorageFactory.sol";
-import "../contracts/storage/Storage.sol";
-import "../contracts/storage/StorageFactory.sol";
-import "../contracts/GovernanceFactory.sol";
-import "../contracts/GovernanceBuilder.sol";
-import "../contracts/Governance.sol";
-import "../contracts/CollectiveGovernance.sol";
-import "../contracts/community/CommunityBuilder.sol";
+import { Constant } from "../contracts/Constant.sol";
+import { Versioned } from "../contracts/access/Versioned.sol";
+import { MetaStorage } from "../contracts/storage/MetaStorage.sol";
+import { MetaStorageFactory } from "../contracts/storage/MetaStorageFactory.sol";
+import { Storage } from "../contracts/storage/Storage.sol";
+import { StorageFactory } from "../contracts/storage/StorageFactory.sol";
+import { GovernanceFactory } from "../contracts/GovernanceFactory.sol";
+import { GovernanceBuilder } from "../contracts/GovernanceBuilder.sol";
+import { Governance } from "../contracts/Governance.sol";
+import { CollectiveGovernance } from "../contracts/CollectiveGovernance.sol";
+import { CommunityClass } from "../contracts/community/CommunityClass.sol";
+import { CommunityBuilder } from "../contracts/community/CommunityBuilder.sol";
 
-import "./mock/MockERC721.sol";
+import { MockERC721 } from "./mock/MockERC721.sol";
 
 contract GovernanceBuilderTest is Test {
     address private constant _OWNER = address(0x1);

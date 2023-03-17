@@ -1,17 +1,21 @@
 // SPDX-License-Identifier: BSD-3-Clause
 pragma solidity ^0.8.15;
 
-import "@openzeppelin/contracts/interfaces/IERC165.sol";
+import { IERC165 } from "@openzeppelin/contracts/interfaces/IERC165.sol";
+import { ERC165 } from "@openzeppelin/contracts/utils/introspection/ERC165.sol";
 
-import "forge-std/Test.sol";
+import { Test } from "forge-std/Test.sol";
 
-import "../contracts/GovernanceBuilder.sol";
-import "../contracts/community/CommunityBuilder.sol";
-import "../contracts/storage/Storage.sol";
-import "../contracts/System.sol";
-import "../contracts/access/Versioned.sol";
+import { Constant } from "../contracts/Constant.sol";
+import { Governance } from "../contracts/Governance.sol";
+import { GovernanceBuilder } from "../contracts/GovernanceBuilder.sol";
+import { CommunityBuilder } from "../contracts/community/CommunityBuilder.sol";
+import { Storage } from "../contracts/storage/Storage.sol";
+import { MetaStorage } from "../contracts/storage/MetaStorage.sol";
+import { System } from "../contracts/System.sol";
+import { Versioned } from "../contracts/access/Versioned.sol";
 
-import "./mock/MockERC721.sol";
+import { MockERC721 } from "./mock/MockERC721.sol";
 
 contract SystemTest is Test {
     address private constant _OWNER = address(0x1);

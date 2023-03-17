@@ -43,10 +43,10 @@
  */
 pragma solidity ^0.8.15;
 
-import "@openzeppelin/contracts/interfaces/IERC165.sol";
+import { IERC165 } from "@openzeppelin/contracts/interfaces/IERC165.sol";
 
-import "../../contracts/access/Versioned.sol";
-import "../../contracts/collection/MetaSet.sol";
+import { Versioned } from "../../contracts/access/Versioned.sol";
+import { Meta, MetaCollection } from "../../contracts/collection/MetaSet.sol";
 
 /// @title Metadata storage interface
 /// @notice store community metadata
@@ -67,7 +67,7 @@ interface MetaStorage is Versioned, IERC165 {
         /// @notice metadata url
         string url;
         /// arbitrary metadata
-        MetaSet meta;
+        MetaCollection meta;
     }
 
     /// @notice return the name of the community

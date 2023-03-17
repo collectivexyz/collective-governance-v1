@@ -43,16 +43,20 @@
  */
 pragma solidity ^0.8.15;
 
-import "@openzeppelin/contracts/proxy/utils/Initializable.sol";
-import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
-import "@openzeppelin/contracts/proxy/utils/UUPSUpgradeable.sol";
+import { Initializable } from "@openzeppelin/contracts/proxy/utils/Initializable.sol";
+import { IERC165 } from "@openzeppelin/contracts/interfaces/IERC165.sol";
+import { ERC165 } from "@openzeppelin/contracts/utils/introspection/ERC165.sol";
+import { UUPSUpgradeable } from "@openzeppelin/contracts/proxy/utils/UUPSUpgradeable.sol";
 
-import "../../contracts/Constant.sol";
-import "../../contracts/collection/AddressSet.sol";
-import "../../contracts/access/ConfigurableMutable.sol";
-import "../../contracts/access/VersionedContract.sol";
-import "../../contracts/community/CommunityClass.sol";
-import "../../contracts/access/OwnableInitializable.sol";
+import { Constant } from "../../contracts/Constant.sol";
+import { AddressCollection } from "../../contracts/collection/AddressSet.sol";
+import { Mutable } from "../../contracts/access/Mutable.sol";
+import { ConfigurableMutable } from "../../contracts/access/ConfigurableMutable.sol";
+import { Versioned } from "../../contracts/access/Versioned.sol";
+import { VersionedContract } from "../../contracts/access/VersionedContract.sol";
+import { VoterClass } from "../../contracts/community/VoterClass.sol";
+import { WeightedCommunityClass, CommunityClass } from "../../contracts/community/CommunityClass.sol";
+import { OwnableInitializable } from "../../contracts/access/OwnableInitializable.sol";
 
 /// @title ScheduledCommunityClass
 /// @notice defines the configurable parameters for a community
@@ -108,7 +112,7 @@ abstract contract ScheduledCommunityClass is
 
     uint256 private _maximumBaseFeeRebate;
 
-    AddressSet private _communitySupervisorSet;
+    AddressCollection private _communitySupervisorSet;
 
     /// @notice create a new community class representing community preferences
     /// @param _voteWeight the weight of a single voting share
@@ -130,7 +134,7 @@ abstract contract ScheduledCommunityClass is
         uint256 _maximumDuration,
         uint256 _gasUsedRebate,
         uint256 _baseFeeRebate,
-        AddressSet _supervisorList,
+        AddressCollection _supervisorList,
         address _owner
     )
         internal
@@ -158,10 +162,19 @@ abstract contract ScheduledCommunityClass is
         _maximumGasUsedRebate = _gasUsedRebate;
         _maximumBaseFeeRebate = _baseFeeRebate;
         _communitySupervisorSet = Constant.createAddressSet();
-        for(uint256 i = 1; i <= _supervisorList.size(); ++i) {
+        for (uint256 i = 1; i <= _supervisorList.size(); ++i) {
             _communitySupervisorSet.add(_supervisorList.get(i));
         }
-        emit Initialized(_voteWeight, _minimumQuorum, _minimumDelay, _maximumDelay, _minimumDuration, _maximumDuration, _maximumGasUsedRebate, _maximumBaseFeeRebate);
+        emit Initialized(
+            _voteWeight,
+            _minimumQuorum,
+            _minimumDelay,
+            _maximumDelay,
+            _minimumDuration,
+            _maximumDuration,
+            _maximumGasUsedRebate,
+            _maximumBaseFeeRebate
+        );
     }
 
     /// @notice reset voting parameters for upgrade
@@ -183,7 +196,7 @@ abstract contract ScheduledCommunityClass is
         uint256 _maximumDuration,
         uint256 _gasUsedRebate,
         uint256 _baseFeeRebate,
-        AddressSet _supervisorList
+        AddressCollection _supervisorList
     )
         public
         onlyOwner
@@ -208,10 +221,19 @@ abstract contract ScheduledCommunityClass is
         _maximumGasUsedRebate = _gasUsedRebate;
         _maximumBaseFeeRebate = _baseFeeRebate;
         _communitySupervisorSet = Constant.createAddressSet();
-        for(uint256 i = 1; i <= _supervisorList.size(); ++i) {
+        for (uint256 i = 1; i <= _supervisorList.size(); ++i) {
             _communitySupervisorSet.add(_supervisorList.get(i));
         }
-        emit Upgraded(_voteWeight, _minimumQuorum, _minimumDelay, _maximumDelay, _minimumDuration, _maximumDuration, _maximumGasUsedRebate, _maximumBaseFeeRebate);
+        emit Upgraded(
+            _voteWeight,
+            _minimumQuorum,
+            _minimumDelay,
+            _maximumDelay,
+            _minimumDuration,
+            _maximumDuration,
+            _maximumGasUsedRebate,
+            _maximumBaseFeeRebate
+        );
     }
 
     modifier requireValidWeight(uint256 _voteWeight) {
@@ -249,7 +271,7 @@ abstract contract ScheduledCommunityClass is
         _;
     }
 
-    modifier requireNonEmptySupervisorList(AddressSet _supervisorList) {
+    modifier requireNonEmptySupervisorList(AddressCollection _supervisorList) {
         if (_supervisorList.size() == 0) revert SupervisorListEmpty();
         _;
     }
@@ -302,7 +324,7 @@ abstract contract ScheduledCommunityClass is
         return _maximumVoteDuration;
     }
 
-        /// @notice maximum gas used rebate
+    /// @notice maximum gas used rebate
     /// @return uint256 the maximum rebate
     function maximumGasUsedRebate() external view returns (uint256) {
         return _maximumGasUsedRebate;
@@ -316,7 +338,7 @@ abstract contract ScheduledCommunityClass is
 
     /// @notice return the community supervisors
     /// @return AddressSet the supervisor set
-    function communitySupervisorSet() external view returns (AddressSet) {
+    function communitySupervisorSet() external view returns (AddressCollection) {
         return _communitySupervisorSet;
     }
 

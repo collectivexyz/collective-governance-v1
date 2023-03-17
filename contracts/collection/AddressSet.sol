@@ -43,16 +43,28 @@
  */
 pragma solidity ^0.8.15;
 
-import "@openzeppelin/contracts/access/Ownable.sol";
+import { OneOwner } from "../access/OneOwner.sol";
 
-/// @title dynamic collection of addresses
-contract AddressSet is Ownable {
+interface AddressCollection {
     error IndexInvalid(uint256 index);
     error DuplicateAddress(address _address);
 
     event AddressAdded(address element);
     event AddressRemoved(address element);
 
+    function add(address _element) external returns (uint256);
+
+    function size() external view returns (uint256);
+
+    function get(uint256 index) external view returns (address);
+
+    function contains(address _element) external view returns (bool);
+
+    function erase(address _element) external returns (bool);
+}
+
+/// @title dynamic collection of addresses
+contract AddressSet is OneOwner, AddressCollection {
     uint256 private _elementCount;
 
     mapping(uint256 => address) private _elementMap;

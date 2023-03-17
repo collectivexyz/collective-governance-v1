@@ -43,11 +43,11 @@
  */
 
 pragma solidity ^0.8.15;
-import "@openzeppelin/contracts/utils/math/Math.sol";
-import "@openzeppelin/contracts/interfaces/IERC165.sol";
+import { Math } from "@openzeppelin/contracts/utils/math/Math.sol";
+import { IERC165 } from "@openzeppelin/contracts/interfaces/IERC165.sol";
 
-import "../contracts/access/Versioned.sol";
-import "../contracts/Constant.sol";
+import { Versioned } from "../contracts/access/Versioned.sol";
+import { Constant } from "../contracts/Constant.sol";
 
 /// @title Governance interface
 /// @notice Requirements for Governance implementation

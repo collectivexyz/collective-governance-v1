@@ -43,18 +43,20 @@
  */
 pragma solidity ^0.8.15;
 
-import "@openzeppelin/contracts/interfaces/IERC165.sol";
-import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
-import "@openzeppelin/contracts/access/Ownable.sol";
+import { IERC165 } from "@openzeppelin/contracts/interfaces/IERC165.sol";
+import { ERC165 } from "@openzeppelin/contracts/utils/introspection/ERC165.sol";
+import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
 
-import "../contracts/access/VersionedContract.sol";
-import "../contracts/Constant.sol";
-import "../contracts/Governance.sol";
-import "../contracts/collection/MetaSet.sol";
-import "../contracts/collection/ChoiceSet.sol";
-import "../contracts/collection/TransactionSet.sol";
-import "../contracts/storage/Storage.sol";
-import "../contracts/storage/MetaStorage.sol";
+import { CommunityClass } from "../contracts/community/CommunityClass.sol";
+import { Versioned } from "../contracts/access/Versioned.sol";
+import { VersionedContract } from "../contracts/access/VersionedContract.sol";
+import { Constant } from "../contracts/Constant.sol";
+import { Governance } from "../contracts/Governance.sol";
+import { Meta, MetaCollection } from "../contracts/collection/MetaSet.sol";
+import { Choice, ChoiceCollection } from "../contracts/collection/ChoiceSet.sol";
+import { Transaction, TransactionCollection } from "../contracts/collection/TransactionSet.sol";
+import { Storage } from "../contracts/storage/Storage.sol";
+import { MetaStorage } from "../contracts/storage/MetaStorage.sol";
 
 contract ProposalBuilder is VersionedContract, ERC165, Ownable {
     string public constant NAME = "proposal builder";
@@ -83,9 +85,9 @@ contract ProposalBuilder is VersionedContract, ERC165, Ownable {
         uint256 voteDuration;
         string description;
         string url;
-        TransactionSet transaction;
-        MetaSet meta;
-        ChoiceSet choice;
+        TransactionCollection transaction;
+        MetaCollection meta;
+        ChoiceCollection choice;
     }
 
     Governance private _governance;
@@ -322,7 +324,7 @@ contract ProposalBuilder is VersionedContract, ERC165, Ownable {
         _properties.voteDuration = _class.minimumVoteDuration();
         _properties.description = "";
         _properties.url = "";
-        _properties.transaction = new TransactionSet();
+        _properties.transaction = Constant.createTransactionSet();
         _properties.meta = Constant.createMetaSet();
         _properties.choice = Constant.createChoiceSet();
     }

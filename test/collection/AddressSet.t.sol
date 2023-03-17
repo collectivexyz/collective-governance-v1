@@ -1,9 +1,10 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.15;
 
-import "forge-std/Test.sol";
+import { Test } from "forge-std/Test.sol";
 
-import "../../contracts/collection/AddressSet.sol";
+import { AddressSet, AddressCollection } from "../../contracts/collection/AddressSet.sol";
+import { OneOwner } from "../../contracts/access/OneOwner.sol";
 
 contract AddressSetTest is Test {
     AddressSet private _set;
@@ -21,7 +22,7 @@ contract AddressSetTest is Test {
     function testAddDuplicate() public {
         address testAddr = address(0x1);
         _set.add(testAddr);
-        vm.expectRevert(abi.encodeWithSelector(AddressSet.DuplicateAddress.selector, testAddr));
+        vm.expectRevert(abi.encodeWithSelector(AddressCollection.DuplicateAddress.selector, testAddr));
         _set.add(testAddr);
         assertEq(_set.size(), 1);
     }
@@ -80,7 +81,7 @@ contract AddressSetTest is Test {
     function testGetZer0() public {
         address testAddr = address(0x1);
         _set.add(testAddr);
-        vm.expectRevert(abi.encodeWithSelector(AddressSet.IndexInvalid.selector, 0));
+        vm.expectRevert(abi.encodeWithSelector(AddressCollection.IndexInvalid.selector, 0));
         _set.get(0);
     }
 
@@ -88,7 +89,33 @@ contract AddressSetTest is Test {
         address testAddr = address(0x1);
         _set.add(testAddr);
         uint256 _maxIndex = _set.size() + 1;
-        vm.expectRevert(abi.encodeWithSelector(AddressSet.IndexInvalid.selector, _maxIndex));
+        vm.expectRevert(abi.encodeWithSelector(AddressCollection.IndexInvalid.selector, _maxIndex));
         _set.get(_maxIndex);
+    }
+
+    function testGetAllowed() public {
+        _set.add(address(0x1));
+        vm.prank(address(0x123));
+        assertEq(address(0x1), _set.get(1));
+    }
+
+    function testAddProtected() public {
+        vm.expectRevert(abi.encodeWithSelector(OneOwner.NotOwner.selector, address(0x123)));
+        vm.prank(address(0x123));
+        _set.add(address(0x123));
+    }
+
+    function testEraseProtected() public {
+        _set.add(address(0x123));
+        vm.expectRevert(abi.encodeWithSelector(OneOwner.NotOwner.selector, address(0x123)));
+        vm.prank(address(0x123));
+        _set.erase(address(0x123));
+    }
+
+    function testEraseIndexProtected() public {
+        _set.add(address(0x123));
+        vm.expectRevert(abi.encodeWithSelector(OneOwner.NotOwner.selector, address(0x123)));
+        vm.prank(address(0x123));
+        _set.erase(1);
     }
 }
