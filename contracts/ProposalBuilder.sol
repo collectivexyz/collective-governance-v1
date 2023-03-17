@@ -51,7 +51,7 @@ import { CommunityClass } from "../contracts/community/CommunityClass.sol";
 import { Versioned } from "../contracts/access/Versioned.sol";
 import { VersionedContract } from "../contracts/access/VersionedContract.sol";
 import { Constant } from "../contracts/Constant.sol";
-import { Governance } from "../contracts/Governance.sol";
+import { Governance } from "../contracts/governance/Governance.sol";
 import { Meta, MetaCollection } from "../contracts/collection/MetaSet.sol";
 import { Choice, ChoiceCollection } from "../contracts/collection/ChoiceSet.sol";
 import { Transaction, TransactionCollection } from "../contracts/collection/TransactionSet.sol";

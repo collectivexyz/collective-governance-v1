@@ -9,23 +9,23 @@ import { IERC721Enumerable } from "@openzeppelin/contracts/token/ERC721/extensio
 
 import { Test } from "forge-std/Test.sol";
 
-import { Constant } from "../contracts/Constant.sol";
-import { Versioned } from "../contracts/access/Versioned.sol";
-import { Transaction, getHash } from "../contracts/collection/TransactionSet.sol";
-import { VoterClass } from "../contracts/community/VoterClass.sol";
-import { CommunityClass } from "../contracts/community/CommunityClass.sol";
-import { CommunityBuilder } from "../contracts/community/CommunityBuilder.sol";
-import { Storage } from "../contracts/storage/Storage.sol";
-import { VoteStrategy } from "../contracts/VoteStrategy.sol";
-import { Governance } from "../contracts/Governance.sol";
-import { CollectiveGovernance, calculateGasRebate } from "../contracts/CollectiveGovernance.sol";
-import { GovernanceBuilder } from "../contracts/GovernanceBuilder.sol";
-import { TimeLocker } from "../contracts/treasury/TimeLocker.sol";
-import { VersionedContract } from "../contracts/access/VersionedContract.sol";
+import { Constant } from "../../contracts/Constant.sol";
+import { Versioned } from "../../contracts/access/Versioned.sol";
+import { Transaction, getHash } from "../../contracts/collection/TransactionSet.sol";
+import { VoterClass } from "../../contracts/community/VoterClass.sol";
+import { CommunityClass } from "../../contracts/community/CommunityClass.sol";
+import { CommunityBuilder } from "../../contracts/community/CommunityBuilder.sol";
+import { Storage } from "../../contracts/storage/Storage.sol";
+import { VoteStrategy } from "../../contracts/governance/VoteStrategy.sol";
+import { Governance } from "../../contracts/governance/Governance.sol";
+import { CollectiveGovernance, calculateGasRebate } from "../../contracts/governance/CollectiveGovernance.sol";
+import { GovernanceBuilder } from "../../contracts/governance/GovernanceBuilder.sol";
+import { TimeLocker } from "../../contracts/treasury/TimeLocker.sol";
+import { VersionedContract } from "../../contracts/access/VersionedContract.sol";
 
-import { MockERC721 } from "./mock/MockERC721.sol";
-import { FlagSet } from "./mock/FlagSet.sol";
-import { TestData } from "./mock/TestData.sol";
+import { MockERC721 } from "../mock/MockERC721.sol";
+import { FlagSet } from "../mock/FlagSet.sol";
+import { TestData } from "../mock/TestData.sol";
 
 contract GasRebateTest is Test {
     function testGasRebate() public {
@@ -1371,7 +1371,7 @@ contract CollectiveGovernanceTest is Test {
         governance.voteFor(proposalId, TOKEN_ID1);
         assertTrue(_VOTER1.balance > 0);
         // requires optimized build
-        assertApproxEqAbs(_VOTER1.balance, 9677304 gwei, 10000 gwei);
+        assertApproxEqAbs(_VOTER1.balance, 9688848 gwei, 10000 gwei);
     }
 
     function testCastAgainstWithRefund() public {
@@ -1389,7 +1389,7 @@ contract CollectiveGovernanceTest is Test {
         governance.voteAgainst(proposalId, TOKEN_ID1);
         assertTrue(_VOTER1.balance > 0);
         // requires optimized build
-        assertApproxEqAbs(_VOTER1.balance, 8638448 gwei, 10000 gwei);
+        assertApproxEqAbs(_VOTER1.balance, 8649264 gwei, 10000 gwei);
     }
 
     function testAbstainWithRefund() public {
@@ -1407,7 +1407,7 @@ contract CollectiveGovernanceTest is Test {
         governance.abstainFrom(proposalId, TOKEN_ID1);
         assertTrue(_VOTER1.balance > 0);
         // requires optimized build
-        assertApproxEqAbs(_VOTER1.balance, 9290736 gwei, 10000 gwei);
+        assertApproxEqAbs(_VOTER1.balance, 9301656 gwei, 10000 gwei);
     }
 
     function testChoiceVoteSimple() public {

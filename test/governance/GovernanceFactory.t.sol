@@ -6,19 +6,19 @@ import { UUPSUpgradeable } from "@openzeppelin/contracts/proxy/utils/UUPSUpgrade
 
 import { Test } from "forge-std/Test.sol";
 
-import { Constant } from "../contracts/Constant.sol";
-import { Storage } from "../contracts/storage/Storage.sol";
-import { StorageFactory } from "../contracts/storage/StorageFactory.sol";
-import { MetaStorage } from "../contracts/storage/MetaStorage.sol";
-import { MappedMetaStorage } from "../contracts/storage/MappedMetaStorage.sol";
-import { CommunityClass } from "../contracts/community/CommunityClass.sol";
-import { CommunityBuilder } from "../contracts/community/CommunityBuilder.sol";
-import { Governance } from "../contracts/Governance.sol";
-import { GovernanceFactory } from "../contracts/GovernanceFactory.sol";
-import { GovernanceFactoryProxy } from "../contracts/GovernanceFactoryProxy.sol";
-import { TimeLocker } from "../contracts/treasury/TimeLocker.sol";
-import { TimeLock } from "../contracts/treasury/TimeLock.sol";
-import { Versioned } from "../contracts/access/Versioned.sol";
+import { Constant } from "../../contracts/Constant.sol";
+import { Storage } from "../../contracts/storage/Storage.sol";
+import { StorageFactory } from "../../contracts/storage/StorageFactory.sol";
+import { MetaStorage } from "../../contracts/storage/MetaStorage.sol";
+import { MappedMetaStorage } from "../../contracts/storage/MappedMetaStorage.sol";
+import { CommunityClass } from "../../contracts/community/CommunityClass.sol";
+import { CommunityBuilder } from "../../contracts/community/CommunityBuilder.sol";
+import { Governance } from "../../contracts/governance/Governance.sol";
+import { GovernanceFactory } from "../../contracts/governance/GovernanceFactory.sol";
+import { GovernanceFactoryProxy } from "../../contracts/governance/GovernanceFactoryProxy.sol";
+import { TimeLocker } from "../../contracts/treasury/TimeLocker.sol";
+import { TimeLock } from "../../contracts/treasury/TimeLock.sol";
+import { Versioned } from "../../contracts/access/Versioned.sol";
 
 contract GovernanceFactoryTest is Test {
     address public constant _OWNER = address(0x1001);

@@ -47,18 +47,18 @@ import { IERC165 } from "@openzeppelin/contracts/interfaces/IERC165.sol";
 import { ERC165 } from "@openzeppelin/contracts/utils/introspection/ERC165.sol";
 import { Math } from "@openzeppelin/contracts/utils/math/Math.sol";
 
-import { Constant } from "../contracts/Constant.sol";
-import { Storage } from "../contracts/storage/Storage.sol";
-import { MetaStorage } from "../contracts/storage/MetaStorage.sol";
-import { Governance } from "../contracts/Governance.sol";
-import { VoteStrategy } from "../contracts/VoteStrategy.sol";
-import { CommunityClass } from "../contracts/community/CommunityClass.sol";
-import { TimeLocker } from "../contracts/treasury/TimeLocker.sol";
-import { Versioned } from "../contracts/access/Versioned.sol";
-import { VersionedContract } from "../contracts/access/VersionedContract.sol";
-import { Transaction, getHash } from "../contracts/collection/TransactionSet.sol";
-import { Choice } from "../contracts/collection/ChoiceSet.sol";
-import { AddressCollection } from "../contracts/collection/AddressSet.sol";
+import { Constant } from "../../contracts/Constant.sol";
+import { Storage } from "../../contracts/storage/Storage.sol";
+import { MetaStorage } from "../../contracts/storage/MetaStorage.sol";
+import { Governance } from "../../contracts/governance/Governance.sol";
+import { VoteStrategy } from "../../contracts/governance/VoteStrategy.sol";
+import { CommunityClass } from "../../contracts/community/CommunityClass.sol";
+import { TimeLocker } from "../../contracts/treasury/TimeLocker.sol";
+import { Versioned } from "../../contracts/access/Versioned.sol";
+import { VersionedContract } from "../../contracts/access/VersionedContract.sol";
+import { Transaction, getHash } from "../../contracts/collection/TransactionSet.sol";
+import { Choice } from "../../contracts/collection/ChoiceSet.sol";
+import { AddressCollection } from "../../contracts/collection/AddressSet.sol";
 
 /// @notice bounded gas rebate calculation
 /// @param startGas the initial value of gasleft() function

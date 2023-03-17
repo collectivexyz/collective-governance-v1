@@ -49,21 +49,21 @@ import { IERC165 } from "@openzeppelin/contracts/interfaces/IERC165.sol";
 import { ERC165 } from "@openzeppelin/contracts/utils/introspection/ERC165.sol";
 import { UUPSUpgradeable } from "@openzeppelin/contracts/proxy/utils/UUPSUpgradeable.sol";
 
-import { Constant } from "../contracts/Constant.sol";
-import { GovernanceFactory } from "../contracts/GovernanceFactory.sol";
-import { GovernanceFactoryProxy } from "../contracts/GovernanceFactoryProxy.sol";
-import { CommunityClass } from "../contracts/community/CommunityClass.sol";
-import { Storage } from "../contracts/storage/Storage.sol";
-import { StorageFactory } from "../contracts/storage/StorageFactory.sol";
-import { StorageFactoryProxy } from "../contracts/storage/StorageFactoryProxy.sol";
-import { MetaStorage } from "../contracts/storage/MetaStorage.sol";
-import { MetaStorageFactory } from "../contracts/storage/MetaStorageFactory.sol";
-import { MetaStorageFactoryProxy } from "../contracts/storage/MetaStorageFactoryProxy.sol";
-import { Versioned } from "../contracts/access/Versioned.sol";
-import { VersionedContract } from "../contracts/access/VersionedContract.sol";
-import { TimeLock } from "../contracts/treasury/TimeLock.sol";
-import { TimeLocker } from "../contracts/treasury/TimeLocker.sol";
-import { Governance } from "../contracts/Governance.sol";
+import { Constant } from "../../contracts/Constant.sol";
+import { GovernanceFactory } from "../../contracts/governance/GovernanceFactory.sol";
+import { GovernanceFactoryProxy } from "../../contracts/governance/GovernanceFactoryProxy.sol";
+import { CommunityClass } from "../../contracts/community/CommunityClass.sol";
+import { Storage } from "../../contracts/storage/Storage.sol";
+import { StorageFactory } from "../../contracts/storage/StorageFactory.sol";
+import { StorageFactoryProxy } from "../../contracts/storage/StorageFactoryProxy.sol";
+import { MetaStorage } from "../../contracts/storage/MetaStorage.sol";
+import { MetaStorageFactory } from "../../contracts/storage/MetaStorageFactory.sol";
+import { MetaStorageFactoryProxy } from "../../contracts/storage/MetaStorageFactoryProxy.sol";
+import { Versioned } from "../../contracts/access/Versioned.sol";
+import { VersionedContract } from "../../contracts/access/VersionedContract.sol";
+import { TimeLock } from "../../contracts/treasury/TimeLock.sol";
+import { TimeLocker } from "../../contracts/treasury/TimeLocker.sol";
+import { Governance } from "../../contracts/governance/Governance.sol";
 
 /// @title Collective Governance creator
 /// @notice This builder supports creating new instances of the Collective Governance contract

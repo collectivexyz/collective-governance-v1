@@ -11,7 +11,7 @@ a8"     ""  a8"     "8a  88  88  a8P_____88  a8"     ""    88     88  `8b     d8
 
 # collective-governance-v1
 
--   [Read the Docs](https://collectivexyz.github.io/collective-governance-v1/)
+- [Read the Docs](https://collectivexyz.github.io/collective-governance-v1/)
 
 ## Introduction
 
@@ -50,8 +50,8 @@ Collective Governance has been designed from the ground up to be very easy to us
 
 ### JavaScript API
 
--   [TypeScript API](https://github.com/collectivexyz/governance/pkgs/npm/governance)
--   [TypeScript Reference](https://github.com/collectivexyz/collective_governance_js) implementation
+- [TypeScript API](https://github.com/collectivexyz/governance/pkgs/npm/governance)
+- [TypeScript Reference](https://github.com/collectivexyz/collective_governance_js) implementation
 
 ## SECURITY
 
@@ -94,7 +94,7 @@ Transaction hash: 0x11029914dbca1bf905f346014b38f604ebfc8eda8c4a287d70609e42c7b0
 Starting contract verification...
 Waiting for etherscan to detect contract deployment...
 
-Submitting verification for [contracts/GovernanceBuilder.sol:GovernanceBuilder] "0x622d8f505bdcF4384efFD8EF9883aA37b9e358cf".
+Submitting verification for [contracts/governance/GovernanceBuilder.sol:GovernanceBuilder] "0x622d8f505bdcF4384efFD8EF9883aA37b9e358cf".
 Submitted contract for verification:
 	Response: `OK`
 	GUID: `1zxkvrquwhjghdygsvjamxv9cwyw4v5qepnnalhfvwvfnxxnyy`

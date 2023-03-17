@@ -48,15 +48,15 @@ import { UUPSUpgradeable } from "@openzeppelin/contracts/proxy/utils/UUPSUpgrade
 import { IERC165 } from "@openzeppelin/contracts/interfaces/IERC165.sol";
 import { ERC165 } from "@openzeppelin/contracts/utils/introspection/ERC165.sol";
 
-import { CommunityClass } from "../contracts/community/CommunityClass.sol";
-import { Storage } from "../contracts/storage/Storage.sol";
-import { MetaStorage } from "../contracts/storage/MetaStorage.sol";
-import { TimeLocker } from "../contracts/treasury/TimeLocker.sol";
-import { Governance } from "../contracts/Governance.sol";
-import { CollectiveGovernance } from "../contracts/CollectiveGovernance.sol";
-import { Versioned } from "../contracts/access/Versioned.sol";
-import { VersionedContract } from "../contracts/access/VersionedContract.sol";
-import { OwnableInitializable } from "../contracts/access/OwnableInitializable.sol";
+import { CommunityClass } from "../../contracts/community/CommunityClass.sol";
+import { Storage } from "../../contracts/storage/Storage.sol";
+import { MetaStorage } from "../../contracts/storage/MetaStorage.sol";
+import { TimeLocker } from "../../contracts/treasury/TimeLocker.sol";
+import { Governance } from "../../contracts/governance/Governance.sol";
+import { CollectiveGovernance } from "../../contracts/governance/CollectiveGovernance.sol";
+import { Versioned } from "../../contracts/access/Versioned.sol";
+import { VersionedContract } from "../../contracts/access/VersionedContract.sol";
+import { OwnableInitializable } from "../../contracts/access/OwnableInitializable.sol";
 
 /**
  * @title CollectiveGovernance creator

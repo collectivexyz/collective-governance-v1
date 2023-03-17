@@ -9,7 +9,7 @@ then
     mkdir abi
 fi
 
-for contract in VoteStrategy storage/Storage Governance GovernanceBuilder ProposalBuilder community/CommunityBuilder storage/MetaStorage System
+for contract in governance/VoteStrategy governance/Governance governance/GovernanceBuilder community/CommunityBuilder storage/Storage storage/MetaStorage System ProposalBuilder
 do
     export BASE_NAME=$(basename ${contract})
     echo "inspect abi: ${contract} to abi/${BASE_NAME}.json"

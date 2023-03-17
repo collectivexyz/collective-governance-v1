@@ -8,14 +8,14 @@ import { Test } from "forge-std/Test.sol";
 
 import { Constant } from "../contracts/Constant.sol";
 import { ProposalBuilder } from "../contracts/ProposalBuilder.sol";
-import { Governance } from "../contracts/Governance.sol";
+import { Governance } from "../contracts/governance/Governance.sol";
 import { Storage } from "../contracts/storage/Storage.sol";
 import { Meta } from "../contracts/collection/MetaSet.sol";
 import { Choice } from "../contracts/collection/ChoiceSet.sol";
 import { Transaction } from "../contracts/collection/TransactionSet.sol";
 import { MetaStorage } from "../contracts/storage/MetaStorage.sol";
 import { Versioned } from "../contracts/access/Versioned.sol";
-import { GovernanceBuilder } from "../contracts/GovernanceBuilder.sol";
+import { GovernanceBuilder } from "../contracts/governance/GovernanceBuilder.sol";
 import { CommunityClass } from "../contracts/community/CommunityClass.sol";
 import { CommunityBuilder } from "../contracts/community/CommunityBuilder.sol";
 

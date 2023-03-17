@@ -46,8 +46,8 @@ pragma solidity ^0.8.15;
 import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
 
 import { Constant } from "../contracts/Constant.sol";
-import { Governance } from "../contracts/Governance.sol";
-import { GovernanceBuilder } from "../contracts/GovernanceBuilder.sol";
+import { Governance } from "../contracts/governance/Governance.sol";
+import { GovernanceBuilder } from "../contracts/governance/GovernanceBuilder.sol";
 import { VersionedContract } from "../contracts/access/VersionedContract.sol";
 import { CommunityBuilder } from "../contracts/community/CommunityBuilder.sol";
 

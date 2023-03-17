@@ -7,8 +7,8 @@ import { ERC165 } from "@openzeppelin/contracts/utils/introspection/ERC165.sol";
 import { Test } from "forge-std/Test.sol";
 
 import { Constant } from "../contracts/Constant.sol";
-import { Governance } from "../contracts/Governance.sol";
-import { GovernanceBuilder } from "../contracts/GovernanceBuilder.sol";
+import { Governance } from "../contracts/governance/Governance.sol";
+import { GovernanceBuilder } from "../contracts/governance/GovernanceBuilder.sol";
 import { CommunityBuilder } from "../contracts/community/CommunityBuilder.sol";
 import { Storage } from "../contracts/storage/Storage.sol";
 import { MetaStorage } from "../contracts/storage/MetaStorage.sol";

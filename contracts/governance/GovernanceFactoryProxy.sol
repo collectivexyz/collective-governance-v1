@@ -45,7 +45,7 @@ pragma solidity ^0.8.15;
 
 import { ERC1967Proxy } from "@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.sol";
 
-import { GovernanceFactory } from "../contracts/GovernanceFactory.sol";
+import { GovernanceFactory } from "../../contracts/governance/GovernanceFactory.sol";
 
 contract GovernanceFactoryProxy is ERC1967Proxy {
     constructor(

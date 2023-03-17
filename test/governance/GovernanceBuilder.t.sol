@@ -7,20 +7,20 @@ import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
 import { IERC165 } from "@openzeppelin/contracts/interfaces/IERC165.sol";
 import { ERC165 } from "@openzeppelin/contracts/utils/introspection/ERC165.sol";
 
-import { Constant } from "../contracts/Constant.sol";
-import { Versioned } from "../contracts/access/Versioned.sol";
-import { MetaStorage } from "../contracts/storage/MetaStorage.sol";
-import { MetaStorageFactory } from "../contracts/storage/MetaStorageFactory.sol";
-import { Storage } from "../contracts/storage/Storage.sol";
-import { StorageFactory } from "../contracts/storage/StorageFactory.sol";
-import { GovernanceFactory } from "../contracts/GovernanceFactory.sol";
-import { GovernanceBuilder } from "../contracts/GovernanceBuilder.sol";
-import { Governance } from "../contracts/Governance.sol";
-import { CollectiveGovernance } from "../contracts/CollectiveGovernance.sol";
-import { CommunityClass } from "../contracts/community/CommunityClass.sol";
-import { CommunityBuilder } from "../contracts/community/CommunityBuilder.sol";
+import { Constant } from "../../contracts/Constant.sol";
+import { Versioned } from "../../contracts/access/Versioned.sol";
+import { MetaStorage } from "../../contracts/storage/MetaStorage.sol";
+import { MetaStorageFactory } from "../../contracts/storage/MetaStorageFactory.sol";
+import { Storage } from "../../contracts/storage/Storage.sol";
+import { StorageFactory } from "../../contracts/storage/StorageFactory.sol";
+import { GovernanceFactory } from "../../contracts/governance/GovernanceFactory.sol";
+import { GovernanceBuilder } from "../../contracts/governance/GovernanceBuilder.sol";
+import { Governance } from "../../contracts/governance/Governance.sol";
+import { CollectiveGovernance } from "../../contracts/governance/CollectiveGovernance.sol";
+import { CommunityClass } from "../../contracts/community/CommunityClass.sol";
+import { CommunityBuilder } from "../../contracts/community/CommunityBuilder.sol";
 
-import { MockERC721 } from "./mock/MockERC721.sol";
+import { MockERC721 } from "../mock/MockERC721.sol";
 
 contract GovernanceBuilderTest is Test {
     address private constant _OWNER = address(0x1);
