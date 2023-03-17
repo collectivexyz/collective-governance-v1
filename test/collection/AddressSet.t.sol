@@ -4,7 +4,6 @@ pragma solidity ^0.8.15;
 import { Test } from "forge-std/Test.sol";
 
 import { AddressSet, AddressCollection } from "../../contracts/collection/AddressSet.sol";
-import { OneOwner } from "../../contracts/access/OneOwner.sol";
 
 contract AddressSetTest is Test {
     AddressSet private _set;
@@ -100,21 +99,21 @@ contract AddressSetTest is Test {
     }
 
     function testAddProtected() public {
-        vm.expectRevert(abi.encodeWithSelector(OneOwner.NotOwner.selector, address(0x123)));
+        vm.expectRevert("Ownable: caller is not the owner");
         vm.prank(address(0x123));
         _set.add(address(0x123));
     }
 
     function testEraseProtected() public {
         _set.add(address(0x123));
-        vm.expectRevert(abi.encodeWithSelector(OneOwner.NotOwner.selector, address(0x123)));
+        vm.expectRevert("Ownable: caller is not the owner");
         vm.prank(address(0x123));
         _set.erase(address(0x123));
     }
 
     function testEraseIndexProtected() public {
         _set.add(address(0x123));
-        vm.expectRevert(abi.encodeWithSelector(OneOwner.NotOwner.selector, address(0x123)));
+        vm.expectRevert("Ownable: caller is not the owner");
         vm.prank(address(0x123));
         _set.erase(1);
     }

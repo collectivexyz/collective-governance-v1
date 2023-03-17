@@ -43,7 +43,7 @@
  */
 pragma solidity ^0.8.15;
 
-import { OneOwner } from "../access/OneOwner.sol";
+import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
 
 /// @notice choice for multiple choice voting
 /// @dev choice voting is enabled by initializing the number of choices when the proposal is created
@@ -80,7 +80,7 @@ interface ChoiceCollection {
 }
 
 /// @title dynamic collection of choicedata
-contract ChoiceSet is OneOwner, ChoiceCollection {
+contract ChoiceSet is Ownable, ChoiceCollection {
     uint256 private _elementCount;
 
     mapping(uint256 => Choice) private _elementMap;

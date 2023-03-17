@@ -15,7 +15,6 @@ import { CommunityClass } from "../../contracts/community/CommunityClass.sol";
 import { CommunityBuilder } from "../../contracts/community/CommunityBuilder.sol";
 import { Governance } from "../../contracts/governance/Governance.sol";
 import { GovernanceFactory } from "../../contracts/governance/GovernanceFactory.sol";
-import { GovernanceFactoryProxy } from "../../contracts/governance/GovernanceFactoryProxy.sol";
 import { TimeLocker } from "../../contracts/treasury/TimeLocker.sol";
 import { TimeLock } from "../../contracts/treasury/TimeLock.sol";
 import { Versioned } from "../../contracts/access/Versioned.sol";
@@ -27,7 +26,6 @@ contract GovernanceFactoryTest is Test {
     Storage private _storage;
     MetaStorage private _metaStorage;
     TimeLocker private _timeLock;
-    GovernanceFactoryProxy private _factoryProxy;
     GovernanceFactory private _governanceFactory;
 
     function setUp() public {
@@ -41,9 +39,7 @@ contract GovernanceFactoryTest is Test {
         );
         _storage = new StorageFactory().create(_class);
         _timeLock = new TimeLock(Constant.TIMELOCK_MINIMUM_DELAY);
-        GovernanceFactory _factoryInstance = new GovernanceFactory();
-        _factoryProxy = new GovernanceFactoryProxy(address(_factoryInstance));
-        _governanceFactory = GovernanceFactory(address(_factoryProxy));
+        _governanceFactory = new GovernanceFactory();
     }
 
     function testCreateNewGovernance() public {
@@ -59,21 +55,5 @@ contract GovernanceFactoryTest is Test {
     function testSupportsInterfaceVersioned() public {
         bytes4 ifId = type(Versioned).interfaceId;
         assertTrue(_governanceFactory.supportsInterface(ifId));
-    }
-
-    function testProxyUpgrade() public {
-        UUPSUpgradeable __uups = UUPSUpgradeable(address(_factoryProxy));
-        ForwardGovernanceFactory fgFactory = new ForwardGovernanceFactory();
-        __uups.upgradeTo(address(fgFactory));
-        ForwardGovernanceFactory fgByProxy = ForwardGovernanceFactory(address(_factoryProxy));
-        // check upgraded
-        assertTrue(fgByProxy.isUpgraded());
-    }
-}
-
-// for testing
-contract ForwardGovernanceFactory is GovernanceFactory {
-    function isUpgraded() public pure returns (bool) {
-        return true;
     }
 }

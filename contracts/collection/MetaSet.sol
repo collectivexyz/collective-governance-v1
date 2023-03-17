@@ -43,7 +43,7 @@
  */
 pragma solidity ^0.8.15;
 
-import { OneOwner } from "../access/OneOwner.sol";
+import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
 
 /// @notice User defined metadata
 struct Meta {
@@ -73,7 +73,7 @@ interface MetaCollection {
 }
 
 /// @title dynamic collection of metadata
-contract MetaSet is OneOwner, MetaCollection {
+contract MetaSet is Ownable, MetaCollection {
     uint256 private _elementCount;
 
     mapping(uint256 => Meta) private _elementMap;

@@ -267,42 +267,6 @@ contract GovernanceBuilderTest is Test {
         assertTrue(_builder.supportsInterface(ifId));
     }
 
-    function testUpgradeRequiresOwner() public {
-        MetaStorageFactory _meta = new MetaStorageFactory();
-        StorageFactory _storage = new StorageFactory();
-        GovernanceFactory _creator = new GovernanceFactory();
-        vm.expectRevert("Ownable: caller is not the owner");
-        _builder.upgrade(address(_creator), address(_storage), address(_meta));
-    }
-
-    function testFailUpgradeStorageRequiresHigherVersion() public {
-        MetaStorageFactory _meta = new MetaStorageFactory();
-        StorageFactory _storage = new StorageFactory();
-        GovernanceFactory _creator = new GovernanceFactory();
-        address creatorMock = address(_creator);
-        bytes memory code = creatorMock.code;
-        vm.etch(creatorMock, code);
-        vm.mockCall(creatorMock, abi.encodeWithSelector(Versioned.version.selector), abi.encode(Constant.CURRENT_VERSION + 1));
-        address metaMock = address(_meta);
-        bytes memory metacode = metaMock.code;
-        vm.etch(metaMock, metacode);
-        vm.mockCall(metaMock, abi.encodeWithSelector(Versioned.version.selector), abi.encode(Constant.CURRENT_VERSION + 1));
-        vm.prank(_OWNER, _OWNER);
-        _builder.upgrade(creatorMock, address(_storage), metaMock);
-    }
-
-    function testFailUpgradeMetaRequiresHigherVersion() public {
-        MetaStorageFactory _meta = new MetaStorageFactory();
-        StorageFactory _storage = new StorageFactory();
-        GovernanceFactory _creator = new GovernanceFactory();
-        address creatorMock = address(_creator);
-        bytes memory code = creatorMock.code;
-        vm.etch(creatorMock, code);
-        vm.mockCall(creatorMock, abi.encodeWithSelector(Versioned.version.selector), abi.encode(Constant.CURRENT_VERSION + 1));
-        vm.prank(_OWNER, _OWNER);
-        _builder.upgrade(creatorMock, address(_storage), address(_meta));
-    }
-
     function testFailVoterClassAddressMustSupportVoterClassInterface() public {
         address classMock = address(0x0);
         vm.mockCall(classMock, abi.encodeWithSelector(IERC165.supportsInterface.selector), abi.encode(false));

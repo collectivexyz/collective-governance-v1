@@ -4,7 +4,6 @@ pragma solidity ^0.8.15;
 import { Test } from "forge-std/Test.sol";
 
 import { Transaction, TransactionSet, TransactionCollection, getHash } from "../../contracts/collection/TransactionSet.sol";
-import { OneOwner } from "../../contracts/access/OneOwner.sol";
 
 contract TransactionSetTest is Test {
     TransactionSet private _set;
@@ -107,7 +106,7 @@ contract TransactionSetTest is Test {
 
     function testAddProtected() public {
         Transaction memory transaction = Transaction(address(0x123), 45, "six", "seven", 890);
-        vm.expectRevert(abi.encodeWithSelector(OneOwner.NotOwner.selector, address(0x123)));
+        vm.expectRevert("Ownable: caller is not the owner");
         vm.prank(address(0x123));
         _set.add(transaction);
     }
@@ -115,7 +114,7 @@ contract TransactionSetTest is Test {
     function testEraseProtected() public {
         Transaction memory transaction = Transaction(address(0x123), 45, "six", "seven", 890);
         _set.add(transaction);
-        vm.expectRevert(abi.encodeWithSelector(OneOwner.NotOwner.selector, address(0x123)));
+        vm.expectRevert("Ownable: caller is not the owner");
         vm.prank(address(0x123));
         _set.erase(transaction);
     }
@@ -123,7 +122,7 @@ contract TransactionSetTest is Test {
     function testEraseIndexProtected() public {
         Transaction memory transaction = Transaction(address(0x123), 45, "six", "seven", 890);
         _set.add(transaction);
-        vm.expectRevert(abi.encodeWithSelector(OneOwner.NotOwner.selector, address(0x123)));
+        vm.expectRevert("Ownable: caller is not the owner");
         vm.prank(address(0x123));
         _set.erase(1);
     }

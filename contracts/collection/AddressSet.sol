@@ -43,7 +43,7 @@
  */
 pragma solidity ^0.8.15;
 
-import { OneOwner } from "../access/OneOwner.sol";
+import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
 
 interface AddressCollection {
     error IndexInvalid(uint256 index);
@@ -64,7 +64,7 @@ interface AddressCollection {
 }
 
 /// @title dynamic collection of addresses
-contract AddressSet is OneOwner, AddressCollection {
+contract AddressSet is Ownable, AddressCollection {
     uint256 private _elementCount;
 
     mapping(uint256 => address) private _elementMap;

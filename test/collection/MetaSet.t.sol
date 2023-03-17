@@ -4,7 +4,6 @@ pragma solidity ^0.8.15;
 import { Test } from "forge-std/Test.sol";
 
 import { Meta, MetaSet, MetaCollection, getHash } from "../../contracts/collection/MetaSet.sol";
-import { OneOwner } from "../../contracts/access/OneOwner.sol";
 
 contract MetaSetTest is Test {
     MetaSet private _set;
@@ -119,7 +118,7 @@ contract MetaSetTest is Test {
 
     function testAddProtected() public {
         Meta memory meta = Meta("ziggy", "stardust");
-        vm.expectRevert(abi.encodeWithSelector(OneOwner.NotOwner.selector, address(0x123)));
+        vm.expectRevert("Ownable: caller is not the owner");
         vm.prank(address(0x123));
         _set.add(meta);
     }
@@ -127,7 +126,7 @@ contract MetaSetTest is Test {
     function testEraseProtected() public {
         Meta memory meta = Meta("ziggy", "stardust");
         _set.add(meta);
-        vm.expectRevert(abi.encodeWithSelector(OneOwner.NotOwner.selector, address(0x123)));
+        vm.expectRevert("Ownable: caller is not the owner");
         vm.prank(address(0x123));
         _set.erase(meta);
     }
@@ -135,7 +134,7 @@ contract MetaSetTest is Test {
     function testEraseIndexProtected() public {
         Meta memory meta = Meta("ziggy", "stardust");
         _set.add(meta);
-        vm.expectRevert(abi.encodeWithSelector(OneOwner.NotOwner.selector, address(0x123)));
+        vm.expectRevert("Ownable: caller is not the owner");
         vm.prank(address(0x123));
         _set.erase(1);
     }

@@ -47,18 +47,15 @@ import { Math } from "@openzeppelin/contracts/utils/math/Math.sol";
 import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
 import { IERC165 } from "@openzeppelin/contracts/interfaces/IERC165.sol";
 import { ERC165 } from "@openzeppelin/contracts/utils/introspection/ERC165.sol";
-import { UUPSUpgradeable } from "@openzeppelin/contracts/proxy/utils/UUPSUpgradeable.sol";
 
 import { Constant } from "../../contracts/Constant.sol";
 import { GovernanceFactory } from "../../contracts/governance/GovernanceFactory.sol";
-import { GovernanceFactoryProxy } from "../../contracts/governance/GovernanceFactoryProxy.sol";
 import { CommunityClass } from "../../contracts/community/CommunityClass.sol";
 import { Storage } from "../../contracts/storage/Storage.sol";
 import { StorageFactory } from "../../contracts/storage/StorageFactory.sol";
 import { StorageFactoryProxy } from "../../contracts/storage/StorageFactoryProxy.sol";
 import { MetaStorage } from "../../contracts/storage/MetaStorage.sol";
 import { MetaStorageFactory } from "../../contracts/storage/MetaStorageFactory.sol";
-import { MetaStorageFactoryProxy } from "../../contracts/storage/MetaStorageFactoryProxy.sol";
 import { Versioned } from "../../contracts/access/Versioned.sol";
 import { VersionedContract } from "../../contracts/access/VersionedContract.sol";
 import { TimeLock } from "../../contracts/treasury/TimeLock.sol";
@@ -125,26 +122,15 @@ contract GovernanceBuilder is VersionedContract, ERC165, Ownable {
     mapping(address => GovernanceProperties) private _buildMap;
 
     StorageFactory public immutable _storageFactory;
-    StorageFactoryProxy public immutable _storageFactoryProxy;
-
     MetaStorageFactory public immutable _metaStorageFactory;
-    MetaStorageFactoryProxy public immutable _metaStorageFactoryProxy;
-
     GovernanceFactory public immutable _governanceFactory;
-    GovernanceFactoryProxy public immutable _governanceFactoryProxy;
 
     mapping(address => bool) public _governanceContractRegistered;
 
     constructor() {
-        StorageFactory storageFactory = new StorageFactory();
-        _storageFactoryProxy = new StorageFactoryProxy(address(storageFactory));
-        _storageFactory = StorageFactory(address(_storageFactoryProxy));
-        MetaStorageFactory metaStorageFactory = new MetaStorageFactory();
-        _metaStorageFactoryProxy = new MetaStorageFactoryProxy(address(metaStorageFactory));
-        _metaStorageFactory = MetaStorageFactory(address(_metaStorageFactoryProxy));
-        GovernanceFactory governanceFactory = new GovernanceFactory();
-        _governanceFactoryProxy = new GovernanceFactoryProxy(address(governanceFactory));
-        _governanceFactory = GovernanceFactory(address(_governanceFactoryProxy));
+        _storageFactory = new StorageFactory();
+        _metaStorageFactory = new MetaStorageFactory();
+        _governanceFactory = new GovernanceFactory();
     }
 
     /// @notice initialize and create a new builder context for this sender
@@ -265,29 +251,6 @@ contract GovernanceBuilder is VersionedContract, ERC165, Ownable {
     /// @return string memory representation of name
     function name() external pure virtual returns (string memory) {
         return NAME;
-    }
-
-    /// @notice upgrade factories
-    /// @dev owner required
-    /// @param _governanceAddr The address of the governance factory
-    /// @param _storageAddr The address of the storage factory
-    /// @param _metaAddr The address of the meta factory
-    function upgrade(address _governanceAddr, address _storageAddr, address _metaAddr) external onlyOwner {
-        StorageFactory _storage = StorageFactory(_storageAddr);
-        MetaStorageFactory _meta = MetaStorageFactory(_metaAddr);
-        GovernanceFactory _creator = GovernanceFactory(_governanceAddr);
-        uint32 version = _creator.version();
-        if (version > _storage.version()) revert StorageVersionMismatch(_storageAddr, version, _storage.version());
-        if (version > _meta.version()) revert MetaVersionMismatch(_metaAddr, version, _meta.version());
-
-        UUPSUpgradeable _upgradeableStorage = UUPSUpgradeable(address(_storageFactoryProxy));
-        _upgradeableStorage.upgradeTo(_storageAddr);
-
-        UUPSUpgradeable _upgradeableMeta = UUPSUpgradeable(address(_metaStorageFactoryProxy));
-        _upgradeableMeta.upgradeTo(_metaAddr);
-
-        UUPSUpgradeable _upgradeableGovernance = UUPSUpgradeable(address(_governanceFactoryProxy));
-        _upgradeableGovernance.upgradeTo(_governanceAddr);
     }
 
     function transferOwnership(address _ownedObject, address _targetOwner) private {

@@ -4,7 +4,6 @@ pragma solidity ^0.8.15;
 import { Test } from "forge-std/Test.sol";
 
 import { Choice, ChoiceSet, ChoiceCollection, getHash } from "../../contracts/collection/ChoiceSet.sol";
-import { OneOwner } from "../../contracts/access/OneOwner.sol";
 
 contract ChoiceSetTest is Test {
     ChoiceSet private _set;
@@ -140,7 +139,7 @@ contract ChoiceSetTest is Test {
 
     function testAddProtected() public {
         Choice memory choice = Choice("z1", "a choice", 53, "2123", 22);
-        vm.expectRevert(abi.encodeWithSelector(OneOwner.NotOwner.selector, address(0x123)));
+        vm.expectRevert("Ownable: caller is not the owner");
         vm.prank(address(0x123));
         _set.add(choice);
     }
@@ -148,7 +147,7 @@ contract ChoiceSetTest is Test {
     function testEraseProtected() public {
         Choice memory choice = Choice("z1", "a choice", 53, "2123", 22);
         _set.add(choice);
-        vm.expectRevert(abi.encodeWithSelector(OneOwner.NotOwner.selector, address(0x123)));
+        vm.expectRevert("Ownable: caller is not the owner");
         vm.prank(address(0x123));
         _set.erase(choice);
     }
@@ -156,7 +155,7 @@ contract ChoiceSetTest is Test {
     function testEraseIndexProtected() public {
         Choice memory choice = Choice("z1", "a choice", 53, "2123", 22);
         _set.add(choice);
-        vm.expectRevert(abi.encodeWithSelector(OneOwner.NotOwner.selector, address(0x123)));
+        vm.expectRevert("Ownable: caller is not the owner");
         vm.prank(address(0x123));
         _set.erase(1);
     }

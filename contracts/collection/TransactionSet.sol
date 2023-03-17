@@ -43,7 +43,7 @@
  */
 pragma solidity ^0.8.15;
 
-import { OneOwner } from "../../contracts/access/OneOwner.sol";
+import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
 
 /// @notice The executable transaction
 struct Transaction {
@@ -81,7 +81,7 @@ interface TransactionCollection {
 }
 
 /// @title dynamic collection of transaction
-contract TransactionSet is OneOwner, TransactionCollection {
+contract TransactionSet is Ownable, TransactionCollection {
     uint256 private _elementCount;
 
     mapping(uint256 => Transaction) private _elementMap;
