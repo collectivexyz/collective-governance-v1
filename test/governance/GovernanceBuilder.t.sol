@@ -35,7 +35,10 @@ contract GovernanceBuilderTest is Test {
     function setUp() public {
         vm.clearMockedCalls();
         vm.prank(_OWNER, _OWNER);
-        _builder = new GovernanceBuilder();
+        StorageFactory _storageFactory = new StorageFactory();
+        MetaStorageFactory _metaStorageFactory = new MetaStorageFactory();
+        GovernanceFactory _governanceFactory = new GovernanceFactory();
+        _builder = new GovernanceBuilder(address(_storageFactory), address(_metaStorageFactory), address(_governanceFactory));
         _communityBuilder = new CommunityBuilder();
         address _communityLocation = _communityBuilder
             .aCommunity()

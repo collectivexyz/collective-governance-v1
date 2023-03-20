@@ -20,7 +20,7 @@ def parse_deployment(path: str, file: str) -> str:
       deployed_to = js['deployedTo']
       return path + basefile + ':' + basecontract + ':' + deployed_to
     else:
-      raise Exception('Invalid deployment json');
+      raise Exception('Invalid deployment json')
   
 if __name__ == '__main__':
   if len(sys.argv) > 1:

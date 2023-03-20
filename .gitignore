@@ -1,6 +1,7 @@
 cache/
 out/
 keystore/
+broadcast/
 .DS_Store
 node_modules/
 yarn-error.log

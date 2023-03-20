@@ -18,6 +18,10 @@ import { Versioned } from "../contracts/access/Versioned.sol";
 import { GovernanceBuilder } from "../contracts/governance/GovernanceBuilder.sol";
 import { CommunityClass } from "../contracts/community/CommunityClass.sol";
 import { CommunityBuilder } from "../contracts/community/CommunityBuilder.sol";
+import { StorageFactory } from "../contracts/storage/StorageFactory.sol";
+import { MetaStorageFactory } from "../contracts/storage/MetaStorageFactory.sol";
+import { GovernanceFactory } from "../contracts/governance/GovernanceFactory.sol";
+import { GovernanceBuilder } from "../contracts/governance/GovernanceBuilder.sol";
 
 import { TestData } from "./mock/TestData.sol";
 
@@ -38,7 +42,15 @@ contract ProposalBuilderTest is Test {
             .asOpenCommunity()
             .withQuorum(1)
             .build();
-        (address payable _govAddr, address _stoAddr, address _metaAddr) = new GovernanceBuilder()
+        StorageFactory _storageFactory = new StorageFactory();
+        MetaStorageFactory _metaStorageFactory = new MetaStorageFactory();
+        GovernanceFactory _governanceFactory = new GovernanceFactory();
+        GovernanceBuilder _gbuilder = new GovernanceBuilder(
+            address(_storageFactory),
+            address(_metaStorageFactory),
+            address(_governanceFactory)
+        );
+        (address payable _govAddr, address _stoAddr, address _metaAddr) = _gbuilder
             .aGovernance()
             .withCommunityClassAddress(_classAddr)
             .build();

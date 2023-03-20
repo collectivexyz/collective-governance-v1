@@ -22,6 +22,9 @@ import { CollectiveGovernance, calculateGasRebate } from "../../contracts/govern
 import { GovernanceBuilder } from "../../contracts/governance/GovernanceBuilder.sol";
 import { TimeLocker } from "../../contracts/treasury/TimeLocker.sol";
 import { VersionedContract } from "../../contracts/access/VersionedContract.sol";
+import { StorageFactory } from "../../contracts/storage/StorageFactory.sol";
+import { MetaStorageFactory } from "../../contracts/storage/MetaStorageFactory.sol";
+import { GovernanceFactory } from "../../contracts/governance/GovernanceFactory.sol";
 
 import { MockERC721 } from "../mock/MockERC721.sol";
 import { FlagSet } from "../mock/FlagSet.sol";
@@ -77,7 +80,10 @@ contract CollectiveGovernanceTest is Test {
 
     function setUp() public {
         vm.clearMockedCalls();
-        _builder = new GovernanceBuilder();
+        StorageFactory _storageFactory = new StorageFactory();
+        MetaStorageFactory _metaStorageFactory = new MetaStorageFactory();
+        GovernanceFactory _governanceFactory = new GovernanceFactory();
+        _builder = new GovernanceBuilder(address(_storageFactory), address(_metaStorageFactory), address(_governanceFactory));
         _erc721 = mintTokens();
         address projectAddress = address(_erc721);
         (_governanceAddress, _storageAddress, ) = buildERC721(projectAddress);

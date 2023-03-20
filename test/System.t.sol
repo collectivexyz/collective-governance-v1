@@ -14,6 +14,9 @@ import { Storage } from "../contracts/storage/Storage.sol";
 import { MetaStorage } from "../contracts/storage/MetaStorage.sol";
 import { System } from "../contracts/System.sol";
 import { Versioned } from "../contracts/access/Versioned.sol";
+import { StorageFactory } from "../contracts/storage/StorageFactory.sol";
+import { MetaStorageFactory } from "../contracts/storage/MetaStorageFactory.sol";
+import { GovernanceFactory } from "../contracts/governance/GovernanceFactory.sol";
 
 import { MockERC721 } from "./mock/MockERC721.sol";
 
@@ -22,12 +25,15 @@ contract SystemTest is Test {
     address private constant _CREATOR = address(0x2);
     address private constant _VOTER1 = address(0xfff1);
 
-    GovernanceBuilder private _creator;
+    GovernanceBuilder private _builder;
     CommunityBuilder private _classCreator;
 
     function setUp() public {
         vm.clearMockedCalls();
-        _creator = new GovernanceBuilder();
+        StorageFactory _storageFactory = new StorageFactory();
+        MetaStorageFactory _metaStorageFactory = new MetaStorageFactory();
+        GovernanceFactory _governanceFactory = new GovernanceFactory();
+        _builder = new GovernanceBuilder(address(_storageFactory), address(_metaStorageFactory), address(_governanceFactory));
         _classCreator = new CommunityBuilder();
     }
 
@@ -38,11 +44,11 @@ contract SystemTest is Test {
     }
 
     function testBuildOutFullProject() public {
-        address _creatorAddress = address(_creator);
-        emit log_address(_creatorAddress);
+        address _builderAddress = address(_builder);
+        emit log_address(_builderAddress);
         address _classCreatorAddress = address(_classCreator);
         emit log_address(_classCreatorAddress);
-        System _system = new System(_creatorAddress, _classCreatorAddress);
+        System _system = new System(_builderAddress, _classCreatorAddress);
 
         MockERC721 merc721 = new MockERC721();
         merc721.mintTo(_VOTER1, 0x10);
@@ -74,11 +80,11 @@ contract SystemTest is Test {
     }
 
     function testBuildWithDuration() public {
-        address _creatorAddress = address(_creator);
-        emit log_address(_creatorAddress);
+        address _builderAddress = address(_builder);
+        emit log_address(_builderAddress);
         address _classCreatorAddress = address(_classCreator);
         emit log_address(_classCreatorAddress);
-        System _system = new System(_creatorAddress, _classCreatorAddress);
+        System _system = new System(_builderAddress, _classCreatorAddress);
 
         MockERC721 merc721 = new MockERC721();
         merc721.mintTo(_VOTER1, 0x10);

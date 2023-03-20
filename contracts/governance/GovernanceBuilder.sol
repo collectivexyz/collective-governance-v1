@@ -49,18 +49,17 @@ import { IERC165 } from "@openzeppelin/contracts/interfaces/IERC165.sol";
 import { ERC165 } from "@openzeppelin/contracts/utils/introspection/ERC165.sol";
 
 import { Constant } from "../../contracts/Constant.sol";
+import { Governance } from "../../contracts/governance/Governance.sol";
 import { GovernanceFactory } from "../../contracts/governance/GovernanceFactory.sol";
 import { CommunityClass } from "../../contracts/community/CommunityClass.sol";
 import { Storage } from "../../contracts/storage/Storage.sol";
 import { StorageFactory } from "../../contracts/storage/StorageFactory.sol";
-import { StorageFactoryProxy } from "../../contracts/storage/StorageFactoryProxy.sol";
 import { MetaStorage } from "../../contracts/storage/MetaStorage.sol";
 import { MetaStorageFactory } from "../../contracts/storage/MetaStorageFactory.sol";
 import { Versioned } from "../../contracts/access/Versioned.sol";
 import { VersionedContract } from "../../contracts/access/VersionedContract.sol";
 import { TimeLock } from "../../contracts/treasury/TimeLock.sol";
 import { TimeLocker } from "../../contracts/treasury/TimeLocker.sol";
-import { Governance } from "../../contracts/governance/Governance.sol";
 
 /// @title Collective Governance creator
 /// @notice This builder supports creating new instances of the Collective Governance contract
@@ -127,10 +126,15 @@ contract GovernanceBuilder is VersionedContract, ERC165, Ownable {
 
     mapping(address => bool) public _governanceContractRegistered;
 
-    constructor() {
-        _storageFactory = new StorageFactory();
-        _metaStorageFactory = new MetaStorageFactory();
-        _governanceFactory = new GovernanceFactory();
+    /**
+     * @param _sFactory the storage factory address
+     * @param _mStorageFactory the meta storage factory address
+     * @param _govFactory the governance factory address
+     */
+    constructor(address _sFactory, address _mStorageFactory, address _govFactory) {
+        _storageFactory = StorageFactory(_sFactory);
+        _metaStorageFactory = MetaStorageFactory(_mStorageFactory);
+        _governanceFactory = GovernanceFactory(_govFactory);
     }
 
     /// @notice initialize and create a new builder context for this sender

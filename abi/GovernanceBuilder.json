@@ -1,6 +1,22 @@
 [
   {
-    "inputs": [],
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_sFactory",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_mStorageFactory",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_govFactory",
+        "type": "address"
+      }
+    ],
     "stateMutability": "nonpayable",
     "type": "constructor"
   },
@@ -411,19 +427,6 @@
   },
   {
     "inputs": [],
-    "name": "_governanceFactoryProxy",
-    "outputs": [
-      {
-        "internalType": "contract GovernanceFactoryProxy",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
     "name": "_metaStorageFactory",
     "outputs": [
       {
@@ -437,36 +440,10 @@
   },
   {
     "inputs": [],
-    "name": "_metaStorageFactoryProxy",
-    "outputs": [
-      {
-        "internalType": "contract MetaStorageFactoryProxy",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
     "name": "_storageFactory",
     "outputs": [
       {
         "internalType": "contract StorageFactory",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "_storageFactoryProxy",
-    "outputs": [
-      {
-        "internalType": "contract StorageFactoryProxy",
         "name": "",
         "type": "address"
       }
@@ -597,29 +574,6 @@
       }
     ],
     "name": "transferOwnership",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "_governanceAddr",
-        "type": "address"
-      },
-      {
-        "internalType": "address",
-        "name": "_storageAddr",
-        "type": "address"
-      },
-      {
-        "internalType": "address",
-        "name": "_metaAddr",
-        "type": "address"
-      }
-    ],
-    "name": "upgrade",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
