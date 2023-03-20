@@ -39,10 +39,9 @@ _____________
 =====================  ==========================================  =========== ===========================
 Contract               Ethereum Address                            Version     Description
 =====================  ==========================================  =========== ===========================
-`Constant`_            0x7291f9fc02a3B4AfD13d7BCAcc5833653DCf37DD  0.9.4       Constant library
-`VoterClassFactory`_   0x836CcF6E97A66AE92AA605DFe6869DDE64b2cC3D  0.9.4       VoterClass Factory
-`GovernanceBuilder`_   0x8eFCF74380F242c8f220808AA1763539D2DA6F21  0.9.4       Governance Contract Builder
-`System`_              0xDb6f31A20996e265FB59406675261F3fcC0bDe6f  0.9.4       System creation contract 
+`Constant`_            0xE92C637eC797934574D31D319B4bD1eca182e7F1  0.9.7       Constant library
+`CommmunityBuilder`_   0x011b543b69236aca83406edc051e8a6dd3bcda1c  0.9.7       CommunityBuilder Factory
+`GovernanceBuilder`_   0x2c57560BF19b7c088488104D02506D87f63e414C  0.9.7       Governance Contract Builder
 =====================  ==========================================  =========== ===========================
 
 Project Links
@@ -54,9 +53,9 @@ Project Links
 .. _GitHub: https://github.com/collectivexyz/collective-governance-v1
 .. _JavaScript API: https://github.com/collectivexyz/governance
 .. _JavaScript Reference: https://github.com/collectivexyz/collective_governance_js
-.. _Constant: https://goerli.etherscan.io/address/0x7291f9fc02a3B4AfD13d7BCAcc5833653DCf37DD 
-.. _VoterClassFactory: https://goerli.etherscan.io/address/0x836CcF6E97A66AE92AA605DFe6869DDE64b2cC3D  
-.. _GovernanceBuilder: https://goerli.etherscan.io/address/0x8eFCF74380F242c8f220808AA1763539D2DA6F21
+.. _Constant: https://goerli.etherscan.io/address/0xE92C637eC797934574D31D319B4bD1eca182e7F1 
+.. _CommunityBuilder: https://goerli.etherscan.io/address/0x011b543b69236aca83406edc051e8a6dd3bcda1c  
+.. _GovernanceBuilder: https://goerli.etherscan.io/address/0x2c57560BF19b7c088488104D02506D87f63e414C
 .. _System: https://goerli.etherscan.io/address/0xDb6f31A20996e265FB59406675261F3fcC0bDe6f
 
 Indices and tables

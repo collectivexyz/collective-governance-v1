@@ -31,9 +31,9 @@ Collective Governance has been designed from the ground up to be very easy to us
 
 | Contract          | Ethereum Address                           | Version |
 | ----------------- | ------------------------------------------ | ------- |
-| Constant          | 0xd8D8177a17b7B5bE42B8eF671d3A1D121fA84268 | 0.9.6   |
-| CommunityBuilder  |                                            | 0.9.6   |
-| GovernanceBuilder |                                            | 0.9.4   |
+| Constant          | 0xE92C637eC797934574D31D319B4bD1eca182e7F1 | 0.9.7   |
+| CommunityBuilder  | 0x011b543b69236aca83406edc051e8a6dd3bcda1c | 0.9.7   |
+| GovernanceBuilder | 0x2c57560BF19b7c088488104D02506D87f63e414C | 0.9.7   |
 
 ### Command line build using docker
 
