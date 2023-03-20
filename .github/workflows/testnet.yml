@@ -54,6 +54,6 @@ jobs:
         run: |
           export DEPLOYED_LIBRARY=$(bin/library.py Constant.sol.json)
           echo "Using library ${DEPLOYED_LIBRARY}"
-          forge script ./script/DeployCollective.sol --sig 'deploy()' --libraries contracts/Constant.sol:Constant:${CONSTANT_LIB_ADDRESS} --slow --broadcast --rpc-url ${DEVNET_RPC_URL} --private-key ${ETH_DEV_PRIVATE} --etherscan-api-key ${ETHERSCAN_API_KEY} --verify
+          forge script ./script/DeployCollective.sol --sig 'deploy()' --libraries ${DEPLOYED_LIBRARY} --slow --broadcast --rpc-url ${DEVNET_RPC_URL} --private-key ${ETH_DEV_PRIVATE} --etherscan-api-key ${ETHERSCAN_API_KEY} --verify
           cat broadcast/deploy-latest.json
         if: ${{ github.event_name == 'release' && github.event.action == 'created' }}

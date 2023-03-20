@@ -27,12 +27,13 @@ Collective Governance has been designed from the ground up to be very easy to us
 
 ### Contract Deployment Details
 
+#### Görli Testnet
+
 | Contract          | Ethereum Address                           | Version |
 | ----------------- | ------------------------------------------ | ------- |
-| Constant          | 0x7291f9fc02a3B4AfD13d7BCAcc5833653DCf37DD | 0.9.4   |
-| VoterClassFactory | 0x836CcF6E97A66AE92AA605DFe6869DDE64b2cC3D | 0.9.4   |
-| GovernanceBuilder | 0x8eFCF74380F242c8f220808AA1763539D2DA6F21 | 0.9.4   |
-| System            | 0xDb6f31A20996e265FB59406675261F3fcC0bDe6f | 0.9.4   |
+| Constant          | 0xd8D8177a17b7B5bE42B8eF671d3A1D121fA84268 | 0.9.6   |
+| CommunityBuilder  |                                            | 0.9.6   |
+| GovernanceBuilder |                                            | 0.9.4   |
 
 ### Command line build using docker
 
@@ -66,42 +67,7 @@ This smart contract enables a vote to be proposed, voted upon and successfully f
 ### Example deployment
 
 ```
-Run forge create --contracts contracts/VoterClassFactory.sol --rpc-url ${DEVNET_RPC_URL} --private-key ${ETH_DEV_PRIVATE} --etherscan-api-key ${ETHERSCAN_API_KEY} --verify VoterClassFactory
-Compiling 36 files with 0.8.17
-Solc 0.8.17 finished in 169.43s
-Compiler run successful
-Deployer: 0xXXXXXXXXX
-Deployed to: 0x8d93427F76250773A943eE500490280149cA6bb7
-Transaction hash: 0xd5a76d8ad0ee30a780490aafba98a4294590498628b4477003a03934fb32da38
-Starting contract verification...
-Waiting for etherscan to detect contract deployment...
-
-Submitting verification for [contracts/VoterClassFactory.sol:VoterClassFactory] "0x8d93427F76250773A943eE500490280149cA6bb7".
-Submitted contract for verification:
-	Response: `OK`
-	GUID: `9lfxw6x2xrezsgft4tjriwg55tujxvlpp9l15tnpvcasqduiwe`
-	URL:
-        https://goerli.etherscan.io/address/0x8d93427f76250773a943ee500490280149ca6bb7
-Waiting for verification result...
-Contract successfully verified
-
-Compiling 36 files with 0.8.17
-Solc 0.8.17 finished in 169.10s
-Compiler run successful
-Deployer: 0xXXXXXXXX
-Deployed to: 0x622d8f505bdcF4384efFD8EF9883aA37b9e358cf
-Transaction hash: 0x11029914dbca1bf905f346014b38f604ebfc8eda8c4a287d70609e42c7b07f63
-Starting contract verification...
-Waiting for etherscan to detect contract deployment...
-
-Submitting verification for [contracts/governance/GovernanceBuilder.sol:GovernanceBuilder] "0x622d8f505bdcF4384efFD8EF9883aA37b9e358cf".
-Submitted contract for verification:
-	Response: `OK`
-	GUID: `1zxkvrquwhjghdygsvjamxv9cwyw4v5qepnnalhfvwvfnxxnyy`
-	URL:
-        https://goerli.etherscan.io/address/0x622d8f505bdcf4384effd8ef9883aa37b9e358cf
-Waiting for verification result...
-Contract successfully verified
+$ forge script ./script/DeployCollective.sol --sig 'deploy()' --libraries contracts/Constant.sol:Constant:${CONSTANT_LIB_ADDRESS} --slow --broadcast --rpc-url ${DEVNET_RPC_URL} --private-key ${ETH_DEV_PRIVATE} --etherscan-api-key ${ETHERSCAN_API_KEY} --verify
 ```
 
 ### Model
