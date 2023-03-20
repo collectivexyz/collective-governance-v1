@@ -137,7 +137,7 @@
     {
       "label": "deployconstant",
       "type": "shell",
-      "command": "forge create --revert-strings debug --contracts contracts/Constant.sol --rpc-url ${DEVNET_RPC_URL} --private-key ${ETH_DEV_PRIVATE} --etherscan-api-key ${ETHERSCAN_API_KEY} --verify Constant --chain goerli",
+      "command": "forge create --revert-strings debug --contracts contracts/Constant.sol --rpc-url ${DEVNET_RPC_URL} --private-key ${PRIVATE_KEY} --etherscan-api-key ${ETHERSCAN_API_KEY} --verify Constant --chain goerli",
       "options": {
         "cwd": "${workspaceFolder}"
       },
@@ -150,7 +150,7 @@
     {
       "label": "deploycommunitybuilder",
       "type": "shell",
-      "command": "forge create --revert-strings debug --libraries contracts/Constant.sol:Constant:${CONSTANT_LIB_ADDRESS} --contracts contracts/community/CommunityBuilder.sol --rpc-url ${DEVNET_RPC_URL} --private-key ${ETH_DEV_PRIVATE} --etherscan-api-key ${ETHERSCAN_API_KEY} --verify --chain goerli CommunityBuilder",
+      "command": "forge create --revert-strings debug --libraries contracts/Constant.sol:Constant:${CONSTANT_LIB_ADDRESS} --contracts contracts/community/CommunityBuilder.sol --rpc-url ${DEVNET_RPC_URL} --private-key ${PRIVATE_KEY} --etherscan-api-key ${ETHERSCAN_API_KEY} --verify --chain goerli CommunityBuilder",
       "options": {
         "cwd": "${workspaceFolder}",
         "env": {
@@ -166,7 +166,7 @@
     {
       "label": "deploycollective",
       "type": "shell",
-      "command": "forge script ./script/DeployCollective.sol --sig 'deploy()' --libraries contracts/Constant.sol:Constant:${CONSTANT_LIB_ADDRESS} --slow --broadcast --rpc-url ${DEVNET_RPC_URL} --private-key ${ETH_DEV_PRIVATE} --etherscan-api-key ${ETHERSCAN_API_KEY} --verify",
+      "command": "forge script ./script/DeployCollective.sol --sig 'deploy()' --libraries contracts/Constant.sol:Constant:${CONSTANT_LIB_ADDRESS} --slow --broadcast --rpc-url ${DEVNET_RPC_URL} --private-key ${PRIVATE_KEY} --etherscan-api-key ${ETHERSCAN_API_KEY} --verify",
       "options": {
         "cwd": "${workspaceFolder}",
         "env": {
@@ -182,7 +182,7 @@
     {
       "label": "deployproposalbuilder",
       "type": "shell",
-      "command": "forge create --revert-strings debug --libraries contracts/Constant.sol:Constant:${CONSTANT_LIB_ADDRESS} --contracts contracts/ProposalBuilder.sol --rpc-url ${DEVNET_RPC_URL} --private-key ${ETH_DEV_PRIVATE} --etherscan-api-key ${ETHERSCAN_API_KEY} --verify ProposalBuilder --chain goerli --constructor-args ${GOVERNANCE_ADDRESS} ${STORAGE_ADDRESS} ${META_ADDRESS}",
+      "command": "forge create --revert-strings debug --libraries contracts/Constant.sol:Constant:${CONSTANT_LIB_ADDRESS} --contracts contracts/ProposalBuilder.sol --rpc-url ${DEVNET_RPC_URL} --private-key ${PRIVATE_KEY} --etherscan-api-key ${ETHERSCAN_API_KEY} --verify ProposalBuilder --chain goerli --constructor-args ${GOVERNANCE_ADDRESS} ${STORAGE_ADDRESS} ${META_ADDRESS}",
       "options": {
         "cwd": "${workspaceFolder}",
         "env": {
@@ -201,7 +201,7 @@
     {
       "label": "deploysystem",
       "type": "shell",
-      "command": "forge create --revert-strings debug --contracts contracts/System.sol --rpc-url ${DEVNET_RPC_URL} --private-key ${ETH_DEV_PRIVATE} --etherscan-api-key ${ETHERSCAN_API_KEY} --verify --chain goerli System --constructor-args ${BUILDER_ADDRESS} ${CLASS_CREATOR_ADDRESS}",
+      "command": "forge create --revert-strings debug --contracts contracts/System.sol --rpc-url ${DEVNET_RPC_URL} --private-key ${PRIVATE_KEY} --etherscan-api-key ${ETHERSCAN_API_KEY} --verify --chain goerli System --constructor-args ${BUILDER_ADDRESS} ${CLASS_CREATOR_ADDRESS}",
       "options": {
         "cwd": "${workspaceFolder}",
         "env": {
