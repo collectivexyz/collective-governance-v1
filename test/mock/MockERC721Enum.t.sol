@@ -38,7 +38,7 @@ contract MockERC721EnumTest is Test {
         assertEq(erc721.tokenOfOwnerByIndex(_nextowner, 0), _tokenId3);
     }
 
-    function testFailOwnerInvalidIndex(uint256 index) public view {
+    function testFailOwnerInvalidIndex(uint256 index) public {
         vm.assume(index > 2);
         erc721.tokenOfOwnerByIndex(_owner, index);
     }
@@ -50,7 +50,7 @@ contract MockERC721EnumTest is Test {
         assertEq(erc721.tokenByIndex(3), _tokenId4);
     }
 
-    function testFailTokenGlobalInvalidIndex(uint256 index) public view {
+    function testFailTokenGlobalInvalidIndex(uint256 index) public {
         vm.assume(index > 3);
         erc721.tokenByIndex(index);
     }
