@@ -164,9 +164,9 @@
       }
     },
     {
-      "label": "deploygovernancebuilder",
+      "label": "deploycollective",
       "type": "shell",
-      "command": "forge script ./script/DeployGovernanceBuilder.sol --sig 'deploy()' --libraries contracts/Constant.sol:Constant:${CONSTANT_LIB_ADDRESS} --broadcast --etherscan-api-key ${ETHERSCAN_API_KEY} --verify -rpc-url ${DEVNET_RPC_URL} --private-key ${ETH_DEV_PRIVATE}",
+      "command": "forge script ./script/DeployCollective.sol --sig 'deploy()' --libraries contracts/Constant.sol:Constant:${CONSTANT_LIB_ADDRESS} --slow --broadcast --rpc-url ${DEVNET_RPC_URL} --private-key ${ETH_DEV_PRIVATE} --etherscan-api-key ${ETHERSCAN_API_KEY} --verify",
       "options": {
         "cwd": "${workspaceFolder}",
         "env": {

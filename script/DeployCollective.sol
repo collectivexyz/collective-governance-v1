@@ -46,6 +46,7 @@ pragma solidity ^0.8.15;
 
 import { Script } from "forge-std/Script.sol";
 
+import { CommunityBuilder } from "../contracts/community/CommunityBuilder.sol";
 import { StorageFactory } from "../contracts/storage/StorageFactory.sol";
 import { MetaStorageFactory } from "../contracts/storage/MetaStorageFactory.sol";
 import { GovernanceFactory } from "../contracts/governance/GovernanceFactory.sol";
@@ -54,13 +55,17 @@ import { GovernanceBuilder } from "../contracts/governance/GovernanceBuilder.sol
 /**
  * @notice deploy factories and contract for GovernanceBuilder
  */
-contract DeployGovernanceBuilder is Script {
+contract DeployCollective is Script {
+    event DeployCommunityBuilder(address communityAddress);
     event DeployStorageFactory(address storageAddress);
     event DeployMetaStorageFactory(address metaAddress);
     event DeployGovernanceFactory(address governanceAddress);
-    event GovernanceBuilderCreated(address builderAddress);
+    event DeployGovernanceBuilder(address builderAddress);
 
     function deploy() external {
+        vm.broadcast();
+        CommunityBuilder _communityBuilder = new CommunityBuilder();
+        emit DeployCommunityBuilder(address(_communityBuilder));
         vm.broadcast();
         StorageFactory _storageFactory = new StorageFactory();
         emit DeployStorageFactory(address(_storageFactory));
@@ -76,6 +81,6 @@ contract DeployGovernanceBuilder is Script {
             address(_metaStorageFactory),
             address(_governanceFactory)
         );
-        emit GovernanceBuilderCreated(address(_builder));
+        emit DeployGovernanceBuilder(address(_builder));
     }
 }
