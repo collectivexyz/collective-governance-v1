@@ -7,6 +7,7 @@ import { Test } from "forge-std/Test.sol";
 
 import { Constant } from "../../contracts/Constant.sol";
 import { Versioned } from "../../contracts/access/Versioned.sol";
+import { Mutable } from "../../contracts/access/Mutable.sol";
 import { AddressCollection } from "../../contracts/collection/AddressSet.sol";
 import { CommunityBuilder } from "../../contracts/community/CommunityBuilder.sol";
 import { VoterClass } from "../../contracts/community/VoterClass.sol";
@@ -201,6 +202,8 @@ contract CommunityBuilderTest is Test {
             .withCommunitySupervisor(_SUPERVISOR)
             .build();
         VoterClass _class = VoterClass(_classAddress);
+        assertTrue(_class.supportsInterface(type(VoterClass).interfaceId));
+        assertTrue(_class.supportsInterface(type(CommunityClass).interfaceId));
         assertTrue(_class.isVoter(address(0x1)));
     }
 

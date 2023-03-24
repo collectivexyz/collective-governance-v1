@@ -43,13 +43,37 @@
  */
 pragma solidity ^0.8.15;
 
+import { IERC165 } from "@openzeppelin/contracts/interfaces/IERC165.sol";
 import { ERC1967Proxy } from "@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.sol";
 
 import { CommunityClass, WeightedCommunityClass, ProjectCommunityClass } from "../../contracts/community/CommunityClass.sol";
 import { CommunityClassClosedERC721 } from "../../contracts/community/CommunityClassClosedERC721.sol";
 import { AddressCollection } from "../../contracts/collection/AddressSet.sol";
 
-contract WeightedCommunityClassProxy is ERC1967Proxy {
+/**
+ * @notice Community Class Proxy interface
+ * marker interface for class proxy
+ */
+/// @custom:type interface
+interface CommunityClassProxy {
+    error CommunityClassRequired(address implementation);
+
+    function getImplementation() external returns (address);
+}
+
+abstract contract WiredClassProxy is ERC1967Proxy, CommunityClassProxy {
+    modifier requireCommunityClass(address implementation) {
+        IERC165 _erc165 = IERC165(implementation);
+        if (!_erc165.supportsInterface(type(CommunityClass).interfaceId)) revert CommunityClassRequired(implementation);
+        _;
+    }
+
+    function getImplementation() external view override(CommunityClassProxy) returns (address) {
+        return _implementation();
+    }
+}
+
+contract WeightedCommunityClassProxy is WiredClassProxy {
     /// @notice create a new community class proxy
     /// @param _implementation the address of the community class implementation
     /// @param _voteWeight the weight of a single voting share
@@ -73,6 +97,7 @@ contract WeightedCommunityClassProxy is ERC1967Proxy {
         uint256 _baseFeeRebate,
         AddressCollection _supervisorList
     )
+        requireCommunityClass(_implementation)
         ERC1967Proxy(
             _implementation,
             abi.encodeWithSelector(
@@ -104,7 +129,7 @@ contract WeightedCommunityClassProxy is ERC1967Proxy {
         uint256 _gasUsedRebate,
         uint256 _baseFeeRebate,
         AddressCollection _supervisorList
-    ) external {
+    ) external requireCommunityClass(_implementation) {
         _upgradeToAndCallUUPS(
             _implementation,
             abi.encodeWithSelector(
@@ -124,7 +149,7 @@ contract WeightedCommunityClassProxy is ERC1967Proxy {
     }
 }
 
-contract ProjectCommunityClassProxy is ERC1967Proxy {
+contract ProjectCommunityClassProxy is WiredClassProxy {
     /// @notice create a new community class proxy
     /// @param _implementation the address of the community class implementation
     /// @param _contract Address of the token contract
@@ -150,6 +175,7 @@ contract ProjectCommunityClassProxy is ERC1967Proxy {
         uint256 _baseFeeRebate,
         AddressCollection _supervisorList
     )
+        requireCommunityClass(_implementation)
         ERC1967Proxy(
             _implementation,
             abi.encodeWithSelector(
@@ -202,7 +228,7 @@ contract ProjectCommunityClassProxy is ERC1967Proxy {
     }
 }
 
-contract ClosedProjectCommunityClassProxy is ERC1967Proxy {
+contract ClosedProjectCommunityClassProxy is WiredClassProxy {
     /// @notice create a new community class proxy
     /// @param _implementation the address of the community class implementation
     /// @param _contract Address of the token contract
@@ -229,6 +255,7 @@ contract ClosedProjectCommunityClassProxy is ERC1967Proxy {
         uint256 _baseFeeRebate,
         AddressCollection _supervisorList
     )
+        requireCommunityClass(_implementation)
         ERC1967Proxy(
             _implementation,
             abi.encodeWithSelector(
@@ -262,7 +289,7 @@ contract ClosedProjectCommunityClassProxy is ERC1967Proxy {
         uint256 _gasUsedRebate,
         uint256 _baseFeeRebate,
         AddressCollection _supervisorList
-    ) external {
+    ) external requireCommunityClass(_implementation) {
         _upgradeToAndCallUUPS(
             _implementation,
             abi.encodeWithSelector(

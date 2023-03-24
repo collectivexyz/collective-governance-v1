@@ -137,7 +137,7 @@
     {
       "label": "deployconstant",
       "type": "shell",
-      "command": "forge create --revert-strings debug --contracts contracts/Constant.sol --rpc-url ${DEVNET_RPC_URL} --private-key ${PRIVATE_KEY} --etherscan-api-key ${ETHERSCAN_API_KEY} --verify Constant --chain goerli",
+      "command": "forge create --revert-strings debug --contracts contracts/Constant.sol --rpc-url ${RPC_URL} --private-key ${PRIVATE_KEY} --etherscan-api-key ${ETHERSCAN_API_KEY} --verify Constant",
       "options": {
         "cwd": "${workspaceFolder}"
       },
@@ -150,11 +150,11 @@
     {
       "label": "deploycommunitybuilder",
       "type": "shell",
-      "command": "forge create --revert-strings debug --libraries contracts/Constant.sol:Constant:${CONSTANT_LIB_ADDRESS} --contracts contracts/community/CommunityBuilder.sol --rpc-url ${DEVNET_RPC_URL} --private-key ${PRIVATE_KEY} --etherscan-api-key ${ETHERSCAN_API_KEY} --verify --chain goerli CommunityBuilder",
+      "command": "forge create --revert-strings debug --libraries contracts/Constant.sol:Constant:${CONSTANT_LIB_ADDRESS} --contracts contracts/community/CommunityBuilder.sol --rpc-url ${RPC_URL} --private-key ${PRIVATE_KEY} --etherscan-api-key ${ETHERSCAN_API_KEY} --verify CommunityBuilder",
       "options": {
         "cwd": "${workspaceFolder}",
         "env": {
-          "CONSTANT_LIB_ADDRESS": "0xE92C637eC797934574D31D319B4bD1eca182e7F1"
+          "CONSTANT_LIB_ADDRESS": "0xd050519a201b4b990711922BA72299Ab5669BEA4"
         }
       },
       "dependsOn": "production",
@@ -166,11 +166,11 @@
     {
       "label": "deploycollective",
       "type": "shell",
-      "command": "forge script ./script/DeployCollective.sol --sig 'deploy()' --libraries contracts/Constant.sol:Constant:${CONSTANT_LIB_ADDRESS} --slow --broadcast --rpc-url ${DEVNET_RPC_URL} --private-key ${PRIVATE_KEY} --etherscan-api-key ${ETHERSCAN_API_KEY} --verify",
+      "command": "forge script ./script/DeployCollective.sol --sig 'deploy()' --libraries contracts/Constant.sol:Constant:${CONSTANT_LIB_ADDRESS} --slow --broadcast --rpc-url ${RPC_URL} --private-key ${PRIVATE_KEY} --etherscan-api-key ${ETHERSCAN_API_KEY} --verify",
       "options": {
         "cwd": "${workspaceFolder}",
         "env": {
-          "CONSTANT_LIB_ADDRESS": "0xE92C637eC797934574D31D319B4bD1eca182e7F1"
+          "CONSTANT_LIB_ADDRESS": "0xd050519a201b4b990711922BA72299Ab5669BEA4"
         }
       },
       "dependsOn": "production",
@@ -182,14 +182,14 @@
     {
       "label": "deployproposalbuilder",
       "type": "shell",
-      "command": "forge create --revert-strings debug --libraries contracts/Constant.sol:Constant:${CONSTANT_LIB_ADDRESS} --contracts contracts/ProposalBuilder.sol --rpc-url ${DEVNET_RPC_URL} --private-key ${PRIVATE_KEY} --etherscan-api-key ${ETHERSCAN_API_KEY} --verify ProposalBuilder --chain goerli --constructor-args ${GOVERNANCE_ADDRESS} ${STORAGE_ADDRESS} ${META_ADDRESS}",
+      "command": "forge create --revert-strings debug --libraries contracts/Constant.sol:Constant:${CONSTANT_LIB_ADDRESS} --contracts contracts/ProposalBuilder.sol --rpc-url ${RPC_URL} --private-key ${PRIVATE_KEY} --etherscan-api-key ${ETHERSCAN_API_KEY} --verify ProposalBuilder --chain goerli --constructor-args ${GOVERNANCE_ADDRESS} ${STORAGE_ADDRESS} ${META_ADDRESS}",
       "options": {
         "cwd": "${workspaceFolder}",
         "env": {
-          "CONSTANT_LIB_ADDRESS": "0xE92C637eC797934574D31D319B4bD1eca182e7F1",
-          "GOVERNANCE_ADDRESS": "0x62Ee89399824fCf1978C0675E2d720644B4Dd0B4",
-          "STORAGE_ADDRESS": "0x01Ac08Fd002d569E9D6BcB2b1974a43b3698e04e",
-          "META_ADDRESS": "0xf6f99CF1Ab1C72F23B7422676E2aC70f0605d77A"
+          "CONSTANT_LIB_ADDRESS": "0xd050519a201b4b990711922BA72299Ab5669BEA4",
+          "GOVERNANCE_ADDRESS": "0xea9d53f2Ee1214dbC29b17911FE3D08d5601f09c",
+          "STORAGE_ADDRESS": "0xE229593BAAA15Ec3e7bC78c3c1F383E5CFed9176",
+          "META_ADDRESS": "0x230ea7877468bF7D8ae4ee712eed761aE7704994"
         }
       },
       "dependsOn": "production",
@@ -201,7 +201,7 @@
     {
       "label": "deploysystem",
       "type": "shell",
-      "command": "forge create --revert-strings debug --contracts contracts/System.sol --rpc-url ${DEVNET_RPC_URL} --private-key ${PRIVATE_KEY} --etherscan-api-key ${ETHERSCAN_API_KEY} --verify --chain goerli System --constructor-args ${BUILDER_ADDRESS} ${CLASS_CREATOR_ADDRESS}",
+      "command": "forge create --revert-strings debug --contracts contracts/System.sol --rpc-url ${RPC_URL} --private-key ${PRIVATE_KEY} --etherscan-api-key ${ETHERSCAN_API_KEY} --verify --chain goerli System --constructor-args ${BUILDER_ADDRESS} ${CLASS_CREATOR_ADDRESS}",
       "options": {
         "cwd": "${workspaceFolder}",
         "env": {

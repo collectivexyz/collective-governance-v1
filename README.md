@@ -67,7 +67,7 @@ This smart contract enables a vote to be proposed, voted upon and successfully f
 ### Example deployment
 
 ```
-$ forge script ./script/DeployCollective.sol --sig 'deploy()' --libraries contracts/Constant.sol:Constant:${CONSTANT_LIB_ADDRESS} --slow --broadcast --rpc-url ${DEVNET_RPC_URL} --private-key ${PRIVATE_KEY} --etherscan-api-key ${ETHERSCAN_API_KEY} --verify
+$ forge script ./script/DeployCollective.sol --sig 'deploy()' --libraries contracts/Constant.sol:Constant:${CONSTANT_LIB_ADDRESS} --slow --broadcast --rpc-url ${RPC_URL} --private-key ${PRIVATE_KEY} --etherscan-api-key ${ETHERSCAN_API_KEY} --verify
 ```
 
 ### Model

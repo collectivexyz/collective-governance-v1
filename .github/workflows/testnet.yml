@@ -1,4 +1,4 @@
-name: Görli Testnet
+name: Sepolia Testnet
 
 on:
   workflow_dispatch:
@@ -12,8 +12,8 @@ on:
     types: [created]
 
 env:
-  DEVNET_RPC_URL: ${{ secrets.ALCHEMY_DEVNET_RPC }}
-  PRIVATE_KEY: ${{ secrets.GOERLI_WALLET }}
+  RPC_URL: ${{ secrets.RPC_URL }}
+  PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
   ETHERSCAN_API_KEY: ${{ secrets.ETHERSCAN_API_KEY }}
 
 jobs:
@@ -47,12 +47,12 @@ jobs:
 
       - name: Deploy Constant Library
         run: |
-          forge create --json --contracts contracts/Constant.sol --rpc-url ${DEVNET_RPC_URL} --private-key ${PRIVATE_KEY} Constant | tee Constant.sol.json
+          forge create --json --contracts contracts/Constant.sol --rpc-url ${RPC_URL} --private-key ${PRIVATE_KEY} Constant | tee Constant.sol.json
         if: ${{ github.event_name == 'release' && github.event.action == 'created' }}
 
-      - name: Deploy to Görli Testnet
+      - name: Deploy to Sepolia Testnet
         run: |
           export DEPLOYED_LIBRARY=$(bin/library.py Constant.sol.json)
           echo "Using library ${DEPLOYED_LIBRARY}"
-          forge script ./script/DeployCollective.sol --sig 'deploy()' --libraries ${DEPLOYED_LIBRARY} --slow --broadcast --rpc-url ${DEVNET_RPC_URL} --private-key ${PRIVATE_KEY} --etherscan-api-key ${ETHERSCAN_API_KEY} --verify
+          forge script ./script/DeployCollective.sol --sig 'deploy()' --libraries ${DEPLOYED_LIBRARY} --slow --broadcast --rpc-url ${RPC_URL} --private-key ${PRIVATE_KEY} --etherscan-api-key ${ETHERSCAN_API_KEY} --verify
         if: ${{ github.event_name == 'release' && github.event.action == 'created' }}

@@ -8,6 +8,7 @@ import { Test } from "forge-std/Test.sol";
 
 import { Mutable } from "../../contracts/access/Mutable.sol";
 import { VoterClass } from "../../contracts/community/VoterClass.sol";
+import { CommunityClass } from "../../contracts/community/CommunityClass.sol";
 import { WeightedCommunityClass } from "../../contracts/community/CommunityClass.sol";
 import { CommunityBuilder } from "../../contracts/community/CommunityBuilder.sol";
 import { Versioned } from "../../contracts/access/Versioned.sol";
@@ -71,6 +72,7 @@ contract CommunityClassOpenVoteTest is Test {
 
     function testSupportsInterface() public {
         IERC165 _erc165 = IERC165(address(_class));
+        assertTrue(_erc165.supportsInterface(type(CommunityClass).interfaceId));
         assertTrue(_erc165.supportsInterface(type(VoterClass).interfaceId));
         assertTrue(_erc165.supportsInterface(type(Mutable).interfaceId));
         assertTrue(_erc165.supportsInterface(type(IERC165).interfaceId));

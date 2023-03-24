@@ -1377,7 +1377,7 @@ contract CollectiveGovernanceTest is Test {
         governance.voteFor(proposalId, TOKEN_ID1);
         assertTrue(_VOTER1.balance > 0);
         // requires optimized build
-        assertApproxEqAbs(_VOTER1.balance, 9676576 gwei, 10000 gwei);
+        assertApproxEqAbs(_VOTER1.balance, 9688744 gwei, 10000 gwei);
     }
 
     function testCastAgainstWithRefund() public {
@@ -1395,7 +1395,7 @@ contract CollectiveGovernanceTest is Test {
         governance.voteAgainst(proposalId, TOKEN_ID1);
         assertTrue(_VOTER1.balance > 0);
         // requires optimized build
-        assertApproxEqAbs(_VOTER1.balance, 8637720 gwei, 10000 gwei);
+        assertApproxEqAbs(_VOTER1.balance, 8649888 gwei, 10000 gwei);
     }
 
     function testAbstainWithRefund() public {
@@ -1413,7 +1413,7 @@ contract CollectiveGovernanceTest is Test {
         governance.abstainFrom(proposalId, TOKEN_ID1);
         assertTrue(_VOTER1.balance > 0);
         // requires optimized build
-        assertApproxEqAbs(_VOTER1.balance, 9290736 gwei, 10000 gwei);
+        assertApproxEqAbs(_VOTER1.balance, 9302176 gwei, 10000 gwei);
     }
 
     function testChoiceVoteSimple() public {

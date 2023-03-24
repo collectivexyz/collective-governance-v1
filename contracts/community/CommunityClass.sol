@@ -43,8 +43,6 @@
  */
 pragma solidity ^0.8.15;
 
-import { IERC165 } from "@openzeppelin/contracts/interfaces/IERC165.sol";
-
 import { VoterClass } from "../community/VoterClass.sol";
 import { AddressCollection } from "../../contracts/collection/AddressSet.sol";
 
