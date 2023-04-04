@@ -132,6 +132,7 @@ interface WeightedCommunityClass is CommunityClass {
     /// @param _gasUsedRebate The maximum rebate for gas used
     /// @param _baseFeeRebate The maximum base fee rebate
     /// @param _supervisorList the list of supervisors for this project
+    /// @param version upgrade version
     function upgrade(
         uint256 _voteWeight,
         uint256 _minimumQuorum,
@@ -141,7 +142,8 @@ interface WeightedCommunityClass is CommunityClass {
         uint256 _maximumDuration,
         uint256 _gasUsedRebate,
         uint256 _baseFeeRebate,
-        AddressCollection _supervisorList
+        AddressCollection _supervisorList,
+        uint8 version
     ) external;
 
     /// @notice return voting weight of each confirmed share

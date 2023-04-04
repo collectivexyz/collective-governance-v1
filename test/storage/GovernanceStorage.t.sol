@@ -12,6 +12,7 @@ import { Transaction, TransactionCollection, getHash } from "../../contracts/col
 import { Choice, getHash } from "../../contracts/collection/ChoiceSet.sol";
 import { CollectiveGovernance } from "../../contracts/governance/CollectiveGovernance.sol";
 import { VoteStrategy } from "../../contracts/governance/VoteStrategy.sol";
+import { createCommunityBuilder } from "../../contracts/community/CommunityBuilderProxy.sol";
 import { CommunityBuilder } from "../../contracts/community/CommunityBuilder.sol";
 import { CommunityClass } from "../../contracts/community/CommunityClass.sol";
 import { VoterClass } from "../../contracts/community/VoterClass.sol";
@@ -43,7 +44,7 @@ contract GovernanceStorageTest is Test {
 
     function setUp() public {
         vm.clearMockedCalls();
-        _builder = new CommunityBuilder();
+        _builder = createCommunityBuilder();
         address _communityLocation = _builder
             .aCommunity()
             .asPoolCommunity()
@@ -682,7 +683,7 @@ contract GovernanceStorageChoiceVoteTest is Test {
 
     function setUp() public {
         vm.clearMockedCalls();
-        CommunityBuilder _builder = new CommunityBuilder();
+        CommunityBuilder _builder = createCommunityBuilder();
         address _communityLocation = _builder
             .aCommunity()
             .asPoolCommunity()

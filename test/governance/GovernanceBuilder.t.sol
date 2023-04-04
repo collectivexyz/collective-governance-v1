@@ -3,27 +3,30 @@ pragma solidity ^0.8.15;
 
 import { Test } from "forge-std/Test.sol";
 
-import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
 import { IERC165 } from "@openzeppelin/contracts/interfaces/IERC165.sol";
 import { ERC165 } from "@openzeppelin/contracts/utils/introspection/ERC165.sol";
 
 import { Constant } from "../../contracts/Constant.sol";
 import { Versioned } from "../../contracts/access/Versioned.sol";
+import { OwnableInitializable } from "../../contracts/access/OwnableInitializable.sol";
 import { MetaStorage } from "../../contracts/storage/MetaStorage.sol";
 import { MetaStorageFactory } from "../../contracts/storage/MetaStorageFactory.sol";
 import { Storage } from "../../contracts/storage/Storage.sol";
 import { StorageFactory } from "../../contracts/storage/StorageFactory.sol";
 import { GovernanceFactory } from "../../contracts/governance/GovernanceFactory.sol";
-import { GovernanceBuilder } from "../../contracts/governance/GovernanceBuilder.sol";
 import { Governance } from "../../contracts/governance/Governance.sol";
 import { CollectiveGovernance } from "../../contracts/governance/CollectiveGovernance.sol";
 import { CommunityClass } from "../../contracts/community/CommunityClass.sol";
 import { CommunityBuilder } from "../../contracts/community/CommunityBuilder.sol";
+import { createCommunityBuilder } from "../../contracts/community/CommunityBuilderProxy.sol";
+import { GovernanceBuilder } from "../../contracts/governance/GovernanceBuilder.sol";
+import { createGovernanceBuilder } from "../../contracts/governance/GovernanceBuilderProxy.sol";
 
 import { MockERC721 } from "../mock/MockERC721.sol";
 
 contract GovernanceBuilderTest is Test {
     address private constant _OWNER = address(0x1);
+    address private constant _OTHER = address(0x2);
     address private constant _SUPERVISOR = address(0x123);
     address private constant _VOTER1 = address(0xfff1);
 
@@ -35,11 +38,11 @@ contract GovernanceBuilderTest is Test {
     function setUp() public {
         vm.clearMockedCalls();
         vm.prank(_OWNER, _OWNER);
+        GovernanceFactory _governanceFactory = new GovernanceFactory();
         StorageFactory _storageFactory = new StorageFactory();
         MetaStorageFactory _metaStorageFactory = new MetaStorageFactory();
-        GovernanceFactory _governanceFactory = new GovernanceFactory();
-        _builder = new GovernanceBuilder(address(_storageFactory), address(_metaStorageFactory), address(_governanceFactory));
-        _communityBuilder = new CommunityBuilder();
+        _builder = createGovernanceBuilder(_governanceFactory, _storageFactory, _metaStorageFactory);
+        _communityBuilder = createCommunityBuilder();
         address _communityLocation = _communityBuilder
             .aCommunity()
             .asPoolCommunity()
@@ -256,7 +259,7 @@ contract GovernanceBuilderTest is Test {
     }
 
     function testSupportsInterfaceOwnable() public {
-        bytes4 ifId = type(Ownable).interfaceId;
+        bytes4 ifId = type(OwnableInitializable).interfaceId;
         assertTrue(_builder.supportsInterface(ifId));
     }
 
@@ -274,5 +277,19 @@ contract GovernanceBuilderTest is Test {
         address classMock = address(0x0);
         vm.mockCall(classMock, abi.encodeWithSelector(IERC165.supportsInterface.selector), abi.encode(false));
         _builder.withCommunityClassAddress(classMock);
+    }
+
+    function testUpgradeRequiresOwner() public {
+        GovernanceFactory _governanceFactory = new GovernanceFactory();
+        StorageFactory _storageFactory = new StorageFactory();
+        MetaStorageFactory _metaStorageFactory = new MetaStorageFactory();
+        vm.expectRevert(abi.encodeWithSelector(OwnableInitializable.NotOwner.selector, _OTHER));
+        vm.prank(_OTHER, _OTHER);
+        _builder.upgrade(
+            address(_governanceFactory),
+            address(_storageFactory),
+            address(_metaStorageFactory),
+            uint8(Constant.CURRENT_VERSION)
+        );
     }
 }

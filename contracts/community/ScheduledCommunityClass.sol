@@ -44,9 +44,9 @@
 pragma solidity ^0.8.15;
 
 import { Initializable } from "@openzeppelin/contracts/proxy/utils/Initializable.sol";
+import { UUPSUpgradeable } from "@openzeppelin/contracts/proxy/utils/UUPSUpgradeable.sol";
 import { IERC165 } from "@openzeppelin/contracts/interfaces/IERC165.sol";
 import { ERC165 } from "@openzeppelin/contracts/utils/introspection/ERC165.sol";
-import { UUPSUpgradeable } from "@openzeppelin/contracts/proxy/utils/UUPSUpgradeable.sol";
 
 import { Constant } from "../../contracts/Constant.sol";
 import { AddressCollection } from "../../contracts/collection/AddressSet.sol";
@@ -87,7 +87,8 @@ abstract contract ScheduledCommunityClass is
         uint256 minimumDuration,
         uint256 maximumDuration,
         uint256 _gasUsedRebate,
-        uint256 _baseFeeRebate
+        uint256 _baseFeeRebate,
+        uint8 version
     );
 
     /// @notice weight of a single voting share
@@ -113,6 +114,10 @@ abstract contract ScheduledCommunityClass is
     uint256 private _maximumBaseFeeRebate;
 
     AddressCollection private _communitySupervisorSet;
+
+    constructor() {
+        _disableInitializers();
+    }
 
     /// @notice create a new community class representing community preferences
     /// @param _voteWeight the weight of a single voting share
@@ -187,6 +192,7 @@ abstract contract ScheduledCommunityClass is
     /// @param _gasUsedRebate The maximum rebate for gas used
     /// @param _baseFeeRebate The maximum base fee rebate
     /// @param _supervisorList the list of supervisors for this project
+    /// @param _version the upgraded version
     function upgrade(
         uint256 _voteWeight,
         uint256 _minimumQuorum,
@@ -196,10 +202,12 @@ abstract contract ScheduledCommunityClass is
         uint256 _maximumDuration,
         uint256 _gasUsedRebate,
         uint256 _baseFeeRebate,
-        AddressCollection _supervisorList
+        AddressCollection _supervisorList,
+        uint8 _version
     )
         public
         onlyOwner
+        reinitializer(_version)
         requireValidWeight(_voteWeight)
         requireProjectQuorum(_minimumQuorum)
         requireMinimumDelay(_minimumDelay)
@@ -232,7 +240,8 @@ abstract contract ScheduledCommunityClass is
             _minimumDuration,
             _maximumDuration,
             _maximumGasUsedRebate,
-            _maximumBaseFeeRebate
+            _maximumBaseFeeRebate,
+            _version
         );
     }
 
@@ -350,6 +359,7 @@ abstract contract ScheduledCommunityClass is
             interfaceId == type(CommunityClass).interfaceId ||
             interfaceId == type(WeightedCommunityClass).interfaceId ||
             interfaceId == type(Versioned).interfaceId ||
+            interfaceId == type(OwnableInitializable).interfaceId ||
             interfaceId == type(Initializable).interfaceId ||
             super.supportsInterface(interfaceId);
     }

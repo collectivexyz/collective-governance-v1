@@ -14,6 +14,7 @@ import { CommunityClass } from "../../contracts/community/CommunityClass.sol";
 import { VoterPool, CommunityClassVoterPool } from "../../contracts/community/CommunityClassVoterPool.sol";
 import { WeightedClassFactory } from "../../contracts/community/CommunityFactory.sol";
 import { CommunityBuilder } from "../../contracts/community/CommunityBuilder.sol";
+import { createCommunityBuilder } from "../../contracts/community/CommunityBuilderProxy.sol";
 import { Versioned } from "../../contracts/access/Versioned.sol";
 
 contract CommunityClassVoterPoolTest is Test {
@@ -27,7 +28,7 @@ contract CommunityClassVoterPoolTest is Test {
     AddressCollection private _supervisorSet;
 
     function setUp() public {
-        CommunityBuilder _builder = new CommunityBuilder();
+        CommunityBuilder _builder = createCommunityBuilder();
         address _classLocation = _builder
             .aCommunity()
             .asPoolCommunity()

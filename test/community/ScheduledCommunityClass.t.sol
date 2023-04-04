@@ -12,6 +12,7 @@ import { Versioned } from "../../contracts/access/Versioned.sol";
 import { OwnableInitializable } from "../../contracts/access/OwnableInitializable.sol";
 import { ScheduledCommunityClass } from "../../contracts/community/ScheduledCommunityClass.sol";
 import { CommunityBuilder } from "../../contracts/community/CommunityBuilder.sol";
+import { createCommunityBuilder } from "../../contracts/community/CommunityBuilderProxy.sol";
 import { VoterClass } from "../../contracts/community/VoterClass.sol";
 import { WeightedCommunityClass, CommunityClass } from "../../contracts/community/CommunityClass.sol";
 
@@ -21,7 +22,8 @@ contract ScheduledCommunityClassTest is Test {
     ScheduledCommunityClass private _class;
 
     function setUp() public {
-        address _classLocation = new CommunityBuilder()
+        CommunityBuilder _builder = createCommunityBuilder();
+        address _classLocation = _builder
             .aCommunity()
             .asOpenCommunity()
             .withWeight(75)
@@ -113,7 +115,8 @@ contract ScheduledCommunityClassTest is Test {
             Constant.MAXIMUM_VOTE_DURATION,
             Constant.MAXIMUM_REBATE_GAS_USED,
             Constant.MAXIMUM_REBATE_BASE_FEE,
-            _supervisorSet
+            _supervisorSet,
+            uint8(Constant.CURRENT_VERSION)
         );
     }
 }

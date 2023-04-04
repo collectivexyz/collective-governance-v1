@@ -10,6 +10,7 @@ import { Constant } from "../contracts/Constant.sol";
 import { Governance } from "../contracts/governance/Governance.sol";
 import { GovernanceBuilder } from "../contracts/governance/GovernanceBuilder.sol";
 import { CommunityBuilder } from "../contracts/community/CommunityBuilder.sol";
+import { createCommunityBuilder } from "../contracts/community/CommunityBuilderProxy.sol";
 import { Storage } from "../contracts/storage/Storage.sol";
 import { MetaStorage } from "../contracts/storage/MetaStorage.sol";
 import { System } from "../contracts/System.sol";
@@ -17,6 +18,7 @@ import { Versioned } from "../contracts/access/Versioned.sol";
 import { StorageFactory } from "../contracts/storage/StorageFactory.sol";
 import { MetaStorageFactory } from "../contracts/storage/MetaStorageFactory.sol";
 import { GovernanceFactory } from "../contracts/governance/GovernanceFactory.sol";
+import { createGovernanceBuilder } from "../contracts/governance/GovernanceBuilderProxy.sol";
 
 import { MockERC721 } from "./mock/MockERC721.sol";
 
@@ -33,8 +35,8 @@ contract SystemTest is Test {
         StorageFactory _storageFactory = new StorageFactory();
         MetaStorageFactory _metaStorageFactory = new MetaStorageFactory();
         GovernanceFactory _governanceFactory = new GovernanceFactory();
-        _builder = new GovernanceBuilder(address(_storageFactory), address(_metaStorageFactory), address(_governanceFactory));
-        _classCreator = new CommunityBuilder();
+        _builder = createGovernanceBuilder(_governanceFactory, _storageFactory, _metaStorageFactory);
+        _classCreator = createCommunityBuilder();
     }
 
     function testFailGovernanceBuilderRequired() public {

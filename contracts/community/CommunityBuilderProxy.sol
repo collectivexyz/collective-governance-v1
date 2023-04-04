@@ -42,3 +42,56 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 pragma solidity ^0.8.15;
+
+import { ERC1967Proxy } from "@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.sol";
+
+import { Constant } from "../Constant.sol";
+import { CommunityBuilder } from "../community/CommunityBuilder.sol";
+import { WeightedClassFactory, ProjectClassFactory } from "../../contracts/community/CommunityFactory.sol";
+
+/**
+ * @notice Proxy for CommunityBuilder
+ */
+contract CommunityBuilderProxy is ERC1967Proxy {
+    constructor(
+        address _implementation,
+        address _weightedFactory,
+        address _projectFactory
+    )
+        ERC1967Proxy(
+            _implementation,
+            abi.encodeWithSelector(CommunityBuilder.initialize.selector, _weightedFactory, _projectFactory)
+        )
+    // solhint-disable-next-line no-empty-blocks
+    {
+
+    }
+
+    function upgrade(address _implementation, address _weightedFactory, address _projectFactory) external {
+        _upgradeToAndCallUUPS(
+            _implementation,
+            abi.encodeWithSelector(
+                CommunityBuilder.upgrade.selector,
+                _weightedFactory,
+                _projectFactory,
+                Constant.CURRENT_VERSION
+            ),
+            false
+        );
+    }
+}
+
+// solhint-disable-next-line func-visibility
+function createCommunityBuilder() returns (CommunityBuilder) {
+    WeightedClassFactory _weightedFactory = new WeightedClassFactory();
+    ProjectClassFactory _projectFactory = new ProjectClassFactory();
+
+    CommunityBuilder _builder = new CommunityBuilder();
+    CommunityBuilderProxy _proxy = new CommunityBuilderProxy(
+        address(_builder),
+        address(_weightedFactory),
+        address(_projectFactory)
+    );
+    address _proxyAddress = address(_proxy);
+    return CommunityBuilder(_proxyAddress);
+}

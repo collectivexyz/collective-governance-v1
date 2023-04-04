@@ -7,6 +7,7 @@ import { Test } from "forge-std/Test.sol";
 
 import { CommunityClass } from "../../contracts/community/CommunityClass.sol";
 import { CommunityBuilder } from "../../contracts/community/CommunityBuilder.sol";
+import { createCommunityBuilder } from "../../contracts/community/CommunityBuilderProxy.sol";
 import { Versioned } from "../../contracts/access/Versioned.sol";
 
 import { MockERC721 } from "../mock/MockERC721.sol";
@@ -27,7 +28,7 @@ contract CommunityClassClosedERC721Test is Test {
         merc721.mintTo(_OWNER, _TOKENID + 1);
         merc721.mintTo(_PARTOWNER, _TOKENID + 2);
         _tokenContract = merc721;
-        CommunityBuilder _builder = new CommunityBuilder();
+        CommunityBuilder _builder = createCommunityBuilder();
         address _classAddress = _builder
             .aCommunity()
             .asClosedErc721Community(address(_tokenContract), 2)

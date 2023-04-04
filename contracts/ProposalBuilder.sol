@@ -43,14 +43,17 @@
  */
 pragma solidity ^0.8.15;
 
+import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
+import { Initializable } from "@openzeppelin/contracts/proxy/utils/Initializable.sol";
+import { UUPSUpgradeable } from "@openzeppelin/contracts/proxy/utils/UUPSUpgradeable.sol";
 import { IERC165 } from "@openzeppelin/contracts/interfaces/IERC165.sol";
 import { ERC165 } from "@openzeppelin/contracts/utils/introspection/ERC165.sol";
-import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
 
-import { CommunityClass } from "../contracts/community/CommunityClass.sol";
+import { OwnableInitializable } from "../contracts/access/OwnableInitializable.sol";
 import { Versioned } from "../contracts/access/Versioned.sol";
 import { VersionedContract } from "../contracts/access/VersionedContract.sol";
 import { Constant } from "../contracts/Constant.sol";
+import { CommunityClass } from "../contracts/community/CommunityClass.sol";
 import { Governance } from "../contracts/governance/Governance.sol";
 import { Meta, MetaCollection } from "../contracts/collection/MetaSet.sol";
 import { Choice, ChoiceCollection } from "../contracts/collection/ChoiceSet.sol";
@@ -58,7 +61,7 @@ import { Transaction, TransactionCollection } from "../contracts/collection/Tran
 import { Storage } from "../contracts/storage/Storage.sol";
 import { MetaStorage } from "../contracts/storage/MetaStorage.sol";
 
-contract ProposalBuilder is VersionedContract, ERC165, Ownable {
+contract ProposalBuilder is VersionedContract, ERC165, OwnableInitializable, UUPSUpgradeable, Initializable {
     string public constant NAME = "proposal builder";
 
     error VersionMismatch(uint256 expected, uint256 provided);
@@ -69,6 +72,10 @@ contract ProposalBuilder is VersionedContract, ERC165, Ownable {
     error MetaNotOwned(address meta);
     error StringSizeLimit(address _sender, uint256 len);
     error ProposalNotInitialized(address _sender);
+
+    event UpgradeAuthorized(address sender, address owner);
+    event Initialized(address governanceAddress, address storageAddress, address metaAddress);
+    event Upgraded(address governanceAddress, address storageAddress, address metaAddress, uint8 version);
 
     event ProposalInitialized(address _sender);
     event ProposalTransaction(address _sender, address target, uint256 value, uint256 scheduleTime, uint256 transactionId);
@@ -96,15 +103,52 @@ contract ProposalBuilder is VersionedContract, ERC165, Ownable {
 
     mapping(address => ProposalProperties) private _proposalMap;
 
+    constructor() {
+        _disableInitializers();
+    }
+
     /// @notice System factory
     /// @param _governanceAddress address of CollectiveGovernance
     /// @param _storageAddress address of Storage contract
     /// @param _metaAddress address of meta storage
-    constructor(
+    function initialize(
         address _governanceAddress,
         address _storageAddress,
         address _metaAddress
     )
+        public
+        initializer
+        initializer
+        requireGovernance(_governanceAddress)
+        requireVersion(_governanceAddress)
+        requireStorage(_storageAddress)
+        requireMetaStorage(_metaAddress)
+    {
+        ownerInitialize(msg.sender);
+        Governance _gov = Governance(_governanceAddress);
+        Storage _stor = Storage(_storageAddress);
+        MetaStorage _metaStor = MetaStorage(_metaAddress);
+        if (_gov.version() < _stor.version()) revert VersionMismatch(_gov.version(), _stor.version());
+        if (_gov.version() < _metaStor.version()) revert VersionMismatch(_gov.version(), _metaStor.version());
+        _governance = _gov;
+        _storage = _stor;
+        _meta = _metaStor;
+        emit Initialized(_governanceAddress, _storageAddress, _metaAddress);
+    }
+
+    /// @param _governanceAddress address of CollectiveGovernance
+    /// @param _storageAddress address of Storage contract
+    /// @param _metaAddress address of meta storage
+    /// @param _version upgrade version
+    function upgrade(
+        address _governanceAddress,
+        address _storageAddress,
+        address _metaAddress,
+        uint8 _version
+    )
+        public
+        onlyOwner
+        reinitializer(_version)
         requireGovernance(_governanceAddress)
         requireVersion(_governanceAddress)
         requireStorage(_storageAddress)
@@ -113,11 +157,12 @@ contract ProposalBuilder is VersionedContract, ERC165, Ownable {
         Governance _gov = Governance(_governanceAddress);
         Storage _stor = Storage(_storageAddress);
         MetaStorage _metaStor = MetaStorage(_metaAddress);
-        if (_gov.version() > _stor.version()) revert VersionMismatch(_gov.version(), _stor.version());
-        if (_gov.version() > _metaStor.version()) revert VersionMismatch(_gov.version(), _metaStor.version());
+        if (_gov.version() < _stor.version()) revert VersionMismatch(_gov.version(), _stor.version());
+        if (_gov.version() < _metaStor.version()) revert VersionMismatch(_gov.version(), _metaStor.version());
         _governance = _gov;
         _storage = _stor;
         _meta = _metaStor;
+        emit Upgraded(_governanceAddress, _storageAddress, _metaAddress, _version);
     }
 
     modifier requireVersion(address _contract) {
@@ -327,5 +372,10 @@ contract ProposalBuilder is VersionedContract, ERC165, Ownable {
         _properties.transaction = Constant.createTransactionSet();
         _properties.meta = Constant.createMetaSet();
         _properties.choice = Constant.createChoiceSet();
+    }
+
+    /// see UUPSUpgradeable
+    function _authorizeUpgrade(address _caller) internal virtual override(UUPSUpgradeable) onlyOwner {
+        emit UpgradeAuthorized(_caller, owner());
     }
 }

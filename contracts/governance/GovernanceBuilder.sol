@@ -43,8 +43,10 @@
  */
 pragma solidity ^0.8.15;
 
-import { Math } from "@openzeppelin/contracts/utils/math/Math.sol";
+import { Initializable } from "@openzeppelin/contracts/proxy/utils/Initializable.sol";
+import { UUPSUpgradeable } from "@openzeppelin/contracts/proxy/utils/UUPSUpgradeable.sol";
 import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
+import { Math } from "@openzeppelin/contracts/utils/math/Math.sol";
 import { IERC165 } from "@openzeppelin/contracts/interfaces/IERC165.sol";
 import { ERC165 } from "@openzeppelin/contracts/utils/introspection/ERC165.sol";
 
@@ -60,16 +62,21 @@ import { Versioned } from "../../contracts/access/Versioned.sol";
 import { VersionedContract } from "../../contracts/access/VersionedContract.sol";
 import { TimeLock } from "../../contracts/treasury/TimeLock.sol";
 import { TimeLocker } from "../../contracts/treasury/TimeLocker.sol";
+import { OwnableInitializable } from "../../contracts/access/OwnableInitializable.sol";
 
 /// @title Collective Governance creator
 /// @notice This builder supports creating new instances of the Collective Governance contract
-contract GovernanceBuilder is VersionedContract, ERC165, Ownable {
+contract GovernanceBuilder is VersionedContract, ERC165, OwnableInitializable, UUPSUpgradeable, Initializable {
     string public constant NAME = "governance builder";
 
     error MetaStorageFactoryRequired(address meta);
     error StorageVersionMismatch(address _storage, uint32 expected, uint32 provided);
     error MetaVersionMismatch(address meta, uint32 expected, uint32 provided);
     error CommunityClassRequired(address voterClass);
+
+    event UpgradeAuthorized(address sender, address owner);
+    event Initialized(address metaStorageFactory, address storageFactory, address governanceFactory);
+    event Upgraded(address metaStorageFactory, address storageFactory, address governanceFactory, uint8 version);
 
     /// @notice new contract created
     event GovernanceContractCreated(
@@ -120,21 +127,44 @@ contract GovernanceBuilder is VersionedContract, ERC165, Ownable {
 
     mapping(address => GovernanceProperties) private _buildMap;
 
-    StorageFactory public immutable _storageFactory;
-    MetaStorageFactory public immutable _metaStorageFactory;
-    GovernanceFactory public immutable _governanceFactory;
+    StorageFactory public _storageFactory;
+    MetaStorageFactory public _metaStorageFactory;
+    GovernanceFactory public _governanceFactory;
 
     mapping(address => bool) public _governanceContractRegistered;
 
+    constructor() {
+        _disableInitializers();
+    }
+
     /**
+     * @param _govFactory the governance factory address
      * @param _sFactory the storage factory address
      * @param _mStorageFactory the meta storage factory address
-     * @param _govFactory the governance factory address
      */
-    constructor(address _sFactory, address _mStorageFactory, address _govFactory) {
+    function initialize(address _govFactory, address _sFactory, address _mStorageFactory) public initializer {
+        ownerInitialize(msg.sender);
         _storageFactory = StorageFactory(_sFactory);
         _metaStorageFactory = MetaStorageFactory(_mStorageFactory);
         _governanceFactory = GovernanceFactory(_govFactory);
+        emit Initialized(address(_storageFactory), address(_metaStorageFactory), address(_governanceFactory));
+    }
+
+    /**
+     * @param _govFactory the governance factory address
+     * @param _sFactory the storage factory address
+     * @param _mStorageFactory the meta storage factory address
+     */
+    function upgrade(
+        address _govFactory,
+        address _sFactory,
+        address _mStorageFactory,
+        uint8 _version
+    ) public onlyOwner reinitializer(_version) {
+        _storageFactory = StorageFactory(_sFactory);
+        _metaStorageFactory = MetaStorageFactory(_mStorageFactory);
+        _governanceFactory = GovernanceFactory(_govFactory);
+        emit Upgraded(address(_storageFactory), address(_metaStorageFactory), address(_governanceFactory), _version);
     }
 
     /// @notice initialize and create a new builder context for this sender
@@ -286,7 +316,7 @@ contract GovernanceBuilder is VersionedContract, ERC165, Ownable {
     /// @notice see ERC-165
     function supportsInterface(bytes4 interfaceId) public view virtual override(ERC165) returns (bool) {
         return
-            interfaceId == type(Ownable).interfaceId ||
+            interfaceId == type(OwnableInitializable).interfaceId ||
             interfaceId == type(Versioned).interfaceId ||
             super.supportsInterface(interfaceId);
     }
@@ -294,5 +324,10 @@ contract GovernanceBuilder is VersionedContract, ERC165, Ownable {
     function supportsInterface(address _ct, bytes4 _interfaceId) private view returns (bool) {
         IERC165 _erc165 = IERC165(_ct);
         return _erc165.supportsInterface(_interfaceId);
+    }
+
+    /// see UUPSUpgradeable
+    function _authorizeUpgrade(address _caller) internal virtual override(UUPSUpgradeable) onlyOwner {
+        emit UpgradeAuthorized(_caller, owner());
     }
 }

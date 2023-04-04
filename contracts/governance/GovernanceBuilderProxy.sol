@@ -42,3 +42,67 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 pragma solidity ^0.8.15;
+
+import { ERC1967Proxy } from "@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.sol";
+
+import { Constant } from "../Constant.sol";
+import { GovernanceBuilder } from "../../contracts/governance/GovernanceBuilder.sol";
+import { StorageFactory } from "../../contracts/storage/StorageFactory.sol";
+import { MetaStorageFactory } from "../../contracts/storage/MetaStorageFactory.sol";
+import { GovernanceFactory } from "../../contracts/governance/GovernanceFactory.sol";
+
+/**
+ * @notice Proxy for GovernanceBuilder
+ */
+contract GovernanceBuilderProxy is ERC1967Proxy {
+    constructor(
+        address _implementation,
+        address _govFactory,
+        address _storageFactory,
+        address _metaStorageFactory
+    )
+        ERC1967Proxy(
+            _implementation,
+            abi.encodeWithSelector(GovernanceBuilder.initialize.selector, _govFactory, _storageFactory, _metaStorageFactory)
+        )
+    // solhint-disable-next-line no-empty-blocks
+    {
+
+    }
+
+    function upgrade(
+        address _implementation,
+        address _govFactory,
+        address _storageFactory,
+        address _metaStorageFactory
+    ) external {
+        _upgradeToAndCallUUPS(
+            _implementation,
+            abi.encodeWithSelector(
+                GovernanceBuilder.upgrade.selector,
+                _govFactory,
+                _storageFactory,
+                _metaStorageFactory,
+                Constant.CURRENT_VERSION
+            ),
+            false
+        );
+    }
+}
+
+// solhint-disable-next-line func-visibility
+function createGovernanceBuilder(
+    GovernanceFactory _governanceFactory,
+    StorageFactory _storageFactory,
+    MetaStorageFactory _metaStorageFactory
+) returns (GovernanceBuilder) {
+    GovernanceBuilder _builder = new GovernanceBuilder();
+    GovernanceBuilderProxy _proxy = new GovernanceBuilderProxy(
+        address(_builder),
+        address(_governanceFactory),
+        address(_storageFactory),
+        address(_metaStorageFactory)
+    );
+    address _proxyAddress = address(_proxy);
+    return GovernanceBuilder(_proxyAddress);
+}

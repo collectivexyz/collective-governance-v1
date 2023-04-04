@@ -13,6 +13,7 @@ import { MetaStorage } from "../../contracts/storage/MetaStorage.sol";
 import { MappedMetaStorage } from "../../contracts/storage/MappedMetaStorage.sol";
 import { CommunityClass } from "../../contracts/community/CommunityClass.sol";
 import { CommunityBuilder } from "../../contracts/community/CommunityBuilder.sol";
+import { createCommunityBuilder } from "../../contracts/community/CommunityBuilderProxy.sol";
 import { Governance } from "../../contracts/governance/Governance.sol";
 import { GovernanceFactory } from "../../contracts/governance/GovernanceFactory.sol";
 import { TimeLocker } from "../../contracts/treasury/TimeLocker.sol";
@@ -29,7 +30,7 @@ contract GovernanceFactoryTest is Test {
     GovernanceFactory private _governanceFactory;
 
     function setUp() public {
-        CommunityBuilder _vcCreator = new CommunityBuilder();
+        CommunityBuilder _vcCreator = createCommunityBuilder();
         address vcAddress = _vcCreator.aCommunity().asOpenCommunity().withQuorum(1).withCommunitySupervisor(_OWNER).build();
         _class = CommunityClass(vcAddress);
         _metaStorage = new MappedMetaStorage(

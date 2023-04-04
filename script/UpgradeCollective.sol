@@ -13,7 +13,7 @@
 /*
  * BSD 3-Clause License
  *
- * Copyright (c) 2022, collective
+ * Copyright (c) 2023, collective
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -41,19 +41,51 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
 pragma solidity ^0.8.15;
 
-import { ERC1967Proxy } from "@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.sol";
+import { Script } from "forge-std/Script.sol";
 
-import { StorageFactory } from "../../contracts/storage/StorageFactory.sol";
+import { UUPSUpgradeable } from "@openzeppelin/contracts/proxy/utils/UUPSUpgradeable.sol";
 
-contract StorageFactoryProxy is ERC1967Proxy {
-    constructor(
-        address _implementation
-    )
-        ERC1967Proxy(_implementation, abi.encodeWithSelector(StorageFactory.initialize.selector))
-    // solhint-disable-next-line no-empty-blocks
-    {
+import { StorageFactory } from "../contracts/storage/StorageFactory.sol";
+import { MetaStorageFactory } from "../contracts/storage/MetaStorageFactory.sol";
+import { GovernanceFactory } from "../contracts/governance/GovernanceFactory.sol";
+import { GovernanceBuilder } from "../contracts/governance/GovernanceBuilder.sol";
+import { GovernanceBuilderProxy } from "../contracts/governance/GovernanceBuilderProxy.sol";
 
+/**
+ * @notice upgrade factories and contract for GovernanceBuilder
+ */
+contract UpgradeCollective is Script {
+    event DeployStorageFactory(address storageAddress);
+    event DeployMetaStorageFactory(address metaAddress);
+    event DeployGovernanceFactory(address governanceAddress);
+    event UpgradeGovernanceBuilder(address builderAddress);
+
+    /**
+     * @notice upgrade the Collective GovernanceBuilder
+     */
+    function upgrade(address payable _proxy) external {
+        vm.broadcast();
+        StorageFactory _storageFactory = new StorageFactory();
+        emit DeployStorageFactory(address(_storageFactory));
+        vm.broadcast();
+        MetaStorageFactory _metaStorageFactory = new MetaStorageFactory();
+        emit DeployMetaStorageFactory(address(_metaStorageFactory));
+        vm.broadcast();
+        GovernanceFactory _governanceFactory = new GovernanceFactory();
+        emit DeployGovernanceFactory(address(_governanceFactory));
+        vm.startBroadcast();
+        GovernanceBuilder _builder = new GovernanceBuilder();
+        GovernanceBuilderProxy _builderProxy = GovernanceBuilderProxy(_proxy);
+        _builderProxy.upgrade(
+            address(_builder),
+            address(_governanceFactory),
+            address(_storageFactory),
+            address(_metaStorageFactory)
+        );
+        emit UpgradeGovernanceBuilder(_proxy);
+        vm.stopBroadcast();
     }
 }

@@ -43,7 +43,8 @@
  */
 pragma solidity ^0.8.15;
 
-import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
+import { Initializable } from "@openzeppelin/contracts/proxy/utils/Initializable.sol";
+import { UUPSUpgradeable } from "@openzeppelin/contracts/proxy/utils/UUPSUpgradeable.sol";
 import { IERC165 } from "@openzeppelin/contracts/interfaces/IERC165.sol";
 import { ERC165 } from "@openzeppelin/contracts/utils/introspection/ERC165.sol";
 
@@ -57,11 +58,12 @@ import { CommunityClassVoterPool } from "../../contracts/community/CommunityClas
 import { CommunityClassOpenVote } from "../../contracts/community/CommunityClassOpenVote.sol";
 import { CommunityClassERC721 } from "../../contracts/community/CommunityClassERC721.sol";
 import { CommunityClassClosedERC721 } from "../../contracts/community/CommunityClassClosedERC721.sol";
+import { OwnableInitializable } from "../../contracts/access/OwnableInitializable.sol";
 
 /// @title Community Creator
 /// @notice This builder is for creating a community class for use with the Collective
 /// Governance contract
-contract CommunityBuilder is VersionedContract, ERC165, Ownable {
+contract CommunityBuilder is VersionedContract, ERC165, OwnableInitializable, UUPSUpgradeable, Initializable {
     string public constant NAME = "community builder";
     uint256 public constant DEFAULT_WEIGHT = 1;
 
@@ -73,6 +75,10 @@ contract CommunityBuilder is VersionedContract, ERC165, Ownable {
     error NonZeroQuorumRequired(uint256 quorum);
     error VoterRequired();
     error VoterPoolRequired();
+
+    event UpgradeAuthorized(address sender, address owner);
+    event Initialized(address weightedClassFactory, address projectClassFactory);
+    event Upgraded(address weightedClassFactory, address projectClassFactory, uint8 version);
 
     event CommunityClassInitialized(address sender);
     event CommunityClassType(CommunityType communityType);
@@ -119,8 +125,20 @@ contract CommunityBuilder is VersionedContract, ERC165, Ownable {
     ProjectClassFactory private _projectFactory;
 
     constructor() {
-        _weightedFactory = new WeightedClassFactory();
-        _projectFactory = new ProjectClassFactory();
+        _disableInitializers();
+    }
+
+    function initialize(address _weighted, address _project) public initializer {
+        ownerInitialize(msg.sender);
+        _weightedFactory = WeightedClassFactory(_weighted);
+        _projectFactory = ProjectClassFactory(_project);
+        emit Initialized(_weighted, _project);
+    }
+
+    function upgrade(address _weighted, address _project, uint8 _version) public onlyOwner reinitializer(_version) {
+        _weightedFactory = WeightedClassFactory(_weighted);
+        _projectFactory = ProjectClassFactory(_project);
+        emit Upgraded(_weighted, _project, _version);
     }
 
     modifier requirePool() {
@@ -421,7 +439,7 @@ contract CommunityBuilder is VersionedContract, ERC165, Ownable {
         return proxyAddress;
     }
 
-    function name() external pure returns (string memory) {
+    function name() external pure virtual returns (string memory) {
         return NAME;
     }
 
@@ -429,7 +447,7 @@ contract CommunityBuilder is VersionedContract, ERC165, Ownable {
     function supportsInterface(bytes4 interfaceId) public view virtual override(ERC165) returns (bool) {
         return
             interfaceId == type(Versioned).interfaceId ||
-            interfaceId == type(Ownable).interfaceId ||
+            interfaceId == type(OwnableInitializable).interfaceId ||
             super.supportsInterface(interfaceId);
     }
 
@@ -445,5 +463,10 @@ contract CommunityBuilder is VersionedContract, ERC165, Ownable {
         _properties.maximumGasUsedRebate = Constant.MAXIMUM_REBATE_GAS_USED;
         _properties.maximumBaseFeeRebate = Constant.MAXIMUM_REBATE_BASE_FEE;
         _properties.communitySupervisor = Constant.createAddressSet();
+    }
+
+    /// see UUPSUpgradeable
+    function _authorizeUpgrade(address _caller) internal virtual override(UUPSUpgradeable) onlyOwner {
+        emit UpgradeAuthorized(_caller, owner());
     }
 }

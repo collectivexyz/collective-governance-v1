@@ -47,10 +47,12 @@ pragma solidity ^0.8.15;
 import { Script } from "forge-std/Script.sol";
 
 import { CommunityBuilder } from "../contracts/community/CommunityBuilder.sol";
+import { createCommunityBuilder } from "../contracts/community/CommunityBuilderProxy.sol";
 import { StorageFactory } from "../contracts/storage/StorageFactory.sol";
 import { MetaStorageFactory } from "../contracts/storage/MetaStorageFactory.sol";
 import { GovernanceFactory } from "../contracts/governance/GovernanceFactory.sol";
 import { GovernanceBuilder } from "../contracts/governance/GovernanceBuilder.sol";
+import { GovernanceBuilderProxy } from "../contracts/governance/GovernanceBuilderProxy.sol";
 
 /**
  * @notice deploy factories and contract for GovernanceBuilder
@@ -62,10 +64,13 @@ contract DeployCollective is Script {
     event DeployGovernanceFactory(address governanceAddress);
     event DeployGovernanceBuilder(address builderAddress);
 
+    /**
+     * @notice deploy the Collective GovernanceBuilder
+     */
     function deploy() external {
         vm.broadcast();
-        CommunityBuilder _communityBuilder = new CommunityBuilder();
-        emit DeployCommunityBuilder(address(_communityBuilder));
+        CommunityBuilder _communityProxy = createCommunityBuilder();
+        emit DeployCommunityBuilder(address(_communityProxy));
         vm.broadcast();
         StorageFactory _storageFactory = new StorageFactory();
         emit DeployStorageFactory(address(_storageFactory));
@@ -75,12 +80,15 @@ contract DeployCollective is Script {
         vm.broadcast();
         GovernanceFactory _governanceFactory = new GovernanceFactory();
         emit DeployGovernanceFactory(address(_governanceFactory));
-        vm.broadcast();
-        GovernanceBuilder _builder = new GovernanceBuilder(
+        vm.startBroadcast();
+        GovernanceBuilder _builder = new GovernanceBuilder();
+        GovernanceBuilderProxy _proxy = new GovernanceBuilderProxy(
+            address(_builder),
+            address(_governanceFactory),
             address(_storageFactory),
-            address(_metaStorageFactory),
-            address(_governanceFactory)
+            address(_metaStorageFactory)
         );
-        emit DeployGovernanceBuilder(address(_builder));
+        emit DeployGovernanceBuilder(address(_proxy));
+        vm.stopBroadcast();
     }
 }

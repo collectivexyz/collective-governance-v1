@@ -10,6 +10,7 @@ import { Versioned } from "../../contracts/access/Versioned.sol";
 import { Mutable } from "../../contracts/access/Mutable.sol";
 import { AddressCollection } from "../../contracts/collection/AddressSet.sol";
 import { CommunityBuilder } from "../../contracts/community/CommunityBuilder.sol";
+import { createCommunityBuilder } from "../../contracts/community/CommunityBuilderProxy.sol";
 import { VoterClass } from "../../contracts/community/VoterClass.sol";
 import { CommunityClass, WeightedCommunityClass } from "../../contracts/community/CommunityClass.sol";
 
@@ -21,7 +22,7 @@ contract CommunityBuilderTest is Test {
     CommunityBuilder private _builder;
 
     function setUp() public {
-        _builder = new CommunityBuilder();
+        _builder = createCommunityBuilder();
         _builder.aCommunity().withCommunitySupervisor(_SUPERVISOR);
     }
 

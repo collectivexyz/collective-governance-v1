@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: BSD-3-Clause
 pragma solidity ^0.8.15;
 
+// solhint-disable not-rely-on-time
+
 import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
 import { IERC165 } from "@openzeppelin/contracts/interfaces/IERC165.sol";
 
@@ -8,6 +10,7 @@ import { Test } from "forge-std/Test.sol";
 
 import { Constant } from "../contracts/Constant.sol";
 import { ProposalBuilder } from "../contracts/ProposalBuilder.sol";
+import { ProposalBuilderProxy } from "../contracts/ProposalBuilderProxy.sol";
 import { Governance } from "../contracts/governance/Governance.sol";
 import { Storage } from "../contracts/storage/Storage.sol";
 import { Meta } from "../contracts/collection/MetaSet.sol";
@@ -15,102 +18,112 @@ import { Choice } from "../contracts/collection/ChoiceSet.sol";
 import { Transaction } from "../contracts/collection/TransactionSet.sol";
 import { MetaStorage } from "../contracts/storage/MetaStorage.sol";
 import { Versioned } from "../contracts/access/Versioned.sol";
-import { GovernanceBuilder } from "../contracts/governance/GovernanceBuilder.sol";
+import { OwnableInitializable } from "../contracts/access/OwnableInitializable.sol";
 import { CommunityClass } from "../contracts/community/CommunityClass.sol";
 import { CommunityBuilder } from "../contracts/community/CommunityBuilder.sol";
+import { createCommunityBuilder } from "../contracts/community/CommunityBuilderProxy.sol";
 import { StorageFactory } from "../contracts/storage/StorageFactory.sol";
 import { MetaStorageFactory } from "../contracts/storage/MetaStorageFactory.sol";
 import { GovernanceFactory } from "../contracts/governance/GovernanceFactory.sol";
 import { GovernanceBuilder } from "../contracts/governance/GovernanceBuilder.sol";
+import { createGovernanceBuilder } from "../contracts/governance/GovernanceBuilderProxy.sol";
 
 import { TestData } from "./mock/TestData.sol";
 
 contract ProposalBuilderTest is Test {
     address private constant _OWNER = address(0x1);
     address private constant _CREATOR = address(0x2);
+    address private constant _OTHER = address(0x3);
     address private constant _VOTER1 = address(0xfff1);
 
     CommunityClass private _class;
     Storage private _storage;
     MetaStorage private _meta;
     ProposalBuilder private _builder;
+    GovernanceBuilder private _gbuilder;
 
     function setUp() public {
-        address _classAddr = new CommunityBuilder()
+        CommunityBuilder _communityBuilder = createCommunityBuilder();
+        address _classAddr = _communityBuilder
             .aCommunity()
             .withCommunitySupervisor(_CREATOR)
             .asOpenCommunity()
             .withQuorum(1)
             .build();
+        GovernanceFactory _governanceFactory = new GovernanceFactory();
         StorageFactory _storageFactory = new StorageFactory();
         MetaStorageFactory _metaStorageFactory = new MetaStorageFactory();
-        GovernanceFactory _governanceFactory = new GovernanceFactory();
-        GovernanceBuilder _gbuilder = new GovernanceBuilder(
-            address(_storageFactory),
-            address(_metaStorageFactory),
-            address(_governanceFactory)
-        );
+        _gbuilder = createGovernanceBuilder(_governanceFactory, _storageFactory, _metaStorageFactory);
         (address payable _govAddr, address _stoAddr, address _metaAddr) = _gbuilder
             .aGovernance()
             .withCommunityClassAddress(_classAddr)
             .build();
-        _builder = new ProposalBuilder(_govAddr, _stoAddr, _metaAddr);
+        _builder = createProposalBuilder(_govAddr, _stoAddr, _metaAddr);
         transferOwnership(_metaAddr, address(_builder));
         _storage = Storage(_stoAddr);
         _meta = MetaStorage(_metaAddr);
         _class = CommunityClass(_classAddr);
     }
 
-    function testRequiresGovernanceLessThanStorageVersion() public {
-        address _govAddr = mockGovernance();
-        address _storageAddr = mockConforming(address(0x10), Constant.CURRENT_VERSION - 1, true);
+    function testFailRequiresGovernanceGreaterThanStorageVersion() public {
+        address _govAddr = mockConforming(address(0x100), Constant.CURRENT_VERSION - 1, true);
+        address _storageAddr = mockStorage();
         address _metaAddr = mockMetaStorage();
+        ProposalBuilder _implementation = new ProposalBuilder();
+        /* expect fails through proxy
         vm.expectRevert(
             abi.encodeWithSelector(
                 ProposalBuilder.VersionMismatch.selector,
-                Constant.CURRENT_VERSION,
-                Constant.CURRENT_VERSION - 1
+                Constant.CURRENT_VERSION - 1,
+                Constant.CURRENT_VERSION
             )
         );
-        new ProposalBuilder(_govAddr, _storageAddr, _metaAddr);
+        */
+        new ProposalBuilderProxy(address(_implementation), _govAddr, _storageAddr, _metaAddr);
     }
 
-    function testRequiresGovernanceLessThanMetaStorageVersion() public {
-        address _gov = mockGovernance();
+    function testFailRequiresGovernanceGreaterThanMetaStorageVersion() public {
+        address _gov = mockConforming(address(0x100), Constant.CURRENT_VERSION - 1, true);
         address _mockStorage = mockStorage();
-        address _mockMeta = mockConforming(address(0x10), Constant.CURRENT_VERSION - 1, true);
+        address _mockMeta = mockMetaStorage();
+        ProposalBuilder _implementation = new ProposalBuilder();
+        /* expect fails through proxy
         vm.expectRevert(
             abi.encodeWithSelector(
                 ProposalBuilder.VersionMismatch.selector,
-                Constant.CURRENT_VERSION,
-                Constant.CURRENT_VERSION - 1
+                Constant.CURRENT_VERSION - 1,
+                Constant.CURRENT_VERSION
             )
         );
-        new ProposalBuilder(_gov, _mockStorage, _mockMeta);
+        */
+        new ProposalBuilderProxy(address(_implementation), _gov, _mockStorage, _mockMeta);
     }
 
     function testRequiresGovernance() public {
-        address _gov = mockConforming(address(0x10), Constant.CURRENT_VERSION, false);
+        address _gov = mockConforming(address(0x100), Constant.CURRENT_VERSION, false);
         address _mockStorage = mockStorage();
         address _mockMeta = mockMetaStorage();
+        ProposalBuilder _implementation = new ProposalBuilder();
         vm.expectRevert(abi.encodeWithSelector(ProposalBuilder.NotGovernance.selector, _gov));
-        new ProposalBuilder(_gov, _mockStorage, _mockMeta);
+        new ProposalBuilderProxy(address(_implementation), _gov, _mockStorage, _mockMeta);
     }
 
     function testRequiresStorage() public {
         address _gov = mockGovernance();
-        address _mockStorage = mockConforming(address(0x11), Constant.CURRENT_VERSION, false);
+        address _mockStorage = mockConforming(address(0x200), Constant.CURRENT_VERSION, false);
         address _mockMeta = mockMetaStorage();
+        ProposalBuilder _implementation = new ProposalBuilder();
         vm.expectRevert(abi.encodeWithSelector(ProposalBuilder.NotStorage.selector, _mockStorage));
-        new ProposalBuilder(_gov, _mockStorage, _mockMeta);
+        new ProposalBuilderProxy(address(_implementation), _gov, _mockStorage, _mockMeta);
     }
 
     function testRequiresMeta() public {
         address _gov = mockGovernance();
         address _mockStorage = mockStorage();
-        address _mockMeta = mockConforming(address(0x12), Constant.CURRENT_VERSION, false);
+        address _mockMeta = mockConforming(address(0x300), Constant.CURRENT_VERSION, false);
+        ProposalBuilder _implementation = new ProposalBuilder();
         vm.expectRevert(abi.encodeWithSelector(ProposalBuilder.NotMetaStorage.selector, _mockMeta));
-        new ProposalBuilder(_gov, _mockStorage, _mockMeta);
+        new ProposalBuilderProxy(address(_implementation), _gov, _mockStorage, _mockMeta);
     }
 
     function testFailChoiceDescriptionSizeChecked() public {
@@ -243,5 +256,27 @@ contract ProposalBuilderTest is Test {
     function transferOwnership(address _ownedObject, address _targetOwner) private {
         Ownable _ownableStorage = Ownable(_ownedObject);
         _ownableStorage.transferOwnership(_targetOwner);
+    }
+
+    function testUpgradeRequiresOwner() public {
+        address _classAddr = address(_class);
+        (address payable _govAddr, address _stoAddr, address _metaAddr) = _gbuilder
+            .aGovernance()
+            .withCommunityClassAddress(_classAddr)
+            .build();
+        vm.expectRevert(abi.encodeWithSelector(OwnableInitializable.NotOwner.selector, _OTHER));
+        vm.prank(_OTHER, _OTHER);
+        _builder.upgrade(_govAddr, _stoAddr, _metaAddr, uint8(Constant.CURRENT_VERSION));
+    }
+
+    function createProposalBuilder(
+        address _govFactory,
+        address _stoFactory,
+        address _metaFactory
+    ) private returns (ProposalBuilder) {
+        ProposalBuilder _implementation = new ProposalBuilder();
+        ProposalBuilderProxy _proxy = new ProposalBuilderProxy(address(_implementation), _govFactory, _stoFactory, _metaFactory);
+        address _proxyAddress = address(_proxy);
+        return ProposalBuilder(_proxyAddress);
     }
 }

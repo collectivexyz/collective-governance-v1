@@ -11,6 +11,7 @@ import { VoterClass } from "../../contracts/community/VoterClass.sol";
 import { CommunityClass } from "../../contracts/community/CommunityClass.sol";
 import { WeightedCommunityClass } from "../../contracts/community/CommunityClass.sol";
 import { CommunityBuilder } from "../../contracts/community/CommunityBuilder.sol";
+import { createCommunityBuilder } from "../../contracts/community/CommunityBuilderProxy.sol";
 import { Versioned } from "../../contracts/access/Versioned.sol";
 
 contract CommunityClassOpenVoteTest is Test {
@@ -21,7 +22,7 @@ contract CommunityClassOpenVoteTest is Test {
     WeightedCommunityClass private _class;
 
     function setUp() public {
-        CommunityBuilder _builder = new CommunityBuilder();
+        CommunityBuilder _builder = createCommunityBuilder();
         address _classAddress = _builder
             .aCommunity()
             .asOpenCommunity()

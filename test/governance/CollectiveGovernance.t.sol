@@ -15,16 +15,18 @@ import { Transaction, getHash } from "../../contracts/collection/TransactionSet.
 import { VoterClass } from "../../contracts/community/VoterClass.sol";
 import { CommunityClass } from "../../contracts/community/CommunityClass.sol";
 import { CommunityBuilder } from "../../contracts/community/CommunityBuilder.sol";
+import { createCommunityBuilder } from "../../contracts/community/CommunityBuilderProxy.sol";
 import { Storage } from "../../contracts/storage/Storage.sol";
 import { VoteStrategy } from "../../contracts/governance/VoteStrategy.sol";
 import { Governance } from "../../contracts/governance/Governance.sol";
 import { CollectiveGovernance, calculateGasRebate } from "../../contracts/governance/CollectiveGovernance.sol";
-import { GovernanceBuilder } from "../../contracts/governance/GovernanceBuilder.sol";
 import { TimeLocker } from "../../contracts/treasury/TimeLocker.sol";
 import { VersionedContract } from "../../contracts/access/VersionedContract.sol";
 import { StorageFactory } from "../../contracts/storage/StorageFactory.sol";
 import { MetaStorageFactory } from "../../contracts/storage/MetaStorageFactory.sol";
 import { GovernanceFactory } from "../../contracts/governance/GovernanceFactory.sol";
+import { GovernanceBuilder } from "../../contracts/governance/GovernanceBuilder.sol";
+import { createGovernanceBuilder } from "../../contracts/governance/GovernanceBuilderProxy.sol";
 
 import { MockERC721 } from "../mock/MockERC721.sol";
 import { FlagSet } from "../mock/FlagSet.sol";
@@ -83,7 +85,7 @@ contract CollectiveGovernanceTest is Test {
         StorageFactory _storageFactory = new StorageFactory();
         MetaStorageFactory _metaStorageFactory = new MetaStorageFactory();
         GovernanceFactory _governanceFactory = new GovernanceFactory();
-        _builder = new GovernanceBuilder(address(_storageFactory), address(_metaStorageFactory), address(_governanceFactory));
+        _builder = createGovernanceBuilder(_governanceFactory, _storageFactory, _metaStorageFactory);
         _erc721 = mintTokens();
         address projectAddress = address(_erc721);
         (_governanceAddress, _storageAddress, ) = buildERC721(projectAddress);
@@ -521,7 +523,7 @@ contract CollectiveGovernanceTest is Test {
     }
 
     function testOwnerCastVote() public {
-        CommunityBuilder _communityBuilder = new CommunityBuilder();
+        CommunityBuilder _communityBuilder = createCommunityBuilder();
         address _communityLocation = _communityBuilder
             .aCommunity()
             .asPoolCommunity()
@@ -780,7 +782,7 @@ contract CollectiveGovernanceTest is Test {
     }
 
     function testMeasureIsVeto() public {
-        CommunityBuilder _communityBuilder = new CommunityBuilder();
+        CommunityBuilder _communityBuilder = createCommunityBuilder();
         address _communityLocation = _communityBuilder
             .aCommunity()
             .asPoolCommunity()
@@ -820,7 +822,7 @@ contract CollectiveGovernanceTest is Test {
 
     function testMeasureLateVeto() public {
         uint256 blockTimestamp = block.timestamp;
-        CommunityBuilder _communityBuilder = new CommunityBuilder();
+        CommunityBuilder _communityBuilder = createCommunityBuilder();
         address _communityLocation = _communityBuilder
             .aCommunity()
             .asPoolCommunity()
@@ -1615,7 +1617,7 @@ contract CollectiveGovernanceTest is Test {
     }
 
     function buildERC721(address projectAddress) private returns (address payable, address, address) {
-        CommunityBuilder _communityBuilder = new CommunityBuilder();
+        CommunityBuilder _communityBuilder = createCommunityBuilder();
         address _communityLocation = _communityBuilder
             .aCommunity()
             .asClosedErc721Community(projectAddress, 1)
@@ -1632,7 +1634,7 @@ contract CollectiveGovernanceTest is Test {
         uint256 minimumVoteDelay,
         uint256 minimumDuration
     ) private returns (address payable, address, address) {
-        CommunityBuilder _communityBuilder = new CommunityBuilder();
+        CommunityBuilder _communityBuilder = createCommunityBuilder();
         address _communityLocation = _communityBuilder
             .aCommunity()
             .asClosedErc721Community(projectAddress, 1)
@@ -1646,7 +1648,7 @@ contract CollectiveGovernanceTest is Test {
     }
 
     function buildVoterPool() private returns (address payable, address, address) {
-        CommunityBuilder _communityBuilder = new CommunityBuilder();
+        CommunityBuilder _communityBuilder = createCommunityBuilder();
         address _communityLocation = _communityBuilder
             .aCommunity()
             .asPoolCommunity()
@@ -1660,7 +1662,7 @@ contract CollectiveGovernanceTest is Test {
     }
 
     function buildOpenVote() private returns (address payable, address, address) {
-        CommunityBuilder _communityBuilder = new CommunityBuilder();
+        CommunityBuilder _communityBuilder = createCommunityBuilder();
         address _communityLocation = _communityBuilder
             .aCommunity()
             .asOpenCommunity()

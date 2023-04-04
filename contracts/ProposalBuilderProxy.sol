@@ -13,7 +13,7 @@
 /*
  * BSD 3-Clause License
  *
- * Copyright (c) 2022, collective
+ * Copyright (c) 2023, collective
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -43,35 +43,58 @@
  */
 pragma solidity ^0.8.15;
 
-import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
-import { ERC165 } from "@openzeppelin/contracts/utils/introspection/ERC165.sol";
+import { ERC1967Proxy } from "@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.sol";
 
-import { CommunityClass } from "../../contracts/community/CommunityClass.sol";
-import { Storage } from "../../contracts/storage/Storage.sol";
-import { GovernanceStorage } from "../../contracts/storage/GovernanceStorage.sol";
-import { Versioned } from "../../contracts/access/Versioned.sol";
-import { VersionedContract } from "../../contracts/access/VersionedContract.sol";
+import { Constant } from "./Constant.sol";
+import { ProposalBuilder } from "./ProposalBuilder.sol";
 
-/**
- * @title CollectiveStorage creational contract
- */
-contract StorageFactory is VersionedContract, Ownable, ERC165 {
-    event UpgradeAuthorized(address sender, address owner);
+contract ProposalBuilderProxy is ERC1967Proxy {
+    constructor(
+        address _implementation,
+        address _governanceAddress,
+        address _storageAddress,
+        address _metaAddress
+    )
+        ERC1967Proxy(
+            _implementation,
+            abi.encodeWithSelector(ProposalBuilder.initialize.selector, _governanceAddress, _storageAddress, _metaAddress)
+        )
+    // solhint-disable-next-line no-empty-blocks
+    {
 
-    /// @notice create a new storage object with VoterClass as the voting population
-    /// @param _class the contract that defines the popluation
-    /// @return Storage the created instance
-    function create(CommunityClass _class) external returns (Storage) {
-        GovernanceStorage _storage = new GovernanceStorage(_class);
-        _storage.transferOwnership(msg.sender);
-        return _storage;
     }
 
-    /// @notice see ERC-165
-    function supportsInterface(bytes4 interfaceId) public view virtual override(ERC165) returns (bool) {
-        return
-            interfaceId == type(Versioned).interfaceId ||
-            interfaceId == type(Ownable).interfaceId ||
-            super.supportsInterface(interfaceId);
+    function upgrade(
+        address _implementation,
+        address _governanceAddress,
+        address _storageAddress,
+        address _metaAddress
+    ) external {
+        _upgradeToAndCallUUPS(
+            _implementation,
+            abi.encodeWithSelector(
+                ProposalBuilder.upgrade.selector,
+                _governanceAddress,
+                _storageAddress,
+                _metaAddress,
+                Constant.CURRENT_VERSION
+            ),
+            false
+        );
     }
+}
+
+/// @param _governanceAddress address of CollectiveGovernance
+/// @param _storageAddress address of Storage contract
+/// @param _metaAddress address of meta storage
+// solhint-disable-next-line func-visibility
+function createProposalBuilder(
+    address _governanceAddress,
+    address _storageAddress,
+    address _metaAddress
+) returns (ProposalBuilder) {
+    ProposalBuilder _builder = new ProposalBuilder();
+    ProposalBuilderProxy _proxy = new ProposalBuilderProxy(address(_builder), _governanceAddress, _storageAddress, _metaAddress);
+    address _proxyAddress = address(_proxy);
+    return ProposalBuilder(_proxyAddress);
 }

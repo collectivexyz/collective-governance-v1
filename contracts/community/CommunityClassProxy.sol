@@ -46,6 +46,7 @@ pragma solidity ^0.8.15;
 import { IERC165 } from "@openzeppelin/contracts/interfaces/IERC165.sol";
 import { ERC1967Proxy } from "@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.sol";
 
+import { Constant } from "../../contracts/Constant.sol";
 import { CommunityClass, WeightedCommunityClass, ProjectCommunityClass } from "../../contracts/community/CommunityClass.sol";
 import { CommunityClassClosedERC721 } from "../../contracts/community/CommunityClassClosedERC721.sol";
 import { AddressCollection } from "../../contracts/collection/AddressSet.sol";
@@ -142,7 +143,8 @@ contract WeightedCommunityClassProxy is WiredClassProxy {
                 _maximumDuration,
                 _gasUsedRebate,
                 _baseFeeRebate,
-                _supervisorList
+                _supervisorList,
+                Constant.CURRENT_VERSION
             ),
             false
         );
@@ -221,7 +223,8 @@ contract ProjectCommunityClassProxy is WiredClassProxy {
                 _maximumDuration,
                 _gasUsedRebate,
                 _baseFeeRebate,
-                _supervisorList
+                _supervisorList,
+                Constant.CURRENT_VERSION
             ),
             false
         );
@@ -302,7 +305,8 @@ contract ClosedProjectCommunityClassProxy is WiredClassProxy {
                 _maximumDuration,
                 _gasUsedRebate,
                 _baseFeeRebate,
-                _supervisorList
+                _supervisorList,
+                Constant.CURRENT_VERSION
             ),
             false
         );

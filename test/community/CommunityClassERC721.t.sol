@@ -10,6 +10,7 @@ import { Mutable } from "../../contracts/access/Mutable.sol";
 import { VoterClass } from "../../contracts/community/VoterClass.sol";
 import { WeightedCommunityClass } from "../../contracts/community/CommunityClass.sol";
 import { CommunityBuilder } from "../../contracts/community/CommunityBuilder.sol";
+import { createCommunityBuilder } from "../../contracts/community/CommunityBuilderProxy.sol";
 import { CommunityClassERC721 } from "../../contracts/community/CommunityClassERC721.sol";
 
 import { Versioned } from "../../contracts/access/Versioned.sol";
@@ -30,7 +31,7 @@ contract CommunityClassERC721Test is Test {
         MockERC721 merc721 = new MockERC721();
         merc721.mintTo(_OWNER, _TOKENID);
         _tokenContract = merc721;
-        _builder = new CommunityBuilder();
+        _builder = createCommunityBuilder();
         address _classAddress = _builder
             .aCommunity()
             .asErc721Community(address(_tokenContract))
