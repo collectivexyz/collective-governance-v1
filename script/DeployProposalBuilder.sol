@@ -46,46 +46,44 @@ pragma solidity ^0.8.15;
 
 import { Script } from "forge-std/Script.sol";
 
-import { UUPSUpgradeable } from "@openzeppelin/contracts/proxy/utils/UUPSUpgradeable.sol";
-
-import { StorageFactory } from "../contracts/storage/StorageFactory.sol";
-import { MetaStorageFactory } from "../contracts/storage/MetaStorageFactory.sol";
-import { GovernanceFactory } from "../contracts/governance/GovernanceFactory.sol";
-import { GovernanceBuilder } from "../contracts/governance/GovernanceBuilder.sol";
-import { GovernanceBuilderProxy } from "../contracts/governance/GovernanceBuilderProxy.sol";
+import { ProposalBuilder } from "../contracts/ProposalBuilder.sol";
+import { ProposalBuilderProxy } from "../contracts/ProposalBuilderProxy.sol";
 
 /**
- * @notice upgrade factories and contract for GovernanceBuilder
+ * @notice deploy factories and contract for GovernanceBuilder
  */
-contract UpgradeCollective is Script {
-    event DeployStorageFactory(address storageAddress);
-    event DeployMetaStorageFactory(address metaAddress);
-    event DeployGovernanceFactory(address governanceAddress);
-    event UpgradeGovernanceBuilder(address builderAddress);
+contract DeployProposalBuilder is Script {
+    event ProposalBuilderDeployed(address builderAddress);
+    event ProposalBuilderUpgraded(address builderAddress);
 
     /**
-     * @notice upgrade the Collective GovernanceBuilder
+     * @notice deploy the Collective ProposalBuilder
      */
-    function upgrade(address payable _proxy) external {
-        vm.broadcast();
-        StorageFactory _storageFactory = new StorageFactory();
-        emit DeployStorageFactory(address(_storageFactory));
-        vm.broadcast();
-        MetaStorageFactory _metaStorageFactory = new MetaStorageFactory();
-        emit DeployMetaStorageFactory(address(_metaStorageFactory));
-        vm.broadcast();
-        GovernanceFactory _governanceFactory = new GovernanceFactory();
-        emit DeployGovernanceFactory(address(_governanceFactory));
+    function deploy() external {
         vm.startBroadcast();
-        GovernanceBuilder _builder = new GovernanceBuilder();
-        GovernanceBuilderProxy _builderProxy = GovernanceBuilderProxy(_proxy);
-        _builderProxy.upgrade(
-            address(_builder),
-            address(_governanceFactory),
-            address(_storageFactory),
-            address(_metaStorageFactory)
-        );
-        emit UpgradeGovernanceBuilder(_proxy);
+        address _governance = vm.envAddress("GOVERNANCE_ADDRESS");
+        address _storage = vm.envAddress("STORAGE_ADDRESS");
+        address _meta = vm.envAddress("META_ADDRESS");
+        ProposalBuilder _builder = new ProposalBuilder();
+        ProposalBuilderProxy _proxy = new ProposalBuilderProxy(address(_builder), _governance, _storage, _meta);
+        emit ProposalBuilderDeployed(address(_proxy));
+        vm.stopBroadcast();
+    }
+
+    /**
+     * @notice deploy the Collective ProposalBuilder
+     */
+    function upgrade() external {
+        address _builderAddr = vm.envAddress("BUILDER_ADDRESS");
+        address _governance = vm.envAddress("GOVERNANCE_ADDRESS");
+        address _storage = vm.envAddress("STORAGE_ADDRESS");
+        address _meta = vm.envAddress("META_ADDRESS");
+        address payable _proxy = payable(_builderAddr);
+        vm.startBroadcast();
+        ProposalBuilder _builder = new ProposalBuilder();
+        ProposalBuilderProxy _pbuilder = ProposalBuilderProxy(_proxy);
+        _pbuilder.upgrade(address(_builder), _governance, _storage, _meta);
+        emit ProposalBuilderUpgraded(address(_proxy));
         vm.stopBroadcast();
     }
 }

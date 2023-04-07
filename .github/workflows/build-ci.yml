@@ -1,0 +1,44 @@
+name: Build CI
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - "*"
+
+jobs:
+  check:
+    strategy:
+      fail-fast: true
+
+    name: collective-governance-v1
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: recursive
+
+      - name: Install Foundry
+        uses: foundry-rs/foundry-toolchain@v1
+        with:
+          version: nightly
+
+      - name: Yarn install
+        run: |
+          yarn install --dev
+          yarn prettier:check
+          yarn hint
+          yarn install --production
+
+      - name: Run Forge Size Check
+        run: |
+          forge build --sizes
+        id: sizes
+
+      - name: Run Forge tests
+        run: |
+          forge test -vvv
+        id: test

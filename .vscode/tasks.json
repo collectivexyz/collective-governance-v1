@@ -117,31 +117,13 @@
       }
     },
     {
-      "label": "verifycontract",
-      "type": "shell",
-      "command": "forge verify-contract -f --delay 30 ${CONTRACT_ADDRESS} contracts/${CONTRACT_NAME}.sol:${CONTRACT_NAME} --chain-id ${CHAIN_ID} --watch ${ETHERSCAN_API_KEY}",
-      "options": {
-        "cwd": "${workspaceFolder}",
-        "env": {
-          "CONTRACT_NAME": "GovernanceBuilder",
-          "CONTRACT_ADDRESS": "0x02dA9682cb0AEdD8e1f50F88E01eCFcdC44c6b9b",
-          "CHAIN_ID": "5"
-        }
-      },
-      "dependsOn": "production",
-      "group": {
-        "kind": "test",
-        "isDefault": false
-      }
-    },
-    {
       "label": "deployconstant",
       "type": "shell",
-      "command": "forge create --revert-strings debug --contracts contracts/Constant.sol --rpc-url ${RPC_URL} --private-key ${PRIVATE_KEY} --etherscan-api-key ${ETHERSCAN_API_KEY} --verify Constant",
+      "command": "forge create --revert-strings debug --contracts contracts/Constant.sol --rpc-url ${RPC_URL} --private-key ${PRIVATE_KEY} Constant",
       "options": {
         "cwd": "${workspaceFolder}"
       },
-      "dependsOn": "production",
+      "dependsOn": "test",
       "group": {
         "kind": "test",
         "isDefault": false
@@ -150,14 +132,48 @@
     {
       "label": "deploycommunitybuilder",
       "type": "shell",
-      "command": "forge create --revert-strings debug --libraries contracts/Constant.sol:Constant:${CONSTANT_LIB_ADDRESS} --contracts contracts/community/CommunityBuilder.sol --rpc-url ${RPC_URL} --private-key ${PRIVATE_KEY} --etherscan-api-key ${ETHERSCAN_API_KEY} --verify CommunityBuilder",
+      "command": "forge script ./script/DeployCommunityBuilder.sol --sig 'deploy()' --libraries contracts/Constant.sol:Constant:${CONSTANT_LIB_ADDRESS} --slow --broadcast --rpc-url ${RPC_URL} --private-key ${PRIVATE_KEY} --etherscan-api-key ${ETHERSCAN_API_KEY} --verify",
       "options": {
         "cwd": "${workspaceFolder}",
         "env": {
-          "CONSTANT_LIB_ADDRESS": "0xd050519a201b4b990711922BA72299Ab5669BEA4"
+          "CONSTANT_LIB_ADDRESS": "0x5a7D758870C57d8A4E1AB309079705E77D279D0a"
         }
       },
-      "dependsOn": "production",
+      "dependsOn": "test",
+      "group": {
+        "kind": "test",
+        "isDefault": false
+      }
+    },
+    {
+      "label": "upgradecommunitybuilder",
+      "type": "shell",
+      "command": "forge script ./script/DeployCommunityBuilder.sol --sig 'upgrade()' --libraries contracts/Constant.sol:Constant:${CONSTANT_LIB_ADDRESS} --slow --broadcast --rpc-url ${RPC_URL} --private-key ${PRIVATE_KEY} --etherscan-api-key ${ETHERSCAN_API_KEY} --verify",
+      "options": {
+        "cwd": "${workspaceFolder}",
+        "env": {
+          "CONSTANT_LIB_ADDRESS": "0x5a7D758870C57d8A4E1AB309079705E77D279D0a",
+          "BUILDER_ADDRESS": "0x564eD7F60C134Aa86912bA00217398Be7B0C00D3"
+        }
+      },
+      "dependsOn": "test",
+      "group": {
+        "kind": "test",
+        "isDefault": false
+      }
+    },
+    {
+      "label": "upgradecommunityclass",
+      "type": "shell",
+      "command": "forge script ./script/UpgradeCommunityClass.sol --sig 'upgrade()' --libraries contracts/Constant.sol:Constant:${CONSTANT_LIB_ADDRESS} --slow --broadcast --rpc-url ${RPC_URL} --private-key ${PRIVATE_KEY} --etherscan-api-key ${ETHERSCAN_API_KEY} --verify",
+      "options": {
+        "cwd": "${workspaceFolder}",
+        "env": {
+          "CONSTANT_LIB_ADDRESS": "0x5a7D758870C57d8A4E1AB309079705E77D279D0a",
+          "CLASS_PROXY": "0xC9607cd3c8929ABf9af1DA9bF4895fb44D0AA9f7",
+          "TARGET": "0xfaff0a74e8230f60cd4c241f354c524b5264090c"
+        }
+      },
       "group": {
         "kind": "test",
         "isDefault": false
@@ -170,10 +186,27 @@
       "options": {
         "cwd": "${workspaceFolder}",
         "env": {
-          "CONSTANT_LIB_ADDRESS": "0xd050519a201b4b990711922BA72299Ab5669BEA4"
+          "CONSTANT_LIB_ADDRESS": "0x5a7D758870C57d8A4E1AB309079705E77D279D0a"
         }
       },
-      "dependsOn": "production",
+      "dependsOn": "test",
+      "group": {
+        "kind": "test",
+        "isDefault": false
+      }
+    },
+    {
+      "label": "upgradecollective",
+      "type": "shell",
+      "command": "forge script ./script/DeployCollective.sol --sig 'upgrade()' --libraries contracts/Constant.sol:Constant:${CONSTANT_LIB_ADDRESS} --slow --broadcast --rpc-url ${RPC_URL} --private-key ${PRIVATE_KEY} --etherscan-api-key ${ETHERSCAN_API_KEY} --verify",
+      "options": {
+        "cwd": "${workspaceFolder}",
+        "env": {
+          "CONSTANT_LIB_ADDRESS": "0x5a7D758870C57d8A4E1AB309079705E77D279D0a",
+          "BUILDER_ADDRESS": "0x7d08A9B6d23803102a6e49714cAd48E87D999099"
+        }
+      },
+      "dependsOn": "test",
       "group": {
         "kind": "test",
         "isDefault": false
@@ -182,17 +215,37 @@
     {
       "label": "deployproposalbuilder",
       "type": "shell",
-      "command": "forge create --revert-strings debug --libraries contracts/Constant.sol:Constant:${CONSTANT_LIB_ADDRESS} --contracts contracts/ProposalBuilder.sol --rpc-url ${RPC_URL} --private-key ${PRIVATE_KEY} --etherscan-api-key ${ETHERSCAN_API_KEY} --verify ProposalBuilder --chain goerli --constructor-args ${GOVERNANCE_ADDRESS} ${STORAGE_ADDRESS} ${META_ADDRESS}",
+      "command": "forge script ./script/DeployProposalBuilder.sol --sig 'deploy()' --libraries contracts/Constant.sol:Constant:${CONSTANT_LIB_ADDRESS} --slow --broadcast --rpc-url ${RPC_URL} --private-key ${PRIVATE_KEY} --etherscan-api-key ${ETHERSCAN_API_KEY} --verify",
       "options": {
         "cwd": "${workspaceFolder}",
         "env": {
-          "CONSTANT_LIB_ADDRESS": "0xd050519a201b4b990711922BA72299Ab5669BEA4",
-          "GOVERNANCE_ADDRESS": "0xea9d53f2Ee1214dbC29b17911FE3D08d5601f09c",
-          "STORAGE_ADDRESS": "0xE229593BAAA15Ec3e7bC78c3c1F383E5CFed9176",
-          "META_ADDRESS": "0x230ea7877468bF7D8ae4ee712eed761aE7704994"
+          "CONSTANT_LIB_ADDRESS": "0x5a7D758870C57d8A4E1AB309079705E77D279D0a",
+          "GOVERNANCE_ADDRESS": "0x229af948cf8576e32f96d7f50db2d61aa54bb04b",
+          "STORAGE_ADDRESS": "0x799e9fd969cf1d3f84660f0f40ff2fca3f488c3b",
+          "META_ADDRESS": "0x0fef0dd06502603a3dfc89a8c4e5e507ee15f96d"
         }
       },
-      "dependsOn": "production",
+      "dependsOn": "test",
+      "group": {
+        "kind": "test",
+        "isDefault": false
+      }
+    },
+    {
+      "label": "upgradeproposalbuilder",
+      "type": "shell",
+      "command": "forge script ./script/DeployProposalBuilder.sol --sig 'upgrade()' --libraries contracts/Constant.sol:Constant:${CONSTANT_LIB_ADDRESS} --slow --broadcast --rpc-url ${RPC_URL} --private-key ${PRIVATE_KEY} --etherscan-api-key ${ETHERSCAN_API_KEY} --verify",
+      "options": {
+        "cwd": "${workspaceFolder}",
+        "env": {
+          "CONSTANT_LIB_ADDRESS": "0x5a7D758870C57d8A4E1AB309079705E77D279D0a",
+          "BUILDER_ADDRESS": "",
+          "GOVERNANCE_ADDRESS": "0xa2f50e55ac910ba030b3e4cab92da8de5b38ef2d",
+          "STORAGE_ADDRESS": "0xe0c76c1621738b870eac5a37447fdadc8c077c21",
+          "META_ADDRESS": "0x108a592f963050f4492a5c4cecfe82ce0b57fb08"
+        }
+      },
+      "dependsOn": "test",
       "group": {
         "kind": "test",
         "isDefault": false
@@ -209,7 +262,7 @@
           "BUILDER_ADDRESS": "0x8eFCF74380F242c8f220808AA1763539D2DA6F21"
         }
       },
-      "dependsOn": "production",
+      "dependsOn": "test",
       "group": {
         "kind": "test",
         "isDefault": false

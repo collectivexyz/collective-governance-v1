@@ -134,6 +134,9 @@ interface Storage is Versioned, IERC165 {
 
     /// @notice Struct describing the data required for a specific vote.
     /// @dev proposal is only valid if id != 0 and proposal.id == id;
+    ///
+    /// Security CommunityClass is upgradeable therefore it must never be included
+    /// as part of the proposal itself
     struct Proposal {
         /// @notice Unique id for looking up a proposal
         uint256 id;

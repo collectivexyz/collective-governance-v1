@@ -434,7 +434,10 @@ contract CommunityBuilder is VersionedContract, ERC165, OwnableInitializable, UU
         } else {
             revert CommunityTypeRequired();
         }
+
         address payable proxyAddress = payable(address(_proxy));
+        OwnableInitializable _ownable = OwnableInitializable(proxyAddress);
+        _ownable.transferOwnership(msg.sender);
         emit CommunityClassCreated(proxyAddress);
         return proxyAddress;
     }

@@ -65,23 +65,20 @@ contract UpgradeCommunityClass is Script {
     error UUPSProxyRequired(address proxyAddress);
     error CommunityClassRequired(address target);
 
-    modifier requireProxy(address classProxy) {
-        IERC165 _erc165 = IERC165(classProxy);
-        if (!_erc165.supportsInterface(type(CommunityClassProxy).interfaceId)) revert ProxyRequired(classProxy);
-        if (!_erc165.supportsInterface(type(UUPSUpgradeable).interfaceId)) revert UUPSProxyRequired(classProxy);
-        _;
-    }
-
     /**
-     * @notice perform an upgrade of classProxy to target implementation
-     * @param classProxy the classProxy returned by CommunityClassBuilder
-     * @param target the target implementation for the upgrade
+     * @notice upgrade classproxy to target via environment
+     * CLASS_PROXY: community class address
+     * TARGET: community class implementation address
      */
-    function upgrade(address payable classProxy, address target) external requireProxy(classProxy) {
-        UUPSUpgradeable __uups = UUPSUpgradeable(classProxy);
-        IERC165 _target165 = IERC165(target);
-        if (!_target165.supportsInterface(type(CommunityClass).interfaceId)) revert CommunityClassRequired(target);
-        __uups.upgradeTo(target);
-        emit UpgradeProxy(classProxy, target);
+    function upgrade() external {
+        address _classProxy = vm.envAddress("CLASS_PROXY");
+        address _target = vm.envAddress("TARGET");
+        vm.startBroadcast();
+        UUPSUpgradeable __uups = UUPSUpgradeable(_classProxy);
+        IERC165 _target165 = IERC165(_target);
+        if (!_target165.supportsInterface(type(CommunityClass).interfaceId)) revert CommunityClassRequired(_target);
+        __uups.upgradeTo(_target);
+        emit UpgradeProxy(_classProxy, _target);
+        vm.stopBroadcast();
     }
 }

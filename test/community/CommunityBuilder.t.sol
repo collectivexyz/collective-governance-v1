@@ -8,16 +8,19 @@ import { Test } from "forge-std/Test.sol";
 import { Constant } from "../../contracts/Constant.sol";
 import { Versioned } from "../../contracts/access/Versioned.sol";
 import { Mutable } from "../../contracts/access/Mutable.sol";
+import { OwnableInitializable } from "../../contracts/access/OwnableInitializable.sol";
 import { AddressCollection } from "../../contracts/collection/AddressSet.sol";
 import { CommunityBuilder } from "../../contracts/community/CommunityBuilder.sol";
-import { createCommunityBuilder } from "../../contracts/community/CommunityBuilderProxy.sol";
+import { createCommunityBuilder, CommunityBuilderProxy } from "../../contracts/community/CommunityBuilderProxy.sol";
 import { VoterClass } from "../../contracts/community/VoterClass.sol";
 import { CommunityClass, WeightedCommunityClass } from "../../contracts/community/CommunityClass.sol";
+import { WeightedClassFactory, ProjectClassFactory } from "../../contracts/community/CommunityFactory.sol";
 
 import { MockERC721 } from "../mock/MockERC721.sol";
 
 contract CommunityBuilderTest is Test {
     address private constant _SUPERVISOR = address(0x1234);
+    address private constant _OTHER = address(0x0001);
 
     CommunityBuilder private _builder;
 
@@ -257,5 +260,39 @@ contract CommunityBuilderTest is Test {
 
     function testFailWithNoSupervisor() public {
         _builder.aCommunity().asOpenCommunity().withQuorum(1).build();
+    }
+
+    function testOpenCommunityOwner() public {
+        address _classAddress = _builder.asOpenCommunity().withQuorum(1).build();
+        OwnableInitializable _ownable = OwnableInitializable(_classAddress);
+        assertEq(_ownable.owner(), address(this));
+    }
+
+    function testPoolCommunityOwner() public {
+        address _classAddress = _builder.asPoolCommunity().withVoter(address(0x1234)).withQuorum(1).build();
+        OwnableInitializable _ownable = OwnableInitializable(_classAddress);
+        assertEq(_ownable.owner(), address(this));
+    }
+
+    function testErc721CommunityOwner() public {
+        address _classAddress = _builder.asErc721Community(address(0x1234)).withQuorum(1).build();
+        OwnableInitializable _ownable = OwnableInitializable(_classAddress);
+        assertEq(_ownable.owner(), address(this));
+    }
+
+    function testClosedErc721CommunityOwner() public {
+        address _classAddress = _builder.asClosedErc721Community(address(0x1234), 1).withQuorum(1).build();
+        OwnableInitializable _ownable = OwnableInitializable(_classAddress);
+        assertEq(_ownable.owner(), address(this));
+    }
+
+    function testUpgradeRequiresOwner() public {
+        WeightedClassFactory _wFactory = new WeightedClassFactory();
+        ProjectClassFactory _pFactory = new ProjectClassFactory();
+        CommunityBuilder _cBuilder = new CommunityBuilder();
+        CommunityBuilderProxy _proxy = CommunityBuilderProxy(payable(address(_builder)));
+        vm.expectRevert(abi.encodeWithSelector(OwnableInitializable.NotOwner.selector, _OTHER));
+        vm.prank(_OTHER, _OTHER);
+        _proxy.upgrade(address(_cBuilder), address(_wFactory), address(_pFactory));
     }
 }

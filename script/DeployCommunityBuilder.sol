@@ -49,73 +49,46 @@ import { Script } from "forge-std/Script.sol";
 import { WeightedClassFactory, ProjectClassFactory } from "../contracts/community/CommunityFactory.sol";
 import { CommunityBuilder } from "../contracts/community/CommunityBuilder.sol";
 import { CommunityBuilderProxy } from "../contracts/community/CommunityBuilderProxy.sol";
-import { StorageFactory } from "../contracts/storage/StorageFactory.sol";
-import { MetaStorageFactory } from "../contracts/storage/MetaStorageFactory.sol";
-import { GovernanceFactory } from "../contracts/governance/GovernanceFactory.sol";
-import { GovernanceBuilder } from "../contracts/governance/GovernanceBuilder.sol";
-import { GovernanceBuilderProxy } from "../contracts/governance/GovernanceBuilderProxy.sol";
 
 /**
  * @notice deploy factories and contract for GovernanceBuilder
  */
-contract DeployCollective is Script {
-    event DeployCommunityBuilder(address communityAddress);
-    event DeployStorageFactory(address storageAddress);
-    event DeployMetaStorageFactory(address metaAddress);
-    event DeployGovernanceFactory(address governanceAddress);
-    event DeployGovernanceBuilder(address builderAddress);
-    event UpgradeGovernanceBuilder(address builderAddress);
+contract DeployCommunityBuilder is Script {
+    event CommunityBuilderDeployed(address communityAddress);
+    event CommunityBuilderUpgraded(address communityAddress);
 
     /**
-     * @notice deploy the Collective GovernanceBuilder
+     * @notice deploy the Collective CommunityBuilder
      */
     function deploy() external {
-        vm.broadcast();
-        StorageFactory _storageFactory = new StorageFactory();
-        emit DeployStorageFactory(address(_storageFactory));
-        vm.broadcast();
-        MetaStorageFactory _metaStorageFactory = new MetaStorageFactory();
-        emit DeployMetaStorageFactory(address(_metaStorageFactory));
-        vm.broadcast();
-        GovernanceFactory _governanceFactory = new GovernanceFactory();
-        emit DeployGovernanceFactory(address(_governanceFactory));
         vm.startBroadcast();
-        GovernanceBuilder _builder = new GovernanceBuilder();
-        GovernanceBuilderProxy _proxy = new GovernanceBuilderProxy(
+        WeightedClassFactory _weightedFactory = new WeightedClassFactory();
+        ProjectClassFactory _projectFactory = new ProjectClassFactory();
+
+        CommunityBuilder _builder = new CommunityBuilder();
+        CommunityBuilderProxy _proxy = new CommunityBuilderProxy(
             address(_builder),
-            address(_governanceFactory),
-            address(_storageFactory),
-            address(_metaStorageFactory)
+            address(_weightedFactory),
+            address(_projectFactory)
         );
-        emit DeployGovernanceBuilder(address(_proxy));
+        emit CommunityBuilderDeployed(address(_proxy));
         vm.stopBroadcast();
     }
 
     /**
-     * @notice upgrade the Collective GovernanceBuilder
+     * @notice deploy the Collective CommunityBuilder
      */
     function upgrade() external {
         address _builderAddr = vm.envAddress("BUILDER_ADDRESS");
         address payable _proxy = payable(_builderAddr);
-        vm.broadcast();
-        StorageFactory _storageFactory = new StorageFactory();
-        emit DeployStorageFactory(address(_storageFactory));
-        vm.broadcast();
-        MetaStorageFactory _metaStorageFactory = new MetaStorageFactory();
-        emit DeployMetaStorageFactory(address(_metaStorageFactory));
-        vm.broadcast();
-        GovernanceFactory _governanceFactory = new GovernanceFactory();
-        emit DeployGovernanceFactory(address(_governanceFactory));
         vm.startBroadcast();
-        GovernanceBuilder _builder = new GovernanceBuilder();
-        GovernanceBuilderProxy _builderProxy = GovernanceBuilderProxy(_proxy);
-        _builderProxy.upgrade(
-            address(_builder),
-            address(_governanceFactory),
-            address(_storageFactory),
-            address(_metaStorageFactory)
-        );
-        emit UpgradeGovernanceBuilder(_proxy);
+        WeightedClassFactory _weightedFactory = new WeightedClassFactory();
+        ProjectClassFactory _projectFactory = new ProjectClassFactory();
+
+        CommunityBuilder _builder = new CommunityBuilder();
+        CommunityBuilderProxy _pbuilder = CommunityBuilderProxy(_proxy);
+        _pbuilder.upgrade(address(_builder), address(_weightedFactory), address(_projectFactory));
+        emit CommunityBuilderUpgraded(address(_proxy));
         vm.stopBroadcast();
     }
 }
