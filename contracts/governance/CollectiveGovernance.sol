@@ -482,8 +482,13 @@ contract CollectiveGovernance is VoteStrategy, Governance, ERC165, VersionedCont
     /// @param _proposalId The numeric id of the proposed vote
     function cancel(uint256 _proposalId) public requireSupervisor(_proposalId) {
         uint256 _startTime = _storage.startTime(_proposalId);
-        if (isVoteOpenByProposalId[_proposalId] || getBlockTimestamp() > _startTime)
-            revert CancelNotPossible(_proposalId, msg.sender);
+        uint256 _endTime = _storage.endTime(_proposalId);
+        if (
+            isVoteOpenByProposalId[_proposalId] ||
+            getBlockTimestamp() > _startTime ||
+            _storage.quorum(_proposalId) > 0 ||
+            (!isVoteOpenByProposalId[_proposalId] && getBlockTimestamp() > _endTime)
+        ) revert CancelNotPossible(_proposalId, msg.sender);
         uint256 transactionCount = _storage.transactionCount(_proposalId);
         for (uint256 tid = 0; tid < transactionCount; tid++) {
             Transaction memory transaction = _storage.getTransaction(_proposalId, tid);

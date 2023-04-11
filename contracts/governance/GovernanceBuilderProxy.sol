@@ -85,7 +85,7 @@ contract GovernanceBuilderProxy is ERC1967Proxy {
                 _metaStorageFactory,
                 Constant.CURRENT_VERSION
             ),
-            false
+            true
         );
     }
 }

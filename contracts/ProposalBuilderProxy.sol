@@ -79,7 +79,7 @@ contract ProposalBuilderProxy is ERC1967Proxy {
                 _metaAddress,
                 Constant.CURRENT_VERSION
             ),
-            false
+            true
         );
     }
 }

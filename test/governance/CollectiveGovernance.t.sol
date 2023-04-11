@@ -1077,6 +1077,20 @@ contract CollectiveGovernanceTest is Test {
         assertTrue(_storage.isCancel(proposalId));
     }
 
+    function testCancelQuorum() public {
+        bytes memory code = address(_storage).code;
+
+        address storageMock = _storageAddress;
+        vm.etch(storageMock, code);
+        vm.mockCall(storageMock, abi.encodeWithSelector(Storage.quorum.selector, proposalId), abi.encode(1));
+        vm.startPrank(_SUPERVISOR, _SUPERVISOR);
+        governance.configure(proposalId, 2);
+
+        vm.expectRevert(abi.encodeWithSelector(Governance.CancelNotPossible.selector, proposalId, _SUPERVISOR));
+        governance.cancel(proposalId);
+        vm.stopPrank();
+    }
+
     function testCancelPropose() public {
         vm.startPrank(_SUPERVISOR, _SUPERVISOR);
         governance.configure(proposalId, 2);
@@ -1142,7 +1156,7 @@ contract CollectiveGovernanceTest is Test {
         vm.stopPrank();
     }
 
-    function testCancelAfterEnd() public {
+    function testCancelAfterEndIfStarted() public {
         vm.startPrank(_SUPERVISOR, _SUPERVISOR);
         uint256 blockTimestamp = block.timestamp;
         governance.configure(proposalId, 2);
@@ -1152,6 +1166,25 @@ contract CollectiveGovernanceTest is Test {
         vm.expectRevert(abi.encodeWithSelector(Governance.CancelNotPossible.selector, proposalId, _SUPERVISOR));
         governance.cancel(proposalId);
         vm.stopPrank();
+    }
+
+    function testCancelAfterEndNotStarted() public {
+        vm.startPrank(_SUPERVISOR, _SUPERVISOR);
+        uint256 blockTimestamp = block.timestamp;
+        governance.configure(proposalId, 2);
+        vm.warp(blockTimestamp + Constant.MINIMUM_VOTE_DURATION);
+        vm.expectRevert(abi.encodeWithSelector(Governance.CancelNotPossible.selector, proposalId, _SUPERVISOR));
+        governance.cancel(proposalId);
+        vm.stopPrank();
+    }
+
+    function testCancelAfterEndNotStartedOrFinal() public {
+        vm.startPrank(_SUPERVISOR, _SUPERVISOR);
+        uint256 blockTimestamp = block.timestamp;
+        vm.warp(blockTimestamp + Constant.MINIMUM_VOTE_DURATION);
+        governance.cancel(proposalId);
+        vm.stopPrank();
+        assertTrue(_storage.isCancel(proposalId));
     }
 
     function testEndNowIfVeto() public {

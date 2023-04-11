@@ -165,15 +165,16 @@
     {
       "label": "upgradecommunityclass",
       "type": "shell",
-      "command": "forge script ./script/UpgradeCommunityClass.sol --sig 'upgrade()' --libraries contracts/Constant.sol:Constant:${CONSTANT_LIB_ADDRESS} --slow --broadcast --rpc-url ${RPC_URL} --private-key ${PRIVATE_KEY} --etherscan-api-key ${ETHERSCAN_API_KEY} --verify",
+      "command": "forge script ./script/UpgradeCommunityClass.sol --sig 'upgrade()' --libraries contracts/Constant.sol:Constant:${CONSTANT_LIB_ADDRESS} --slow --broadcast --rpc-url ${RPC_URL} --private-key ${PRIVATE_KEY}",
       "options": {
         "cwd": "${workspaceFolder}",
         "env": {
           "CONSTANT_LIB_ADDRESS": "0x5a7D758870C57d8A4E1AB309079705E77D279D0a",
           "CLASS_PROXY": "0xC9607cd3c8929ABf9af1DA9bF4895fb44D0AA9f7",
-          "TARGET": "0xfaff0a74e8230f60cd4c241f354c524b5264090c"
+          "TARGET_PROTOTYPE": "0x004CC3f4bB0415a0f0a2064D7D96549305321851"
         }
       },
+      "dependsOn": "test",
       "group": {
         "kind": "test",
         "isDefault": false

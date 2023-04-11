@@ -44,11 +44,10 @@
 pragma solidity ^0.8.15;
 
 import { IERC165 } from "@openzeppelin/contracts/interfaces/IERC165.sol";
-import { UUPSUpgradeable } from "@openzeppelin/contracts/proxy/utils/UUPSUpgradeable.sol";
 
 import { Script } from "forge-std/Script.sol";
 
-import { CommunityClass } from "../contracts/community/CommunityClass.sol";
+import { CommunityClass, WeightedCommunityClass } from "../contracts/community/CommunityClass.sol";
 import { CommunityClassProxy } from "../contracts/community/CommunityClassProxy.sol";
 
 /**
@@ -65,19 +64,37 @@ contract UpgradeCommunityClass is Script {
     error UUPSProxyRequired(address proxyAddress);
     error CommunityClassRequired(address target);
 
+    function requireCommunityClass(address _target) private {
+        IERC165 _target165 = IERC165(_target);
+        if (!_target165.supportsInterface(type(CommunityClass).interfaceId)) revert CommunityClassRequired(_target);
+    }
+
     /**
      * @notice upgrade classproxy to target via environment
      * CLASS_PROXY: community class address
-     * TARGET: community class implementation address
+     * TARGET: community class proxy replacement
      */
     function upgrade() external {
         address _classProxy = vm.envAddress("CLASS_PROXY");
-        address _target = vm.envAddress("TARGET");
+        address _target = vm.envAddress("TARGET_PROTOTYPE");
+        requireCommunityClass(_target);
         vm.startBroadcast();
-        UUPSUpgradeable __uups = UUPSUpgradeable(_classProxy);
-        IERC165 _target165 = IERC165(_target);
-        if (!_target165.supportsInterface(type(CommunityClass).interfaceId)) revert CommunityClassRequired(_target);
-        __uups.upgradeTo(_target);
+        CommunityClassProxy _class = CommunityClassProxy(_target);
+        CommunityClassProxy _proxy = CommunityClassProxy(_classProxy);
+        address _implementation = _class.getImplementation();
+        WeightedCommunityClass _prototype = WeightedCommunityClass(_target);
+        _proxy.upgrade(
+            _implementation,
+            _prototype.weight(),
+            _prototype.minimumProjectQuorum(),
+            _prototype.minimumVoteDelay(),
+            _prototype.maximumVoteDelay(),
+            _prototype.minimumVoteDuration(),
+            _prototype.maximumVoteDuration(),
+            _prototype.maximumGasUsedRebate(),
+            _prototype.maximumBaseFeeRebate(),
+            _prototype.communitySupervisorSet()
+        );
         emit UpgradeProxy(_classProxy, _target);
         vm.stopBroadcast();
     }

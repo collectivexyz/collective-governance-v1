@@ -59,6 +59,19 @@ interface CommunityClassProxy {
     error CommunityClassRequired(address implementation);
 
     function getImplementation() external returns (address);
+
+    function upgrade(
+        address _implementation,
+        uint256 _voteWeight,
+        uint256 _minimumQuorum,
+        uint256 _minimumDelay,
+        uint256 _maximumDelay,
+        uint256 _minimumDuration,
+        uint256 _maximumDuration,
+        uint256 _gasUsedRebate,
+        uint256 _baseFeeRebate,
+        AddressCollection _supervisorList
+    ) external;
 }
 
 abstract contract WiredClassProxy is ERC1967Proxy, CommunityClassProxy {
@@ -145,7 +158,7 @@ contract WeightedCommunityClassProxy is WiredClassProxy {
                 _supervisorList,
                 Constant.CURRENT_VERSION
             ),
-            false
+            true
         );
     }
 }
@@ -225,7 +238,7 @@ contract ProjectCommunityClassProxy is WiredClassProxy {
                 _supervisorList,
                 Constant.CURRENT_VERSION
             ),
-            false
+            true
         );
     }
 }
@@ -307,7 +320,7 @@ contract ClosedProjectCommunityClassProxy is WiredClassProxy {
                 _supervisorList,
                 Constant.CURRENT_VERSION
             ),
-            false
+            true
         );
     }
 }

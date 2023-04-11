@@ -76,7 +76,7 @@ contract CommunityBuilderProxy is ERC1967Proxy {
                 _projectFactory,
                 Constant.CURRENT_VERSION
             ),
-            false
+            true
         );
     }
 }
