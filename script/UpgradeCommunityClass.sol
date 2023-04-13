@@ -58,13 +58,24 @@ import { CommunityClassProxy } from "../contracts/community/CommunityClassProxy.
  * @dev supportsInterface(type(CommunityClass).interfaceId) is required to be true
  */
 contract UpgradeCommunityClass is Script {
-    event UpgradeProxy(address proxy, address target);
+    event UpgradeProxy(
+        address proxy,
+        address target,
+        uint256 weight,
+        uint256 minimumProjectQuorum,
+        uint256 minimumVoteDelay,
+        uint256 maximumVoteDelay,
+        uint256 minimumVoteDuration,
+        uint256 maximumVoteDuration,
+        uint256 gasUsedRebate,
+        uint256 baseFeeRebate
+    );
 
     error ProxyRequired(address proxyAddress);
     error UUPSProxyRequired(address proxyAddress);
     error CommunityClassRequired(address target);
 
-    function requireCommunityClass(address _target) private {
+    function requireCommunityClass(address _target) private view {
         IERC165 _target165 = IERC165(_target);
         if (!_target165.supportsInterface(type(CommunityClass).interfaceId)) revert CommunityClassRequired(_target);
     }
@@ -95,7 +106,18 @@ contract UpgradeCommunityClass is Script {
             _prototype.maximumBaseFeeRebate(),
             _prototype.communitySupervisorSet()
         );
-        emit UpgradeProxy(_classProxy, _target);
+        emit UpgradeProxy(
+            _classProxy,
+            _target,
+            _prototype.weight(),
+            _prototype.minimumProjectQuorum(),
+            _prototype.minimumVoteDelay(),
+            _prototype.maximumVoteDelay(),
+            _prototype.minimumVoteDuration(),
+            _prototype.maximumVoteDuration(),
+            _prototype.maximumGasUsedRebate(),
+            _prototype.maximumBaseFeeRebate()
+        );
         vm.stopBroadcast();
     }
 }
