@@ -33,15 +33,29 @@ Collective Governance has been designed from the ground up to be very easy to us
 Contract Deployment Details
 ===========================
 
-Görli Testnet
+Sepolia TestNet
 _____________
 
 =====================  ==========================================  =========== ===========================
 Contract               Ethereum Address                            Version     Description
 =====================  ==========================================  =========== ===========================
-`Constant`_            0xE92C637eC797934574D31D319B4bD1eca182e7F1  0.9.7       Constant library
-`CommunityBuilder`_    0x011b543b69236aca83406edc051e8a6dd3bcda1c  0.9.7       CommunityBuilder Factory
-`GovernanceBuilder`_   0x2c57560BF19b7c088488104D02506D87f63e414C  0.9.7       Governance Contract Builder
+`Constant`_            0xD5DA9B812806E080948476A801d2004f3305E63F  0.9.8       Constant library
+`CommunityBuilder`_    0x4ba7E0dc43180Cb10EF53FF9Da923E02f459Ec9F  0.9.8       CommunityBuilder Factory
+`GovernanceBuilder`_   0xe1a13ea37F2BFE35B612799fcf9eBD43efA00B87  0.9.8       Governance Contract Builder
+=====================  ==========================================  =========== ===========================
+
+
+Görli TestNet
+_____________
+
+*Deprecated*
+
+=====================  ==========================================  =========== ===========================
+Contract               Ethereum Address                            Version     Description
+=====================  ==========================================  =========== ===========================
+Constant            0xE92C637eC797934574D31D319B4bD1eca182e7F1  0.9.7       Constant library
+CommunityBuilder    0x011b543b69236aca83406edc051e8a6dd3bcda1c  0.9.7       CommunityBuilder Factory
+GovernanceBuilder   0x2c57560BF19b7c088488104D02506D87f63e414C  0.9.7       Governance Contract Builder
 =====================  ==========================================  =========== ===========================
 
 Project Links
@@ -53,10 +67,10 @@ Project Links
 .. _GitHub: https://github.com/collectivexyz/collective-governance-v1
 .. _JavaScript API: https://github.com/collectivexyz/governance
 .. _JavaScript Reference: https://github.com/collectivexyz/collective_governance_js
-.. _Constant: https://goerli.etherscan.io/address/0xE92C637eC797934574D31D319B4bD1eca182e7F1 
-.. _CommunityBuilder: https://goerli.etherscan.io/address/0x011b543b69236aca83406edc051e8a6dd3bcda1c  
-.. _GovernanceBuilder: https://goerli.etherscan.io/address/0x2c57560BF19b7c088488104D02506D87f63e414C
-.. _System: https://goerli.etherscan.io/address/0xDb6f31A20996e265FB59406675261F3fcC0bDe6f
+.. _Constant: https://sepolia.etherscan.io/address/0xD5DA9B812806E080948476A801d2004f3305E63F 
+.. _CommunityBuilder: https://sepolia.etherscan.io/address/0x4ba7E0dc43180Cb10EF53FF9Da923E02f459Ec9F  
+.. _GovernanceBuilder: https://sepolia.etherscan.io/address/0xe1a13ea37F2BFE35B612799fcf9eBD43efA00B87
+
 
 Indices and tables
 ==================
