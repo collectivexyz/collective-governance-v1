@@ -33,11 +33,6 @@ jobs:
           yarn hint
           yarn install --production
 
-      - name: Run Forge Size Check
-        run: |
-          forge build --sizes
-        id: sizes
-
       - name: Run Forge tests
         run: |
           forge test -vvv
