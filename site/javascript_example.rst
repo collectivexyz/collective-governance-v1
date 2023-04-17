@@ -45,7 +45,7 @@ The following code block demonstrates how to connect to the Ethereum RPC client
 The next step is to create a VoterClass
 
 CommunityClass
-----------
+--------------
 
 The first step to build a :ref:`CommunityClass <communityclass>` for your project is to use the Builder.  The community class can be reused for every :ref:`CollectiveGovernance <collectivegovernance>` contract.
 
