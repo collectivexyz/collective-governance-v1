@@ -62,5 +62,5 @@ jobs:
         run: |
           export DEPLOYED_LIBRARY=$(bin/library.py Constant.sol.json)
           echo "Using library ${DEPLOYED_LIBRARY}"
-          forge script ./script/DeployCommunityBuilder.sol --sig 'deploy()' --libraries ${DEPLOYED_LIBRARY} --slow --broadcast --rpc-url ${RPC_URL} --private-key ${PRIVATE_KEY} --etherscan-api-key ${ETHERSCAN_API_KEY} --verify || true          
-          forge script ./script/DeployCollective.sol --sig 'deploy()' --libraries ${DEPLOYED_LIBRARY} --slow --broadcast --rpc-url ${RPC_URL} --private-key ${PRIVATE_KEY} --etherscan-api-key ${ETHERSCAN_API_KEY} --verify || true
+          BUILDER_ADDRESS=0x4ba7E0dc43180Cb10EF53FF9Da923E02f459Ec9F forge script ./script/DeployCommunityBuilder.sol --sig 'upgrade()' --libraries ${DEPLOYED_LIBRARY} --slow --broadcast --rpc-url ${RPC_URL} --private-key ${PRIVATE_KEY}
+          BUILDER_ADDRESS=0xe1a13ea37F2BFE35B612799fcf9eBD43efA00B87 forge script ./script/DeployCollective.sol --sig 'upgrade()' --libraries ${DEPLOYED_LIBRARY} --slow --broadcast --rpc-url ${RPC_URL} --private-key ${PRIVATE_KEY}

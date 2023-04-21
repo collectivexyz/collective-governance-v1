@@ -47,7 +47,7 @@ import { ERC1967Proxy } from "@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy
 
 import { Constant } from "../Constant.sol";
 import { CommunityBuilder } from "../community/CommunityBuilder.sol";
-import { WeightedClassFactory, ProjectClassFactory } from "../../contracts/community/CommunityFactory.sol";
+import { WeightedClassFactory, ProjectClassFactory, TokenClassFactory } from "../../contracts/community/CommunityFactory.sol";
 
 /**
  * @notice Proxy for CommunityBuilder
@@ -56,24 +56,26 @@ contract CommunityBuilderProxy is ERC1967Proxy {
     constructor(
         address _implementation,
         address _weightedFactory,
-        address _projectFactory
+        address _projectFactory,
+        address _tokenFactory
     )
         ERC1967Proxy(
             _implementation,
-            abi.encodeWithSelector(CommunityBuilder.initialize.selector, _weightedFactory, _projectFactory)
+            abi.encodeWithSelector(CommunityBuilder.initialize.selector, _weightedFactory, _projectFactory, _tokenFactory)
         )
     // solhint-disable-next-line no-empty-blocks
     {
 
     }
 
-    function upgrade(address _implementation, address _weightedFactory, address _projectFactory) external {
+    function upgrade(address _implementation, address _weightedFactory, address _projectFactory, address _tokenFactory) external {
         _upgradeToAndCallUUPS(
             _implementation,
             abi.encodeWithSelector(
                 CommunityBuilder.upgrade.selector,
                 _weightedFactory,
                 _projectFactory,
+                _tokenFactory,
                 Constant.CURRENT_VERSION
             ),
             true
@@ -85,12 +87,14 @@ contract CommunityBuilderProxy is ERC1967Proxy {
 function createCommunityBuilder() returns (CommunityBuilder) {
     WeightedClassFactory _weightedFactory = new WeightedClassFactory();
     ProjectClassFactory _projectFactory = new ProjectClassFactory();
+    TokenClassFactory _tokenFactory = new TokenClassFactory();
 
     CommunityBuilder _builder = new CommunityBuilder();
     CommunityBuilderProxy _proxy = new CommunityBuilderProxy(
         address(_builder),
         address(_weightedFactory),
-        address(_projectFactory)
+        address(_projectFactory),
+        address(_tokenFactory)
     );
     address _proxyAddress = address(_proxy);
     return CommunityBuilder(_proxyAddress);

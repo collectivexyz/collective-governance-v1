@@ -32,8 +32,8 @@ Collective Governance has been designed from the ground up to be very easy to us
 | Contract          | Ethereum Address                           | Version |
 | ----------------- | ------------------------------------------ | ------- |
 | Constant          | 0xD5DA9B812806E080948476A801d2004f3305E63F | 0.9.8   |
-| CommunityBuilder  | 0x4ba7E0dc43180Cb10EF53FF9Da923E02f459Ec9F | 0.9.8   |
-| GovernanceBuilder | 0xe1a13ea37F2BFE35B612799fcf9eBD43efA00B87 | 0.9.8   |
+| CommunityBuilder  | 0x4ba7E0dc43180Cb10EF53FF9Da923E02f459Ec9F | LATEST  |
+| GovernanceBuilder | 0xe1a13ea37F2BFE35B612799fcf9eBD43efA00B87 | LATEST  |
 
 #### Görli TestNet
 
@@ -51,13 +51,13 @@ Collective Governance has been designed from the ground up to be very easy to us
 
 ### VS Code
 
-    Using the Remote module in VSCode simply reopen the project in it's container.
+Using the Remote module in VSCode simply reopen the project in it's container.
 
     `Reopen in Container`
 
 ### Foundry
 
-    This project is using [Foundry](https://github.com/foundry-rs/foundry).   Development is enabled with the [Foundry Development](https://github.com/collectivexyz/foundry/pkgs/container/foundry) container
+This project is using [Foundry](https://github.com/foundry-rs/foundry). Development is enabled with the [Foundry Development](https://github.com/collectivexyz/foundry) container
 
 ### JavaScript API
 

@@ -46,7 +46,7 @@ pragma solidity ^0.8.15;
 
 import { Script } from "forge-std/Script.sol";
 
-import { WeightedClassFactory, ProjectClassFactory } from "../contracts/community/CommunityFactory.sol";
+import { WeightedClassFactory, TokenClassFactory } from "../contracts/community/CommunityFactory.sol";
 import { CommunityBuilder } from "../contracts/community/CommunityBuilder.sol";
 import { CommunityBuilderProxy } from "../contracts/community/CommunityBuilderProxy.sol";
 import { StorageFactory } from "../contracts/storage/StorageFactory.sol";

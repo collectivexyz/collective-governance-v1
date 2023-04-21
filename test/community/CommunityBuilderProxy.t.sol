@@ -5,7 +5,7 @@ import { Test } from "forge-std/Test.sol";
 
 import { CommunityBuilder } from "../../contracts/community/CommunityBuilder.sol";
 import { createCommunityBuilder, CommunityBuilderProxy } from "../../contracts/community/CommunityBuilderProxy.sol";
-import { WeightedClassFactory, ProjectClassFactory } from "../../contracts/community/CommunityFactory.sol";
+import { WeightedClassFactory, ProjectClassFactory, TokenClassFactory } from "../../contracts/community/CommunityFactory.sol";
 
 contract CommunityBuilderProxyTest is Test {
     CommunityBuilder private _builder;
@@ -21,10 +21,11 @@ contract CommunityBuilderProxyTest is Test {
     function testProxyUpgrade() public {
         WeightedClassFactory _weightedFactory = new WeightedClassFactory();
         ProjectClassFactory _projectFactory = new ProjectClassFactory();
+        TokenClassFactory _tokenFactory = new TokenClassFactory();
         address payable _paddr = payable(address(_builder));
         CommunityBuilderProxy _proxy = CommunityBuilderProxy(_paddr);
         CommunityBuilder _cbuilder = new CBuilder2();
-        _proxy.upgrade(address(_cbuilder), address(_weightedFactory), address(_projectFactory));
+        _proxy.upgrade(address(_cbuilder), address(_weightedFactory), address(_projectFactory), address(_tokenFactory));
         assertEq(_builder.name(), "test upgrade");
     }
 }

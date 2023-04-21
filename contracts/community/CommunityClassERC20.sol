@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: BSD-3-Clause
+// SPDhX-License-Identifier: BSD-3-Clause
 /*
  *                          88  88                                   88
  *                          88  88                            ,d     ""
@@ -43,24 +43,21 @@
  */
 pragma solidity ^0.8.15;
 
-import { IERC721 } from "@openzeppelin/contracts/interfaces/IERC721.sol";
-import { IERC721Enumerable } from "@openzeppelin/contracts/token/ERC721/extensions/IERC721Enumerable.sol";
+import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 import { AlwaysFinal } from "../../contracts/access/AlwaysFinal.sol";
 import { AddressCollection } from "../../contracts/collection/AddressSet.sol";
 import { ProjectCommunityClass } from "../../contracts/community/CommunityClass.sol";
 import { ScheduledCommunityClass } from "../../contracts/community/ScheduledCommunityClass.sol";
 
-/// @title ERC721 Implementation of CommunityClass
-/// @notice This contract implements a voter pool based on ownership of an ERC-721 token.
-/// A class member is considered a voter if they have signing access to a wallet that is marked
-/// ownerOf a token of the specified address
-/// @dev ERC721Enumerable is supported for discovery, however if the token contract does not support enumeration
-/// then vote by specific tokenId is still supported
-contract CommunityClassERC721 is ScheduledCommunityClass, ProjectCommunityClass, AlwaysFinal {
-    error ERC721EnumerableRequired(address contractAddress);
+/// @title ERC20 Implementation of CommunityClass
+/// @notice This contract implements a voter pool based on ownership of an ERC-20 token.
+/// A class member is considered a voter if they have signing access to a wallet that
+/// has a positive balance
+contract CommunityClassERC20 is ScheduledCommunityClass, ProjectCommunityClass, AlwaysFinal {
+    error BalanceMismatch(address wallet, uint256 expected, uint256 provided);
 
-    string public constant NAME = "CommunityClassERC721";
+    string public constant NAME = "CommunityClassERC20";
 
     address internal _contractAddress;
 
@@ -134,15 +131,15 @@ contract CommunityClassERC721 is ScheduledCommunityClass, ProjectCommunityClass,
         );
     }
 
-    modifier requireValidToken(uint256 _shareId) {
-        if (_shareId == 0) revert UnknownToken(_shareId);
+    modifier requireValidShare(address _wallet, uint256 _shareId) {
+        if (_shareId == 0 || _shareId != uint160(_wallet)) revert UnknownToken(_shareId);
         _;
     }
 
     /// @notice determine if wallet holds at least one token from the ERC-721 contract
     /// @return bool true if wallet can sign for votes on this class
     function isVoter(address _wallet) public view onlyFinal returns (bool) {
-        return IERC721(_contractAddress).balanceOf(_wallet) > 0;
+        return IERC20(_contractAddress).balanceOf(_wallet) > 0;
     }
 
     /// @notice determine if adding a proposal is approved for this voter
@@ -151,41 +148,29 @@ contract CommunityClassERC721 is ScheduledCommunityClass, ProjectCommunityClass,
         return true;
     }
 
-    /// @notice tabulate the number of votes available for the specific wallet and tokenId
+    /// @notice tabulate the number of votes available for the specified wallet
     /// @param _wallet The wallet to test for ownership
-    /// @param _tokenId The id of the token associated with the ERC-721 contract
-    function votesAvailable(address _wallet, uint256 _tokenId) external view onlyFinal returns (uint256) {
-        address tokenOwner = IERC721(_contractAddress).ownerOf(_tokenId);
-        if (_wallet == tokenOwner) {
-            return 1;
-        }
-        return 0;
+    function votesAvailable(address _wallet) public view onlyFinal returns (uint256) {
+        return IERC20(_contractAddress).balanceOf(_wallet);
     }
 
-    /// @notice discover an array of tokenIds associated with the specified wallet
-    /// @dev discovery requires support for ERC721Enumerable, otherwise execution will revert
-    /// @return uint256[] array in memory of share ids
+    /// @notice discover the number of tokens available to vote
+    /// @return uint256[] array in memory of number of votes available
     function discover(address _wallet) external view onlyFinal returns (uint256[] memory) {
-        bytes4 interfaceId721 = type(IERC721Enumerable).interfaceId;
-        if (!IERC721(_contractAddress).supportsInterface(interfaceId721)) revert ERC721EnumerableRequired(_contractAddress);
-        IERC721Enumerable enumContract = IERC721Enumerable(_contractAddress);
-        IERC721 _nft = IERC721(_contractAddress);
-        uint256 tokenBalance = _nft.balanceOf(_wallet);
+        uint256 tokenBalance = votesAvailable(_wallet);
         if (tokenBalance == 0) revert NotVoter(_wallet);
-        uint256[] memory tokenIdList = new uint256[](tokenBalance);
-        for (uint256 i = 0; i < tokenBalance; i++) {
-            tokenIdList[i] = enumContract.tokenOfOwnerByIndex(_wallet, i);
-        }
-        return tokenIdList;
+        uint256[] memory shareList = new uint256[](1);
+        shareList[0] = uint160(_wallet);
+        return shareList;
     }
 
     /// @notice confirm tokenId is associated with wallet for voting
     /// @dev does not require IERC721Enumerable, tokenId ownership is checked directly using ERC-721
-    /// @param _wallet the wallet holding the token
-    /// @param _tokenId the id of the token
+    /// @param _wallet the wallet holding the tokens
+    /// @param _shareId the walletId
     /// @return uint256 The number of weighted votes confirmed
-    function confirm(address _wallet, uint256 _tokenId) external view onlyFinal requireValidToken(_tokenId) returns (uint256) {
-        uint256 voteCount = this.votesAvailable(_wallet, _tokenId);
+    function confirm(address _wallet, uint256 _shareId) external view requireValidShare(_wallet, _shareId) onlyFinal returns (uint256) {
+        uint256 voteCount = this.votesAvailable(_wallet);
         if (voteCount == 0) revert NotVoter(_wallet);
         return weight() * voteCount;
     }

@@ -46,7 +46,7 @@ pragma solidity ^0.8.15;
 
 import { Script } from "forge-std/Script.sol";
 
-import { WeightedClassFactory, ProjectClassFactory } from "../contracts/community/CommunityFactory.sol";
+import { WeightedClassFactory, ProjectClassFactory, TokenClassFactory } from "../contracts/community/CommunityFactory.sol";
 import { CommunityBuilder } from "../contracts/community/CommunityBuilder.sol";
 import { CommunityBuilderProxy } from "../contracts/community/CommunityBuilderProxy.sol";
 
@@ -64,12 +64,14 @@ contract DeployCommunityBuilder is Script {
         vm.startBroadcast();
         WeightedClassFactory _weightedFactory = new WeightedClassFactory();
         ProjectClassFactory _projectFactory = new ProjectClassFactory();
+        TokenClassFactory _tokenFactory = new TokenClassFactory();
 
         CommunityBuilder _builder = new CommunityBuilder();
         CommunityBuilderProxy _proxy = new CommunityBuilderProxy(
             address(_builder),
             address(_weightedFactory),
-            address(_projectFactory)
+            address(_projectFactory),
+            address(_tokenFactory)
         );
         emit CommunityBuilderDeployed(address(_proxy));
         vm.stopBroadcast();
@@ -84,10 +86,11 @@ contract DeployCommunityBuilder is Script {
         vm.startBroadcast();
         WeightedClassFactory _weightedFactory = new WeightedClassFactory();
         ProjectClassFactory _projectFactory = new ProjectClassFactory();
+        TokenClassFactory _tokenFactory = new TokenClassFactory();
 
         CommunityBuilder _builder = new CommunityBuilder();
         CommunityBuilderProxy _pbuilder = CommunityBuilderProxy(_proxy);
-        _pbuilder.upgrade(address(_builder), address(_weightedFactory), address(_projectFactory));
+        _pbuilder.upgrade(address(_builder), address(_weightedFactory), address(_projectFactory), address(_tokenFactory));
         emit CommunityBuilderUpgraded(address(_proxy));
         vm.stopBroadcast();
     }

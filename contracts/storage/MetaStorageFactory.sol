@@ -55,7 +55,7 @@ import { VersionedContract } from "../../contracts/access/VersionedContract.sol"
 import { OwnableInitializable } from "../../contracts/access/OwnableInitializable.sol";
 
 /**
- * @title CollectiveStorage creational contract
+ * @title MetaStorage creational contract
  */
 contract MetaStorageFactory is VersionedContract, OwnableInitializable, UUPSUpgradeable, Initializable, ERC165 {
     event UpgradeAuthorized(address sender, address owner);

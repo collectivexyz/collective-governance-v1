@@ -308,7 +308,7 @@
       {
         "indexed": false,
         "internalType": "address",
-        "name": "projectClassFactory",
+        "name": "tokenClassFactory",
         "type": "address"
       }
     ],
@@ -378,7 +378,7 @@
       {
         "indexed": false,
         "internalType": "address",
-        "name": "projectClassFactory",
+        "name": "tokenClassFactory",
         "type": "address"
       },
       {
@@ -456,7 +456,50 @@
         "type": "uint256"
       }
     ],
+    "name": "asClosedErc20Community",
+    "outputs": [
+      {
+        "internalType": "contract CommunityBuilder",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "project",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "tokenThreshold",
+        "type": "uint256"
+      }
+    ],
     "name": "asClosedErc721Community",
+    "outputs": [
+      {
+        "internalType": "contract CommunityBuilder",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "project",
+        "type": "address"
+      }
+    ],
+    "name": "asErc20Community",
     "outputs": [
       {
         "internalType": "contract CommunityBuilder",
@@ -535,6 +578,11 @@
       {
         "internalType": "address",
         "name": "_project",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_token",
         "type": "address"
       }
     ],
@@ -631,6 +679,11 @@
       {
         "internalType": "address",
         "name": "_project",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_token",
         "type": "address"
       },
       {
