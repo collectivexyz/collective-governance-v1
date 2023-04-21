@@ -2,6 +2,8 @@
 pragma solidity ^0.8.15;
 
 import { IERC165 } from "@openzeppelin/contracts/interfaces/IERC165.sol";
+import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import { ERC20PresetFixedSupply } from "@openzeppelin/contracts/token/ERC20/presets/ERC20PresetFixedSupply.sol";
 
 import { Test } from "forge-std/Test.sol";
 
@@ -12,9 +14,8 @@ import { OwnableInitializable } from "../../contracts/access/OwnableInitializabl
 import { AddressCollection } from "../../contracts/collection/AddressSet.sol";
 import { CommunityBuilder } from "../../contracts/community/CommunityBuilder.sol";
 import { createCommunityBuilder, CommunityBuilderProxy } from "../../contracts/community/CommunityBuilderProxy.sol";
-import { VoterClass } from "../../contracts/community/VoterClass.sol";
 import { CommunityClass, WeightedCommunityClass } from "../../contracts/community/CommunityClass.sol";
-import { WeightedClassFactory, ProjectClassFactory } from "../../contracts/community/CommunityFactory.sol";
+import { WeightedClassFactory, ProjectClassFactory, TokenClassFactory } from "../../contracts/community/CommunityFactory.sol";
 
 import { MockERC721 } from "../mock/MockERC721.sol";
 
@@ -192,7 +193,7 @@ contract CommunityBuilderTest is Test {
             .withQuorum(1)
             .withCommunitySupervisor(_SUPERVISOR)
             .build();
-        VoterClass _class = VoterClass(_classAddress);
+        CommunityClass _class = CommunityClass(_classAddress);
         assertTrue(_class.isVoter(address(0x1)));
     }
 
@@ -205,8 +206,8 @@ contract CommunityBuilderTest is Test {
             .withQuorum(1)
             .withCommunitySupervisor(_SUPERVISOR)
             .build();
-        VoterClass _class = VoterClass(_classAddress);
-        assertTrue(_class.supportsInterface(type(VoterClass).interfaceId));
+        CommunityClass _class = CommunityClass(_classAddress);
+        assertTrue(_class.supportsInterface(type(CommunityClass).interfaceId));
         assertTrue(_class.supportsInterface(type(CommunityClass).interfaceId));
         assertTrue(_class.isVoter(address(0x1)));
     }
@@ -289,10 +290,40 @@ contract CommunityBuilderTest is Test {
     function testUpgradeRequiresOwner() public {
         WeightedClassFactory _wFactory = new WeightedClassFactory();
         ProjectClassFactory _pFactory = new ProjectClassFactory();
+        TokenClassFactory _tFactory = new TokenClassFactory();
         CommunityBuilder _cBuilder = new CommunityBuilder();
         CommunityBuilderProxy _proxy = CommunityBuilderProxy(payable(address(_builder)));
         vm.expectRevert(abi.encodeWithSelector(OwnableInitializable.NotOwner.selector, _OTHER));
         vm.prank(_OTHER, _OTHER);
-        _proxy.upgrade(address(_cBuilder), address(_wFactory), address(_pFactory));
+        _proxy.upgrade(address(_cBuilder), address(_wFactory), address(_pFactory), address(_tFactory));
+    }
+
+    function testErc20Community() public {
+        uint256 tokenCount = 75;
+        IERC20 _token = new ERC20PresetFixedSupply("TestToken", "TT20", tokenCount, address(0x1234));
+        address _classAddress = _builder
+            .aCommunity()
+            .asErc20Community(address(_token))
+            .withQuorum(1)
+            .withCommunitySupervisor(_SUPERVISOR)
+            .build();
+        CommunityClass _class = CommunityClass(_classAddress);
+        assertTrue(_class.isVoter(address(0x1234)));
+    }
+
+    function testClosedErc20Community() public {
+        uint256 tokenCount = 75;
+        IERC20 _token = new ERC20PresetFixedSupply("TestToken", "TT20", tokenCount, address(0x1234));
+        address _classAddress = _builder
+            .aCommunity()
+            .asClosedErc20Community(address(_token), 25)
+            .withQuorum(1)
+            .withCommunitySupervisor(_SUPERVISOR)
+            .build();
+        CommunityClass _class = CommunityClass(_classAddress);
+        assertTrue(_class.isVoter(address(0x1234)));
+        assertFalse(_class.isVoter(address(0x1)));
+        assertTrue(_class.canPropose(address(0x1234)));
+        assertFalse(_class.canPropose(address(0x1)));
     }
 }

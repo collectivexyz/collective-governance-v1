@@ -52,6 +52,8 @@ import { CommunityClassOpenVote } from "../../contracts/community/CommunityClass
 import { CommunityClassVoterPool } from "../../contracts/community/CommunityClassVoterPool.sol";
 import { CommunityClassERC721 } from "../../contracts/community/CommunityClassERC721.sol";
 import { CommunityClassClosedERC721 } from "../../contracts/community/CommunityClassClosedERC721.sol";
+import { CommunityClassERC20 } from "../../contracts/community/CommunityClassERC20.sol";
+import { CommunityClassClosedERC20 } from "../../contracts/community/CommunityClassClosedERC20.sol";
 import { WeightedCommunityClassProxy, ProjectCommunityClassProxy, ClosedProjectCommunityClassProxy } from "../../contracts/community/CommunityClassProxy.sol";
 
 // solhint-disable-next-line func-visibility
@@ -155,6 +157,64 @@ function upgradeClosedErc721(
     AddressCollection _supervisorList
 ) {
     CommunityClass _class = new CommunityClassClosedERC721();
+    ProjectCommunityClassProxy _proxy = ProjectCommunityClassProxy(proxyAddress);
+    _proxy.upgrade(
+        address(_class),
+        weight,
+        minimumProjectQuorum,
+        minimumVoteDelay,
+        maximumVoteDelay,
+        minimumVoteDuration,
+        maximumVoteDuration,
+        _gasUsedRebate,
+        _baseFeeRebate,
+        _supervisorList
+    );
+}
+
+// solhint-disable-next-line func-visibility
+function upgradeErc20(
+    address payable proxyAddress,
+    uint256 weight,
+    uint256 minimumProjectQuorum,
+    uint256 minimumVoteDelay,
+    uint256 maximumVoteDelay,
+    uint256 minimumVoteDuration,
+    uint256 maximumVoteDuration,
+    uint256 _gasUsedRebate,
+    uint256 _baseFeeRebate,
+    AddressCollection _supervisorList
+) {
+    CommunityClass _class = new CommunityClassERC20();
+    ProjectCommunityClassProxy _proxy = ProjectCommunityClassProxy(proxyAddress);
+    _proxy.upgrade(
+        address(_class),
+        weight,
+        minimumProjectQuorum,
+        minimumVoteDelay,
+        maximumVoteDelay,
+        minimumVoteDuration,
+        maximumVoteDuration,
+        _gasUsedRebate,
+        _baseFeeRebate,
+        _supervisorList
+    );
+}
+
+// solhint-disable-next-line func-visibility
+function upgradeClosedErc20(
+    address payable proxyAddress,
+    uint256 weight,
+    uint256 minimumProjectQuorum,
+    uint256 minimumVoteDelay,
+    uint256 maximumVoteDelay,
+    uint256 minimumVoteDuration,
+    uint256 maximumVoteDuration,
+    uint256 _gasUsedRebate,
+    uint256 _baseFeeRebate,
+    AddressCollection _supervisorList
+) {
+    CommunityClass _class = new CommunityClassClosedERC20();
     ProjectCommunityClassProxy _proxy = ProjectCommunityClassProxy(proxyAddress);
     _proxy.upgrade(
         address(_class),
@@ -342,6 +402,99 @@ contract ProjectClassFactory {
             _supervisorList
         );
         CommunityClassClosedERC721 _proxyClass = CommunityClassClosedERC721(address(_proxy));
+        _proxyClass.transferOwnership(msg.sender);
+        return _proxyClass;
+    }
+}
+
+/**
+ * @title Token Class Factory
+ * @notice small factory intended to reduce construction size for project community classes
+ */
+contract TokenClassFactory {
+    /// @notice create a new community class representing an ERC-20 token based community
+    /// @param projectToken the token underlier for the community
+    /// @param weight the weight of a single voting share
+    /// @param minimumProjectQuorum the least possible quorum for any vote
+    /// @param minimumVoteDelay the least possible vote delay
+    /// @param maximumVoteDelay the least possible vote delay
+    /// @param minimumVoteDuration the least possible voting duration
+    /// @param maximumVoteDuration the least possible voting duration
+    /// @param _gasUsedRebate The maximum rebate for gas used
+    /// @param _baseFeeRebate The maximum base fee rebate
+    /// @param _supervisorList the list of supervisors for this project
+    function createErc20(
+        address projectToken,
+        uint256 weight,
+        uint256 minimumProjectQuorum,
+        uint256 minimumVoteDelay,
+        uint256 maximumVoteDelay,
+        uint256 minimumVoteDuration,
+        uint256 maximumVoteDuration,
+        uint256 _gasUsedRebate,
+        uint256 _baseFeeRebate,
+        AddressCollection _supervisorList
+    ) external returns (ProjectCommunityClass) {
+        CommunityClass _class = new CommunityClassERC20();
+        ERC1967Proxy _proxy = new ProjectCommunityClassProxy(
+            address(_class),
+            projectToken,
+            weight,
+            minimumProjectQuorum,
+            minimumVoteDelay,
+            maximumVoteDelay,
+            minimumVoteDuration,
+            maximumVoteDuration,
+            _gasUsedRebate,
+            _baseFeeRebate,
+            _supervisorList
+        );
+        CommunityClassERC20 _proxyClass = CommunityClassERC20(address(_proxy));
+        _proxyClass.transferOwnership(msg.sender);
+        return _proxyClass;
+    }
+
+    /// @notice create a new community class representing a closed ERC-20 token based community
+    /// @param projectToken the token underlier for the community
+    /// @param tokenThreshold the number of tokens required to propose a vote
+    /// @param weight the weight of a single voting share
+    /// @param minimumProjectQuorum the least possible quorum for any vote
+    /// @param minimumVoteDelay the least possible vote delay
+    /// @param maximumVoteDelay the least possible vote delay
+    /// @param minimumVoteDuration the least possible voting duration
+    /// @param maximumVoteDuration the least possible voting duration
+    /// @param _gasUsedRebate The maximum rebate for gas used
+    /// @param _baseFeeRebate The maximum base fee rebate
+    /// @param _supervisorList the list of supervisors for this project
+    function createClosedErc20(
+        address projectToken,
+        uint256 tokenThreshold,
+        uint256 weight,
+        uint256 minimumProjectQuorum,
+        uint256 minimumVoteDelay,
+        uint256 maximumVoteDelay,
+        uint256 minimumVoteDuration,
+        uint256 maximumVoteDuration,
+        uint256 _gasUsedRebate,
+        uint256 _baseFeeRebate,
+        AddressCollection _supervisorList
+    ) external returns (ProjectCommunityClass) {
+        CommunityClass _class = new CommunityClassClosedERC20();
+        ERC1967Proxy _proxy = new ClosedProjectCommunityClassProxy(
+            address(_class),
+            projectToken,
+            tokenThreshold,
+            weight,
+            minimumProjectQuorum,
+            minimumVoteDelay,
+            maximumVoteDelay,
+            minimumVoteDuration,
+            maximumVoteDuration,
+            _gasUsedRebate,
+            _baseFeeRebate,
+            _supervisorList
+        );
+        CommunityClassClosedERC20 _proxyClass = CommunityClassClosedERC20(address(_proxy));
         _proxyClass.transferOwnership(msg.sender);
         return _proxyClass;
     }

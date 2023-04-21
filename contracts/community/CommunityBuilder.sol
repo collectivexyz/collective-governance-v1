@@ -53,11 +53,14 @@ import { Versioned } from "../../contracts/access/Versioned.sol";
 import { VersionedContract } from "../../contracts/access/VersionedContract.sol";
 import { AddressCollection } from "../../contracts/collection/AddressSet.sol";
 import { WeightedCommunityClass } from "../../contracts/community/CommunityClass.sol";
-import { WeightedClassFactory, ProjectClassFactory } from "../../contracts/community/CommunityFactory.sol";
+import { WeightedClassFactory, ProjectClassFactory, TokenClassFactory } from "../../contracts/community/CommunityFactory.sol";
 import { CommunityClassVoterPool } from "../../contracts/community/CommunityClassVoterPool.sol";
 import { CommunityClassOpenVote } from "../../contracts/community/CommunityClassOpenVote.sol";
 import { CommunityClassERC721 } from "../../contracts/community/CommunityClassERC721.sol";
 import { CommunityClassClosedERC721 } from "../../contracts/community/CommunityClassClosedERC721.sol";
+import { CommunityClassERC20 } from "../../contracts/community/CommunityClassERC20.sol";
+import { CommunityClassClosedERC20 } from "../../contracts/community/CommunityClassClosedERC20.sol";
+
 import { OwnableInitializable } from "../../contracts/access/OwnableInitializable.sol";
 
 /// @title Community Creator
@@ -77,8 +80,8 @@ contract CommunityBuilder is VersionedContract, ERC165, OwnableInitializable, UU
     error VoterPoolRequired();
 
     event UpgradeAuthorized(address sender, address owner);
-    event Initialized(address weightedClassFactory, address projectClassFactory);
-    event Upgraded(address weightedClassFactory, address projectClassFactory, uint8 version);
+    event Initialized(address weightedClassFactory, address tokenClassFactory);
+    event Upgraded(address weightedClassFactory, address tokenClassFactory, uint8 version);
 
     event CommunityClassInitialized(address sender);
     event CommunityClassType(CommunityType communityType);
@@ -99,7 +102,9 @@ contract CommunityBuilder is VersionedContract, ERC165, OwnableInitializable, UU
         OPEN,
         POOL,
         ERC721,
-        ERC721_CLOSED
+        ERC721_CLOSED,
+        ERC20,
+        ERC20_CLOSED
     }
 
     struct CommunityProperties {
@@ -124,20 +129,29 @@ contract CommunityBuilder is VersionedContract, ERC165, OwnableInitializable, UU
 
     ProjectClassFactory private _projectFactory;
 
+    TokenClassFactory private _tokenFactory;
+
     constructor() {
         _disableInitializers();
     }
 
-    function initialize(address _weighted, address _project) public initializer {
+    function initialize(address _weighted, address _project, address _token) public initializer {
         ownerInitialize(msg.sender);
         _weightedFactory = WeightedClassFactory(_weighted);
         _projectFactory = ProjectClassFactory(_project);
+        _tokenFactory = TokenClassFactory(_token);
         emit Initialized(_weighted, _project);
     }
 
-    function upgrade(address _weighted, address _project, uint8 _version) public onlyOwner reinitializer(_version) {
+    function upgrade(
+        address _weighted,
+        address _project,
+        address _token,
+        uint8 _version
+    ) public onlyOwner reinitializer(_version) {
         _weightedFactory = WeightedClassFactory(_weighted);
         _projectFactory = ProjectClassFactory(_project);
+        _tokenFactory = TokenClassFactory(_token);
         emit Upgraded(_weighted, _project, _version);
     }
 
@@ -207,6 +221,8 @@ contract CommunityBuilder is VersionedContract, ERC165, OwnableInitializable, UU
     /**
      * build Closed ERC-721 community
      *
+     * @dev community is closed to external proposals
+     *
      * @param project the token contract address
      * @param tokenThreshold the number of tokens required to propose
      *
@@ -218,6 +234,40 @@ contract CommunityBuilder is VersionedContract, ERC165, OwnableInitializable, UU
         _properties.projectToken = project;
         _properties.tokenThreshold = tokenThreshold;
         emit CommunityClassType(CommunityType.ERC721_CLOSED);
+        return this;
+    }
+
+    /**
+     * build ERC-20 community
+     *
+     * @param project the token contract address
+     *
+     * @return CommunityBuilder - this contract
+     */
+    function asErc20Community(address project) external requireNone returns (CommunityBuilder) {
+        CommunityProperties storage _properties = _buildMap[msg.sender];
+        _properties.communityType = CommunityType.ERC20;
+        _properties.projectToken = project;
+        emit CommunityClassType(CommunityType.ERC20);
+        return this;
+    }
+
+    /**
+     * build Closed ERC-20 community
+     *
+     * @dev community is closed to external proposals
+     *
+     * @param project the token contract address
+     * @param tokenThreshold the number of tokens required to propose
+     *
+     * @return CommunityBuilder - this contract
+     */
+    function asClosedErc20Community(address project, uint256 tokenThreshold) external requireNone returns (CommunityBuilder) {
+        CommunityProperties storage _properties = _buildMap[msg.sender];
+        _properties.communityType = CommunityType.ERC20_CLOSED;
+        _properties.projectToken = project;
+        _properties.tokenThreshold = tokenThreshold;
+        emit CommunityClassType(CommunityType.ERC20_CLOSED);
         return this;
     }
 
@@ -387,9 +437,39 @@ contract CommunityBuilder is VersionedContract, ERC165, OwnableInitializable, UU
                 _properties.maximumBaseFeeRebate,
                 _properties.communitySupervisor
             );
+        } else if (_properties.communityType == CommunityType.ERC20_CLOSED) {
+            if (_properties.projectToken == address(0x0)) revert ProjectTokenRequired(_properties.projectToken);
+            if (_properties.tokenThreshold == 0) revert TokenThresholdRequired(_properties.tokenThreshold);
+            _proxy = _tokenFactory.createClosedErc20(
+                _properties.projectToken,
+                _properties.tokenThreshold,
+                _properties.weight,
+                _properties.minimumProjectQuorum,
+                _properties.minimumVoteDelay,
+                _properties.maximumVoteDelay,
+                _properties.minimumVoteDuration,
+                _properties.maximumVoteDuration,
+                _properties.maximumGasUsedRebate,
+                _properties.maximumBaseFeeRebate,
+                _properties.communitySupervisor
+            );
         } else if (_properties.communityType == CommunityType.ERC721) {
             if (_properties.projectToken == address(0x0)) revert ProjectTokenRequired(_properties.projectToken);
             _proxy = _projectFactory.createErc721(
+                _properties.projectToken,
+                _properties.weight,
+                _properties.minimumProjectQuorum,
+                _properties.minimumVoteDelay,
+                _properties.maximumVoteDelay,
+                _properties.minimumVoteDuration,
+                _properties.maximumVoteDuration,
+                _properties.maximumGasUsedRebate,
+                _properties.maximumBaseFeeRebate,
+                _properties.communitySupervisor
+            );
+        } else if (_properties.communityType == CommunityType.ERC20) {
+            if (_properties.projectToken == address(0x0)) revert ProjectTokenRequired(_properties.projectToken);
+            _proxy = _tokenFactory.createErc20(
                 _properties.projectToken,
                 _properties.weight,
                 _properties.minimumProjectQuorum,

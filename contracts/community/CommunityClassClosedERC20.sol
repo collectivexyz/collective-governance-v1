@@ -13,7 +13,7 @@
 /*
  * BSD 3-Clause License
  *
- * Copyright (c) 2022, collective
+ * Copyright (c) 2023, collective
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -43,15 +43,13 @@
  */
 pragma solidity ^0.8.15;
 
-import { IERC721 } from "@openzeppelin/contracts/interfaces/IERC721.sol";
-
 import { AddressCollection } from "../../contracts/collection/AddressSet.sol";
-import { CommunityClassERC721 } from "../../contracts/community/CommunityClassERC721.sol";
+import { CommunityClassERC20 } from "../../contracts/community/CommunityClassERC20.sol";
 
-/// @title Closed ERC721 VoterClass
-/// @notice similar to CommunityClassERC721 however proposals are only allowed for wallet
-/// with a positive balance
-contract CommunityClassClosedERC721 is CommunityClassERC721 {
+/// @title Closed ERC20 VoterClass
+/// @notice similar to CommunityClassERC20 however proposals are only allowed for wallet with
+/// a positive balance
+contract CommunityClassClosedERC20 is CommunityClassERC20 {
     error RequiredParameterIsZero();
 
     // number of tokens required to propose
@@ -103,8 +101,8 @@ contract CommunityClassClosedERC721 is CommunityClassERC721 {
 
     /// @notice determine if adding a proposal is approved for this voter
     /// @return bool true if this address is approved
-    function canPropose(address _wallet) external view virtual override(CommunityClassERC721) onlyFinal returns (bool) {
-        uint256 balance = IERC721(_contractAddress).balanceOf(_wallet);
+    function canPropose(address _wallet) external view virtual override(CommunityClassERC20) onlyFinal returns (bool) {
+        uint256 balance = votesAvailable(_wallet);
         return balance >= _tokenRequirement;
     }
 }
