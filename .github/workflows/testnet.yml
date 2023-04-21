@@ -18,49 +18,48 @@ jobs:
   check:
     strategy:
       fail-fast: true
+  name: collective-governance-v1
+  runs-on: ubuntu-latest
+  steps:
+    - uses: actions/checkout@v3
+      with:
+        submodules: recursive
 
-    name: collective-governance-v1
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-        with:
-          submodules: recursive
+    - name: Install Foundry
+      uses: foundry-rs/foundry-toolchain@v1
+      with:
+        version: nightly
 
-      - name: Install Foundry
-        uses: foundry-rs/foundry-toolchain@v1
-        with:
-          version: nightly
+    - name: Yarn install
+      run: |
+        yarn install --dev
+        yarn prettier:check
+        yarn hint
+        yarn install --production
 
-      - name: Yarn install
-        run: |
-          yarn install --dev
-          yarn prettier:check
-          yarn hint
-          yarn install --production
+    - name: Run Forge tests
+      run: |
+        forge test -vvv
+      id: test
 
-      - name: Run Forge tests
-        run: |
-          forge test -vvv
-        id: test
+    - name: GitHub Release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        draft: false
+        prerelease: false
+        tag_name: ${{ github.ref }}
+        release_name: ${{ github.ref }}
+        body_path: CHANGELOG.md
 
-      - name: GitHub Release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          draft: false
-          prerelease: false
-          tag_name: ${{ github.ref }}
-          release_name: ${{ github.ref }}
-          body_path: CHANGELOG.md
+    - name: Deploy Constant Library
+      run: |
+        forge create --json --contracts contracts/Constant.sol --rpc-url ${RPC_URL} --private-key ${PRIVATE_KEY} Constant | tee Constant.sol.json
 
-      - name: Deploy Constant Library
-        run: |
-          forge create --json --contracts contracts/Constant.sol --rpc-url ${RPC_URL} --private-key ${PRIVATE_KEY} Constant | tee Constant.sol.json
-
-      - name: Deploy to Sepolia Testnet
-        run: |
-          export DEPLOYED_LIBRARY=$(bin/library.py Constant.sol.json)
-          echo "Using library ${DEPLOYED_LIBRARY}"
-          forge script ./script/DeployCommunityBuilder.sol --sig 'deploy()' --libraries ${DEPLOYED_LIBRARY} --slow --broadcast --rpc-url ${RPC_URL} --private-key ${PRIVATE_KEY} --etherscan-api-key ${ETHERSCAN_API_KEY} --verify || true          
-          forge script ./script/DeployCollective.sol --sig 'deploy()' --libraries ${DEPLOYED_LIBRARY} --slow --broadcast --rpc-url ${RPC_URL} --private-key ${PRIVATE_KEY} --etherscan-api-key ${ETHERSCAN_API_KEY} --verify || true
+    - name: Deploy to Sepolia Testnet
+      run: |
+        export DEPLOYED_LIBRARY=$(bin/library.py Constant.sol.json)
+        echo "Using library ${DEPLOYED_LIBRARY}"
+        forge script ./script/DeployCommunityBuilder.sol --sig 'deploy()' --libraries ${DEPLOYED_LIBRARY} --slow --broadcast --rpc-url ${RPC_URL} --private-key ${PRIVATE_KEY} --etherscan-api-key ${ETHERSCAN_API_KEY} --verify || true          
+        forge script ./script/DeployCollective.sol --sig 'deploy()' --libraries ${DEPLOYED_LIBRARY} --slow --broadcast --rpc-url ${RPC_URL} --private-key ${PRIVATE_KEY} --etherscan-api-key ${ETHERSCAN_API_KEY} --verify || true
