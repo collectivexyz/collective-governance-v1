@@ -51,13 +51,13 @@ Collective Governance has been designed from the ground up to be very easy to us
 
 ### VS Code
 
-    Using the Remote module in VSCode simply reopen the project in it's container.
+Using the Remote module in VSCode simply reopen the project in it's container.
 
     `Reopen in Container`
 
 ### Foundry
 
-    This project is using [Foundry](https://github.com/foundry-rs/foundry).   Development is enabled with the [Foundry Development](https://github.com/collectivexyz/foundry/pkgs/container/foundry) container
+This project is using [Foundry](https://github.com/foundry-rs/foundry).   Development is enabled with the [Foundry Development](https://github.com/collectivexyz/foundry) container
 
 ### JavaScript API
 
