@@ -63,7 +63,7 @@ import { CommunityClassClosedERC20 } from "../../contracts/community/CommunityCl
 
 import { OwnableInitializable } from "../../contracts/access/OwnableInitializable.sol";
 
-/// @title Community Creator
+/// @title CommunityBuilder
 /// @notice This builder is for creating a community class for use with the Collective
 /// Governance contract
 contract CommunityBuilder is VersionedContract, ERC165, OwnableInitializable, UUPSUpgradeable, Initializable {

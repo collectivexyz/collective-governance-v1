@@ -56,6 +56,9 @@ import { CommunityClassERC20 } from "../../contracts/community/CommunityClassERC
 import { CommunityClassClosedERC20 } from "../../contracts/community/CommunityClassClosedERC20.sol";
 import { WeightedCommunityClassProxy, ProjectCommunityClassProxy, ClosedProjectCommunityClassProxy } from "../../contracts/community/CommunityClassProxy.sol";
 
+/**
+ * @notice Upgrade open voting community by proxy
+ */
 // solhint-disable-next-line func-visibility
 function upgradeOpenVote(
     address payable proxyAddress,
@@ -85,6 +88,9 @@ function upgradeOpenVote(
     );
 }
 
+/**
+ * @notice Upgrade pool voting community by proxy
+ */
 // solhint-disable-next-line func-visibility
 function upgradeVoterPool(
     address payable proxyAddress,
@@ -114,6 +120,9 @@ function upgradeVoterPool(
     );
 }
 
+/**
+ * @notice Upgrade ERC-721 voting community by proxy
+ */
 // solhint-disable-next-line func-visibility
 function upgradeErc721(
     address payable proxyAddress,
@@ -143,6 +152,9 @@ function upgradeErc721(
     );
 }
 
+/**
+ * @notice Upgrade closed ERC-721 voting community by proxy
+ */
 // solhint-disable-next-line func-visibility
 function upgradeClosedErc721(
     address payable proxyAddress,
@@ -172,6 +184,9 @@ function upgradeClosedErc721(
     );
 }
 
+/**
+ * @notice Upgrade ERC-20 voting community by proxy
+ */
 // solhint-disable-next-line func-visibility
 function upgradeErc20(
     address payable proxyAddress,
@@ -201,6 +216,9 @@ function upgradeErc20(
     );
 }
 
+/**
+ * @notice Upgrade closed ERC-20 voting community by proxy
+ */
 // solhint-disable-next-line func-visibility
 function upgradeClosedErc20(
     address payable proxyAddress,

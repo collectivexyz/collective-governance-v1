@@ -48,6 +48,9 @@ import { ERC1967Proxy } from "@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy
 import { Constant } from "./Constant.sol";
 import { ProposalBuilder } from "./ProposalBuilder.sol";
 
+/**
+ * @notice This contract is intended to act as an upgradeable Proxy for the ProposalBuilder
+ */
 contract ProposalBuilderProxy is ERC1967Proxy {
     constructor(
         address _implementation,

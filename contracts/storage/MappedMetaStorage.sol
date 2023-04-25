@@ -53,6 +53,9 @@ import { MetaStorage } from "../../contracts/storage/MetaStorage.sol";
 import { Versioned } from "../../contracts/access/Versioned.sol";
 import { VersionedContract } from "../../contracts/access/VersionedContract.sol";
 
+/**
+ * @notice MappedMetaStoraged Eternal storage for Metadata in Collective Goveranance
+ */
 contract MappedMetaStorage is MetaStorage, VersionedContract, ERC165, Ownable {
     string public constant NAME = "meta storage";
 

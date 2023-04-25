@@ -61,6 +61,12 @@ import { Transaction, TransactionCollection } from "../contracts/collection/Tran
 import { Storage } from "../contracts/storage/Storage.sol";
 import { MetaStorage } from "../contracts/storage/MetaStorage.sol";
 
+/**
+ * @notice ProposalBuilder is designed to help building up on-chain proposals.  One of the features
+ * of the ProposalBuilder, like the other builders in this project is it remembers the previous settings
+ * for the build.   This makes it easy and cost effective to create multiple proposals because only
+ * changed information needs to be updated on each build cycle.
+ */
 contract ProposalBuilder is VersionedContract, ERC165, OwnableInitializable, UUPSUpgradeable, Initializable {
     string public constant NAME = "proposal builder";
 
