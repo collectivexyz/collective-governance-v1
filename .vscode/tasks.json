@@ -136,7 +136,7 @@
       "options": {
         "cwd": "${workspaceFolder}",
         "env": {
-          "CONSTANT_LIB_ADDRESS": "0x5a7D758870C57d8A4E1AB309079705E77D279D0a"
+          "CONSTANT_LIB_ADDRESS": "0xb72FB606aF07D03f9D3075F72f7705F1148A5450"
         }
       },
       "dependsOn": "test",
@@ -152,7 +152,7 @@
       "options": {
         "cwd": "${workspaceFolder}",
         "env": {
-          "CONSTANT_LIB_ADDRESS": "0x5a7D758870C57d8A4E1AB309079705E77D279D0a",
+          "CONSTANT_LIB_ADDRESS": "0xb72FB606aF07D03f9D3075F72f7705F1148A5450",
           "BUILDER_ADDRESS": "0x2b3FbC7371Bc6DE55D314Bd0D74E08A3E2c9dbE9"
         }
       },
@@ -169,7 +169,7 @@
       "options": {
         "cwd": "${workspaceFolder}",
         "env": {
-          "CONSTANT_LIB_ADDRESS": "0x5a7D758870C57d8A4E1AB309079705E77D279D0a",
+          "CONSTANT_LIB_ADDRESS": "0xb72FB606aF07D03f9D3075F72f7705F1148A5450",
           "CLASS_PROXY": "0x0Ee183DEA88Be769fD1CAb473fDaCdd16791163A",
           "TARGET_PROTOTYPE": "0xe7879fdb66b6107709502D2ad362fa43BC278DbE"
         }
@@ -187,7 +187,7 @@
       "options": {
         "cwd": "${workspaceFolder}",
         "env": {
-          "CONSTANT_LIB_ADDRESS": "0x5a7D758870C57d8A4E1AB309079705E77D279D0a"
+          "CONSTANT_LIB_ADDRESS": "0xb72FB606aF07D03f9D3075F72f7705F1148A5450"
         }
       },
       "dependsOn": "test",
@@ -203,7 +203,7 @@
       "options": {
         "cwd": "${workspaceFolder}",
         "env": {
-          "CONSTANT_LIB_ADDRESS": "0x5a7D758870C57d8A4E1AB309079705E77D279D0a",
+          "CONSTANT_LIB_ADDRESS": "0xb72FB606aF07D03f9D3075F72f7705F1148A5450",
           "BUILDER_ADDRESS": "0xA117420676c6Ff31b7126cBE8fdC752Eb9A1602c"
         }
       },
@@ -220,7 +220,7 @@
       "options": {
         "cwd": "${workspaceFolder}",
         "env": {
-          "CONSTANT_LIB_ADDRESS": "0x5a7D758870C57d8A4E1AB309079705E77D279D0a",
+          "CONSTANT_LIB_ADDRESS": "0xb72FB606aF07D03f9D3075F72f7705F1148A5450",
           "GOVERNANCE_ADDRESS": "0x0089699e6391011991f6ffe2e36bb3d745a2ba65",
           "STORAGE_ADDRESS": "0xe0bfa34b0beb30853489c67c8172f4c64eb8c43b",
           "META_ADDRESS": "0x46e0f484a22a2e091b524b7495b45b2583f69846"
@@ -239,7 +239,7 @@
       "options": {
         "cwd": "${workspaceFolder}",
         "env": {
-          "CONSTANT_LIB_ADDRESS": "0x5a7D758870C57d8A4E1AB309079705E77D279D0a",
+          "CONSTANT_LIB_ADDRESS": "0xb72FB606aF07D03f9D3075F72f7705F1148A5450",
           "BUILDER_ADDRESS": "",
           "GOVERNANCE_ADDRESS": "0xa2f50e55ac910ba030b3e4cab92da8de5b38ef2d",
           "STORAGE_ADDRESS": "0xe0c76c1621738b870eac5a37447fdadc8c077c21",
