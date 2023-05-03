@@ -131,6 +131,11 @@ contract CommunityClassERC20 is ScheduledCommunityClass, ProjectCommunityClass, 
         );
     }
 
+    modifier requireValidShare(address _wallet, uint256 _shareId) {
+        if (_shareId == 0 || _shareId != uint160(_wallet)) revert UnknownToken(_shareId);
+        _;
+    }
+
     /// @notice determine if wallet holds at least one token from the ERC-721 contract
     /// @return bool true if wallet can sign for votes on this class
     function isVoter(address _wallet) public view onlyFinal returns (bool) {
@@ -154,20 +159,19 @@ contract CommunityClassERC20 is ScheduledCommunityClass, ProjectCommunityClass, 
     function discover(address _wallet) external view onlyFinal returns (uint256[] memory) {
         uint256 tokenBalance = votesAvailable(_wallet);
         if (tokenBalance == 0) revert NotVoter(_wallet);
-        uint256[] memory tokenIdList = new uint256[](1);
-        tokenIdList[0] = tokenBalance;
-        return tokenIdList;
+        uint256[] memory shareList = new uint256[](1);
+        shareList[0] = uint160(_wallet);
+        return shareList;
     }
 
     /// @notice confirm tokenId is associated with wallet for voting
     /// @dev does not require IERC721Enumerable, tokenId ownership is checked directly using ERC-721
     /// @param _wallet the wallet holding the tokens
-    /// @param _balance the expected balance for this wallet
+    /// @param _shareId the walletId
     /// @return uint256 The number of weighted votes confirmed
-    function confirm(address _wallet, uint256 _balance) external view onlyFinal returns (uint256) {
+    function confirm(address _wallet, uint256 _shareId) external view requireValidShare(_wallet, _shareId) onlyFinal returns (uint256) {
         uint256 voteCount = this.votesAvailable(_wallet);
         if (voteCount == 0) revert NotVoter(_wallet);
-        if (voteCount != _balance) revert BalanceMismatch(_wallet, voteCount, _balance);
         return weight() * voteCount;
     }
 

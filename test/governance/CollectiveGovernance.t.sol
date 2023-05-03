@@ -6,6 +6,7 @@ import { IERC165 } from "@openzeppelin/contracts/interfaces/IERC165.sol";
 import { ERC165 } from "@openzeppelin/contracts/utils/introspection/ERC165.sol";
 import { IERC721 } from "@openzeppelin/contracts/interfaces/IERC721.sol";
 import { IERC721Enumerable } from "@openzeppelin/contracts/token/ERC721/extensions/IERC721Enumerable.sol";
+import { ERC20PresetMinterPauser } from "@openzeppelin/contracts/token/ERC20/presets/ERC20PresetMinterPauser.sol";
 
 import { Test } from "forge-std/Test.sol";
 
@@ -1632,6 +1633,50 @@ contract CollectiveGovernanceTest is Test {
         assertTrue(flag.isSet());
         assertTrue(_storage.isExecuted(proposalId));
     }
+    
+    function testErc20Vote() public {
+        ERC20PresetMinterPauser _token = new ERC20PresetMinterPauser("Test20", "ERT20");
+        (_governanceAddress, _storageAddress, ) = buildERC20(address(_token));
+        governance = CollectiveGovernance(_governanceAddress);
+        _storage = Storage(_storageAddress);
+        version = governance.version();
+        _token.mint(_OWNER, 100);
+        vm.prank(_OWNER, _OWNER);
+        proposalId = governance.propose();
+        assertEq(proposalId, PROPOSAL_ID);
+        vm.startPrank(_SUPERVISOR, _SUPERVISOR);
+        governance.configure(proposalId, 100);
+        governance.startVote(proposalId);
+        vm.stopPrank();
+        _token.mint(_VOTER1, 100);
+        vm.prank(_VOTER1, _VOTER1);
+        governance.voteFor(proposalId);
+        assertEq(_storage.forVotes(proposalId), 100);
+    }
+
+    function testErc20TokenDistributionDoesNotEnableRevote() public {
+        ERC20PresetMinterPauser _token = new ERC20PresetMinterPauser("Test20", "ERT20");
+        (_governanceAddress, _storageAddress, ) = buildERC20(address(_token));
+        governance = CollectiveGovernance(_governanceAddress);
+        _storage = Storage(_storageAddress);
+        version = governance.version();
+        _token.mint(_OWNER, 100);
+        vm.prank(_OWNER, _OWNER);
+        proposalId = governance.propose();
+        assertEq(proposalId, PROPOSAL_ID);
+        vm.startPrank(_SUPERVISOR, _SUPERVISOR);
+        governance.configure(proposalId, 100);
+        governance.startVote(proposalId);
+        vm.stopPrank();
+        _token.mint(_VOTER1, 100);
+        vm.prank(_VOTER1, _VOTER1);
+        governance.voteFor(proposalId);
+        _token.mint(_VOTER1, 100);
+        vm.expectRevert(abi.encodeWithSelector(Storage.TokenVoted.selector, proposalId, _VOTER1, uint160(_VOTER1)));        
+        vm.prank(_VOTER1, _VOTER1);
+        governance.voteFor(proposalId);
+    }
+
 
     function mintTokens() private returns (IERC721) {
         MockERC721 merc721 = new MockERC721();
@@ -1660,6 +1705,19 @@ contract CollectiveGovernanceTest is Test {
         CommunityClass _class = CommunityClass(_communityLocation);
         return _builder.aGovernance().withCommunityClass(_class).build();
     }
+
+    function buildERC20(address projectAddress) private returns (address payable, address, address) {
+        CommunityBuilder _communityBuilder = createCommunityBuilder();
+        address _communityLocation = _communityBuilder
+            .aCommunity()
+            .asClosedErc20Community(projectAddress, 100)
+            .withQuorum(99)
+            .withCommunitySupervisor(_SUPERVISOR)
+            .build();
+        CommunityClass _class = CommunityClass(_communityLocation);
+        return _builder.aGovernance().withCommunityClass(_class).build();
+    }
+
 
     function buildERC721(
         address projectAddress,
