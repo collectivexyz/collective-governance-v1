@@ -46,17 +46,17 @@ contract CommunityClassERC20Test is Test {
     function testDiscoveryOwner() public {
         uint256[] memory tokens = _class.discover(_OWNER);
         assertEq(tokens.length, 1);
-        assertEq(tokens[0], _NTOKEN);
+        assertEq(tokens[0], uint160(_OWNER));
     }
 
     function testConfirmOwner() public {
-        uint256 _count = _class.confirm(_OWNER, _NTOKEN);
+        uint256 _count = _class.confirm(_OWNER, uint160(_OWNER));
         assertEq(_count, _NTOKEN);
     }
 
     function testConfirmNotOwner() public {
         vm.expectRevert(abi.encodeWithSelector(VoterClass.NotVoter.selector, _NOTOWNER));
-        _class.confirm(_NOTOWNER, _NTOKEN);
+        _class.confirm(_NOTOWNER, uint160(_NOTOWNER));
     }
 
     function testOpenToPropose() public {
