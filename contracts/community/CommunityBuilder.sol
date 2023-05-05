@@ -173,7 +173,7 @@ contract CommunityBuilder is VersionedContract, ERC165, OwnableInitializable, UU
      * @return CommunityBuilder - this contract
      */
     function aCommunity() external returns (CommunityBuilder) {
-        reset();
+        clear(msg.sender);
         emit CommunityClassInitialized(msg.sender);
         return this;
     }
@@ -534,8 +534,14 @@ contract CommunityBuilder is VersionedContract, ERC165, OwnableInitializable, UU
             super.supportsInterface(interfaceId);
     }
 
-    function reset() public {
-        CommunityProperties storage _properties = _buildMap[msg.sender];
+    /// @notice remove storage used by builder
+    function reset() external {
+        clear(msg.sender);
+        delete _buildMap[msg.sender];
+    }
+
+    function clear(address sender) internal {
+        CommunityProperties storage _properties = _buildMap[sender];
         _properties.weight = DEFAULT_WEIGHT;
         _properties.communityType = CommunityType.NONE;
         _properties.minimumProjectQuorum = 0;

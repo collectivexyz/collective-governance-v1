@@ -221,9 +221,9 @@
         "cwd": "${workspaceFolder}",
         "env": {
           "CONSTANT_LIB_ADDRESS": "0xb72FB606aF07D03f9D3075F72f7705F1148A5450",
-          "GOVERNANCE_ADDRESS": "0x0089699e6391011991f6ffe2e36bb3d745a2ba65",
-          "STORAGE_ADDRESS": "0xe0bfa34b0beb30853489c67c8172f4c64eb8c43b",
-          "META_ADDRESS": "0x46e0f484a22a2e091b524b7495b45b2583f69846"
+          "GOVERNANCE_ADDRESS": "0x6b5b3b287a80742d728511f51638315cf1987977",
+          "STORAGE_ADDRESS": "0xc28ea107f64746ac90349c6c09c193d966f1ca91",
+          "META_ADDRESS": "0xd75fa6c5c3fdfd495d851c43e5331e16a058902a"
         }
       },
       "dependsOn": "test",

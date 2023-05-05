@@ -46,6 +46,8 @@ pragma solidity ^0.8.15;
 
 import { Script } from "forge-std/Script.sol";
 
+import { OwnableInitializable } from "../contracts/access/OwnableInitializable.sol";
+
 import { ProposalBuilder } from "../contracts/ProposalBuilder.sol";
 import { ProposalBuilderProxy } from "../contracts/ProposalBuilderProxy.sol";
 
@@ -67,6 +69,9 @@ contract DeployProposalBuilder is Script {
         ProposalBuilder _builder = new ProposalBuilder();
         ProposalBuilderProxy _proxy = new ProposalBuilderProxy(address(_builder), _governance, _storage, _meta);
         emit ProposalBuilderDeployed(address(_proxy));
+
+        OwnableInitializable _ownable = OwnableInitializable(_meta);
+        _ownable.transferOwnership(address(_proxy));
         vm.stopBroadcast();
     }
 

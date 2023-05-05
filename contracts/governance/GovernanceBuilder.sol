@@ -274,9 +274,8 @@ contract GovernanceBuilder is VersionedContract, ERC165, OwnableInitializable, U
         return _governanceContractRegistered[_contract];
     }
 
-    /// @notice clear and reset resources associated with sender build requests
-    function reset() external {
-        // overwrite to truncate data lifetime
+    /// @notice remove storage used by builder
+    function reset() public {
         clear(msg.sender);
         delete _buildMap[msg.sender];
     }
