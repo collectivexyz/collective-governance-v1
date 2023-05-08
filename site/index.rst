@@ -40,8 +40,8 @@ _____________
 Contract               Ethereum Address                            Version     Description
 =====================  ==========================================  =========== ===========================
 `Constant`_            0xD5DA9B812806E080948476A801d2004f3305E63F  0.9.8       Constant library
-`CommunityBuilder`_    0x4ba7E0dc43180Cb10EF53FF9Da923E02f459Ec9F  0.9.8       CommunityBuilder Factory
-`GovernanceBuilder`_   0xe1a13ea37F2BFE35B612799fcf9eBD43efA00B87  0.9.8       Governance Contract Builder
+`CommunityBuilder`_    0x4ba7E0dc43180Cb10EF53FF9Da923E02f459Ec9F  LATEST       CommunityBuilder Factory
+`GovernanceBuilder`_   0xe1a13ea37F2BFE35B612799fcf9eBD43efA00B87  LATEST       Governance Contract Builder
 =====================  ==========================================  =========== ===========================
 
 
