@@ -20,6 +20,7 @@ GENERATED_DOCFILE=${BUILD}/solcdoc.json
 
 echo generate natspec output ${DOCFILE} 
 SRCS="contracts/**/*.sol contracts/*.sol"
-solc --devdoc --userdoc --include-path node_modules/ --base-path . ${SRCS} > ${DOCFILE}
+REMAPPINGS=$(cat remappings.txt | xargs echo)
+solc --devdoc --userdoc --base-path . ${REMAPPINGS} ${SRCS} > ${DOCFILE}
 echo generate doc json ${GENERATED_DOCFILE}
 bin/parse_solcdoc.py ${DOCFILE} ${GENERATED_DOCFILE}
