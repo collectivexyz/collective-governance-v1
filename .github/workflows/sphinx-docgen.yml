@@ -38,12 +38,15 @@ jobs:
         run: |
           pip install --upgrade pip
           pip install -r site/requirements.txt
+
+      - name: Install solc 0.8.19
+        run: |
           pip install solc-select
-          solc-select install 0.8.17
+          solc-select install 0.8.19
 
       - name: Sphinx Gendoc
         env:
-          SOLC_VERSION: 0.8.17
+          SOLC_VERSION: 0.8.19
         run: |
           bin/gendoc.sh
           sphinx-build -b html site ./_site
