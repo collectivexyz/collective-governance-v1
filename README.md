@@ -57,7 +57,7 @@ Using the Remote module in VSCode simply reopen the project in it's container.
 
 ### Foundry
 
-This project is using [Foundry](https://github.com/foundry-rs/foundry).   Development is enabled with the [Foundry Development](https://github.com/collectivexyz/foundry) container
+This project is using [Foundry](https://github.com/foundry-rs/foundry). Development is enabled with the [Foundry Development](https://github.com/collectivexyz/foundry) container
 
 ### JavaScript API
 
