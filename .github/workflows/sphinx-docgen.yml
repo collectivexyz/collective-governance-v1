@@ -23,24 +23,31 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
+        with:
+          submodules: recursive
+
       - name: Setup Pages
         uses: actions/configure-pages@v2
       - uses: actions/setup-python@v2
+
       - name: Yarn install
         run: |
           yarn install --production
+
       - name: Install Python requirements and SOLC
         run: |
           pip install --upgrade pip
           pip install -r site/requirements.txt
           pip install solc-select
           solc-select install 0.8.17
+
       - name: Sphinx Gendoc
         env:
           SOLC_VERSION: 0.8.17
         run: |
           bin/gendoc.sh
           sphinx-build -b html site ./_site
+
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v1
 
