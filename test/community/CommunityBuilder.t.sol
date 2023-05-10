@@ -293,9 +293,10 @@ contract CommunityBuilderTest is Test {
         TokenClassFactory _tFactory = new TokenClassFactory();
         CommunityBuilder _cBuilder = new CommunityBuilder();
         CommunityBuilderProxy _proxy = CommunityBuilderProxy(payable(address(_builder)));
+        uint8 version = uint8(_cBuilder.version());
         vm.expectRevert(abi.encodeWithSelector(OwnableInitializable.NotOwner.selector, _OTHER));
         vm.prank(_OTHER, _OTHER);
-        _proxy.upgrade(address(_cBuilder), address(_wFactory), address(_pFactory), address(_tFactory));
+        _proxy.upgrade(address(_cBuilder), address(_wFactory), address(_pFactory), address(_tFactory), version);
     }
 
     function testErc20Community() public {

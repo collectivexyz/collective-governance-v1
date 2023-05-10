@@ -87,7 +87,7 @@ contract DeployProposalBuilder is Script {
         vm.startBroadcast();
         ProposalBuilder _builder = new ProposalBuilder();
         ProposalBuilderProxy _pbuilder = ProposalBuilderProxy(_proxy);
-        _pbuilder.upgrade(address(_builder), _governance, _storage, _meta);
+        _pbuilder.upgrade(address(_builder), _governance, _storage, _meta, uint8(_builder.version()));
         emit ProposalBuilderUpgraded(address(_proxy));
         vm.stopBroadcast();
     }

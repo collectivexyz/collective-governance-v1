@@ -113,7 +113,8 @@ contract DeployCollective is Script {
             address(_builder),
             address(_governanceFactory),
             address(_storageFactory),
-            address(_metaStorageFactory)
+            address(_metaStorageFactory),
+            uint8(_builder.version())
         );
         emit UpgradeGovernanceBuilder(_proxy);
         vm.stopBroadcast();

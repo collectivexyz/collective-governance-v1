@@ -60,6 +60,18 @@ interface CommunityClassProxy {
 
     function getImplementation() external returns (address);
 
+    /// @notice upgrade the proxy
+    /// @param _implementation the address of the community class implementation
+    /// @param _voteWeight the weight of a single voting share
+    /// @param _minimumQuorum the least possible quorum for any vote
+    /// @param _minimumDelay the least possible vote delay
+    /// @param _maximumDelay the least possible vote delay
+    /// @param _minimumDuration the least possible voting duration
+    /// @param _maximumDuration the least possible voting duration
+    /// @param _gasUsedRebate The maximum rebate for gas used
+    /// @param _baseFeeRebate The maximum base fee rebate
+    /// @param _supervisorList the list of supervisors for this project
+    /// @param _version the version of the implementation contract
     function upgrade(
         address _implementation,
         uint256 _voteWeight,
@@ -70,7 +82,8 @@ interface CommunityClassProxy {
         uint256 _maximumDuration,
         uint256 _gasUsedRebate,
         uint256 _baseFeeRebate,
-        AddressCollection _supervisorList
+        AddressCollection _supervisorList,
+        uint8 _version
     ) external;
 }
 
@@ -141,7 +154,8 @@ contract WeightedCommunityClassProxy is WiredClassProxy {
         uint256 _maximumDuration,
         uint256 _gasUsedRebate,
         uint256 _baseFeeRebate,
-        AddressCollection _supervisorList
+        AddressCollection _supervisorList,
+        uint8 _version
     ) external requireCommunityClass(_implementation) {
         _upgradeToAndCallUUPS(
             _implementation,
@@ -156,9 +170,9 @@ contract WeightedCommunityClassProxy is WiredClassProxy {
                 _gasUsedRebate,
                 _baseFeeRebate,
                 _supervisorList,
-                Constant.CURRENT_VERSION
+                _version
             ),
-            true
+            false
         );
     }
 }
@@ -211,6 +225,17 @@ contract ProjectCommunityClassProxy is WiredClassProxy {
 
     }
 
+    /// @param _implementation the address of the community class implementation
+    /// @param _voteWeight the weight of a single voting share
+    /// @param _minimumQuorum the least possible quorum for any vote
+    /// @param _minimumDelay the least possible vote delay
+    /// @param _maximumDelay the least possible vote delay
+    /// @param _minimumDuration the least possible voting duration
+    /// @param _maximumDuration the least possible voting duration
+    /// @param _gasUsedRebate The maximum rebate for gas used
+    /// @param _baseFeeRebate The maximum base fee rebate
+    /// @param _supervisorList the list of supervisors for this project
+    /// @param _version the contract version
     function upgrade(
         address _implementation,
         uint256 _voteWeight,
@@ -221,7 +246,8 @@ contract ProjectCommunityClassProxy is WiredClassProxy {
         uint256 _maximumDuration,
         uint256 _gasUsedRebate,
         uint256 _baseFeeRebate,
-        AddressCollection _supervisorList
+        AddressCollection _supervisorList,
+        uint8 _version
     ) external {
         _upgradeToAndCallUUPS(
             _implementation,
@@ -236,9 +262,9 @@ contract ProjectCommunityClassProxy is WiredClassProxy {
                 _gasUsedRebate,
                 _baseFeeRebate,
                 _supervisorList,
-                Constant.CURRENT_VERSION
+                _version
             ),
-            true
+            false
         );
     }
 }
@@ -293,6 +319,17 @@ contract ClosedProjectCommunityClassProxy is WiredClassProxy {
 
     }
 
+    /// @param _implementation the address of the community class implementation
+    /// @param _voteWeight the weight of a single voting share
+    /// @param _minimumQuorum the least possible quorum for any vote
+    /// @param _minimumDelay the least possible vote delay
+    /// @param _maximumDelay the least possible vote delay
+    /// @param _minimumDuration the least possible voting duration
+    /// @param _maximumDuration the least possible voting duration
+    /// @param _gasUsedRebate The maximum rebate for gas used
+    /// @param _baseFeeRebate The maximum base fee rebate
+    /// @param _supervisorList the list of supervisors for this project
+    /// @param _version the contract version
     function upgrade(
         address _implementation,
         uint256 _voteWeight,
@@ -303,7 +340,8 @@ contract ClosedProjectCommunityClassProxy is WiredClassProxy {
         uint256 _maximumDuration,
         uint256 _gasUsedRebate,
         uint256 _baseFeeRebate,
-        AddressCollection _supervisorList
+        AddressCollection _supervisorList,
+        uint8 _version
     ) external requireCommunityClass(_implementation) {
         _upgradeToAndCallUUPS(
             _implementation,
@@ -318,9 +356,9 @@ contract ClosedProjectCommunityClassProxy is WiredClassProxy {
                 _gasUsedRebate,
                 _baseFeeRebate,
                 _supervisorList,
-                Constant.CURRENT_VERSION
+                _version
             ),
-            true
+            false
         );
     }
 }

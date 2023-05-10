@@ -25,9 +25,40 @@ contract CommunityBuilderProxyTest is Test {
         address payable _paddr = payable(address(_builder));
         CommunityBuilderProxy _proxy = CommunityBuilderProxy(_paddr);
         CommunityBuilder _cbuilder = new CBuilder2();
-        _proxy.upgrade(address(_cbuilder), address(_weightedFactory), address(_projectFactory), address(_tokenFactory));
+        _proxy.upgrade(
+            address(_cbuilder),
+            address(_weightedFactory),
+            address(_projectFactory),
+            address(_tokenFactory),
+            uint8(_cbuilder.version())
+        );
         assertEq(_builder.name(), "test upgrade");
     }
+
+    function testProxyUpgrade2Times() public {
+        WeightedClassFactory _weightedFactory = new WeightedClassFactory();
+        ProjectClassFactory _projectFactory = new ProjectClassFactory();
+        TokenClassFactory _tokenFactory = new TokenClassFactory();
+        address payable _paddr = payable(address(_builder));
+        CommunityBuilderProxy _proxy = CommunityBuilderProxy(_paddr);
+        CommunityBuilder _cbuilder = new CBuilder2();
+        _proxy.upgrade(
+            address(_cbuilder),
+            address(_weightedFactory),
+            address(_projectFactory),
+            address(_tokenFactory),
+            uint8(_cbuilder.version())
+        );
+        _proxy.upgrade(
+            address(_cbuilder),
+            address(_weightedFactory),
+            address(_projectFactory),
+            address(_tokenFactory),
+            uint8(_cbuilder.version()+1)
+        );
+        assertEq(_builder.name(), "test upgrade");
+    }
+
 }
 
 contract CBuilder2 is CommunityBuilder {

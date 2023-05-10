@@ -54,7 +54,21 @@ contract ProposalBuilderProxyTest is Test {
             .withCommunityClassAddress(_classAddr)
             .build();
         ProposalBuilder _pbuilder = new PBuilder2();
-        _proxy.upgrade(address(_pbuilder), _govAddr, _stoAddr, _metaAddr);
+        _proxy.upgrade(address(_pbuilder), _govAddr, _stoAddr, _metaAddr, uint8(_pbuilder.version()));
+        assertEq(_builder.name(), "test upgrade");
+    }
+
+    function testProxyUpgrade2Times() public {
+        address payable _paddr = payable(address(_builder));
+        ProposalBuilderProxy _proxy = ProposalBuilderProxy(_paddr);
+        address _classAddr = address(_class);
+        (address payable _govAddr, address _stoAddr, address _metaAddr) = _gbuilder
+            .aGovernance()
+            .withCommunityClassAddress(_classAddr)
+            .build();
+        ProposalBuilder _pbuilder = new PBuilder2();
+        _proxy.upgrade(address(_pbuilder), _govAddr, _stoAddr, _metaAddr, uint8(_pbuilder.version()));
+        _proxy.upgrade(address(_pbuilder), _govAddr, _stoAddr, _metaAddr, uint8(_pbuilder.version() + 1));
         assertEq(_builder.name(), "test upgrade");
     }
 }

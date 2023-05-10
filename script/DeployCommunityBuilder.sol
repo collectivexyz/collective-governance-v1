@@ -90,7 +90,13 @@ contract DeployCommunityBuilder is Script {
 
         CommunityBuilder _builder = new CommunityBuilder();
         CommunityBuilderProxy _pbuilder = CommunityBuilderProxy(_proxy);
-        _pbuilder.upgrade(address(_builder), address(_weightedFactory), address(_projectFactory), address(_tokenFactory));
+        _pbuilder.upgrade(
+            address(_builder),
+            address(_weightedFactory),
+            address(_projectFactory),
+            address(_tokenFactory),
+            uint8(_builder.version())
+        );
         emit CommunityBuilderUpgraded(address(_proxy));
         vm.stopBroadcast();
     }

@@ -30,7 +30,37 @@ contract GovernanceBuilderProxyTest is Test {
         address payable _paddr = payable(address(_builder));
         GovernanceBuilderProxy _proxy = GovernanceBuilderProxy(_paddr);
         GovernanceBuilder _gbuilder = new GBuilder2();
-        _proxy.upgrade(address(_gbuilder), address(_governanceFactory), address(_storageFactory), address(_metaStorageFactory));
+        _proxy.upgrade(
+            address(_gbuilder),
+            address(_governanceFactory),
+            address(_storageFactory),
+            address(_metaStorageFactory),
+            uint8(_gbuilder.version())
+        );
+        assertEq(_builder.name(), "test upgrade");
+    }
+
+    function testProxyUpgrade2Times() public {
+        GovernanceFactory _governanceFactory = new GovernanceFactory();
+        StorageFactory _storageFactory = new StorageFactory();
+        MetaStorageFactory _metaStorageFactory = new MetaStorageFactory();
+        address payable _paddr = payable(address(_builder));
+        GovernanceBuilderProxy _proxy = GovernanceBuilderProxy(_paddr);
+        GovernanceBuilder _gbuilder = new GBuilder2();
+        _proxy.upgrade(
+            address(_gbuilder),
+            address(_governanceFactory),
+            address(_storageFactory),
+            address(_metaStorageFactory),
+            uint8(_gbuilder.version())
+        );
+        _proxy.upgrade(
+            address(_gbuilder),
+            address(_governanceFactory),
+            address(_storageFactory),
+            address(_metaStorageFactory),
+            uint8(_gbuilder.version()+1)
+        );
         assertEq(_builder.name(), "test upgrade");
     }
 }

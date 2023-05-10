@@ -52,6 +52,11 @@ import { ProposalBuilder } from "./ProposalBuilder.sol";
  * @notice This contract is intended to act as an upgradeable Proxy for the ProposalBuilder
  */
 contract ProposalBuilderProxy is ERC1967Proxy {
+    /// @notice create a proposal builder proxy
+    /// @param _implementation the address of the implementation contract
+    /// @param _governanceAddress the Governance contract
+    /// @param _storageAddress the Storage contract
+    /// @param _metaAddress the MetaStorage contract
     constructor(
         address _implementation,
         address _governanceAddress,
@@ -67,22 +72,22 @@ contract ProposalBuilderProxy is ERC1967Proxy {
 
     }
 
+    /// @param _implementation the address of the implementation contract
+    /// @param _governanceAddress the Governance contract
+    /// @param _storageAddress the Storage contract
+    /// @param _metaAddress the MetaStorage contract
+    /// @param _version the implementation contract version
     function upgrade(
         address _implementation,
         address _governanceAddress,
         address _storageAddress,
-        address _metaAddress
+        address _metaAddress,
+        uint8 _version
     ) external {
         _upgradeToAndCallUUPS(
             _implementation,
-            abi.encodeWithSelector(
-                ProposalBuilder.upgrade.selector,
-                _governanceAddress,
-                _storageAddress,
-                _metaAddress,
-                Constant.CURRENT_VERSION
-            ),
-            true
+            abi.encodeWithSelector(ProposalBuilder.upgrade.selector, _governanceAddress, _storageAddress, _metaAddress, _version),
+            false
         );
     }
 }

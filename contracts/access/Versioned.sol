@@ -46,6 +46,5 @@ pragma solidity ^0.8.15;
 /// @title requirement for Versioned contract
 /// @custom:type interface
 interface Versioned {
-
     function version() external pure returns (uint32);
 }

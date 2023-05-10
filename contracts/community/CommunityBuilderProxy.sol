@@ -68,7 +68,7 @@ contract CommunityBuilderProxy is ERC1967Proxy {
 
     }
 
-    function upgrade(address _implementation, address _weightedFactory, address _projectFactory, address _tokenFactory) external {
+    function upgrade(address _implementation, address _weightedFactory, address _projectFactory, address _tokenFactory, uint8 _version) external {
         _upgradeToAndCallUUPS(
             _implementation,
             abi.encodeWithSelector(
@@ -76,9 +76,9 @@ contract CommunityBuilderProxy is ERC1967Proxy {
                 _weightedFactory,
                 _projectFactory,
                 _tokenFactory,
-                Constant.CURRENT_VERSION
+                _version
             ),
-            true
+            false
         );
     }
 }

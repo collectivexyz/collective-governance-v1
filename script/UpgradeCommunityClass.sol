@@ -47,6 +47,7 @@ import { IERC165 } from "@openzeppelin/contracts/interfaces/IERC165.sol";
 
 import { Script } from "forge-std/Script.sol";
 
+import { Versioned } from "../contracts/access/Versioned.sol";
 import { CommunityClass, WeightedCommunityClass } from "../contracts/community/CommunityClass.sol";
 import { CommunityClassProxy } from "../contracts/community/CommunityClassProxy.sol";
 
@@ -68,7 +69,8 @@ contract UpgradeCommunityClass is Script {
         uint256 minimumVoteDuration,
         uint256 maximumVoteDuration,
         uint256 gasUsedRebate,
-        uint256 baseFeeRebate
+        uint256 baseFeeRebate,
+        uint8 version
     );
 
     error ProxyRequired(address proxyAddress);
@@ -93,6 +95,7 @@ contract UpgradeCommunityClass is Script {
         CommunityClassProxy _class = CommunityClassProxy(_target);
         CommunityClassProxy _proxy = CommunityClassProxy(_classProxy);
         address _implementation = _class.getImplementation();
+        Versioned _implVersion = Versioned(_implementation);
         WeightedCommunityClass _prototype = WeightedCommunityClass(_target);
         _proxy.upgrade(
             _implementation,
@@ -104,7 +107,8 @@ contract UpgradeCommunityClass is Script {
             _prototype.maximumVoteDuration(),
             _prototype.maximumGasUsedRebate(),
             _prototype.maximumBaseFeeRebate(),
-            _prototype.communitySupervisorSet()
+            _prototype.communitySupervisorSet(),
+            uint8(_implVersion.version())
         );
         emit UpgradeProxy(
             _classProxy,
@@ -116,7 +120,8 @@ contract UpgradeCommunityClass is Script {
             _prototype.minimumVoteDuration(),
             _prototype.maximumVoteDuration(),
             _prototype.maximumGasUsedRebate(),
-            _prototype.maximumBaseFeeRebate()
+            _prototype.maximumBaseFeeRebate(),
+            uint8(_implVersion.version())            
         );
         vm.stopBroadcast();
     }

@@ -55,6 +55,11 @@ import { GovernanceFactory } from "../../contracts/governance/GovernanceFactory.
  * @notice Proxy for GovernanceBuilder
  */
 contract GovernanceBuilderProxy is ERC1967Proxy {
+    /// @notice create new proxy
+    /// @param _implementation the address of the implementation contract
+    /// @param _govFactory the GovernanceFactory
+    /// @param _storageFactory the StorageFactory
+    /// @param _metaStorageFactory the MetaStorageFactory
     constructor(
         address _implementation,
         address _govFactory,
@@ -70,11 +75,17 @@ contract GovernanceBuilderProxy is ERC1967Proxy {
 
     }
 
+    /// @param _implementation the address of the implementation contract
+    /// @param _govFactory the GovernanceFactory
+    /// @param _storageFactory the StorageFactory
+    /// @param _metaStorageFactory the MetaStorageFactory
+    /// @param _version the implementation contract version
     function upgrade(
         address _implementation,
         address _govFactory,
         address _storageFactory,
-        address _metaStorageFactory
+        address _metaStorageFactory,
+        uint8 _version
     ) external {
         _upgradeToAndCallUUPS(
             _implementation,
@@ -83,9 +94,9 @@ contract GovernanceBuilderProxy is ERC1967Proxy {
                 _govFactory,
                 _storageFactory,
                 _metaStorageFactory,
-                Constant.CURRENT_VERSION
+                _version
             ),
-            true
+            false
         );
     }
 }

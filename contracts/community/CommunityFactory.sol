@@ -84,7 +84,8 @@ function upgradeOpenVote(
         maximumVoteDuration,
         _gasUsedRebate,
         _baseFeeRebate,
-        _supervisorList
+        _supervisorList,
+        uint8(_class.version())
     );
 }
 
@@ -116,7 +117,8 @@ function upgradeVoterPool(
         maximumVoteDuration,
         _gasUsedRebate,
         _baseFeeRebate,
-        _supervisorList
+        _supervisorList,
+        uint8(_class.version())
     );
 }
 
@@ -148,7 +150,8 @@ function upgradeErc721(
         maximumVoteDuration,
         _gasUsedRebate,
         _baseFeeRebate,
-        _supervisorList
+        _supervisorList,
+        uint8(_class.version())
     );
 }
 
@@ -180,7 +183,8 @@ function upgradeClosedErc721(
         maximumVoteDuration,
         _gasUsedRebate,
         _baseFeeRebate,
-        _supervisorList
+        _supervisorList,
+        uint8(_class.version())
     );
 }
 
@@ -212,7 +216,8 @@ function upgradeErc20(
         maximumVoteDuration,
         _gasUsedRebate,
         _baseFeeRebate,
-        _supervisorList
+        _supervisorList,
+        uint8(_class.version())
     );
 }
 
@@ -244,7 +249,8 @@ function upgradeClosedErc20(
         maximumVoteDuration,
         _gasUsedRebate,
         _baseFeeRebate,
-        _supervisorList
+        _supervisorList,
+        uint8(_class.version())        
     );
 }
 
