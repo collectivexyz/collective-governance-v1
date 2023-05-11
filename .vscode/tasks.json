@@ -132,11 +132,11 @@
     {
       "label": "deploycommunitybuilder",
       "type": "shell",
-      "command": "forge script ./script/DeployCommunityBuilder.sol --sig 'deploy()' --libraries contracts/Constant.sol:Constant:${CONSTANT_LIB_ADDRESS} --slow --broadcast --rpc-url ${RPC_URL} --private-key ${PRIVATE_KEY} --etherscan-api-key ${ETHERSCAN_API_KEY} --verify",
+      "command": "forge script ./script/DeployCommunityBuilder.sol --sig 'deploy()' --resume --libraries contracts/Constant.sol:Constant:${CONSTANT_LIB_ADDRESS} --slow --broadcast --rpc-url ${RPC_URL} --private-key ${PRIVATE_KEY} --etherscan-api-key ${ETHERSCAN_API_KEY} --verify",
       "options": {
         "cwd": "${workspaceFolder}",
         "env": {
-          "CONSTANT_LIB_ADDRESS": "0x0f63D05B5C7B9FAA1345f791AfEc76b641621940"
+          "CONSTANT_LIB_ADDRESS": "0xF19e03eDE4d2e6e570A15db3e84adf59543fc379"
         }
       },
       "dependsOn": "test",
@@ -152,8 +152,8 @@
       "options": {
         "cwd": "${workspaceFolder}",
         "env": {
-          "CONSTANT_LIB_ADDRESS": "0x0f63D05B5C7B9FAA1345f791AfEc76b641621940",
-          "BUILDER_ADDRESS": "0x4ba7E0dc43180Cb10EF53FF9Da923E02f459Ec9F"
+          "CONSTANT_LIB_ADDRESS": "0xF19e03eDE4d2e6e570A15db3e84adf59543fc379",
+          "BUILDER_ADDRESS": "0xa36e161361A16D75534d565480e62cE474BaC9f3"
         }
       },
       "dependsOn": "test",
@@ -169,7 +169,7 @@
       "options": {
         "cwd": "${workspaceFolder}",
         "env": {
-          "CONSTANT_LIB_ADDRESS": "0x0f63D05B5C7B9FAA1345f791AfEc76b641621940",
+          "CONSTANT_LIB_ADDRESS": "0xF19e03eDE4d2e6e570A15db3e84adf59543fc379",
           "CLASS_PROXY": "0x0Ee183DEA88Be769fD1CAb473fDaCdd16791163A",
           "TARGET_PROTOTYPE": "0xe7879fdb66b6107709502D2ad362fa43BC278DbE"
         }
@@ -187,7 +187,7 @@
       "options": {
         "cwd": "${workspaceFolder}",
         "env": {
-          "CONSTANT_LIB_ADDRESS": "0x0f63D05B5C7B9FAA1345f791AfEc76b641621940"
+          "CONSTANT_LIB_ADDRESS": "0xF19e03eDE4d2e6e570A15db3e84adf59543fc379"
         }
       },
       "dependsOn": "test",
@@ -203,8 +203,8 @@
       "options": {
         "cwd": "${workspaceFolder}",
         "env": {
-          "CONSTANT_LIB_ADDRESS": "0x0f63D05B5C7B9FAA1345f791AfEc76b641621940",
-          "BUILDER_ADDRESS": "0xe1a13ea37F2BFE35B612799fcf9eBD43efA00B87"
+          "CONSTANT_LIB_ADDRESS": "0xF19e03eDE4d2e6e570A15db3e84adf59543fc379",
+          "BUILDER_ADDRESS": "0x9fB5a925E61c31617129B5D030808939DADA99f7"
         }
       },
       "dependsOn": "test",
@@ -220,7 +220,7 @@
       "options": {
         "cwd": "${workspaceFolder}",
         "env": {
-          "CONSTANT_LIB_ADDRESS": "0x0f63D05B5C7B9FAA1345f791AfEc76b641621940",
+          "CONSTANT_LIB_ADDRESS": "0xF19e03eDE4d2e6e570A15db3e84adf59543fc379",
           "GOVERNANCE_ADDRESS": "0x6b5b3b287a80742d728511f51638315cf1987977",
           "STORAGE_ADDRESS": "0xc28ea107f64746ac90349c6c09c193d966f1ca91",
           "META_ADDRESS": "0xd75fa6c5c3fdfd495d851c43e5331e16a058902a"
@@ -239,7 +239,7 @@
       "options": {
         "cwd": "${workspaceFolder}",
         "env": {
-          "CONSTANT_LIB_ADDRESS": "0x0f63D05B5C7B9FAA1345f791AfEc76b641621940",
+          "CONSTANT_LIB_ADDRESS": "0xF19e03eDE4d2e6e570A15db3e84adf59543fc379",
           "BUILDER_ADDRESS": "",
           "GOVERNANCE_ADDRESS": "0xa2f50e55ac910ba030b3e4cab92da8de5b38ef2d",
           "STORAGE_ADDRESS": "0xe0c76c1621738b870eac5a37447fdadc8c077c21",
