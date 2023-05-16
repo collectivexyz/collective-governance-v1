@@ -135,8 +135,19 @@ library Constant {
      * @notice create an AddressSet
      * @return AddressSet the created set
      */
-    function createAddressSet() external returns (AddressCollection) {
+    function createAddressSet() public returns (AddressCollection) {
         return new AddressSet();
+    }
+
+    /**
+     * create address set from provided collection
+     */
+    function from(AddressCollection _set) external returns (AddressCollection) {
+        AddressCollection _collection = createAddressSet();
+        for (uint i = 1; i <= _set.size(); ++i) {
+            _collection.add(_set.get(i));
+        }
+        return _collection;
     }
 
     /**
