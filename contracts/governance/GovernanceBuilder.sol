@@ -244,7 +244,7 @@ contract GovernanceBuilder is VersionedContract, ERC165, OwnableInitializable, U
     /// @return storageAddress address of the storage contract
     /// @return metaAddress address of the meta contract
     function build() external returns (address payable governanceAddress, address storageAddress, address metaAddress) {
-        GovernanceProperties storage _properties = _buildMap[msg.sender];
+        GovernanceProperties memory _properties = _buildMap[msg.sender];
         Storage _storage = createStorage(_properties);
         TimeLocker _timeLock = createTimelock(_properties.class.minimumVoteDuration());
         MetaStorage _metaStore = _metaStorageFactory.create(_properties.name, _properties.url, _properties.description);
@@ -298,7 +298,7 @@ contract GovernanceBuilder is VersionedContract, ERC165, OwnableInitializable, U
         return _timeLock;
     }
 
-    function createStorage(GovernanceProperties storage _properties) private returns (Storage) {
+    function createStorage(GovernanceProperties memory _properties) private returns (Storage) {
         if (address(_properties.class) == address(0x0)) revert CommunityClassRequired(address(_properties.class));
         Storage _storage = _storageFactory.create(_properties.class);
         return _storage;

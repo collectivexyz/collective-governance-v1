@@ -417,7 +417,7 @@ contract CommunityBuilder is VersionedContract, ERC165, OwnableInitializable, UU
      * @return address - The address of the newly created contract
      */
     function build() public returns (address payable) {
-        CommunityProperties storage _properties = _buildMap[msg.sender];
+        CommunityProperties memory _properties = _buildMap[msg.sender];
         WeightedCommunityClass _proxy;
         if (_properties.weight < 1) revert NonZeroWeightRequired(_properties.weight);
         if (_properties.minimumProjectQuorum < 1) revert NonZeroQuorumRequired(_properties.minimumProjectQuorum);

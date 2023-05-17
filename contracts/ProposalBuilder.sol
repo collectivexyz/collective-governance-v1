@@ -124,7 +124,6 @@ contract ProposalBuilder is VersionedContract, ERC165, OwnableInitializable, UUP
     )
         public
         initializer
-        initializer
         requireGovernance(_governanceAddress)
         requireVersion(_governanceAddress)
         requireStorage(_storageAddress)
@@ -323,7 +322,7 @@ contract ProposalBuilder is VersionedContract, ERC165, OwnableInitializable, UUP
     /// @notice build the proposal
     /// @return uint256 the propposal id
     function build() external requireAProposal requireMetaOwner returns (uint256) {
-        ProposalProperties storage _properties = _proposalMap[msg.sender];
+        ProposalProperties memory _properties = _proposalMap[msg.sender];
         uint256 pid = _governance.propose();
         for (uint256 i = 1; i <= _properties.transaction.size(); ++i) {
             Transaction memory transaction = _properties.transaction.get(i);
