@@ -86,6 +86,26 @@ interface Vault {
     /// @param _quantity the amount of the approved transfer
     function approve(address _to, uint256 _quantity) external;
 
+    /**
+     * @notice Approve and schedule a payment to recipient in one transaction.
+     *
+     * Each required approver must individually sign a message that
+     * represents the standardized transaction for the payment transfer
+     * as follows
+     *
+     * keccak256(abi.encode(_to, _quantity, "", "", _scheduleTime))
+     *
+     * Each approver must sign off chain and the signatures passed to this function.
+     *
+     * @dev _scheduleTime is subject to timelock constraints
+     *
+     * @param _to the address of the recipient
+     * @param _quantity to approve
+     * @param _scheduleTime the scheduled time
+     * @param _signature array of signature as bytes
+     */
+    function approveMulti(address _to, uint256 _quantity, uint256 _scheduleTime, bytes[] memory _signature) external;
+
     /// @notice pay quantity to msg.sender
     function pay() external;
 
