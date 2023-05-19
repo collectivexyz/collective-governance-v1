@@ -151,6 +151,17 @@ library Constant {
     }
 
     /**
+     * create from array
+     */
+    function from(address[] memory addrList) external returns (AddressCollection) {
+        AddressCollection _collection = createAddressSet();
+        for (uint i = 0; i < addrList.length; ++i) {
+            _collection.add(addrList[i]);
+        }
+        return _collection;
+    }
+
+    /**
      * @notice create an MetaSet
      * @return MetaSet the created set
      */

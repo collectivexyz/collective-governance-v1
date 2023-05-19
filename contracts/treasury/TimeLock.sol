@@ -142,7 +142,7 @@ contract TimeLock is TimeLocker, Ownable {
 
     /**
      * @notice If the time lock is concluded, execute the scheduled transaction.
-     * @dev It is only possible to execute a queued transaction.
+     * @dev It is only possible to execute a queued transaction therefore anyone may initiate the call
      * @param _target the target address for this transaction
      * @param _value the value to pass to the call
      * @param _signature the tranaction signature
@@ -156,7 +156,7 @@ contract TimeLock is TimeLocker, Ownable {
         string calldata _signature,
         bytes calldata _calldata,
         uint256 _scheduleTime
-    ) external payable onlyOwner returns (bytes memory) {
+    ) external payable returns (bytes memory) {
         Transaction memory transaction = Transaction(_target, _value, _signature, _calldata, _scheduleTime);
         bytes32 txHash = getHash(transaction);
         if (!_queuedTransaction[txHash]) {

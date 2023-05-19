@@ -75,7 +75,7 @@ contract GovernanceStorage is Storage, VersionedContract, ERC165, Ownable {
     uint256 private _proposalCount;
 
     /// @notice global map of proposed issues by id
-    mapping(uint256 => Proposal) public proposalMap;
+    mapping(uint256 => Proposal) public _proposalMap;
 
     /// @notice The last contest for each sender
     mapping(address => uint256) private _latestProposalId;
@@ -88,13 +88,13 @@ contract GovernanceStorage is Storage, VersionedContract, ERC165, Ownable {
     }
 
     modifier requireValid(uint256 _proposalId) {
-        Proposal storage proposal = proposalMap[_proposalId];
+        Proposal storage proposal = _proposalMap[_proposalId];
         if (_proposalId == 0 || _proposalId > _proposalCount || proposal.id != _proposalId) revert InvalidProposal(_proposalId);
         _;
     }
 
     modifier requireVoteCast(uint256 _proposalId, uint256 _receiptId) {
-        Proposal storage proposal = proposalMap[_proposalId];
+        Proposal storage proposal = _proposalMap[_proposalId];
         Receipt memory receipt = proposal.voteReceipt[_receiptId];
         if (receipt.abstention) revert VoteRescinded(_proposalId, _receiptId);
         if (receipt.votesCast == 0) revert NeverVoted(_proposalId, _receiptId);
@@ -106,7 +106,7 @@ contract GovernanceStorage is Storage, VersionedContract, ERC165, Ownable {
         uint256 _receiptId,
         address _wallet
     ) {
-        Proposal storage proposal = proposalMap[_proposalId];
+        Proposal storage proposal = _proposalMap[_proposalId];
         Receipt memory receipt = proposal.voteReceipt[_receiptId];
         if (receipt.wallet != _wallet) revert NotVoter(_proposalId, _receiptId, _wallet);
         _;
@@ -114,7 +114,7 @@ contract GovernanceStorage is Storage, VersionedContract, ERC165, Ownable {
 
     modifier requireValidReceipt(uint256 _proposalId, uint256 _receiptId) {
         if (_receiptId == 0) revert InvalidReceipt(_proposalId, _receiptId);
-        Proposal storage proposal = proposalMap[_proposalId];
+        Proposal storage proposal = _proposalMap[_proposalId];
         Receipt memory receipt = proposal.voteReceipt[_receiptId];
         if (receipt.shareId != _receiptId) revert NeverVoted(_proposalId, _receiptId);
         _;
@@ -125,7 +125,7 @@ contract GovernanceStorage is Storage, VersionedContract, ERC165, Ownable {
         address _wallet,
         uint256 _shareId
     ) {
-        Proposal storage proposal = proposalMap[_proposalId];
+        Proposal storage proposal = _proposalMap[_proposalId];
         if (_shareId == 0) revert TokenIdIsNotValid(_proposalId, _shareId);
         Receipt memory receipt = proposal.voteReceipt[_shareId];
         if (receipt.shareId != 0 || receipt.votesCast > 0 || receipt.abstention)
@@ -134,25 +134,25 @@ contract GovernanceStorage is Storage, VersionedContract, ERC165, Ownable {
     }
 
     modifier requireProposalSender(uint256 _proposalId, address _sender) {
-        Proposal storage proposal = proposalMap[_proposalId];
+        Proposal storage proposal = _proposalMap[_proposalId];
         if (proposal.proposalSender != _sender) revert NotSender(_proposalId, _sender);
         _;
     }
 
     modifier requireConfig(uint256 _proposalId) {
-        Proposal storage proposal = proposalMap[_proposalId];
+        Proposal storage proposal = _proposalMap[_proposalId];
         if (proposal.status != Status.CONFIG) revert VoteIsFinal(_proposalId);
         _;
     }
 
     modifier requireFinal(uint256 _proposalId) {
-        Proposal storage proposal = proposalMap[_proposalId];
+        Proposal storage proposal = _proposalMap[_proposalId];
         if (proposal.status != Status.FINAL) revert VoteNotFinal(_proposalId);
         _;
     }
 
     modifier requireVotingActive(uint256 _proposalId) {
-        Proposal storage proposal = proposalMap[_proposalId];
+        Proposal storage proposal = _proposalMap[_proposalId];
         if (proposal.startTime > getBlockTimestamp() || proposal.endTime < getBlockTimestamp()) {
             revert VoteNotActive(_proposalId, proposal.startTime, proposal.endTime);
         }
@@ -160,7 +160,7 @@ contract GovernanceStorage is Storage, VersionedContract, ERC165, Ownable {
     }
 
     modifier requireMutableSupervisor(uint256 _proposalId, address _supervisor) {
-        Proposal storage proposal = proposalMap[_proposalId];
+        Proposal storage proposal = _proposalMap[_proposalId];
         Supervisor memory supervisor = proposal.supervisorPool[_supervisor];
         if (!supervisor.isEnabled) revert NotSupervisor(_proposalId, _supervisor);
         if (supervisor.isProject) revert ProjectSupervisor(_proposalId, _supervisor);
@@ -168,20 +168,20 @@ contract GovernanceStorage is Storage, VersionedContract, ERC165, Ownable {
     }
 
     modifier requireSupervisor(uint256 _proposalId, address _sender) {
-        Proposal storage proposal = proposalMap[_proposalId];
+        Proposal storage proposal = _proposalMap[_proposalId];
         Supervisor memory supervisor = proposal.supervisorPool[_sender];
         if (!supervisor.isEnabled) revert NotSupervisor(_proposalId, _sender);
         _;
     }
 
     modifier requireUpDownVote(uint256 _proposalId) {
-        Proposal storage proposal = proposalMap[_proposalId];
+        Proposal storage proposal = _proposalMap[_proposalId];
         if (proposal.choice.size() != 0) revert ChoiceRequired(_proposalId);
         _;
     }
 
     modifier requireChoiceVote(uint256 _proposalId) {
-        Proposal storage proposal = proposalMap[_proposalId];
+        Proposal storage proposal = _proposalMap[_proposalId];
         if (proposal.choice.size() == 0) revert NotChoiceVote(_proposalId);
         _;
     }
@@ -217,7 +217,7 @@ contract GovernanceStorage is Storage, VersionedContract, ERC165, Ownable {
         bool _isProject,
         address _sender
     ) public onlyOwner requireValid(_proposalId) requireProposalSender(_proposalId, _sender) requireConfig(_proposalId) {
-        Proposal storage proposal = proposalMap[_proposalId];
+        Proposal storage proposal = _proposalMap[_proposalId];
         Supervisor storage supervisor = proposal.supervisorPool[_supervisor];
         if (!supervisor.isEnabled) {
             proposal.supervisorPool[_supervisor] = Supervisor(true, _isProject);
@@ -244,7 +244,7 @@ contract GovernanceStorage is Storage, VersionedContract, ERC165, Ownable {
         requireConfig(_proposalId)
         requireMutableSupervisor(_proposalId, _supervisor)
     {
-        Proposal storage proposal = proposalMap[_proposalId];
+        Proposal storage proposal = _proposalMap[_proposalId];
         Supervisor storage supervisor = proposal.supervisorPool[_supervisor];
         supervisor.isEnabled = false;
         emit BurnSupervisor(_proposalId, _supervisor);
@@ -262,7 +262,7 @@ contract GovernanceStorage is Storage, VersionedContract, ERC165, Ownable {
     ) external onlyOwner requireValid(_proposalId) requireConfig(_proposalId) requireSupervisor(_proposalId, _sender) {
         if (_quorum < _voterClass.minimumProjectQuorum())
             revert QuorumNotPermitted(_proposalId, _quorum, _voterClass.minimumProjectQuorum());
-        Proposal storage proposal = proposalMap[_proposalId];
+        Proposal storage proposal = _proposalMap[_proposalId];
         proposal.quorumRequired = _quorum;
         emit SetQuorumRequired(_proposalId, _quorum);
     }
@@ -281,7 +281,7 @@ contract GovernanceStorage is Storage, VersionedContract, ERC165, Ownable {
             revert DelayNotPermitted(_proposalId, _voteDelay, _voterClass.minimumVoteDelay());
         if (_voteDelay > _voterClass.maximumVoteDelay())
             revert DelayNotPermitted(_proposalId, _voteDelay, _voterClass.maximumVoteDelay());
-        Proposal storage proposal = proposalMap[_proposalId];
+        Proposal storage proposal = _proposalMap[_proposalId];
         proposal.voteDelay = _voteDelay;
         emit SetVoteDelay(_proposalId, _voteDelay);
     }
@@ -300,7 +300,7 @@ contract GovernanceStorage is Storage, VersionedContract, ERC165, Ownable {
             revert DurationNotPermitted(_proposalId, _voteDuration, _voterClass.minimumVoteDuration());
         if (_voteDuration > _voterClass.maximumVoteDuration())
             revert DurationNotPermitted(_proposalId, _voteDuration, _voterClass.maximumVoteDuration());
-        Proposal storage proposal = proposalMap[_proposalId];
+        Proposal storage proposal = _proposalMap[_proposalId];
         proposal.voteDuration = _voteDuration;
         emit SetVoteDuration(_proposalId, _voteDuration);
     }
@@ -309,7 +309,7 @@ contract GovernanceStorage is Storage, VersionedContract, ERC165, Ownable {
     /// @param _proposalId the id of the proposal
     /// @return address the address of the sender
     function getSender(uint256 _proposalId) external view requireValid(_proposalId) returns (address) {
-        Proposal storage proposal = proposalMap[_proposalId];
+        Proposal storage proposal = _proposalMap[_proposalId];
         return proposal.proposalSender;
     }
 
@@ -317,7 +317,7 @@ contract GovernanceStorage is Storage, VersionedContract, ERC165, Ownable {
     /// @param _proposalId the id of the proposal
     /// @return uint256 the number required for quorum
     function quorumRequired(uint256 _proposalId) external view requireValid(_proposalId) returns (uint256) {
-        Proposal storage proposal = proposalMap[_proposalId];
+        Proposal storage proposal = _proposalMap[_proposalId];
         return proposal.quorumRequired;
     }
 
@@ -326,7 +326,7 @@ contract GovernanceStorage is Storage, VersionedContract, ERC165, Ownable {
     /// @param _proposalId the id of the proposal
     /// @return uint256 the delay
     function voteDelay(uint256 _proposalId) external view requireValid(_proposalId) returns (uint256) {
-        Proposal storage proposal = proposalMap[_proposalId];
+        Proposal storage proposal = _proposalMap[_proposalId];
         return proposal.voteDelay;
     }
 
@@ -335,7 +335,7 @@ contract GovernanceStorage is Storage, VersionedContract, ERC165, Ownable {
     /// @param _proposalId the id of the proposal
     /// @return uint256 the duration
     function voteDuration(uint256 _proposalId) external view requireValid(_proposalId) returns (uint256) {
-        Proposal storage proposal = proposalMap[_proposalId];
+        Proposal storage proposal = _proposalMap[_proposalId];
         return proposal.voteDuration;
     }
 
@@ -344,7 +344,7 @@ contract GovernanceStorage is Storage, VersionedContract, ERC165, Ownable {
     /// @param _proposalId the id of the proposal
     /// @return uint256 the start time
     function startTime(uint256 _proposalId) external view requireValid(_proposalId) returns (uint256) {
-        Proposal storage proposal = proposalMap[_proposalId];
+        Proposal storage proposal = _proposalMap[_proposalId];
         return proposal.startTime;
     }
 
@@ -353,7 +353,7 @@ contract GovernanceStorage is Storage, VersionedContract, ERC165, Ownable {
     /// @param _proposalId the id of the proposal
     /// @return uint256 the end time
     function endTime(uint256 _proposalId) external view requireValid(_proposalId) returns (uint256) {
-        Proposal storage proposal = proposalMap[_proposalId];
+        Proposal storage proposal = _proposalMap[_proposalId];
         return proposal.endTime;
     }
 
@@ -361,7 +361,7 @@ contract GovernanceStorage is Storage, VersionedContract, ERC165, Ownable {
     /// @param _proposalId the id of the proposal
     /// @return uint256 the number of votes in favor
     function forVotes(uint256 _proposalId) public view requireValid(_proposalId) returns (uint256) {
-        Proposal storage proposal = proposalMap[_proposalId];
+        Proposal storage proposal = _proposalMap[_proposalId];
         return proposal.forVotes;
     }
 
@@ -373,7 +373,7 @@ contract GovernanceStorage is Storage, VersionedContract, ERC165, Ownable {
         uint256 _proposalId,
         uint256 _choiceId
     ) public view requireValid(_proposalId) requireChoiceVote(_proposalId) returns (uint256) {
-        Proposal storage proposal = proposalMap[_proposalId];
+        Proposal storage proposal = _proposalMap[_proposalId];
         Choice memory choice = proposal.choice.get(_choiceId);
         return choice.voteCount;
     }
@@ -382,7 +382,7 @@ contract GovernanceStorage is Storage, VersionedContract, ERC165, Ownable {
     /// @param _proposalId the id of the proposal
     /// @return uint256 the number of against votes
     function againstVotes(uint256 _proposalId) public view requireValid(_proposalId) returns (uint256) {
-        Proposal storage proposal = proposalMap[_proposalId];
+        Proposal storage proposal = _proposalMap[_proposalId];
         return proposal.againstVotes;
     }
 
@@ -390,7 +390,7 @@ contract GovernanceStorage is Storage, VersionedContract, ERC165, Ownable {
     /// @param _proposalId the id of the proposal
     /// @return uint256 the number abstentions
     function abstentionCount(uint256 _proposalId) public view requireValid(_proposalId) returns (uint256) {
-        Proposal storage proposal = proposalMap[_proposalId];
+        Proposal storage proposal = _proposalMap[_proposalId];
         return proposal.abstentionCount;
     }
 
@@ -406,7 +406,7 @@ contract GovernanceStorage is Storage, VersionedContract, ERC165, Ownable {
     /// @param _supervisor the address to check
     /// @return bool true if the address is a supervisor
     function isSupervisor(uint256 _proposalId, address _supervisor) external view requireValid(_proposalId) returns (bool) {
-        Proposal storage proposal = proposalMap[_proposalId];
+        Proposal storage proposal = _proposalMap[_proposalId];
         Supervisor memory supervisor = proposal.supervisorPool[_supervisor];
         return supervisor.isEnabled;
     }
@@ -423,7 +423,7 @@ contract GovernanceStorage is Storage, VersionedContract, ERC165, Ownable {
     /// @param _proposalId the id of the proposal
     /// @return bool true if the proposal is marked ready
     function isFinal(uint256 _proposalId) public view requireValid(_proposalId) returns (bool) {
-        Proposal storage proposal = proposalMap[_proposalId];
+        Proposal storage proposal = _proposalMap[_proposalId];
         return proposal.status == Status.FINAL || proposal.status == Status.CANCELLED;
     }
 
@@ -431,7 +431,7 @@ contract GovernanceStorage is Storage, VersionedContract, ERC165, Ownable {
     /// @param _proposalId the id of the proposal
     /// @return bool true if the proposal is marked cancelled
     function isCancel(uint256 _proposalId) public view requireValid(_proposalId) returns (bool) {
-        Proposal storage proposal = proposalMap[_proposalId];
+        Proposal storage proposal = _proposalMap[_proposalId];
         return proposal.status == Status.CANCELLED;
     }
 
@@ -439,7 +439,7 @@ contract GovernanceStorage is Storage, VersionedContract, ERC165, Ownable {
     /// @param _proposalId the id of the proposal
     /// @return bool true if the proposal is marked veto
     function isVeto(uint256 _proposalId) external view requireValid(_proposalId) returns (bool) {
-        Proposal storage proposal = proposalMap[_proposalId];
+        Proposal storage proposal = _proposalMap[_proposalId];
         return proposal.isVeto;
     }
 
@@ -469,7 +469,7 @@ contract GovernanceStorage is Storage, VersionedContract, ERC165, Ownable {
         requireValidReceipt(_proposalId, _shareId)
         returns (uint256 shareId, uint256 shareFor, uint256 votesCast, uint256 choiceId, bool isAbstention)
     {
-        Proposal storage proposal = proposalMap[_proposalId];
+        Proposal storage proposal = _proposalMap[_proposalId];
         Receipt memory receipt = proposal.voteReceipt[_shareId];
         return (receipt.shareId, receipt.shareFor, receipt.votesCast, receipt.choiceId, receipt.abstention);
     }
@@ -486,7 +486,7 @@ contract GovernanceStorage is Storage, VersionedContract, ERC165, Ownable {
     function initializeProposal(address _sender) external onlyOwner returns (uint256) {
         uint256 latestProposalId = _latestProposalId[_sender];
         if (latestProposalId != 0) {
-            Proposal storage lastProposal = proposalMap[latestProposalId];
+            Proposal storage lastProposal = _proposalMap[latestProposalId];
             if (!isFinal(latestProposalId) || getBlockTimestamp() < lastProposal.endTime) {
                 revert TooManyProposals(_sender, latestProposalId);
             }
@@ -496,7 +496,7 @@ contract GovernanceStorage is Storage, VersionedContract, ERC165, Ownable {
         _latestProposalId[_sender] = proposalId;
 
         // proposal
-        Proposal storage proposal = proposalMap[proposalId];
+        Proposal storage proposal = _proposalMap[proposalId];
         proposal.id = proposalId;
         proposal.proposalSender = _sender;
         proposal.quorumRequired = MAXIMUM_QUORUM;
@@ -524,7 +524,7 @@ contract GovernanceStorage is Storage, VersionedContract, ERC165, Ownable {
         uint256 _proposalId,
         address _sender
     ) public onlyOwner requireValid(_proposalId) requireConfig(_proposalId) requireSupervisor(_proposalId, _sender) {
-        Proposal storage proposal = proposalMap[_proposalId];
+        Proposal storage proposal = _proposalMap[_proposalId];
         proposal.startTime = getBlockTimestamp() + proposal.voteDelay;
         proposal.endTime = proposal.startTime + proposal.voteDuration;
         proposal.status = Status.FINAL;
@@ -543,7 +543,7 @@ contract GovernanceStorage is Storage, VersionedContract, ERC165, Ownable {
             // calculate start and end time
             makeFinal(_proposalId, _sender);
         }
-        Proposal storage proposal = proposalMap[_proposalId];
+        Proposal storage proposal = _proposalMap[_proposalId];
         proposal.status = Status.CANCELLED;
         emit VoteCancel(_proposalId, _sender);
     }
@@ -556,7 +556,7 @@ contract GovernanceStorage is Storage, VersionedContract, ERC165, Ownable {
         uint256 _proposalId,
         address _sender
     ) external onlyOwner requireValid(_proposalId) requireSupervisor(_proposalId, _sender) {
-        Proposal storage proposal = proposalMap[_proposalId];
+        Proposal storage proposal = _proposalMap[_proposalId];
         if (!proposal.isVeto) {
             proposal.isVeto = true;
             emit VoteVeto(_proposalId, _sender);
@@ -599,7 +599,7 @@ contract GovernanceStorage is Storage, VersionedContract, ERC165, Ownable {
     {
         uint256 _shareCount = _voterClass.confirm(_wallet, _shareId);
         if (_shareCount == 0) revert InvalidTokenId(_proposalId, _wallet, _shareId);
-        Proposal storage proposal = proposalMap[_proposalId];
+        Proposal storage proposal = _proposalMap[_proposalId];
         if (_choiceId > 0 && !proposal.choice.contains(_choiceId)) revert NotChoiceVote(_proposalId);
         Receipt storage receipt = proposal.voteReceipt[_shareId];
         receipt.wallet = _wallet;
@@ -639,7 +639,7 @@ contract GovernanceStorage is Storage, VersionedContract, ERC165, Ownable {
     {
         uint256 _shareCount = _voterClass.confirm(_wallet, _shareId);
         if (_shareCount == 0) revert InvalidTokenId(_proposalId, _wallet, _shareId);
-        Proposal storage proposal = proposalMap[_proposalId];
+        Proposal storage proposal = _proposalMap[_proposalId];
         Receipt storage receipt = proposal.voteReceipt[_shareId];
         receipt.wallet = _wallet;
         receipt.shareId = _shareId;
@@ -670,7 +670,7 @@ contract GovernanceStorage is Storage, VersionedContract, ERC165, Ownable {
     {
         uint256 _shareCount = _voterClass.confirm(_wallet, _shareId);
         if (_shareCount == 0) revert InvalidTokenId(_proposalId, _wallet, _shareId);
-        Proposal storage proposal = proposalMap[_proposalId];
+        Proposal storage proposal = _proposalMap[_proposalId];
         Receipt storage receipt = proposal.voteReceipt[_shareId];
         receipt.wallet = _wallet;
         receipt.shareId = _shareId;
@@ -698,7 +698,7 @@ contract GovernanceStorage is Storage, VersionedContract, ERC165, Ownable {
         requireProposalSender(_proposalId, _sender)
         returns (uint256)
     {
-        Proposal storage proposal = proposalMap[_proposalId];
+        Proposal storage proposal = _proposalMap[_proposalId];
         uint256 transactionId = proposal.transaction.add(_transaction);
         emit AddTransaction(
             _proposalId,
@@ -719,7 +719,7 @@ contract GovernanceStorage is Storage, VersionedContract, ERC165, Ownable {
         uint256 _proposalId,
         uint256 _transactionId
     ) external view requireValid(_proposalId) returns (Transaction memory) {
-        Proposal storage proposal = proposalMap[_proposalId];
+        Proposal storage proposal = _proposalMap[_proposalId];
         return proposal.transaction.get(_transactionId);
     }
 
@@ -732,7 +732,7 @@ contract GovernanceStorage is Storage, VersionedContract, ERC165, Ownable {
         uint256 _transactionId,
         address _sender
     ) external onlyOwner requireConfig(_proposalId) requireValid(_proposalId) requireProposalSender(_proposalId, _sender) {
-        Proposal storage proposal = proposalMap[_proposalId];
+        Proposal storage proposal = _proposalMap[_proposalId];
         Transaction memory transaction = proposal.transaction.get(_transactionId);
         if (!proposal.transaction.erase(_transactionId)) revert InvalidTransaction(_proposalId, _transactionId);
         emit ClearTransaction(_proposalId, _transactionId, transaction.scheduleTime, getHash(transaction));
@@ -741,7 +741,7 @@ contract GovernanceStorage is Storage, VersionedContract, ERC165, Ownable {
     /// @notice set proposal state executed
     /// @param _proposalId the id of the proposal
     function setExecuted(uint256 _proposalId) external onlyOwner requireValid(_proposalId) requireFinal(_proposalId) {
-        Proposal storage proposal = proposalMap[_proposalId];
+        Proposal storage proposal = _proposalMap[_proposalId];
         if (proposal.isExecuted) revert MarkedExecuted(_proposalId);
         proposal.isExecuted = true;
         emit Executed(_proposalId);
@@ -751,7 +751,7 @@ contract GovernanceStorage is Storage, VersionedContract, ERC165, Ownable {
     /// @param _proposalId the id of the proposal
     /// @return bool true if already executed
     function isExecuted(uint256 _proposalId) external view requireValid(_proposalId) returns (bool) {
-        Proposal storage proposal = proposalMap[_proposalId];
+        Proposal storage proposal = _proposalMap[_proposalId];
         return proposal.isExecuted;
     }
 
@@ -759,7 +759,7 @@ contract GovernanceStorage is Storage, VersionedContract, ERC165, Ownable {
     /// @param _proposalId the id of the proposal
     /// @return uint256 current number of transactions
     function transactionCount(uint256 _proposalId) external view requireValid(_proposalId) returns (uint256) {
-        Proposal storage proposal = proposalMap[_proposalId];
+        Proposal storage proposal = _proposalMap[_proposalId];
         return proposal.transaction.size();
     }
 
@@ -767,7 +767,7 @@ contract GovernanceStorage is Storage, VersionedContract, ERC165, Ownable {
     /// @param _proposalId the id of the proposal
     /// @return uint current number of choices
     function choiceCount(uint256 _proposalId) external view returns (uint256) {
-        Proposal storage proposal = proposalMap[_proposalId];
+        Proposal storage proposal = _proposalMap[_proposalId];
         return proposal.choice.size();
     }
 
@@ -792,7 +792,7 @@ contract GovernanceStorage is Storage, VersionedContract, ERC165, Ownable {
     {
         if (_choice.name == 0x0) revert ChoiceNameRequired(_proposalId);
         if (_choice.voteCount != 0) revert ChoiceVoteCountInvalid(_proposalId);
-        Proposal storage proposal = proposalMap[_proposalId];
+        Proposal storage proposal = _proposalMap[_proposalId];
         bytes32 txHash = "";
         if (_choice.transactionId > 0) {
             Transaction memory transaction = proposal.transaction.get(_choice.transactionId);
@@ -811,7 +811,7 @@ contract GovernanceStorage is Storage, VersionedContract, ERC165, Ownable {
         uint256 _proposalId,
         uint256 _choiceId
     ) external view requireValid(_proposalId) requireChoiceVote(_proposalId) returns (Choice memory) {
-        Proposal storage proposal = proposalMap[_proposalId];
+        Proposal storage proposal = _proposalMap[_proposalId];
         return proposal.choice.get(_choiceId);
     }
 
@@ -822,7 +822,7 @@ contract GovernanceStorage is Storage, VersionedContract, ERC165, Ownable {
     function getWinningChoice(uint256 _proposalId) external view requireChoiceVote(_proposalId) returns (uint256) {
         uint256 winningChoice = 0;
         uint256 highestVoteCount = 0;
-        Proposal storage proposal = proposalMap[_proposalId];
+        Proposal storage proposal = _proposalMap[_proposalId];
         for (uint256 cid = 1; cid <= proposal.choice.size(); cid++) {
             Choice memory choice = proposal.choice.get(cid);
             if (choice.voteCount > highestVoteCount) {
@@ -837,7 +837,7 @@ contract GovernanceStorage is Storage, VersionedContract, ERC165, Ownable {
     /// @param _proposalId the id of the proposal
     /// @return bool true if proposal is a choice vote
     function isChoiceVote(uint256 _proposalId) public view requireValid(_proposalId) returns (bool) {
-        Proposal storage proposal = proposalMap[_proposalId];
+        Proposal storage proposal = _proposalMap[_proposalId];
         return proposal.choice.size() > 0;
     }
 

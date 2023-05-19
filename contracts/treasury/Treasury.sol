@@ -44,11 +44,10 @@
 
 pragma solidity ^0.8.15;
 
-import {Constant} from "../../contracts/Constant.sol";
-import {TimeLock} from "../../contracts/treasury/TimeLock.sol";
-import {Vault} from "../../contracts/treasury/Vault.sol";
+import { Constant } from "../../contracts/Constant.sol";
+import { TimeLock } from "../../contracts/treasury/TimeLock.sol";
+import { Vault } from "../../contracts/treasury/Vault.sol";
 import { AddressCollection } from "../../contracts/collection/AddressSet.sol";
-
 
 /**
  * @notice Custom multisig treasury for ETH
@@ -57,8 +56,7 @@ contract Treasury is Vault {
     mapping(address => Payment) private _payment;
 
     TimeLock private immutable _timeLock;
-    AddressCollection private _approverSet;
-
+    AddressCollection public immutable _approverSet;
     uint256 public immutable _minimumApprovalCount;
 
     /**
@@ -74,19 +72,19 @@ contract Treasury is Vault {
     }
 
     modifier requireApprover() {
-        if(!_approverSet.contains(msg.sender)) revert NotApprover(msg.sender);
+        if (!_approverSet.contains(msg.sender)) revert NotApprover(msg.sender);
         _;
     }
 
     modifier requireNotPending(address _to) {
         Payment memory _pay = _payment[_to];
-        if(_pay.scheduleTime > 0) revert TransactionInProgress(_to);
+        if (_pay.scheduleTime > 0) revert TransactionInProgress(_to);
         _;
     }
 
     modifier requirePayee(address _to) {
         Payment memory _pay = _payment[_to];
-        if(_pay.approvalCount < _minimumApprovalCount) revert NotPending(_to);
+        if (_pay.approvalCount < _minimumApprovalCount) revert NotPending(_to);
         _;
     }
 
@@ -103,31 +101,31 @@ contract Treasury is Vault {
     /// @dev payable
     function deposit() public payable {
         uint256 _quantity = msg.value;
-        if (_quantity == 0) revert NoDeposit();
+        if (_quantity == 0) revert NoDeposit(msg.sender);
         emit Deposit(_quantity);
     }
 
-    function approve(
-        address _to,
-        uint256 _quantity
-    ) public requireApprover requireNotPending(_to) {
-        uint256 availableQty = balance();
+    function approve(address _to, uint256 _quantity) public requireApprover requireNotPending(_to) {
+        uint256 availableQty = address(this).balance;
         if (availableQty < _quantity) {
             revert InsufficientBalance(_quantity, availableQty);
         }
         Payment storage _pay = _payment[_to];
-        if(_pay.approvalCount < _minimumApprovalCount) {
+        if (_pay.approvalCount < _minimumApprovalCount) {
             _pay.approvalCount += 1;
-            if(_pay.approvalCount == 1 && _pay.quantity == 0) {
+            if (_pay.approvalCount == 1 && _pay.quantity == 0) {
                 _pay.quantity = _quantity;
-            } else if(_pay.quantity != _quantity) {
+            } else if (_pay.quantity != _quantity) {
                 revert ApprovalNotMatched(msg.sender, _quantity, _pay.quantity);
             }
-        } 
-        
-        if(_pay.approvalCount == _minimumApprovalCount) {
+        }
+
+        if (_pay.approvalCount == _minimumApprovalCount) {
             uint256 scheduleTime = getBlockTimestamp() + _timeLock._lockTime();
             _pay.scheduleTime = scheduleTime;
+            // transfer to timelock for execution
+            address payable _lockBalance = payable(address(_timeLock));
+            _lockBalance.transfer(_quantity);
             _timeLock.queueTransaction(_to, _pay.quantity, "", "", _pay.scheduleTime);
             emit Withdraw(_pay.quantity, _to, _pay.scheduleTime);
         }
@@ -157,7 +155,7 @@ contract Treasury is Vault {
 
     function balance(address _from) public view returns (uint256) {
         Payment memory _pay = _payment[_from];
-        if(_pay.approvalCount >= _minimumApprovalCount) {
+        if (_pay.approvalCount >= _minimumApprovalCount) {
             return _pay.quantity;
         }
         return 0;
@@ -173,7 +171,7 @@ contract Treasury is Vault {
         return block.timestamp;
     }
 
-    function balance() private view returns (uint256) {
-        return address(this).balance;
+    function balance() public view override(Vault) returns (uint256) {
+        return address(_timeLock).balance + address(this).balance;
     }
 }

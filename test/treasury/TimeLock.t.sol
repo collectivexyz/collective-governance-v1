@@ -173,15 +173,6 @@ contract TimeLockTest is Test {
         _timeLock.cancelTransaction(_FUNCTION, 7, "abc", "data", block.timestamp + _WEEK_DELAY);
     }
 
-    function testExecuteRequiresOwner() public {
-        vm.prank(_OWNER);
-        _timeLock.queueTransaction(_FUNCTION, 7, "abc", "data", block.timestamp + _WEEK_DELAY);
-        vm.expectRevert("Ownable: caller is not the owner");
-        vm.warp(block.timestamp + _WEEK_DELAY);
-        vm.prank(_NOT_OWNER);
-        _timeLock.executeTransaction(_FUNCTION, 7, "abc", "data", block.timestamp + _WEEK_DELAY);
-    }
-
     function testExecuteFlag() public {
         FlagSet flag = new FlagSet();
         assertFalse(flag.isSet());
@@ -192,7 +183,6 @@ contract TimeLockTest is Test {
         bytes32 txHash = _timeLock.queueTransaction(flagMock, 0, "", _call, etaOfLock);
         vm.warp(block.timestamp + _WEEK_DELAY);
         assertTrue(_timeLock._queuedTransaction(txHash));
-        vm.prank(_OWNER);
         _timeLock.executeTransaction(flagMock, 0, "", _call, etaOfLock);
         assertFalse(_timeLock._queuedTransaction(txHash));
         assertTrue(flag.isSet());
@@ -209,7 +199,6 @@ contract TimeLockTest is Test {
         bytes32 txHash = _timeLock.queueTransaction(_JOE, 1 ether, "", "", etaOfLock);
         vm.warp(etaOfLock + Constant.TIMELOCK_GRACE_PERIOD);
         assertTrue(_timeLock._queuedTransaction(txHash));
-        vm.prank(_OWNER);
         _timeLock.executeTransaction(_JOE, 1 ether, "", "", etaOfLock);
         assertFalse(_timeLock._queuedTransaction(txHash));
         assertEq(_JOE.balance, 1 ether);

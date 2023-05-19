@@ -52,7 +52,7 @@ interface Vault {
     /// Please deposit or withdraw instead
     error FallbackNotPermitted();
     /// deposit sent but value was nil
-    error NoDeposit();
+    error NoDeposit(address sender);
     /// An approver is required for this operation
     error NotApprover(address sender);
     /// attempt to approve transaction when a transaction is already in progress
@@ -71,7 +71,6 @@ interface Vault {
     /// payment completed
     event PaymentSent(uint256 quantity, address _to);
 
-
     struct Payment {
         uint256 quantity;
         uint256 scheduleTime;
@@ -85,10 +84,7 @@ interface Vault {
     /// @notice approve transfer of _quantity
     /// @param _to the address approved to withdraw the amount
     /// @param _quantity the amount of the approved transfer
-    function approve(
-        address _to,
-        uint256 _quantity
-    ) external;
+    function approve(address _to, uint256 _quantity) external;
 
     /// @notice pay quantity to msg.sender
     function pay() external;
@@ -105,4 +101,7 @@ interface Vault {
     /// @notice balance approved for the specified address
     /// @param _from the address of the wallet to check
     function balance(address _from) external view returns (uint256);
+
+    /// @notice total balance on treasury
+    function balance() external view returns (uint256);
 }

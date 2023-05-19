@@ -61,7 +61,7 @@ import { Treasury } from "../../contracts/treasury/Treasury.sol";
  */
 contract TreasuryBuilder is VersionedContract, ERC165, OwnableInitializable, UUPSUpgradeable, Initializable {
     string public constant NAME = "treasury builder";
-    
+
     error AtLeastOneApprovalIsRequired(address sender);
     error TimeLockDelayIsNotPermitted(address sender, uint256 timeLockTime, uint256 timeLockMinimum);
     error RequiresAdditionalApprovers(address sender, uint256 numberOfApprovers, uint256 requiredNumber);
@@ -69,6 +69,8 @@ contract TreasuryBuilder is VersionedContract, ERC165, OwnableInitializable, UUP
     event Initialized();
     /// settings initialized
     event TreasuryInitialized(address sender);
+    /// approver added
+    event TreasuryApprover(address sender, address approver);
     /// required approvers set
     event TreasuryMinimumRequirement(address sender, uint256 requirement);
     /// timelock time is set
@@ -111,7 +113,7 @@ contract TreasuryBuilder is VersionedContract, ERC165, OwnableInitializable, UUP
         return this;
     }
 
-    /** 
+    /**
      * @notice set the approval requirement
      * @param _requirement The minimum requirement
      * @return TreasuryBuilder this contract
@@ -128,21 +130,36 @@ contract TreasuryBuilder is VersionedContract, ERC165, OwnableInitializable, UUP
      * @param _timelockDelay the minimum delay
      * @return TreasuryBuilder this contract
      */
-    function withTimeLockDelay(uint256 _timelockDelay)  external returns (TreasuryBuilder) {
+    function withTimeLockDelay(uint256 _timelockDelay) external returns (TreasuryBuilder) {
         TreasuryProperties storage _properties = _treasuryMap[msg.sender];
         _properties.timeLockTime = _timelockDelay;
         emit TreasuryTimeLock(msg.sender, _timelockDelay);
         return this;
     }
 
-    function build() external returns (address) {
+    /**
+     * @notice add an approver
+     * @param _approver the approver address
+     */
+    function withApprover(address _approver) external returns (TreasuryBuilder) {
+        TreasuryProperties storage _properties = _treasuryMap[msg.sender];
+        _properties.approver.add(_approver);
+        emit TreasuryApprover(msg.sender, _approver);
+        return this;
+    }
+
+    function build() external returns (address payable) {
         TreasuryProperties memory _properties = _treasuryMap[msg.sender];
-        if(_properties.approvalRequirement < 1) revert AtLeastOneApprovalIsRequired(msg.sender);
-        if(_properties.timeLockTime < Constant.TIMELOCK_MINIMUM_DELAY) revert TimeLockDelayIsNotPermitted(msg.sender, _properties.timeLockTime, Constant.TIMELOCK_MAXIMUM_DELAY);
-        if(_properties.approver.size() < _properties.approvalRequirement) revert RequiresAdditionalApprovers(msg.sender, _properties.approver.size(), _properties.approvalRequirement);
+        if (_properties.approvalRequirement < 1) revert AtLeastOneApprovalIsRequired(msg.sender);
+        if (_properties.timeLockTime < Constant.TIMELOCK_MINIMUM_DELAY)
+            revert TimeLockDelayIsNotPermitted(msg.sender, _properties.timeLockTime, Constant.TIMELOCK_MINIMUM_DELAY);
+        if (_properties.timeLockTime > Constant.TIMELOCK_MAXIMUM_DELAY)
+            revert TimeLockDelayIsNotPermitted(msg.sender, _properties.timeLockTime, Constant.TIMELOCK_MAXIMUM_DELAY);
+        if (_properties.approver.size() < _properties.approvalRequirement)
+            revert RequiresAdditionalApprovers(msg.sender, _properties.approver.size(), _properties.approvalRequirement);
         Treasury _instance = new Treasury(_properties.approvalRequirement, _properties.timeLockTime, _properties.approver);
         emit TreasuryCreated(msg.sender, address(_instance));
-        return address(_instance);
+        return payable(address(_instance));
     }
 
     // @notice return the name of this implementation

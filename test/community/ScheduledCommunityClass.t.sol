@@ -101,6 +101,12 @@ contract ScheduledCommunityClassTest is Test {
         assertTrue(_class.communitySupervisorSet().contains(address(0x1234)));
     }
 
+    function testSupervisorSetHackFails() public {
+        AddressCollection communitySups = _class.communitySupervisorSet();
+        vm.expectRevert("Ownable: caller is not the owner");
+        communitySups.add(address(0x1111));
+    }
+
     function testUpgradeRequiresOwner() public {
         AddressCollection _supervisorSet = new AddressSet();
         _supervisorSet.add(address(0x1235));
