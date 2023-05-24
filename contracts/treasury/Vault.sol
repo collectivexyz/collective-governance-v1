@@ -63,6 +63,8 @@ interface Vault {
     error ApprovalNotMatched(address sender, uint256 quantity, uint256 expected);
     /// quantity not available for approval
     error InsufficientBalance(uint256 quantity, uint256 available);
+    /// when signature was not confirmed
+    error SignatureNotValid(address approver);
 
     /// a deposit has been recieved
     event Deposit(uint256 quantity);
@@ -109,10 +111,10 @@ interface Vault {
     /// @notice pay quantity to msg.sender
     function pay() external;
 
-    /// @notice pay approved quantity to
+    /// @notice transfer approved quantity to
     /// @dev requires approval
     /// @param _to the address to pay
-    function pay(address _to) external;
+    function transferTo(address _to) external;
 
     /// @notice cancel the approved payment
     /// @param _to the approved recipient

@@ -44,10 +44,13 @@
 
 pragma solidity ^0.8.15;
 
+import { ECDSA } from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
+
 import { Constant } from "../../contracts/Constant.sol";
 import { TimeLock } from "../../contracts/treasury/TimeLock.sol";
 import { Vault } from "../../contracts/treasury/Vault.sol";
 import { AddressCollection } from "../../contracts/collection/AddressSet.sol";
+import { Transaction, getHash } from "../../contracts/collection/TransactionSet.sol";
 
 /**
  * @notice Custom multisig treasury for ETH
@@ -88,6 +91,14 @@ contract Treasury is Vault {
         _;
     }
 
+    modifier requireSufficientBalance(uint256 _quantity) {
+        uint256 availableQty = address(this).balance;
+        if (availableQty < _quantity) {
+            revert InsufficientBalance(_quantity, availableQty);
+        }
+        _;
+    }
+
     receive() external payable {
         deposit();
     }
@@ -108,19 +119,16 @@ contract Treasury is Vault {
     /// @notice approve transfer of _quantity
     /// @param _to the address approved to withdraw the amount
     /// @param _quantity the amount of the approved transfer
-    function approve(address _to, uint256 _quantity) public requireApprover requireNotPending(_to) {
-        uint256 availableQty = address(this).balance;
-        if (availableQty < _quantity) {
-            revert InsufficientBalance(_quantity, availableQty);
-        }
+    function approve(
+        address _to,
+        uint256 _quantity
+    ) public requireApprover requireNotPending(_to) requireSufficientBalance(_quantity) {
         Payment storage _pay = _payment[_to];
-        if (_pay.approvalCount < _minimumApprovalCount) {
-            _pay.approvalCount += 1;
-            if (_pay.approvalCount == 1 && _pay.quantity == 0) {
-                _pay.quantity = _quantity;
-            } else if (_pay.quantity != _quantity) {
-                revert ApprovalNotMatched(msg.sender, _quantity, _pay.quantity);
-            }
+        _pay.approvalCount += 1;
+        if (_pay.approvalCount == 1 && _pay.quantity == 0) {
+            _pay.quantity = _quantity;
+        } else if (_pay.quantity != _quantity) {
+            revert ApprovalNotMatched(msg.sender, _quantity, _pay.quantity);
         }
 
         if (_pay.approvalCount == _minimumApprovalCount) {
@@ -128,8 +136,8 @@ contract Treasury is Vault {
             _pay.scheduleTime = scheduleTime;
             // transfer to timelock for execution
             address payable _lockBalance = payable(address(_timeLock));
-            _lockBalance.transfer(_quantity);
             _timeLock.queueTransaction(_to, _pay.quantity, "", "", _pay.scheduleTime);
+            _lockBalance.transfer(_quantity);
             emit Withdraw(_pay.quantity, _to, _pay.scheduleTime);
         }
     }
@@ -157,17 +165,40 @@ contract Treasury is Vault {
         uint256 _quantity,
         uint256 _scheduleTime,
         bytes[] memory _signature
-    ) external requireApprover requireNotPending(_to) {}
+    ) external requireApprover requireNotPending(_to) requireSufficientBalance(_quantity) {
+        Transaction memory agreement = Transaction(_to, _quantity, "", "", _scheduleTime);
+        bytes32 agreementHash = getHash(agreement);
+        Payment storage _pay = _payment[_to];
+        for (uint i = 0; i < _signature.length; ++i) {
+            bytes memory signature = _signature[i];
+            verifySignature(agreementHash, signature);
+            _pay.approvalCount += 1;
+            if (_pay.approvalCount == 1 && _pay.quantity == 0) {
+                _pay.quantity = _quantity;
+            } else if (_pay.quantity != _quantity) {
+                revert ApprovalNotMatched(msg.sender, _quantity, _pay.quantity);
+            }
+
+            if (_pay.approvalCount == _minimumApprovalCount) {
+                _pay.scheduleTime = _scheduleTime;
+                // transfer to timelock for execution
+                address payable _lockBalance = payable(address(_timeLock));
+                _timeLock.queueTransaction(_to, _pay.quantity, "", "", _pay.scheduleTime);
+                _lockBalance.transfer(_quantity);
+                emit Withdraw(_pay.quantity, _to, _pay.scheduleTime);
+            }
+        }
+    }
 
     /// @notice pay quantity to msg.sender
     function pay() public {
-        pay(msg.sender);
+        transferTo(msg.sender);
     }
 
-    /// @notice pay approved quantity to
+    /// @notice transfer approved quantity to
     /// @dev requires approval
     /// @param _to the address to pay
-    function pay(address _to) public requirePayee(_to) {
+    function transferTo(address _to) public requirePayee(_to) {
         Payment storage _pay = _payment[_to];
         uint256 scheduleTime = _pay.scheduleTime;
         uint256 quantity = _pay.quantity;
@@ -200,6 +231,11 @@ contract Treasury is Vault {
     /// @notice total balance on treasury
     function balance() public view override(Vault) returns (uint256) {
         return address(_timeLock).balance + address(this).balance;
+    }
+
+    function verifySignature(bytes32 _agreementHash, bytes memory _signature) private view {
+        address signatureAddress = ECDSA.recover(_agreementHash, _signature);
+        if (!_approverSet.contains(signatureAddress)) revert SignatureNotValid(signatureAddress);
     }
 
     function clear(address _to) private {

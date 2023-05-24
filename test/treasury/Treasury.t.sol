@@ -14,8 +14,9 @@ import { getHash, Transaction } from "../../contracts/collection/TransactionSet.
 contract TreasuryTest is Test {
     address public constant _APP1 = address(0x1234);
     address public constant _APP2 = address(0x1235);
-    address public constant _DENIZEN1 = address(0x1236);
-    address public constant _DENIZEN2 = address(0x1237);
+    address public constant _APP3 = address(0x1236);
+    address public constant _DENIZEN1 = address(0x1237);
+    address public constant _DENIZEN2 = address(0x1238);
     address public constant _NOBODY = address(0xffff);
 
     Treasury private _treasury;
@@ -30,6 +31,7 @@ contract TreasuryTest is Test {
             .withTimeLockDelay(Constant.TIMELOCK_MINIMUM_DELAY)
             .withApprover(_APP1)
             .withApprover(_APP2)
+            .withApprover(_APP3)
             .build();
         _treasury = Treasury(treasAddy);
         vm.deal(_APP1, 20 ether);
@@ -88,6 +90,17 @@ contract TreasuryTest is Test {
         assertEq(_treasury.balance(_DENIZEN1), 1 ether);
     }
 
+    function testOverApproverIsRevert() public {
+        vm.prank(_APP1);
+        _treasury.approve(_DENIZEN1, 1 ether);
+        vm.prank(_APP2);
+        _treasury.approve(_DENIZEN1, 1 ether);
+        assertEq(_treasury.balance(_DENIZEN1), 1 ether);
+        vm.expectRevert(abi.encodeWithSelector(Vault.TransactionInProgress.selector, _DENIZEN1));
+        vm.prank(_APP3);
+        _treasury.approve(_DENIZEN1, 1 ether);
+    }
+
     function testAnotherApproverNotAllowed() public {
         vm.prank(_NOBODY);
         vm.expectRevert(abi.encodeWithSelector(Vault.NotApprover.selector, _NOBODY));
@@ -125,7 +138,7 @@ contract TreasuryTest is Test {
         vm.prank(_APP2);
         _treasury.approve(_DENIZEN1, 1 ether);
         vm.warp(getBlockTimestamp() + Constant.TIMELOCK_MINIMUM_DELAY);
-        _treasury.pay(_DENIZEN1);
+        _treasury.transferTo(_DENIZEN1);
         assertEq(_DENIZEN1.balance, 1 ether);
         assertEq(_treasury.balance(), 19 ether);
     }
@@ -141,7 +154,7 @@ contract TreasuryTest is Test {
         Transaction memory trans = Transaction(_DENIZEN1, 1 ether, "", "", transactionTime);
         bytes32 txHash = getHash(trans);
         vm.expectRevert(abi.encodeWithSelector(TimeLocker.TransactionLocked.selector, txHash, trans.scheduleTime));
-        _treasury.pay(_DENIZEN1);
+        _treasury.transferTo(_DENIZEN1);
         assertEq(_treasury.balance(), 20 ether);
     }
 
@@ -156,7 +169,7 @@ contract TreasuryTest is Test {
         Transaction memory trans = Transaction(_DENIZEN1, 1 ether, "", "", transactionTime);
         bytes32 txHash = getHash(trans);
         vm.expectRevert(abi.encodeWithSelector(TimeLocker.TransactionStale.selector, txHash));
-        _treasury.pay(_DENIZEN1);
+        _treasury.transferTo(_DENIZEN1);
         assertEq(_treasury.balance(), 20 ether);
     }
 
@@ -216,6 +229,24 @@ contract TreasuryTest is Test {
         assertEq(_DENIZEN1.balance, 7 ether);
         assertEq(_treasury.balance(_DENIZEN1), 0 ether);
         assertEq(_treasury.balance(), 13 ether);
+    }
+
+    function testMultiRequiresApprover() public {
+        bytes[] memory signature = new bytes[](1);
+        signature[0] = "";
+        uint scheduleTime = getBlockTimestamp();
+        vm.expectRevert(abi.encodeWithSelector(Vault.NotApprover.selector, _NOBODY));
+        vm.prank(_NOBODY);
+        _treasury.approveMultiSig(_DENIZEN1, 1 ether, scheduleTime, signature);
+    }
+
+    function testMultiExcessiveQuantity() public {
+        bytes[] memory signature = new bytes[](1);
+        signature[0] = "";
+        uint scheduleTime = getBlockTimestamp();
+        vm.expectRevert(abi.encodeWithSelector(Vault.InsufficientBalance.selector, 21 ether, 20 ether));
+        vm.prank(_APP1);
+        _treasury.approveMultiSig(_DENIZEN1, 21 ether, scheduleTime, signature);
     }
 
     function getBlockTimestamp() private view returns (uint256) {
