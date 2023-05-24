@@ -237,7 +237,7 @@ contract TreasuryTest is Test {
         uint scheduleTime = getBlockTimestamp();
         vm.expectRevert(abi.encodeWithSelector(Vault.NotApprover.selector, _NOBODY));
         vm.prank(_NOBODY);
-        _treasury.approveMultiSig(_DENIZEN1, 1 ether, scheduleTime, signature);
+        _treasury.approveMulti(_DENIZEN1, 1 ether, scheduleTime, signature);
     }
 
     function testMultiExcessiveQuantity() public {
@@ -246,7 +246,7 @@ contract TreasuryTest is Test {
         uint scheduleTime = getBlockTimestamp();
         vm.expectRevert(abi.encodeWithSelector(Vault.InsufficientBalance.selector, 21 ether, 20 ether));
         vm.prank(_APP1);
-        _treasury.approveMultiSig(_DENIZEN1, 21 ether, scheduleTime, signature);
+        _treasury.approveMulti(_DENIZEN1, 21 ether, scheduleTime, signature);
     }
 
     function getBlockTimestamp() private view returns (uint256) {
