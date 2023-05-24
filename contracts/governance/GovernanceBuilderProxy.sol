@@ -45,7 +45,6 @@ pragma solidity ^0.8.15;
 
 import { ERC1967Proxy } from "@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.sol";
 
-import { Constant } from "../Constant.sol";
 import { GovernanceBuilder } from "../../contracts/governance/GovernanceBuilder.sol";
 import { StorageFactory } from "../../contracts/storage/StorageFactory.sol";
 import { MetaStorageFactory } from "../../contracts/storage/MetaStorageFactory.sol";

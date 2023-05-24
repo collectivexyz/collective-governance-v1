@@ -41,63 +41,34 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-
 pragma solidity ^0.8.15;
 
-import { Script } from "forge-std/Script.sol";
+import { ERC1967Proxy } from "@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.sol";
 
-import { WeightedClassFactory, ProjectClassFactory, TokenClassFactory } from "../contracts/community/CommunityFactory.sol";
-import { CommunityBuilder } from "../contracts/community/CommunityBuilder.sol";
-import { CommunityBuilderProxy } from "../contracts/community/CommunityBuilderProxy.sol";
+import { TreasuryBuilder } from "../treasury/TreasuryBuilder.sol";
 
 /**
- * @notice deploy factories and contract for CommunityBuilder
+ * @notice Proxy for TreasuryBuilder
  */
-contract DeployCommunityBuilder is Script {
-    event CommunityBuilderDeployed(address communityAddress);
-    event CommunityBuilderUpgraded(address communityAddress);
+contract TreasuryBuilderProxy is ERC1967Proxy {
+    constructor(
+        address _implementation
+    )
+        ERC1967Proxy(_implementation, abi.encodeWithSelector(TreasuryBuilder.initialize.selector))
+    // solhint-disable-next-line no-empty-blocks
+    {
 
-    /**
-     * @notice deploy the Collective CommunityBuilder
-     */
-    function deploy() external {
-        vm.startBroadcast();
-        WeightedClassFactory _weightedFactory = new WeightedClassFactory();
-        ProjectClassFactory _projectFactory = new ProjectClassFactory();
-        TokenClassFactory _tokenFactory = new TokenClassFactory();
-
-        CommunityBuilder _builder = new CommunityBuilder();
-        CommunityBuilderProxy _proxy = new CommunityBuilderProxy(
-            address(_builder),
-            address(_weightedFactory),
-            address(_projectFactory),
-            address(_tokenFactory)
-        );
-        emit CommunityBuilderDeployed(address(_proxy));
-        vm.stopBroadcast();
     }
 
-    /**
-     * @notice deploy the Collective CommunityBuilder
-     */
-    function upgrade() external {
-        address _builderAddr = vm.envAddress("BUILDER_ADDRESS");
-        address payable _proxy = payable(_builderAddr);
-        vm.startBroadcast();
-        WeightedClassFactory _weightedFactory = new WeightedClassFactory();
-        ProjectClassFactory _projectFactory = new ProjectClassFactory();
-        TokenClassFactory _tokenFactory = new TokenClassFactory();
-
-        CommunityBuilder _builder = new CommunityBuilder();
-        CommunityBuilderProxy _pbuilder = CommunityBuilderProxy(_proxy);
-        _pbuilder.upgrade(
-            address(_builder),
-            address(_weightedFactory),
-            address(_projectFactory),
-            address(_tokenFactory),
-            uint8(_builder.version())
-        );
-        emit CommunityBuilderUpgraded(address(_proxy));
-        vm.stopBroadcast();
+    function upgrade(address _implementation, uint8 _version) external {
+        _upgradeToAndCallUUPS(_implementation, abi.encodeWithSelector(TreasuryBuilder.upgrade.selector, _version), false);
     }
+}
+
+// solhint-disable-next-line func-visibility
+function createTreasuryBuilder() returns (TreasuryBuilder) {
+    TreasuryBuilder _builder = new TreasuryBuilder();
+    TreasuryBuilderProxy _proxy = new TreasuryBuilderProxy(address(_builder));
+    address _proxyAddress = address(_proxy);
+    return TreasuryBuilder(_proxyAddress);
 }

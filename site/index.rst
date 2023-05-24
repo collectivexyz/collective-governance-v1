@@ -39,6 +39,7 @@ _____________
 =====================  ==========================================  =========== ===========================
 Contract               Ethereum Address                            Version     Description
 =====================  ==========================================  =========== ===========================
+ECDSA                  0x18F3510E1a11C502781e5E8E1FD2365fAa789Bb2  4.8.3       OpenZeppelin signature module
 `Constant`_            0xad96Fc422eF3355E5Dbc1238322CbEb660370860  0.9.8       Constant library
 `CommunityBuilder`_    0xa36e161361A16D75534d565480e62cE474BaC9f3  LATEST      CommunityBuilder Factory
 `GovernanceBuilder`_   0x9fB5a925E61c31617129B5D030808939DADA99f7  LATEST      Governance Contract Builder

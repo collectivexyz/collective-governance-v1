@@ -45,7 +45,6 @@ pragma solidity ^0.8.15;
 
 import { ERC1967Proxy } from "@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.sol";
 
-import { Constant } from "../Constant.sol";
 import { CommunityBuilder } from "../community/CommunityBuilder.sol";
 import { WeightedClassFactory, ProjectClassFactory, TokenClassFactory } from "../../contracts/community/CommunityFactory.sol";
 
@@ -68,16 +67,16 @@ contract CommunityBuilderProxy is ERC1967Proxy {
 
     }
 
-    function upgrade(address _implementation, address _weightedFactory, address _projectFactory, address _tokenFactory, uint8 _version) external {
+    function upgrade(
+        address _implementation,
+        address _weightedFactory,
+        address _projectFactory,
+        address _tokenFactory,
+        uint8 _version
+    ) external {
         _upgradeToAndCallUUPS(
             _implementation,
-            abi.encodeWithSelector(
-                CommunityBuilder.upgrade.selector,
-                _weightedFactory,
-                _projectFactory,
-                _tokenFactory,
-                _version
-            ),
+            abi.encodeWithSelector(CommunityBuilder.upgrade.selector, _weightedFactory, _projectFactory, _tokenFactory, _version),
             false
         );
     }

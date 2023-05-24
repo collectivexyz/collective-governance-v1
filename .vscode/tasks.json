@@ -119,9 +119,38 @@
     {
       "label": "deployconstant",
       "type": "shell",
-      "command": "forge create --revert-strings debug --contracts contracts/Constant.sol --rpc-url ${RPC_URL} --private-key ${PRIVATE_KEY} Constant",
+      "command": "forge create --revert-strings debug --contracts contracts/Constant.sol --rpc-url ${RPC_URL} --private-key ${PRIVATE_KEY} Constant --etherscan-api-key ${ETHERSCAN_API_KEY} --verify",
       "options": {
         "cwd": "${workspaceFolder}"
+      },
+      "dependsOn": "test",
+      "group": {
+        "kind": "test",
+        "isDefault": false
+      }
+    },
+    {
+      "label": "deployecdsa",
+      "type": "shell",
+      "command": "forge create --revert-strings debug --contracts /lib/openzeppelin-contracts/contracts/utils/cryptography/ECDSA.sol --rpc-url ${RPC_URL} --private-key ${PRIVATE_KEY} ECDSA --etherscan-api-key ${ETHERSCAN_API_KEY} --verify",
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "dependsOn": "test",
+      "group": {
+        "kind": "test",
+        "isDefault": false
+      }
+    },
+    {
+      "label": "deploytreasurybuilder",
+      "type": "shell",
+      "command": "forge script ./script/DeployCommunityBuilder.sol --sig 'deploy()' --resume --libraries contracts/Constant.sol:Constant:${CONSTANT_LIB_ADDRESS} --slow --broadcast --rpc-url ${RPC_URL} --private-key ${PRIVATE_KEY} --etherscan-api-key ${ETHERSCAN_API_KEY} --verify",
+      "options": {
+        "cwd": "${workspaceFolder}",
+        "env": {
+          "CONSTANT_LIB_ADDRESS": "0xad96Fc422eF3355E5Dbc1238322CbEb660370860"
+        }
       },
       "dependsOn": "test",
       "group": {

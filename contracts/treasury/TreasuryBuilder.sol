@@ -67,6 +67,8 @@ contract TreasuryBuilder is VersionedContract, ERC165, OwnableInitializable, UUP
     error RequiresAdditionalApprovers(address sender, uint256 numberOfApprovers, uint256 requiredNumber);
 
     event Initialized();
+    event Upgraded(uint8 version);
+    
     /// settings initialized
     event TreasuryInitialized(address sender);
     /// approver added
@@ -100,6 +102,10 @@ contract TreasuryBuilder is VersionedContract, ERC165, OwnableInitializable, UUP
     function initialize() public initializer {
         ownerInitialize(msg.sender);
         emit Initialized();
+    }
+
+    function upgrade(uint8 _version) public reinitializer(_version) {
+        emit Upgraded(_version);
     }
 
     /**

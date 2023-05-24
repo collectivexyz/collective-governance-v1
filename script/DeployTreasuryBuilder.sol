@@ -46,58 +46,40 @@ pragma solidity ^0.8.15;
 
 import { Script } from "forge-std/Script.sol";
 
-import { WeightedClassFactory, ProjectClassFactory, TokenClassFactory } from "../contracts/community/CommunityFactory.sol";
-import { CommunityBuilder } from "../contracts/community/CommunityBuilder.sol";
-import { CommunityBuilderProxy } from "../contracts/community/CommunityBuilderProxy.sol";
+import { TreasuryBuilder } from "../contracts/treasury/TreasuryBuilder.sol";
+import { TreasuryBuilderProxy } from "../contracts/treasury/TreasuryBuilderProxy.sol";
 
 /**
- * @notice deploy factories and contract for CommunityBuilder
+ * @notice TreasuryBuilder factory deployment
  */
 contract DeployCommunityBuilder is Script {
-    event CommunityBuilderDeployed(address communityAddress);
-    event CommunityBuilderUpgraded(address communityAddress);
+    event TreasuryBuilderDeployed(address communityAddress);
+    event TreasuryBuilderUpgraded(address communityAddress);
 
     /**
-     * @notice deploy the Collective CommunityBuilder
+     * @notice deploy the Collective TreasuryBuilder
      */
     function deploy() external {
         vm.startBroadcast();
-        WeightedClassFactory _weightedFactory = new WeightedClassFactory();
-        ProjectClassFactory _projectFactory = new ProjectClassFactory();
-        TokenClassFactory _tokenFactory = new TokenClassFactory();
 
-        CommunityBuilder _builder = new CommunityBuilder();
-        CommunityBuilderProxy _proxy = new CommunityBuilderProxy(
-            address(_builder),
-            address(_weightedFactory),
-            address(_projectFactory),
-            address(_tokenFactory)
-        );
-        emit CommunityBuilderDeployed(address(_proxy));
+        TreasuryBuilder _builder = new TreasuryBuilder();
+        TreasuryBuilderProxy _proxy = new TreasuryBuilderProxy(address(_builder));
+        emit TreasuryBuilderDeployed(address(_proxy));
         vm.stopBroadcast();
     }
 
     /**
-     * @notice deploy the Collective CommunityBuilder
+     * @notice upgrade the Collective TreasuryBuilder
      */
     function upgrade() external {
         address _builderAddr = vm.envAddress("BUILDER_ADDRESS");
         address payable _proxy = payable(_builderAddr);
         vm.startBroadcast();
-        WeightedClassFactory _weightedFactory = new WeightedClassFactory();
-        ProjectClassFactory _projectFactory = new ProjectClassFactory();
-        TokenClassFactory _tokenFactory = new TokenClassFactory();
 
-        CommunityBuilder _builder = new CommunityBuilder();
-        CommunityBuilderProxy _pbuilder = CommunityBuilderProxy(_proxy);
-        _pbuilder.upgrade(
-            address(_builder),
-            address(_weightedFactory),
-            address(_projectFactory),
-            address(_tokenFactory),
-            uint8(_builder.version())
-        );
-        emit CommunityBuilderUpgraded(address(_proxy));
+        TreasuryBuilder _builder = new TreasuryBuilder();
+        TreasuryBuilderProxy _pbuilder = TreasuryBuilderProxy(_proxy);
+        _pbuilder.upgrade(address(_builder), uint8(_builder.version()));
+        emit TreasuryBuilderUpgraded(address(_proxy));
         vm.stopBroadcast();
     }
 }
