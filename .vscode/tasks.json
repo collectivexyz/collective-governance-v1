@@ -119,7 +119,7 @@
     {
       "label": "deployconstant",
       "type": "shell",
-      "command": "forge create --revert-strings debug --contracts contracts/Constant.sol --rpc-url ${RPC_URL} --private-key ${PRIVATE_KEY} Constant --etherscan-api-key ${ETHERSCAN_API_KEY} --verify",
+      "command": "forge create --revert-strings debug --contracts contracts/Constant.sol --rpc-url ${RPC_URL} --private-key ${PRIVATE_KEY} Constant",
       "options": {
         "cwd": "${workspaceFolder}"
       },
@@ -132,7 +132,7 @@
     {
       "label": "deployecdsa",
       "type": "shell",
-      "command": "forge create --revert-strings debug --contracts /lib/openzeppelin-contracts/contracts/utils/cryptography/ECDSA.sol --rpc-url ${RPC_URL} --private-key ${PRIVATE_KEY} ECDSA --etherscan-api-key ${ETHERSCAN_API_KEY} --verify",
+      "command": "forge create --revert-strings debug --contracts ./lib/openzeppelin-contracts/contracts/utils/cryptography/ECDSA.sol --rpc-url ${RPC_URL} --private-key ${PRIVATE_KEY} ECDSA",
       "options": {
         "cwd": "${workspaceFolder}"
       },
@@ -145,11 +145,12 @@
     {
       "label": "deploytreasurybuilder",
       "type": "shell",
-      "command": "forge script ./script/DeployCommunityBuilder.sol --sig 'deploy()' --resume --libraries contracts/Constant.sol:Constant:${CONSTANT_LIB_ADDRESS} --slow --broadcast --rpc-url ${RPC_URL} --private-key ${PRIVATE_KEY} --etherscan-api-key ${ETHERSCAN_API_KEY} --verify",
+      "command": "forge script ./script/DeployTreasuryBuilder.sol --sig 'deploy()' --resume --libraries contracts/Constant.sol:Constant:${CONSTANT_LIB_ADDRESS} ./lib/openzeppelin-contracts/contracts/utils/cryptography/ECDSA.sol:ECDSA:${ECDSA_LIB_ADDRESS} --slow --broadcast --rpc-url ${RPC_URL} --private-key ${PRIVATE_KEY} --etherscan-api-key ${ETHERSCAN_API_KEY} --verify",
       "options": {
         "cwd": "${workspaceFolder}",
         "env": {
-          "CONSTANT_LIB_ADDRESS": "0xad96Fc422eF3355E5Dbc1238322CbEb660370860"
+          "CONSTANT_LIB_ADDRESS": "0xF9E041dc5ad3B508A02D0ED82f189f6a024AA785",
+          "ECDSA_LIB_ADDRESS": "0x5Cc1F050eA42080Bd48e14a70d96757aAfa6F3e6"
         }
       },
       "dependsOn": "test",
@@ -165,7 +166,7 @@
       "options": {
         "cwd": "${workspaceFolder}",
         "env": {
-          "CONSTANT_LIB_ADDRESS": "0xad96Fc422eF3355E5Dbc1238322CbEb660370860"
+          "CONSTANT_LIB_ADDRESS": "0xF9E041dc5ad3B508A02D0ED82f189f6a024AA785"
         }
       },
       "dependsOn": "test",
@@ -181,7 +182,7 @@
       "options": {
         "cwd": "${workspaceFolder}",
         "env": {
-          "CONSTANT_LIB_ADDRESS": "0xad96Fc422eF3355E5Dbc1238322CbEb660370860",
+          "CONSTANT_LIB_ADDRESS": "0xF9E041dc5ad3B508A02D0ED82f189f6a024AA785",
           "BUILDER_ADDRESS": "0xa36e161361A16D75534d565480e62cE474BaC9f3"
         }
       },
@@ -198,7 +199,7 @@
       "options": {
         "cwd": "${workspaceFolder}",
         "env": {
-          "CONSTANT_LIB_ADDRESS": "0xad96Fc422eF3355E5Dbc1238322CbEb660370860",
+          "CONSTANT_LIB_ADDRESS": "0xF9E041dc5ad3B508A02D0ED82f189f6a024AA785",
           "CLASS_PROXY": "0x0Ee183DEA88Be769fD1CAb473fDaCdd16791163A",
           "TARGET_PROTOTYPE": "0xe7879fdb66b6107709502D2ad362fa43BC278DbE"
         }
@@ -216,7 +217,7 @@
       "options": {
         "cwd": "${workspaceFolder}",
         "env": {
-          "CONSTANT_LIB_ADDRESS": "0xad96Fc422eF3355E5Dbc1238322CbEb660370860"
+          "CONSTANT_LIB_ADDRESS": "0xF9E041dc5ad3B508A02D0ED82f189f6a024AA785"
         }
       },
       "dependsOn": "test",
@@ -232,7 +233,7 @@
       "options": {
         "cwd": "${workspaceFolder}",
         "env": {
-          "CONSTANT_LIB_ADDRESS": "0xad96Fc422eF3355E5Dbc1238322CbEb660370860",
+          "CONSTANT_LIB_ADDRESS": "0xF9E041dc5ad3B508A02D0ED82f189f6a024AA785",
           "BUILDER_ADDRESS": "0x9fB5a925E61c31617129B5D030808939DADA99f7"
         }
       },
@@ -249,7 +250,7 @@
       "options": {
         "cwd": "${workspaceFolder}",
         "env": {
-          "CONSTANT_LIB_ADDRESS": "0xad96Fc422eF3355E5Dbc1238322CbEb660370860",
+          "CONSTANT_LIB_ADDRESS": "0xF9E041dc5ad3B508A02D0ED82f189f6a024AA785",
           "GOVERNANCE_ADDRESS": "0x6b5b3b287a80742d728511f51638315cf1987977",
           "STORAGE_ADDRESS": "0xc28ea107f64746ac90349c6c09c193d966f1ca91",
           "META_ADDRESS": "0xd75fa6c5c3fdfd495d851c43e5331e16a058902a"
@@ -268,7 +269,7 @@
       "options": {
         "cwd": "${workspaceFolder}",
         "env": {
-          "CONSTANT_LIB_ADDRESS": "0xad96Fc422eF3355E5Dbc1238322CbEb660370860",
+          "CONSTANT_LIB_ADDRESS": "0xF9E041dc5ad3B508A02D0ED82f189f6a024AA785",
           "BUILDER_ADDRESS": "",
           "GOVERNANCE_ADDRESS": "0xa2f50e55ac910ba030b3e4cab92da8de5b38ef2d",
           "STORAGE_ADDRESS": "0xe0c76c1621738b870eac5a37447fdadc8c077c21",

@@ -37,3 +37,8 @@ jobs:
         run: |
           forge test -vvv
         id: test
+
+      - name: Run Forge geiger
+        run: |
+          forge geiger --check
+        id: geiger

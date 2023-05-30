@@ -39,8 +39,8 @@ _____________
 =====================  ==========================================  =========== ===========================
 Contract               Ethereum Address                            Version     Description
 =====================  ==========================================  =========== ===========================
-ECDSA                  0x18F3510E1a11C502781e5E8E1FD2365fAa789Bb2  4.8.3       OpenZeppelin signature module
-`Constant`_            0xad96Fc422eF3355E5Dbc1238322CbEb660370860  0.9.8       Constant library
+ECDSA                  0x5Cc1F050eA42080Bd48e14a70d96757aAfa6F3e6  4.8.3       OpenZeppelin signature module
+`Constant`_            0xF9E041dc5ad3B508A02D0ED82f189f6a024AA785  0.9.8       Constant library
 `CommunityBuilder`_    0xa36e161361A16D75534d565480e62cE474BaC9f3  LATEST      CommunityBuilder Factory
 `GovernanceBuilder`_   0x9fB5a925E61c31617129B5D030808939DADA99f7  LATEST      Governance Contract Builder
 =====================  ==========================================  =========== ===========================
@@ -66,7 +66,7 @@ Project Links
 .. _GitHub: https://github.com/collectivexyz/collective-governance-v1
 .. _JavaScript API: https://github.com/collectivexyz/governance
 .. _JavaScript Reference: https://github.com/collectivexyz/collective_governance_js
-.. _Constant: https://sepolia.etherscan.io/address/0xad96Fc422eF3355E5Dbc1238322CbEb660370860 
+.. _Constant: https://sepolia.etherscan.io/address/0xF9E041dc5ad3B508A02D0ED82f189f6a024AA785 
 .. _CommunityBuilder: https://sepolia.etherscan.io/address/0xa36e161361A16D75534d565480e62cE474BaC9f3  
 .. _GovernanceBuilder: https://sepolia.etherscan.io/address/0x9fB5a925E61c31617129B5D030808939DADA99f7
 
