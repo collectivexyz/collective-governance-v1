@@ -61,7 +61,6 @@ contract DeployCommunityBuilder is Script {
      */
     function deploy() external {
         vm.startBroadcast();
-
         TreasuryBuilder _builder = new TreasuryBuilder();
         TreasuryBuilderProxy _proxy = new TreasuryBuilderProxy(address(_builder));
         emit TreasuryBuilderDeployed(address(_proxy));
@@ -75,7 +74,6 @@ contract DeployCommunityBuilder is Script {
         address _builderAddr = vm.envAddress("BUILDER_ADDRESS");
         address payable _proxy = payable(_builderAddr);
         vm.startBroadcast();
-
         TreasuryBuilder _builder = new TreasuryBuilder();
         TreasuryBuilderProxy _pbuilder = TreasuryBuilderProxy(_proxy);
         _pbuilder.upgrade(address(_builder), uint8(_builder.version()));

@@ -32,7 +32,7 @@ Collective Governance has been designed from the ground up to be very easy to us
 | Contract          | Ethereum Address                           | Version |
 | ----------------- | ------------------------------------------ | ------- |
 | ECDSA             | 0x5Cc1F050eA42080Bd48e14a70d96757aAfa6F3e6 | 4.8.3   |
-| Constant          | 0xF9E041dc5ad3B508A02D0ED82f189f6a024AA785 | 0.9.10  |
+| Constant          | 0xcb45d21aBb4D4b4C762cfb0698995399FA97cb68 | 0.9.10  |
 | CommunityBuilder  | 0xa36e161361A16D75534d565480e62cE474BaC9f3 | LATEST  |
 | GovernanceBuilder | 0x9fB5a925E61c31617129B5D030808939DADA99f7 | LATEST  |
 
