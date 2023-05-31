@@ -54,6 +54,8 @@ interface AddressCollection {
 
     function add(address _element) external returns (uint256);
 
+    function set(address _element) external returns (bool);
+
     function size() external view returns (uint256);
 
     function get(uint256 index) external view returns (address);
@@ -83,13 +85,22 @@ contract AddressSet is Ownable, AddressCollection {
     /// @notice add an element
     /// @param _element the address
     /// @return uint256 the elementId of the transaction
-    function add(address _element) external onlyOwner returns (uint256) {
+    function add(address _element) public onlyOwner returns (uint256) {
         uint256 elementIndex = ++_elementCount;
         _elementMap[elementIndex] = _element;
         if (_elementPresent[_element] > 0) revert DuplicateAddress(_element);
         _elementPresent[_element] = elementIndex;
         emit AddressAdded(_element);
         return elementIndex;
+    }
+
+    /// @notice set value
+    /// @param _element the address
+    /// @return bool true if added false otherwise
+    function set(address _element) external onlyOwner returns (bool) {
+        if (_elementPresent[_element] > 0) return false;
+        add(_element);
+        return true;
     }
 
     /// @notice erase an element

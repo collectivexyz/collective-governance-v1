@@ -43,6 +43,8 @@
  */
 pragma solidity ^0.8.15;
 
+import { ECDSA } from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
+
 import { AddressCollection, AddressSet } from "../contracts/collection/AddressSet.sol";
 import { MetaCollection, MetaSet } from "../contracts/collection/MetaSet.sol";
 import { TransactionCollection, TransactionSet } from "../contracts/collection/TransactionSet.sol";
@@ -52,6 +54,9 @@ import { ChoiceCollection, ChoiceSet } from "../contracts/collection/ChoiceSet.s
  * @notice extract global manifest constants
  */
 library Constant {
+    /// when signature was not confirmed
+    error SignatureNotValid(address signer);
+
     uint256 public constant UINT_MAX = type(uint256).max;
 
     /// @notice minimum quorum
@@ -128,6 +133,16 @@ library Constant {
     /// @return bool True if empty string
     function empty(string memory str) external pure returns (bool) {
         return len(str) == 0;
+    }
+
+    function verifySignature(
+        bytes32 _agreementHash,
+        AddressCollection _allowedSigner,
+        bytes memory _signature
+    ) external view returns (address) {
+        address signatureAddress = ECDSA.recover(_agreementHash, _signature);
+        if (!_allowedSigner.contains(signatureAddress)) revert SignatureNotValid(signatureAddress);
+        return signatureAddress;
     }
 
     /// factory  implementation

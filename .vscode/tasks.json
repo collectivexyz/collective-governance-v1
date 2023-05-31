@@ -117,19 +117,6 @@
       }
     },
     {
-      "label": "deployconstant",
-      "type": "shell",
-      "command": "forge create --revert-strings debug --contracts contracts/Constant.sol --rpc-url ${RPC_URL} --private-key ${PRIVATE_KEY} Constant",
-      "options": {
-        "cwd": "${workspaceFolder}"
-      },
-      "dependsOn": "test",
-      "group": {
-        "kind": "test",
-        "isDefault": false
-      }
-    },
-    {
       "label": "deployecdsa",
       "type": "shell",
       "command": "forge create --revert-strings debug --contracts ./lib/openzeppelin-contracts/contracts/utils/cryptography/ECDSA.sol --rpc-url ${RPC_URL} --private-key ${PRIVATE_KEY} ECDSA",
@@ -143,14 +130,29 @@
       }
     },
     {
-      "label": "deploytreasurybuilder",
+      "label": "deployconstant",
       "type": "shell",
-      "command": "forge script ./script/DeployTreasuryBuilder.sol --sig 'deploy()' --resume --libraries contracts/Constant.sol:Constant:${CONSTANT_LIB_ADDRESS} ./lib/openzeppelin-contracts/contracts/utils/cryptography/ECDSA.sol:ECDSA:${ECDSA_LIB_ADDRESS} --slow --broadcast --rpc-url ${RPC_URL} --private-key ${PRIVATE_KEY} --etherscan-api-key ${ETHERSCAN_API_KEY} --verify",
+      "command": "forge create --revert-strings debug --contracts contracts/Constant.sol ./lib/openzeppelin-contracts/contracts/utils/cryptography/ECDSA.sol:ECDSA:${ECDSA_LIB_ADDRESS} --rpc-url ${RPC_URL} --private-key ${PRIVATE_KEY} Constant",
       "options": {
         "cwd": "${workspaceFolder}",
         "env": {
-          "CONSTANT_LIB_ADDRESS": "0xF9E041dc5ad3B508A02D0ED82f189f6a024AA785",
           "ECDSA_LIB_ADDRESS": "0x5Cc1F050eA42080Bd48e14a70d96757aAfa6F3e6"
+        }
+      },
+      "dependsOn": "test",
+      "group": {
+        "kind": "test",
+        "isDefault": false
+      }
+    },
+    {
+      "label": "deploytreasurybuilder",
+      "type": "shell",
+      "command": "forge script ./script/DeployTreasuryBuilder.sol --sig 'deploy()' --resume --libraries contracts/Constant.sol:Constant:${CONSTANT_LIB_ADDRESS} --slow --broadcast --rpc-url ${RPC_URL} --private-key ${PRIVATE_KEY} --etherscan-api-key ${ETHERSCAN_API_KEY} --verify",
+      "options": {
+        "cwd": "${workspaceFolder}",
+        "env": {
+          "CONSTANT_LIB_ADDRESS": "0xF9E041dc5ad3B508A02D0ED82f189f6a024AA785"
         }
       },
       "dependsOn": "test",

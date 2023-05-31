@@ -44,8 +44,6 @@
 
 pragma solidity ^0.8.15;
 
-import { ECDSA } from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
-
 import { Constant } from "../../contracts/Constant.sol";
 import { TimeLock } from "../../contracts/treasury/TimeLock.sol";
 import { Vault } from "../../contracts/treasury/Vault.sol";
@@ -124,6 +122,12 @@ contract Treasury is Vault {
         uint256 _quantity
     ) public requireApprover requireNotPending(_to) requireSufficientBalance(_quantity) {
         Payment storage _pay = _payment[_to];
+        if (_pay.approvalCount == 0) {
+            _pay.approvalSet = Constant.createAddressSet();
+        }
+        if (!_pay.approvalSet.set(msg.sender)) {
+            revert DuplicateApproval(msg.sender);
+        }
         _pay.approvalCount += 1;
         if (_pay.approvalCount == 1 && _pay.quantity == 0) {
             _pay.quantity = _quantity;
@@ -169,9 +173,15 @@ contract Treasury is Vault {
         Transaction memory agreement = Transaction(_to, _quantity, "", "", _scheduleTime);
         bytes32 agreementHash = getHash(agreement);
         Payment storage _pay = _payment[_to];
+        if (_pay.approvalCount == 0) {
+            _pay.approvalSet = Constant.createAddressSet();
+        }
         for (uint i = 0; i < _signature.length; ++i) {
             bytes memory signature = _signature[i];
-            verifySignature(agreementHash, signature);
+            address signer = Constant.verifySignature(agreementHash, _approverSet, signature);
+            if (!_pay.approvalSet.set(signer)) {
+                revert DuplicateApproval(signer);
+            }
             _pay.approvalCount += 1;
             if (_pay.approvalCount == 1 && _pay.quantity == 0) {
                 _pay.quantity = _quantity;
@@ -233,13 +243,11 @@ contract Treasury is Vault {
         return address(_timeLock).balance + address(this).balance;
     }
 
-    function verifySignature(bytes32 _agreementHash, bytes memory _signature) private view {
-        address signatureAddress = ECDSA.recover(_agreementHash, _signature);
-        if (!_approverSet.contains(signatureAddress)) revert SignatureNotValid(signatureAddress);
-    }
-
     function clear(address _to) private {
-        _payment[_to] = Payment(0, 0, 0);
+        Payment storage _pay = _payment[_to];
+        _pay.quantity = 0;
+        _pay.scheduleTime = 0;
+        _pay.approvalCount = 0;
         delete _payment[_to];
     }
 

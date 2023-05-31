@@ -82,6 +82,14 @@ contract TreasuryTest is Test {
         assertEq(_treasury.balance(_DENIZEN1), 0 ether);
     }
 
+    function testNoDoubleApproval() public {
+        vm.prank(_APP1);
+        _treasury.approve(_DENIZEN1, 1 ether);
+        vm.prank(_APP1);
+        vm.expectRevert(abi.encodeWithSelector(Vault.DuplicateApproval.selector, _APP1));
+        _treasury.approve(_DENIZEN1, 1 ether);
+    }
+
     function testBothApproversWork() public {
         vm.prank(_APP1);
         _treasury.approve(_DENIZEN1, 1 ether);

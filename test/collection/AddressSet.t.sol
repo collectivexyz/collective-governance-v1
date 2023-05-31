@@ -26,6 +26,19 @@ contract AddressSetTest is Test {
         assertEq(_set.size(), 1);
     }
 
+    function testSet() public {
+        address testAddr = address(0x1);
+        assertTrue(_set.set(testAddr));
+        assertTrue(_set.contains(testAddr));
+    }
+
+    function testDuplicateSet() public {
+        address testAddr = address(0x1);
+        assertTrue(_set.set(testAddr));
+        assertFalse(_set.set(testAddr));
+        assertEq(_set.size(), 1);
+    }
+
     function testContains() public {
         address testAddr = address(0x1);
         _set.add(testAddr);

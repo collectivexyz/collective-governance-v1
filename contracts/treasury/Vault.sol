@@ -44,6 +44,8 @@
 
 pragma solidity ^0.8.15;
 
+import { AddressCollection } from "../../contracts/collection/AddressSet.sol";
+
 /**
  * @notice Vault interface for treasury implementation
  */
@@ -63,8 +65,8 @@ interface Vault {
     error ApprovalNotMatched(address sender, uint256 quantity, uint256 expected);
     /// quantity not available for approval
     error InsufficientBalance(uint256 quantity, uint256 available);
-    /// when signature was not confirmed
-    error SignatureNotValid(address approver);
+    /// attempt to approve twice from same signature
+    error DuplicateApproval(address signer);
 
     /// a deposit has been recieved
     event Deposit(uint256 quantity);
@@ -77,6 +79,7 @@ interface Vault {
         uint256 quantity;
         uint256 scheduleTime;
         uint256 approvalCount;
+        AddressCollection approvalSet;
     }
 
     /// @notice deposit msg.value in the vault
