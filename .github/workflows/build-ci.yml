@@ -40,5 +40,5 @@ jobs:
 
       - name: Run Forge geiger
         run: |
-          forge geiger --check
+          forge geiger --check contracts/*
         id: geiger

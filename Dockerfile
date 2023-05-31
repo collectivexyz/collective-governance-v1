@@ -13,6 +13,6 @@ RUN yarn install
 RUN yarn prettier:check
 RUN yarn hint
 RUN forge test -vvv
-RUN forge geiger --check
+RUN forge geiger --check contracts/*
 
 RUN bin/update_abi.sh
