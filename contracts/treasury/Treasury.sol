@@ -44,6 +44,8 @@
 
 pragma solidity ^0.8.15;
 
+import { ECDSA } from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
+
 import { Constant } from "../../contracts/Constant.sol";
 import { TimeLock } from "../../contracts/treasury/TimeLock.sol";
 import { Vault } from "../../contracts/treasury/Vault.sol";
@@ -178,7 +180,7 @@ contract Treasury is Vault {
         }
         for (uint i = 0; i < _signature.length; ++i) {
             bytes memory signature = _signature[i];
-            address signer = Constant.verifySignature(agreementHash, _approverSet, signature);
+            address signer = verifySignature(agreementHash, _approverSet, signature);
             if (!_pay.approvalSet.set(signer)) {
                 revert DuplicateApproval(signer);
             }
@@ -241,6 +243,16 @@ contract Treasury is Vault {
     /// @notice total balance on treasury
     function balance() public view override(Vault) returns (uint256) {
         return address(_timeLock).balance + address(this).balance;
+    }
+
+    function verifySignature(
+        bytes32 _agreementHash,
+        AddressCollection _approvedSet,
+        bytes memory _signature
+    ) private view returns (address) {
+        address signatureAddress = ECDSA.recover(_agreementHash, _signature);
+        if (!_approvedSet.contains(signatureAddress)) revert SignatureNotValid(signatureAddress);
+        return signatureAddress;
     }
 
     function clear(address _to) private {

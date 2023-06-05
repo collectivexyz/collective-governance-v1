@@ -15,7 +15,7 @@
     "prettier:fix": "prettier --write \"(contracts|test)/**.sol\"",
     "hint": "solhint contracts/**/*.sol test/**/*.sol",
     "test": "forge test -vvv",
-    "clean": "forge clean && forge cache clean"
+    "clean": "forge cache clean && if [ -d out ]; then forge clean; fi"
   },
   "repository": {
     "type": "git",

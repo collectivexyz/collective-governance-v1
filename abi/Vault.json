@@ -21,6 +21,17 @@
     "type": "error"
   },
   {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "signer",
+        "type": "address"
+      }
+    ],
+    "name": "DuplicateApproval",
+    "type": "error"
+  },
+  {
     "inputs": [],
     "name": "FallbackNotPermitted",
     "type": "error"
@@ -72,17 +83,6 @@
       }
     ],
     "name": "NotPending",
-    "type": "error"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "approver",
-        "type": "address"
-      }
-    ],
-    "name": "SignatureNotValid",
     "type": "error"
   },
   {
@@ -194,7 +194,7 @@
         "type": "bytes[]"
       }
     ],
-    "name": "approveMultiSig",
+    "name": "approveMulti",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

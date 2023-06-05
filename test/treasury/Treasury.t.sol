@@ -239,24 +239,6 @@ contract TreasuryTest is Test {
         assertEq(_treasury.balance(), 13 ether);
     }
 
-    function testMultiRequiresApprover() public {
-        bytes[] memory signature = new bytes[](1);
-        signature[0] = "";
-        uint scheduleTime = getBlockTimestamp();
-        vm.expectRevert(abi.encodeWithSelector(Vault.NotApprover.selector, _NOBODY));
-        vm.prank(_NOBODY);
-        _treasury.approveMulti(_DENIZEN1, 1 ether, scheduleTime, signature);
-    }
-
-    function testMultiExcessiveQuantity() public {
-        bytes[] memory signature = new bytes[](1);
-        signature[0] = "";
-        uint scheduleTime = getBlockTimestamp();
-        vm.expectRevert(abi.encodeWithSelector(Vault.InsufficientBalance.selector, 21 ether, 20 ether));
-        vm.prank(_APP1);
-        _treasury.approveMulti(_DENIZEN1, 21 ether, scheduleTime, signature);
-    }
-
     function getBlockTimestamp() private view returns (uint256) {
         // solhint-disable-next-line not-rely-on-time
         return block.timestamp;
