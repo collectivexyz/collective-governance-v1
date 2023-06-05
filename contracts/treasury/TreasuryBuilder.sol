@@ -78,7 +78,7 @@ contract TreasuryBuilder is VersionedContract, ERC165, OwnableInitializable, UUP
     /// timelock time is set
     event TreasuryTimeLock(address sender, uint256 timelockDelay);
     /// build successful
-    event TreasuryCreated(address sender, address instance);
+    event TreasuryCreated(address sender, address treasury);
 
     /// UUPS authorization
     event UpgradeAuthorized(address caller, address owner);
