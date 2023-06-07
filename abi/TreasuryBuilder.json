@@ -185,7 +185,7 @@
       {
         "indexed": false,
         "internalType": "address",
-        "name": "instance",
+        "name": "treasury",
         "type": "address"
       }
     ],
