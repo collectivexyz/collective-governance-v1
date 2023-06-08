@@ -89,11 +89,16 @@
     "inputs": [
       {
         "internalType": "address",
+        "name": "sender",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
         "name": "signer",
         "type": "address"
       }
     ],
-    "name": "SignatureNotValid",
+    "name": "SignatureNotAccepted",
     "type": "error"
   },
   {

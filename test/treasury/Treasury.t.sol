@@ -19,6 +19,14 @@ contract TreasuryTest is Test {
     address public constant _DENIZEN2 = address(0x1238);
     address public constant _NOBODY = address(0xffff);
 
+    // approve example
+    uint256 public constant _SCHEDULE_TIME = 1686160218;
+    bytes public constant _SIGNATURE_1 =
+        hex"0591ecf5c3aecc544245ebbe863ed9e36f354b0331bb83a4ba1893192e15c8d25813f1ea3dc22fe0258a7883144d97b5c252ee34b01354cd98c1c70cce510f6e1b";
+
+    bytes public constant _SIGNATURE_2 =
+        hex"1c9798fe3276ec599e9f293f3f183ac6685ccc1c163c0c1d0121095099a3576649701700919dc05f920b0edb2f9b4a13b6aabb897721d0cf0067045bfed09a7d1c";
+
     Treasury private _treasury;
     AddressCollection private _approver;
 
@@ -32,6 +40,8 @@ contract TreasuryTest is Test {
             .withApprover(_APP1)
             .withApprover(_APP2)
             .withApprover(_APP3)
+            .withApprover(address(0x0e443474255d0598a9c00C7542918692CFeA2680))
+            .withApprover(address(0x030cEB789F5e35cB880a3aeD43DC388d21706748))
             .build();
         _treasury = Treasury(treasAddy);
         vm.deal(_APP1, 20 ether);
@@ -239,8 +249,163 @@ contract TreasuryTest is Test {
         assertEq(_treasury.balance(), 13 ether);
     }
 
+    function testMultiSigApproval() public {
+        vm.warp(_SCHEDULE_TIME - Constant.TIMELOCK_MINIMUM_DELAY);
+        assertEq(_treasury.balance(_DENIZEN1), 0 ether);
+        bytes[] memory sigList = prepareSigList();
+        vm.prank(_APP1);
+        _treasury.approveMulti(_DENIZEN1, 10 ether, _SCHEDULE_TIME, sigList);
+        assertEq(_treasury.balance(_DENIZEN1), 10 ether);
+    }
+
+    function testMultiSigApprovalAllowsBothApprovers() public {
+        vm.warp(_SCHEDULE_TIME - Constant.TIMELOCK_MINIMUM_DELAY);
+        assertEq(_treasury.balance(_DENIZEN1), 0 ether);
+        bytes[] memory sigList = prepareSigList();
+        vm.prank(_APP2);
+        _treasury.approveMulti(_DENIZEN1, 10 ether, _SCHEDULE_TIME, sigList);
+        assertEq(_treasury.balance(_DENIZEN1), 10 ether);
+    }
+
+    function testMultiSigApprovalMayNotBePending() public {
+        vm.warp(_SCHEDULE_TIME - Constant.TIMELOCK_MINIMUM_DELAY);
+        bytes[] memory sigList = prepareSigList();
+        vm.prank(_APP1);
+        _treasury.approveMulti(_DENIZEN1, 10 ether, _SCHEDULE_TIME, sigList);
+        vm.prank(_APP1);
+        vm.expectRevert(abi.encodeWithSelector(Vault.TransactionInProgress.selector, _DENIZEN1));
+        _treasury.approveMulti(_DENIZEN1, 1 ether, _SCHEDULE_TIME, sigList);
+    }
+
+    function testMultiSigRequiresApprover() public {
+        vm.warp(_SCHEDULE_TIME - Constant.TIMELOCK_MINIMUM_DELAY);
+        bytes[] memory sigList = prepareSigList();
+        vm.prank(_NOBODY);
+        vm.expectRevert(abi.encodeWithSelector(Vault.NotApprover.selector, _NOBODY));
+        _treasury.approveMulti(_DENIZEN1, 10 ether, _SCHEDULE_TIME, sigList);
+    }
+
+    function testMultiSigBreaksTheBank() public {
+        vm.warp(_SCHEDULE_TIME - Constant.TIMELOCK_MINIMUM_DELAY);
+        bytes[] memory sigList = prepareSigList();
+        vm.prank(_APP1);
+        vm.expectRevert(abi.encodeWithSelector(Vault.InsufficientBalance.selector, 100 ether, 20 ether));
+        _treasury.approveMulti(_DENIZEN1, 100 ether, _SCHEDULE_TIME, sigList);
+    }
+
+    function testMultiSigInvalidSignature() public {
+        vm.warp(_SCHEDULE_TIME - Constant.TIMELOCK_MINIMUM_DELAY);
+        bytes[] memory sigList = prepareSigList();
+        sigList[
+            1
+        ] = hex"5352511d887f5026e0a012ea2b8c01a3e2f052957b966e761fe4bea3317e60917b8a93192739c24ed54a647a6096c978edf351772c484a5a0edf3d4d3263faef1b";
+        vm.prank(_APP1);
+        vm.expectRevert(
+            abi.encodeWithSelector(
+                Vault.SignatureNotAccepted.selector,
+                _APP1,
+                address(0x00025d7f090656485381823a65c0e9a09208a701e4)
+            )
+        );
+        _treasury.approveMulti(_DENIZEN1, 10 ether, _SCHEDULE_TIME, sigList);
+    }
+
+    function testMultiSigDuplicateSignature() public {
+        vm.warp(_SCHEDULE_TIME - Constant.TIMELOCK_MINIMUM_DELAY);
+        bytes[] memory sigList = prepareSigList();
+        sigList[1] = sigList[0];
+        vm.prank(_APP1);
+        vm.expectRevert(
+            abi.encodeWithSelector(Vault.DuplicateApproval.selector, address(0x0e443474255d0598a9c00C7542918692CFeA2680))
+        );
+        _treasury.approveMulti(_DENIZEN1, 10 ether, _SCHEDULE_TIME, sigList);
+    }
+
+    function testApproveAndApproveMulti() public {
+        vm.warp(_SCHEDULE_TIME - Constant.TIMELOCK_MINIMUM_DELAY);
+        assertEq(_treasury.balance(_DENIZEN1), 0 ether);
+        vm.prank(_APP1);
+        _treasury.approve(_DENIZEN1, 10 ether);
+        bytes[] memory sigList = new bytes[](1);
+        sigList[0] = _SIGNATURE_1;
+        vm.prank(_APP1);
+        _treasury.approveMulti(_DENIZEN1, 10 ether, _SCHEDULE_TIME, sigList);
+        assertEq(_treasury.balance(_DENIZEN1), 10 ether);
+    }
+
+    function testApproveAndApproveMultiWithBadScheduleTime() public {
+        assertEq(_treasury.balance(_DENIZEN1), 0 ether);
+        vm.warp(_SCHEDULE_TIME - Constant.TIMELOCK_MAXIMUM_DELAY);
+        uint scheduleTime = _SCHEDULE_TIME - 1;
+        vm.prank(_APP1);
+        _treasury.approve(_DENIZEN1, 10 ether);
+        bytes[] memory sigList = new bytes[](1);
+        sigList[0] = _SIGNATURE_1;
+        vm.prank(_APP1);
+        vm.expectRevert(
+            abi.encodeWithSelector(
+                Vault.SignatureNotAccepted.selector,
+                _APP1,
+                address(0x001e1c8ba09e2605bb0c6d5dcc31c3e442a315d0ed)
+            )
+        );
+        _treasury.approveMulti(_DENIZEN1, 10 ether, scheduleTime, sigList);
+    }
+
+    function testApproveAndApproveMultiWithIncreasedScheduleTime() public {
+        assertEq(_treasury.balance(_DENIZEN1), 0 ether);
+        vm.warp(_SCHEDULE_TIME - Constant.TIMELOCK_MINIMUM_DELAY - 1);
+        vm.prank(_APP1);
+        _treasury.approve(_DENIZEN1, 10 ether);
+        vm.warp(_SCHEDULE_TIME - Constant.TIMELOCK_MINIMUM_DELAY);
+        bytes[] memory sigList = new bytes[](1);
+        sigList[0] = _SIGNATURE_1;
+        vm.prank(_APP1);
+        _treasury.approveMulti(_DENIZEN1, 10 ether, _SCHEDULE_TIME, sigList);
+        assertEq(_treasury.balance(_DENIZEN1), 10 ether);
+    }
+
+    function testApproveAndApproveMultiWithDecreasedScheduleTime() public {
+        vm.warp(_SCHEDULE_TIME - Constant.TIMELOCK_MINIMUM_DELAY + 1);
+        vm.prank(_APP1);
+        _treasury.approve(_DENIZEN1, 10 ether);
+        bytes[] memory sigList = new bytes[](1);
+        sigList[0] = _SIGNATURE_1;
+        Transaction memory transaction = Transaction(_DENIZEN1, 10 ether, "", "", _SCHEDULE_TIME);
+        bytes32 txHash = getHash(transaction);
+        vm.expectRevert(
+            abi.encodeWithSelector(
+                TimeLocker.TimestampNotInLockRange.selector,
+                txHash,
+                _SCHEDULE_TIME,
+                _SCHEDULE_TIME + 1,
+                _SCHEDULE_TIME + Constant.TIMELOCK_GRACE_PERIOD + 1
+            )
+        );
+        vm.prank(_APP1);
+        _treasury.approveMulti(_DENIZEN1, 10 ether, _SCHEDULE_TIME, sigList);
+    }
+
+    function testApproveAndApproveMultiDoesNotMatch() public {
+        vm.warp(_SCHEDULE_TIME - Constant.TIMELOCK_MINIMUM_DELAY);
+        vm.prank(_APP1);
+        _treasury.approve(_DENIZEN1, 1 ether);
+        bytes[] memory sigList = new bytes[](1);
+        sigList[0] = _SIGNATURE_1;
+        vm.prank(_APP1);
+        vm.expectRevert(abi.encodeWithSelector(Vault.ApprovalNotMatched.selector, _APP1, 10 ether, 1 ether));
+        _treasury.approveMulti(_DENIZEN1, 10 ether, _SCHEDULE_TIME, sigList);
+    }
+
     function getBlockTimestamp() private view returns (uint256) {
         // solhint-disable-next-line not-rely-on-time
         return block.timestamp;
+    }
+
+    function prepareSigList() private pure returns (bytes[] memory) {
+        bytes[] memory sigList = new bytes[](2);
+        sigList[0] = _SIGNATURE_1;
+        sigList[1] = _SIGNATURE_2;
+        return sigList;
     }
 }

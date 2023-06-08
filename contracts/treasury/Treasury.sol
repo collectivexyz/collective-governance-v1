@@ -251,7 +251,7 @@ contract Treasury is Vault {
         bytes memory _signature
     ) private view returns (address) {
         address signatureAddress = ECDSA.recover(_agreementHash, _signature);
-        if (!_approvedSet.contains(signatureAddress)) revert SignatureNotValid(signatureAddress);
+        if (!_approvedSet.contains(signatureAddress)) revert SignatureNotAccepted(msg.sender, signatureAddress);
         return signatureAddress;
     }
 

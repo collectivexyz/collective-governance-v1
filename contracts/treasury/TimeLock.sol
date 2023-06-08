@@ -109,7 +109,7 @@ contract TimeLock is TimeLocker, Ownable {
         uint256 startLock = blockTime + _lockTime;
         uint256 endLock = startLock + Constant.TIMELOCK_GRACE_PERIOD;
         if (_scheduleTime < startLock || _scheduleTime > endLock) {
-            revert TimestampNotInLockRange(txHash, blockTime, _scheduleTime, startLock, endLock);
+            revert TimestampNotInLockRange(txHash, _scheduleTime, startLock, endLock);
         }
         if (_queuedTransaction[txHash]) revert QueueCollision(txHash);
         setQueue(txHash);

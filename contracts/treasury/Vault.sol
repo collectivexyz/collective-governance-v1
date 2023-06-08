@@ -52,7 +52,7 @@ import { AddressCollection } from "../../contracts/collection/AddressSet.sol";
 /// @custom:type interface
 interface Vault {
     /// when signature was not confirmed
-    error SignatureNotValid(address signer);
+    error SignatureNotAccepted(address sender, address signer);
     /// Please deposit or withdraw instead
     error FallbackNotPermitted();
     /// deposit sent but value was nil

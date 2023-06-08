@@ -64,7 +64,6 @@ contract TimeLockTest is Test {
             abi.encodeWithSelector(
                 TimeLocker.TimestampNotInLockRange.selector,
                 txHash,
-                currentTime,
                 transaction.scheduleTime,
                 currentTime + _WEEK_DELAY,
                 currentTime + _WEEK_DELAY + Constant.TIMELOCK_GRACE_PERIOD
@@ -90,7 +89,6 @@ contract TimeLockTest is Test {
             abi.encodeWithSelector(
                 TimeLocker.TimestampNotInLockRange.selector,
                 txHash,
-                currentTime,
                 transaction.scheduleTime,
                 currentTime + _WEEK_DELAY,
                 currentTime + _WEEK_DELAY + Constant.TIMELOCK_GRACE_PERIOD

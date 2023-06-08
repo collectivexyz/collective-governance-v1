@@ -162,7 +162,7 @@
     {
       "label": "deploytreasurybuilder",
       "type": "shell",
-      "command": "forge script ./script/DeployTreasuryBuilder.sol --sig 'deploy()' --resume  --libraries ./lib/openzeppelin-contracts/contracts/utils/cryptography/ECDSA.sol:ECDSA:${ECDSA_LIB_ADDRESS} --libraries contracts/Constant.sol:Constant:${CONSTANT_LIB_ADDRESS} --slow --broadcast --rpc-url ${RPC_URL} --private-key ${PRIVATE_KEY} --etherscan-api-key ${ETHERSCAN_API_KEY} --verify",
+      "command": "forge script ./script/DeployTreasuryBuilder.sol --sig 'deploy()' --libraries ./lib/openzeppelin-contracts/contracts/utils/cryptography/ECDSA.sol:ECDSA:${ECDSA_LIB_ADDRESS} --libraries contracts/Constant.sol:Constant:${CONSTANT_LIB_ADDRESS} --slow --broadcast --rpc-url ${RPC_URL} --private-key ${PRIVATE_KEY} --etherscan-api-key ${ETHERSCAN_API_KEY} --verify",
       "options": {
         "cwd": "${workspaceFolder}",
         "env": {

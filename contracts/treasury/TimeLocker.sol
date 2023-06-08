@@ -55,7 +55,7 @@ interface TimeLocker {
     /// @notice A transaction has been queued previously
     error QueueCollision(bytes32 txHash);
     /// @notice The timestamp or nonce specified does not meet the requirements for the timelock
-    error TimestampNotInLockRange(bytes32 txHash, uint256 timestamp, uint256 scheduleTime, uint256 lockStart, uint256 lockEnd);
+    error TimestampNotInLockRange(bytes32 txHash, uint256 scheduleTime, uint256 lockStart, uint256 lockEnd);
     /// @notice The provided delay does not meet the requirements for the TimeLock
     error RequiredDelayNotInRange(uint256 lockDelay, uint256 minDelay, uint256 maxDelay);
     /// @notice It is impossible to execute a call which is not in the queue already
