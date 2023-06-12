@@ -76,9 +76,11 @@ contract TransactionSetTest is Test {
 
     function testGetHash() public {
         Transaction memory tt = Transaction(address(0x123), 45, "six", "seven", 890);
-        bytes32 expect = keccak256(abi.encode(tt));
+        bytes32 expect = keccak256(abi.encode(address(0x123), 45, "six", "seven", 890));
         bytes32 computed = getHash(tt);
         assertEq(expect, computed);
+        // hash is stable and deterministic over time
+        assertEq(bytes32(0x79d0f3a3cef158f48526f8f94c6db43b977dc6de9465360eef49f3a3e413d487), computed);
     }
 
     function testGetZer0() public {
@@ -126,4 +128,11 @@ contract TransactionSetTest is Test {
         vm.prank(address(0x123));
         _set.erase(1);
     }
+
+    function testRealWorld1() public {
+        Transaction memory agreement = Transaction(address(0x6B48C29c94131409feD70EE5BCd37a9C758a4DaB), 25, "", bytes(""), 1686591504);
+        bytes32 agreementHash = getHash(agreement);
+        assertEq(bytes32(0x8391345a66518611e807b63423c9bfb4182e35d3a0a81c016a761ac9842d3842), agreementHash);
+    }
+
 }

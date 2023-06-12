@@ -40,8 +40,8 @@ contract TreasuryTest is Test {
             .withApprover(_APP1)
             .withApprover(_APP2)
             .withApprover(_APP3)
-            .withApprover(address(0x0e443474255d0598a9c00C7542918692CFeA2680))
-            .withApprover(address(0x030cEB789F5e35cB880a3aeD43DC388d21706748))
+            .withApprover(address(0xd4F3378A69cdb5573AE4d68BE39bB563C614df98))
+            .withApprover(address(0x65A4E064f2fCE45015D7aC45BC4bD8F2580086Cb))
             .build();
         _treasury = Treasury(treasAddy);
         vm.deal(_APP1, 20 ether);
@@ -304,7 +304,7 @@ contract TreasuryTest is Test {
             abi.encodeWithSelector(
                 Vault.SignatureNotAccepted.selector,
                 _APP1,
-                address(0x00025d7f090656485381823a65c0e9a09208a701e4)
+                address(0x6B48C29c94131409feD70EE5BCd37a9C758a4DaB)
             )
         );
         _treasury.approveMulti(_DENIZEN1, 10 ether, _SCHEDULE_TIME, sigList);
@@ -313,10 +313,10 @@ contract TreasuryTest is Test {
     function testMultiSigDuplicateSignature() public {
         vm.warp(_SCHEDULE_TIME - Constant.TIMELOCK_MINIMUM_DELAY);
         bytes[] memory sigList = prepareSigList();
-        sigList[1] = sigList[0];
+        sigList[0] = sigList[1];
         vm.prank(_APP1);
         vm.expectRevert(
-            abi.encodeWithSelector(Vault.DuplicateApproval.selector, address(0x0e443474255d0598a9c00C7542918692CFeA2680))
+            abi.encodeWithSelector(Vault.DuplicateApproval.selector, address(0x0065a4e064f2fce45015d7ac45bc4bd8f2580086cb))
         );
         _treasury.approveMulti(_DENIZEN1, 10 ether, _SCHEDULE_TIME, sigList);
     }
@@ -346,7 +346,7 @@ contract TreasuryTest is Test {
             abi.encodeWithSelector(
                 Vault.SignatureNotAccepted.selector,
                 _APP1,
-                address(0x001e1c8ba09e2605bb0c6d5dcc31c3e442a315d0ed)
+                address(0x236A13713607F45238b1BD07BdEDE44d2de41bBF)
             )
         );
         _treasury.approveMulti(_DENIZEN1, 10 ether, scheduleTime, sigList);

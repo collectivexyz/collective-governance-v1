@@ -57,7 +57,7 @@ struct Choice {
 
 // solhint-disable-next-line func-visibility
 function getHash(Choice memory choice) pure returns (bytes32) {
-    return keccak256(abi.encode(choice));
+    return keccak256(abi.encode(choice.name, choice.description, choice.transactionId, choice.txHash));
 }
 
 interface ChoiceCollection {

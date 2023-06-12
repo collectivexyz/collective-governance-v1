@@ -34,9 +34,24 @@ contract ChoiceSetTest is Test {
 
     function testHash() public {
         Choice memory choice = Choice("a1", "a choice", 53, "2123", 22);
-        bytes32 expect = keccak256(abi.encode(choice));
+        bytes32 expect = keccak256(abi.encode(bytes32("a1"), "a choice", 53, bytes32("2123")));
         bytes32 computed = getHash(choice);
         assertEq(computed, expect);
+    }
+
+    function testHashDeterministicOverTime() public {
+        Choice memory choice = Choice("a1", "a choice", 53, "2123", 22);
+        bytes32 computed = getHash(choice);                
+        // hash is stable and deterministic over time
+        assertEq(bytes32(0x898df939bc158c697e687dcb98a36e85dbb8426282f1f496f59c5e2f2b2e1ffd), computed);
+    }
+
+    function testHashIndependentOfVoteCount() public {
+        Choice memory choice1 = Choice("a1", "a choice", 53, "2123", 22);
+        Choice memory choice2 = Choice("a1", "a choice", 53, "2123", 23);
+        bytes32 expect1 = getHash(choice1);
+        bytes32 expect2 = getHash(choice2);
+        assertEq(expect1, expect2);
     }
 
     function testDuplicateForbidden() public {

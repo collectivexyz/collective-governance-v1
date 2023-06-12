@@ -61,7 +61,7 @@ struct Transaction {
 
 // solhint-disable-next-line func-visibility
 function getHash(Transaction memory transaction) pure returns (bytes32) {
-    return keccak256(abi.encode(transaction));
+    return keccak256(abi.encode(transaction.target, transaction.value, transaction.signature, transaction._calldata, transaction.scheduleTime));
 }
 
 interface TransactionCollection {

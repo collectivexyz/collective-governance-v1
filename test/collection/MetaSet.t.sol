@@ -23,9 +23,11 @@ contract MetaSetTest is Test {
 
     function testHash() public {
         Meta memory meta = Meta("ziggy", "stardust");
-        bytes32 expect = keccak256(abi.encode(meta));
+        bytes32 expect = keccak256(abi.encode(meta.name, meta.value));
         bytes32 computed = getHash(meta);
         assertEq(computed, expect);
+        // hash is stable and deterministic over time
+        assertEq(bytes32(0x0d7c667bc8f435203dd08e6c6719f672d321fac94f4828050a1e0576c91c1014), computed);
     }
 
     function testDuplicateForbidden() public {

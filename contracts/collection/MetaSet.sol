@@ -55,7 +55,7 @@ struct Meta {
 
 // solhint-disable-next-line func-visibility
 function getHash(Meta memory meta) pure returns (bytes32) {
-    return keccak256(abi.encode(meta));
+    return keccak256(abi.encode(meta.name, meta.value));
 }
 
 interface MetaCollection {
