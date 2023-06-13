@@ -172,18 +172,20 @@ contract Treasury is Vault {
         uint256 _scheduleTime,
         bytes[] memory _signature
     ) external requireApprover requireNotPending(_to) requireSufficientBalance(_quantity) {
-        Transaction memory agreement = Transaction(_to, _quantity, "", "", _scheduleTime);
-        bytes32 agreementHash = getHash(agreement);
+        Transaction memory transaction = Transaction(_to, _quantity, "", "", _scheduleTime);
+        bytes32 transactionHash = getHash(transaction);
+        bytes32 signedMessageHash = ECDSA.toEthSignedMessageHash(transactionHash);
         Payment storage _pay = _payment[_to];
         if (_pay.approvalCount == 0) {
             _pay.approvalSet = Constant.createAddressSet();
         }
         for (uint i = 0; i < _signature.length; ++i) {
             bytes memory signature = _signature[i];
-            address signer = verifySignature(agreementHash, _approverSet, signature);
+            address signer = verifySignature(signedMessageHash, _approverSet, signature);
             if (!_pay.approvalSet.set(signer)) {
                 revert DuplicateApproval(signer);
             }
+            emit SignatureVerified(signer, signedMessageHash);
             _pay.approvalCount += 1;
             if (_pay.approvalCount == 1 && _pay.quantity == 0) {
                 _pay.quantity = _quantity;

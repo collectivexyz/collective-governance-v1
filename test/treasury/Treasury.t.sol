@@ -40,11 +40,12 @@ contract TreasuryTest is Test {
             .withApprover(_APP1)
             .withApprover(_APP2)
             .withApprover(_APP3)
-            .withApprover(address(0xd4F3378A69cdb5573AE4d68BE39bB563C614df98))
-            .withApprover(address(0x65A4E064f2fCE45015D7aC45BC4bD8F2580086Cb))
+            .withApprover(address(0xE43588937075dBDB9AEa91099b82eAC358640228))
+            .withApprover(address(0xB3a2D68AF3ab42a79222b5c2922bc3f980Ff4A7E))
             .build();
         _treasury = Treasury(treasAddy);
         vm.deal(_APP1, 20 ether);
+        vm.prank(_APP1);
         _treasury.deposit{ value: 20 ether }();
     }
 
@@ -304,7 +305,7 @@ contract TreasuryTest is Test {
             abi.encodeWithSelector(
                 Vault.SignatureNotAccepted.selector,
                 _APP1,
-                address(0x6B48C29c94131409feD70EE5BCd37a9C758a4DaB)
+                address(0x6C2843E9C7438dA6Db0c6c70762DF7567cbE6519)
             )
         );
         _treasury.approveMulti(_DENIZEN1, 10 ether, _SCHEDULE_TIME, sigList);
@@ -316,7 +317,7 @@ contract TreasuryTest is Test {
         sigList[0] = sigList[1];
         vm.prank(_APP1);
         vm.expectRevert(
-            abi.encodeWithSelector(Vault.DuplicateApproval.selector, address(0x0065a4e064f2fce45015d7ac45bc4bd8f2580086cb))
+            abi.encodeWithSelector(Vault.DuplicateApproval.selector, address(0xB3a2D68AF3ab42a79222b5c2922bc3f980Ff4A7E))
         );
         _treasury.approveMulti(_DENIZEN1, 10 ether, _SCHEDULE_TIME, sigList);
     }
@@ -346,7 +347,7 @@ contract TreasuryTest is Test {
             abi.encodeWithSelector(
                 Vault.SignatureNotAccepted.selector,
                 _APP1,
-                address(0x236A13713607F45238b1BD07BdEDE44d2de41bBF)
+                address(0x961Be0E1910D533157A635593d11Cc8EC478afAb)
             )
         );
         _treasury.approveMulti(_DENIZEN1, 10 ether, scheduleTime, sigList);

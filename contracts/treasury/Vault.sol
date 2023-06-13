@@ -70,6 +70,8 @@ interface Vault {
     /// attempt to approve twice from same signature
     error DuplicateApproval(address signer);
 
+    /// verified signature
+    event SignatureVerified(address signer, bytes32 msgHash);
     /// a deposit has been recieved
     event Deposit(uint256 quantity);
     /// withdraw completed
