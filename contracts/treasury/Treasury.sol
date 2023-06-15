@@ -44,6 +44,9 @@
 
 pragma solidity ^0.8.15;
 
+
+import { ReentrancyGuard } from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+
 import { ECDSA } from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 
 import { Constant } from "../../contracts/Constant.sol";
@@ -55,12 +58,14 @@ import { Transaction, getHash } from "../../contracts/collection/TransactionSet.
 /**
  * @notice Custom multisig treasury for ETH
  */
-contract Treasury is Vault {
+contract Treasury is Vault, ReentrancyGuard {
     mapping(address => Payment) private _payment;
 
     TimeLock private immutable _timeLock;
     AddressCollection public immutable _approverSet;
     uint256 public immutable _minimumApprovalCount;
+
+    uint256 private _pendingPayment = 0;
 
     /**
      * construct the Treasury
@@ -92,7 +97,7 @@ contract Treasury is Vault {
     }
 
     modifier requireSufficientBalance(uint256 _quantity) {
-        uint256 availableQty = address(this).balance;
+        uint256 availableQty = address(this).balance - _pendingPayment;
         if (availableQty < _quantity) {
             revert InsufficientBalance(_quantity, availableQty);
         }
@@ -141,10 +146,9 @@ contract Treasury is Vault {
             uint256 scheduleTime = getBlockTimestamp() + _timeLock._lockTime();
             _pay.scheduleTime = scheduleTime;
             // transfer to timelock for execution
-            address payable _lockBalance = payable(address(_timeLock));
             _timeLock.queueTransaction(_to, _pay.quantity, "", "", _pay.scheduleTime);
-            _lockBalance.transfer(_quantity);
-            emit Withdraw(_pay.quantity, _to, _pay.scheduleTime);
+            _pendingPayment += _pay.quantity;
+            emit TransactionApproved(_pay.quantity, _to, _pay.scheduleTime);
         }
     }
 
@@ -196,10 +200,9 @@ contract Treasury is Vault {
             if (_pay.approvalCount == _minimumApprovalCount) {
                 _pay.scheduleTime = _scheduleTime;
                 // transfer to timelock for execution
-                address payable _lockBalance = payable(address(_timeLock));
                 _timeLock.queueTransaction(_to, _pay.quantity, "", "", _pay.scheduleTime);
-                _lockBalance.transfer(_quantity);
-                emit Withdraw(_pay.quantity, _to, _pay.scheduleTime);
+                _pendingPayment += _pay.quantity;
+                emit TransactionApproved(_pay.quantity, _to, _pay.scheduleTime);                
             }
         }
     }
@@ -214,10 +217,9 @@ contract Treasury is Vault {
     /// @param _to the address to pay
     function transferTo(address _to) public requirePayee(_to) {
         Payment storage _pay = _payment[_to];
-        uint256 scheduleTime = _pay.scheduleTime;
-        uint256 quantity = _pay.quantity;
-        _timeLock.executeTransaction(_to, quantity, "", "", scheduleTime);
-        emit PaymentSent(quantity, _to);
+        transferToLock(_pay.quantity, _to, _pay.scheduleTime);
+        _timeLock.executeTransaction(_to, _pay.quantity, "", "", _pay.scheduleTime);
+        emit PaymentSent(_pay.quantity, _to);
         clear(_to);
     }
 
@@ -228,7 +230,9 @@ contract Treasury is Vault {
         if (_pay.scheduleTime == 0) {
             revert NotPending(_to);
         }
+        _pendingPayment -= _pay.quantity;
         _timeLock.cancelTransaction(_to, _pay.quantity, "", "", _pay.scheduleTime);
+        emit TransactionCancelled(_pay.quantity, _to, _pay.scheduleTime);
         clear(_to);
     }
 
@@ -241,10 +245,10 @@ contract Treasury is Vault {
         }
         return 0;
     }
-
+    
     /// @notice total balance on treasury
     function balance() public view override(Vault) returns (uint256) {
-        return address(_timeLock).balance + address(this).balance;
+        return address(this).balance - _pendingPayment;
     }
 
     function verifySignature(
@@ -268,5 +272,18 @@ contract Treasury is Vault {
     function getBlockTimestamp() private view returns (uint256) {
         // solhint-disable-next-line not-rely-on-time
         return block.timestamp;
+    }
+
+    function transferToLock(uint256 _quantity, address _to, uint256 _scheduleTime) private nonReentrant {
+        if(_pendingPayment < _quantity) {
+            revert TreasuryBankrupt(_quantity, _pendingPayment);
+        }
+        _pendingPayment -= _quantity;
+        address payable lockBalance = payable(address(_timeLock));
+        // see here for details: https://consensys.github.io/smart-contract-best-practices/development-recommendations/general/external-calls/#favor-pull-over-push-for-external-calls
+        // solhint-disable-next-line avoid-low-level-calls
+        (bool success, ) = lockBalance.call{value: _quantity}("");
+        if (!success) revert TimeLockTransferFailed(_quantity, _to, _scheduleTime);
+        emit TreasuryWithdraw(_quantity, _to, _scheduleTime);
     }
 }

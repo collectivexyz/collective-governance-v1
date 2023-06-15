@@ -70,6 +70,9 @@ interface Governance is Versioned, IERC165 {
     error NotExecuted(uint256 proposalId);
     error InvalidChoice(uint256 proposalId, uint256 choiceId);
     error TransactionSignatureNotMatching(uint256 proposalId, uint256 transactionId);
+    error RebateTransferFailed(address recipient, uint256 rebate);
+    error GasRebateBankrupt(address recipient, uint256 rebate, uint256 availableRebate);
+    error NoRebate(address recipient);
 
     /// @notice A new proposal was created
     event ProposalCreated(address sender, uint256 proposalId);
@@ -114,12 +117,15 @@ interface Governance is Versioned, IERC165 {
     /// @notice The proposal has been vetoed
     event ProposalVeto(uint256 proposalId, address sender);
     /// @notice The contract has been funded to provide gas rebates
-    event RebateFund(address sender, uint256 transfer, uint256 totalFund);
-    /// @notice Gas rebate payment
-    event RebatePaid(address recipient, uint256 rebate, uint256 gasPaid);
+    event RebateFunded(address sender, uint256 transfer);
 
     /// @notice Winning choice in choice vote
     event WinningChoice(uint256 proposalId, bytes32 name, string description, uint256 transactionId, uint256 voteCount);
+
+    /// Rebate cycle
+    event GasRebateApproved(address recipient, uint256 rebate, uint256 gasUsed);
+    /// @notice Gas rebate payment    
+    event GasRebatePaid(address recipient, uint256 rebate);
 
     /// @notice propose a vote for the community
     /// @return uint256 The id of the new proposal
@@ -174,6 +180,16 @@ interface Governance is Versioned, IERC165 {
     /// @param _requiredDelay The minimum time required before the start of voting
     /// @param _requiredDuration The minimum time for voting to proceed before ending the vote is allowed
     function configure(uint256 _proposalId, uint256 _quorumThreshold, uint256 _requiredDelay, uint256 _requiredDuration) external;
+
+    /// @notice withdraw available rebate funds
+    /// @param _recipient The address to send the rebate to
+    function withdrawRebate(address _recipient) external;
+
+    /// @notice withdraw available rebate funds
+    function withdrawRebate() external;
+
+    /// @notice return the rebate funds available
+    function rebateBalance() external returns (uint256);
 
     /// @notice return the name of this implementation
     /// @return string memory representation of name

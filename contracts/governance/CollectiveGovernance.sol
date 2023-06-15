@@ -43,6 +43,7 @@
  */
 pragma solidity ^0.8.15;
 
+import { ReentrancyGuard } from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import { IERC165 } from "@openzeppelin/contracts/interfaces/IERC165.sol";
 import { ERC165 } from "@openzeppelin/contracts/utils/introspection/ERC165.sol";
 import { Math } from "@openzeppelin/contracts/utils/math/Math.sol";
@@ -96,7 +97,7 @@ function calculateGasRebate(
 ///
 /// @dev The VoterClass is common to all proposed votes as are the project supervisors.   Individual supervisors may
 /// be configured as part of the proposal creation workflow but project supervisors are always included.
-contract CollectiveGovernance is VoteStrategy, Governance, ERC165, VersionedContract {
+contract CollectiveGovernance is VoteStrategy, Governance, VersionedContract, ERC165, ReentrancyGuard {
     string public constant NAME = "collective governance";
 
     CommunityClass public immutable _communityClass;
@@ -107,6 +108,11 @@ contract CollectiveGovernance is VoteStrategy, Governance, ERC165, VersionedCont
 
     /// @notice voting is open or not
     mapping(uint256 => bool) private isVoteOpenByProposalId;
+
+    /// @notice rebate available to reclaim
+    mapping(address => uint256) private _rebate;
+
+    uint256 private _rebatePending = 0;
 
     /// @notice create a new collective governance contract
     /// @dev This should be invoked through the GovernanceBuilder.  Gas Rebate
@@ -156,9 +162,14 @@ contract CollectiveGovernance is VoteStrategy, Governance, ERC165, VersionedCont
         _;
     }
 
+    modifier requireRebate(address _recipient) {
+        if (_rebate[_recipient] == 0) revert NoRebate(_recipient);
+        _;
+    }
+
     // @dev recieve funds for the purpose of offering a rebate on gas fees
     receive() external payable {
-        emit RebateFund(msg.sender, msg.value, getRebateBalance());
+        emit RebateFunded(msg.sender, msg.value);
     }
 
     // solhint-disable-next-line payable-fallback
@@ -305,7 +316,7 @@ contract CollectiveGovernance is VoteStrategy, Governance, ERC165, VersionedCont
         for (uint256 i = 0; i < _shareList.length; i++) {
             _castVoteFor(_proposalId, _shareList[i], _choiceId);
         }
-        sendGasRebate(msg.sender, startGas);
+        assignGasRebate(msg.sender, startGas);
     }
 
     /// @notice cast an affirmative vote for the measure by id
@@ -335,7 +346,7 @@ contract CollectiveGovernance is VoteStrategy, Governance, ERC165, VersionedCont
         for (uint256 i = 0; i < _tokenIdList.length; i++) {
             _castVoteFor(_proposalId, _tokenIdList[i], _choiceId);
         }
-        sendGasRebate(msg.sender, startGas);
+        assignGasRebate(msg.sender, startGas);
     }
 
     /// @notice cast an affirmative vote for the measure by id
@@ -356,7 +367,7 @@ contract CollectiveGovernance is VoteStrategy, Governance, ERC165, VersionedCont
     ) public requireVoteFinal(_proposalId) requireVoteOpen(_proposalId) requireVoteAccepted(_proposalId) {
         uint256 startGas = gasleft();
         _castVoteFor(_proposalId, _tokenId, _choiceId);
-        sendGasRebate(msg.sender, startGas);
+        assignGasRebate(msg.sender, startGas);
     }
 
     /// @notice cast an against vote by id
@@ -370,7 +381,7 @@ contract CollectiveGovernance is VoteStrategy, Governance, ERC165, VersionedCont
         for (uint256 i = 0; i < _shareList.length; i++) {
             _castVoteAgainst(_proposalId, _shareList[i]);
         }
-        sendGasRebate(msg.sender, startGas);
+        assignGasRebate(msg.sender, startGas);
     }
 
     /// @notice cast an against vote by id
@@ -384,7 +395,7 @@ contract CollectiveGovernance is VoteStrategy, Governance, ERC165, VersionedCont
         for (uint256 i = 0; i < _shareList.length; i++) {
             _castVoteAgainst(_proposalId, _shareList[i]);
         }
-        sendGasRebate(msg.sender, startGas);
+        assignGasRebate(msg.sender, startGas);
     }
 
     /// @notice cast an against vote by id
@@ -396,7 +407,7 @@ contract CollectiveGovernance is VoteStrategy, Governance, ERC165, VersionedCont
     ) external requireVoteFinal(_proposalId) requireVoteOpen(_proposalId) requireVoteAccepted(_proposalId) {
         uint256 startGas = gasleft();
         _castVoteAgainst(_proposalId, _tokenId);
-        sendGasRebate(msg.sender, startGas);
+        assignGasRebate(msg.sender, startGas);
     }
 
     /// @notice abstain from vote by id
@@ -410,7 +421,7 @@ contract CollectiveGovernance is VoteStrategy, Governance, ERC165, VersionedCont
         for (uint256 i = 0; i < _shareList.length; i++) {
             _castAbstention(_proposalId, _shareList[i]);
         }
-        sendGasRebate(msg.sender, startGas);
+        assignGasRebate(msg.sender, startGas);
     }
 
     /// @notice abstain from vote by id
@@ -424,7 +435,7 @@ contract CollectiveGovernance is VoteStrategy, Governance, ERC165, VersionedCont
         for (uint256 i = 0; i < _shareList.length; i++) {
             _castAbstention(_proposalId, _shareList[i]);
         }
-        sendGasRebate(msg.sender, startGas);
+        assignGasRebate(msg.sender, startGas);
     }
 
     /// @notice abstain from vote by id
@@ -436,7 +447,7 @@ contract CollectiveGovernance is VoteStrategy, Governance, ERC165, VersionedCont
     ) external requireVoteFinal(_proposalId) requireVoteOpen(_proposalId) requireVoteAccepted(_proposalId) {
         uint256 startGas = gasleft();
         _castAbstention(_proposalId, _tokenId);
-        sendGasRebate(msg.sender, startGas);
+        assignGasRebate(msg.sender, startGas);
     }
 
     /// @notice veto proposal by id
@@ -512,6 +523,39 @@ contract CollectiveGovernance is VoteStrategy, Governance, ERC165, VersionedCont
         _storage.cancel(_proposalId, msg.sender);
     }
 
+
+    /// @notice return the name of this implementation
+    /// @return string memory representation of name
+    function name() external pure virtual returns (string memory) {
+        return NAME;
+    }
+
+    /// @notice withdraw available rebate
+    function withdrawRebate() external {
+        withdrawRebate(msg.sender);
+    }
+
+    /// @notice withdraw available rebate
+    /// @param _recipient The address to withdraw the rebate to
+    function withdrawRebate(address _recipient) public nonReentrant requireRebate(_recipient) {
+        uint256 balance = _rebate[_recipient];
+        if (balance < _rebatePending) {
+            revert GasRebateBankrupt(_recipient, balance, _rebatePending);
+        }
+        _rebate[_recipient] = 0;
+        _rebatePending = _rebatePending - balance;
+        // see here for details: https://consensys.github.io/smart-contract-best-practices/development-recommendations/general/external-calls/#favor-pull-over-push-for-external-calls
+        // solhint-disable-next-line avoid-low-level-calls
+        (bool success, ) = payable(_recipient).call{value: balance}("");
+        if(!success) revert RebateTransferFailed(_recipient, balance);
+        emit GasRebatePaid(_recipient, balance);
+    }
+
+    /// @notice return the rebate funds available
+    function rebateBalance() external view returns (uint256) {
+        return _rebate[msg.sender];
+    }
+
     function executeTransaction(uint256 _proposalId) private {
         if (_storage.isExecuted(_proposalId)) revert TransactionExecuted(_proposalId);
         _storage.setExecuted(_proposalId);
@@ -581,26 +625,21 @@ contract CollectiveGovernance is VoteStrategy, Governance, ERC165, VersionedCont
         }
     }
 
-    /// @notice return the name of this implementation
-    /// @return string memory representation of name
-    function name() external pure virtual returns (string memory) {
-        return NAME;
-    }
-
-    function sendGasRebate(address recipient, uint256 startGas) internal {
+    function assignGasRebate(address _recipient, uint256 _startGas) internal {
         uint256 balance = getRebateBalance();
         if (balance == 0) {
             return;
         }
         // determine rebate and transfer
         (uint256 rebate, uint256 gasUsed) = calculateGasRebate(
-            startGas,
+            _startGas,
             balance,
             _communityClass.maximumBaseFeeRebate(),
             _communityClass.maximumGasUsedRebate()
         );
-        payable(recipient).transfer(rebate);
-        emit RebatePaid(recipient, rebate, gasUsed);
+        _rebate[_recipient] = _rebate[_recipient] + rebate;
+        _rebatePending = _rebatePending + rebate;
+        emit GasRebateApproved(_recipient, rebate, gasUsed);
     }
 
     function _proposeVote(address _sender) private returns (uint256) {
@@ -651,6 +690,6 @@ contract CollectiveGovernance is VoteStrategy, Governance, ERC165, VersionedCont
     }
 
     function getRebateBalance() internal view returns (uint256) {
-        return address(this).balance;
+        return address(this).balance - _rebatePending;
     }
 }

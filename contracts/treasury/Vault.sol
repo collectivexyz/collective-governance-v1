@@ -67,15 +67,23 @@ interface Vault {
     error ApprovalNotMatched(address sender, uint256 quantity, uint256 expected);
     /// quantity not available for approval
     error InsufficientBalance(uint256 quantity, uint256 available);
+    /// Insufficient quantity reserved for payment
+    error TreasuryBankrupt(uint256 quantity, uint256 available);
     /// attempt to approve twice from same signature
     error DuplicateApproval(address signer);
+    /// internal error on lock transfer
+    error TimeLockTransferFailed(uint256 quantity, address recipient, uint256 timeAvailable);
 
     /// verified signature
     event SignatureVerified(address signer, bytes32 msgHash);
     /// a deposit has been recieved
     event Deposit(uint256 quantity);
+    /// Transaction Approved
+    event TransactionApproved(uint256 quantity, address _to, uint256 timeAvailable);
+    /// Transaction Cancelled
+    event TransactionCancelled(uint256 quantity, address _to, uint256 timeAvailable);
     /// withdraw completed
-    event Withdraw(uint256 quantity, address _to, uint256 timeAvailable);
+    event TreasuryWithdraw(uint256 quantity, address _to, uint256 timeAvailable);
     /// payment completed
     event PaymentSent(uint256 quantity, address _to);
 

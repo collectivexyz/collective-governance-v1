@@ -18,6 +18,27 @@
   {
     "inputs": [
       {
+        "internalType": "address",
+        "name": "recipient",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "rebate",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "availableRebate",
+        "type": "uint256"
+      }
+    ],
+    "name": "GasRebateBankrupt",
+    "type": "error"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "uint256",
         "name": "proposalId",
         "type": "uint256"
@@ -29,6 +50,17 @@
       }
     ],
     "name": "InvalidChoice",
+    "type": "error"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "recipient",
+        "type": "address"
+      }
+    ],
+    "name": "NoRebate",
     "type": "error"
   },
   {
@@ -99,6 +131,22 @@
       }
     ],
     "name": "QuorumNotConfigured",
+    "type": "error"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "recipient",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "rebate",
+        "type": "uint256"
+      }
+    ],
+    "name": "RebateTransferFailed",
     "type": "error"
   },
   {
@@ -204,6 +252,50 @@
     ],
     "name": "VoteVetoed",
     "type": "error"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "recipient",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "rebate",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "gasUsed",
+        "type": "uint256"
+      }
+    ],
+    "name": "GasRebateApproved",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "recipient",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "rebate",
+        "type": "uint256"
+      }
+    ],
+    "name": "GasRebatePaid",
+    "type": "event"
   },
   {
     "anonymous": false,
@@ -486,40 +578,9 @@
         "internalType": "uint256",
         "name": "transfer",
         "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "totalFund",
-        "type": "uint256"
       }
     ],
-    "name": "RebateFund",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "address",
-        "name": "recipient",
-        "type": "address"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "rebate",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "gasPaid",
-        "type": "uint256"
-      }
-    ],
-    "name": "RebatePaid",
+    "name": "RebateFunded",
     "type": "event"
   },
   {
@@ -755,6 +816,19 @@
     "type": "function"
   },
   {
+    "inputs": [],
+    "name": "rebateBalance",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
     "inputs": [
       {
         "internalType": "uint256",
@@ -797,6 +871,26 @@
       }
     ],
     "stateMutability": "pure",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_recipient",
+        "type": "address"
+      }
+    ],
+    "name": "withdrawRebate",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "withdrawRebate",
+    "outputs": [],
+    "stateMutability": "nonpayable",
     "type": "function"
   }
 ]

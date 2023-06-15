@@ -174,7 +174,7 @@ contract TreasuryTest is Test {
         bytes32 txHash = getHash(trans);
         vm.expectRevert(abi.encodeWithSelector(TimeLocker.TransactionLocked.selector, txHash, trans.scheduleTime));
         _treasury.transferTo(_DENIZEN1);
-        assertEq(_treasury.balance(), 20 ether);
+        assertEq(_treasury.balance(), 19 ether);
     }
 
     function testLatePaymentFails() public {
@@ -189,7 +189,7 @@ contract TreasuryTest is Test {
         bytes32 txHash = getHash(trans);
         vm.expectRevert(abi.encodeWithSelector(TimeLocker.TransactionStale.selector, txHash));
         _treasury.transferTo(_DENIZEN1);
-        assertEq(_treasury.balance(), 20 ether);
+        assertEq(_treasury.balance(), 19 ether);
     }
 
     function testScheduleAnotherPaymentWhilePendingFails() public {
@@ -219,6 +219,30 @@ contract TreasuryTest is Test {
         _treasury.approve(_DENIZEN1, 1 ether);
     }
 
+    function testCancelOperationIsRecyclingEther() public {
+        uint startBalance = _treasury.balance();
+        for(uint i = 0; i < 256; ++i) {
+            vm.prank(_APP1);
+            _treasury.approve(_DENIZEN1, 1 ether);
+            vm.prank(_APP2);
+            _treasury.approve(_DENIZEN1, 1 ether);
+            assertEq(_treasury.balance(_DENIZEN1), 1 ether);
+            vm.prank(_APP2);
+            _treasury.cancel(_DENIZEN1);
+            assertEq(_treasury.balance(_DENIZEN1), 0 ether);
+            assertEq(_treasury.balance(), startBalance);
+        }
+        vm.prank(_APP1);
+        _treasury.approve(_DENIZEN1, 1 ether);
+        vm.prank(_APP2);
+        _treasury.approve(_DENIZEN1, 1 ether);
+        assertEq(_treasury.balance(_DENIZEN1), 1 ether);
+        vm.prank(_APP2);
+        _treasury.cancel(_DENIZEN1);
+        assertEq(_treasury.balance(_DENIZEN1), 0 ether);
+        assertEq(_treasury.balance(), startBalance);
+    }
+
     function testJustPaymeFails() public {
         vm.expectRevert(abi.encodeWithSelector(Vault.NotPending.selector, _DENIZEN1));
         vm.prank(_DENIZEN1);
@@ -241,13 +265,27 @@ contract TreasuryTest is Test {
         vm.prank(_APP2);
         _treasury.approve(_DENIZEN1, 7 ether);
         assertEq(_treasury.balance(_DENIZEN1), 7 ether);
-        assertEq(_treasury.balance(), 20 ether);
+        assertEq(_treasury.balance(), 13 ether);
         vm.warp(getBlockTimestamp() + Constant.TIMELOCK_MINIMUM_DELAY);
         vm.prank(_DENIZEN1);
         _treasury.pay();
         assertEq(_DENIZEN1.balance, 7 ether);
         assertEq(_treasury.balance(_DENIZEN1), 0 ether);
         assertEq(_treasury.balance(), 13 ether);
+    }
+
+    function testBalanceRestoredOnCancellation() public {
+        assertEq(20 ether, _treasury.balance());
+        vm.prank(_APP1);
+        _treasury.approve(_DENIZEN1, 7 ether);
+        vm.prank(_APP2);
+        _treasury.approve(_DENIZEN1, 7 ether);
+        assertEq(_treasury.balance(_DENIZEN1), 7 ether);
+        assertEq(_treasury.balance(), 13 ether);
+        vm.prank(_APP1);
+        _treasury.cancel(_DENIZEN1);
+        assertEq(_treasury.balance(_DENIZEN1), 0 ether);
+        assertEq(_treasury.balance(), 20 ether);
     }
 
     function testMultiSigApproval() public {

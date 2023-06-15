@@ -1393,6 +1393,7 @@ contract CollectiveGovernanceTest is Test {
         vm.stopPrank();
         vm.prank(_VOTER1, _VOTER1);
         governance.voteFor(proposalId, TOKEN_ID1);
+        governance.withdrawRebate(_VOTER1);
         assertTrue(_VOTER1.balance > 0);
         assertEq(_VOTER1.balance, 10 gwei);
         assertEq(_governanceAddress.balance, 0);
@@ -1411,9 +1412,9 @@ contract CollectiveGovernanceTest is Test {
         vm.stopPrank();
         vm.prank(_VOTER1, _VOTER1);
         governance.voteFor(proposalId, TOKEN_ID1);
+        governance.withdrawRebate(_VOTER1);
         assertTrue(_VOTER1.balance > 0);
-        // requires optimized build
-        assertApproxEqAbs(_VOTER1.balance, 9688744 gwei, 10000 gwei);
+        assertApproxEqAbs(_VOTER1.balance, 9795188 gwei, 10000 gwei);
     }
 
     function testCastAgainstWithRefund() public {
@@ -1429,15 +1430,15 @@ contract CollectiveGovernanceTest is Test {
         vm.stopPrank();
         vm.prank(_VOTER1, _VOTER1);
         governance.voteAgainst(proposalId, TOKEN_ID1);
+        governance.withdrawRebate(_VOTER1);
         assertTrue(_VOTER1.balance > 0);
-        // requires optimized build
-        assertApproxEqAbs(_VOTER1.balance, 8649888 gwei, 10000 gwei);
+        assertApproxEqAbs(_VOTER1.balance, 8756332 gwei, 10000 gwei);
     }
 
     function testAbstainWithRefund() public {
         vm.fee(50 gwei);
 
-        vm.deal(_OWNER, 1 ether);
+        vm.deal(_OWNER, 10 ether);
         vm.prank(_OWNER);
         _governanceAddress.transfer(1 ether);
 
@@ -1447,9 +1448,9 @@ contract CollectiveGovernanceTest is Test {
         vm.stopPrank();
         vm.prank(_VOTER1, _VOTER1);
         governance.abstainFrom(proposalId, TOKEN_ID1);
+        governance.withdrawRebate(_VOTER1);
         assertTrue(_VOTER1.balance > 0);
-        // requires optimized build
-        assertApproxEqAbs(_VOTER1.balance, 9302176 gwei, 10000 gwei);
+        assertApproxEqAbs(_VOTER1.balance, 9408620 gwei, 10000 gwei);
     }
 
     function testChoiceVoteSimple() public {
@@ -1677,7 +1678,11 @@ contract CollectiveGovernanceTest is Test {
         governance.voteFor(proposalId);
     }
 
-
+    function testWithdrawRequiresRebateAvailable() public {
+        vm.expectRevert(abi.encodeWithSelector(Governance.NoRebate.selector, _VOTER1));
+        governance.withdrawRebate(_VOTER1);
+    }
+    
     function mintTokens() private returns (IERC721) {
         MockERC721 merc721 = new MockERC721();
         merc721.mintTo(_VOTER1, TOKEN_ID1);
