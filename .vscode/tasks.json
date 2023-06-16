@@ -143,23 +143,6 @@
       }
     },
     {
-      "label": "createtreasurybuilder",
-      "type": "shell",
-      "command": "forge create --contracts contracts/treasury/TreasuryBuilder.sol --libraries ./lib/openzeppelin-contracts/contracts/utils/cryptography/ECDSA.sol:ECDSA:${ECDSA_LIB_ADDRESS} --libraries contracts/Constant.sol:Constant:${CONSTANT_LIB_ADDRESS} --rpc-url ${RPC_URL} --private-key ${PRIVATE_KEY} TreasuryBuilder --etherscan-api-key ${ETHERSCAN_API_KEY} --verify",
-      "options": {
-        "cwd": "${workspaceFolder}",
-        "env": {
-          "CONSTANT_LIB_ADDRESS": "0x91cF8AA1B85508d144bE99C19c34561f7c00FE99",
-          "ECDSA_LIB_ADDRESS": "0xe9e21aaEaEad9c57C1F4c622915fFB54f9Ebe338"
-        }
-      },
-      "dependsOn": "test",
-      "group": {
-        "kind": "test",
-        "isDefault": false
-      }
-    },
-    {
       "label": "deploytreasurybuilder",
       "type": "shell",
       "command": "forge script ./script/DeployTreasuryBuilder.sol --sig 'deploy()' --libraries ./lib/openzeppelin-contracts/contracts/utils/cryptography/ECDSA.sol:ECDSA:${ECDSA_LIB_ADDRESS} --libraries contracts/Constant.sol:Constant:${CONSTANT_LIB_ADDRESS} --slow --broadcast --rpc-url ${RPC_URL} --private-key ${PRIVATE_KEY} --etherscan-api-key ${ETHERSCAN_API_KEY} --verify",
