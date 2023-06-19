@@ -67,8 +67,6 @@ interface Vault {
     error ApprovalNotMatched(address sender, uint256 quantity, uint256 expected);
     /// quantity not available for approval
     error InsufficientBalance(uint256 quantity, uint256 available);
-    /// Insufficient quantity reserved for payment
-    error TreasuryBankrupt(uint256 quantity, uint256 available);
     /// attempt to approve twice from same signature
     error DuplicateApproval(address signer);
     /// internal error on lock transfer

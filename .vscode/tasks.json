@@ -162,7 +162,7 @@
     {
       "label": "deploycommunitybuilder",
       "type": "shell",
-      "command": "forge script ./script/DeployCommunityBuilder.sol --sig 'deploy()' --resume --libraries contracts/Constant.sol:Constant:${CONSTANT_LIB_ADDRESS} --slow --broadcast --rpc-url ${RPC_URL} --private-key ${PRIVATE_KEY} --etherscan-api-key ${ETHERSCAN_API_KEY} --verify",
+      "command": "forge script ./script/DeployCommunityBuilder.sol --sig 'deploy()' --libraries contracts/Constant.sol:Constant:${CONSTANT_LIB_ADDRESS} --slow --broadcast --rpc-url ${RPC_URL} --private-key ${PRIVATE_KEY} --etherscan-api-key ${ETHERSCAN_API_KEY} --verify",
       "options": {
         "cwd": "${workspaceFolder}",
         "env": {
@@ -251,9 +251,9 @@
         "cwd": "${workspaceFolder}",
         "env": {
           "CONSTANT_LIB_ADDRESS": "0x91cF8AA1B85508d144bE99C19c34561f7c00FE99",
-          "GOVERNANCE_ADDRESS": "0x6b5b3b287a80742d728511f51638315cf1987977",
-          "STORAGE_ADDRESS": "0xc28ea107f64746ac90349c6c09c193d966f1ca91",
-          "META_ADDRESS": "0xd75fa6c5c3fdfd495d851c43e5331e16a058902a"
+          "GOVERNANCE_ADDRESS": "0xd5b0183f6d56c5ED73f69eD927E8D36cC2cA0604",
+          "STORAGE_ADDRESS": "0x6548b950363c9dc612DE72BBffeb979fb3Dbc829",
+          "META_ADDRESS": "0x942Dc3d685b73Bd77532804b053FeFeDd814AC83"
         }
       },
       "dependsOn": "test",

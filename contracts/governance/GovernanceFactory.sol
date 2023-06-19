@@ -43,8 +43,6 @@
  */
 pragma solidity ^0.8.15;
 
-import { Initializable } from "@openzeppelin/contracts/proxy/utils/Initializable.sol";
-import { UUPSUpgradeable } from "@openzeppelin/contracts/proxy/utils/UUPSUpgradeable.sol";
 import { IERC165 } from "@openzeppelin/contracts/interfaces/IERC165.sol";
 import { ERC165 } from "@openzeppelin/contracts/utils/introspection/ERC165.sol";
 
@@ -56,7 +54,6 @@ import { Governance } from "../../contracts/governance/Governance.sol";
 import { CollectiveGovernance } from "../../contracts/governance/CollectiveGovernance.sol";
 import { Versioned } from "../../contracts/access/Versioned.sol";
 import { VersionedContract } from "../../contracts/access/VersionedContract.sol";
-import { OwnableInitializable } from "../../contracts/access/OwnableInitializable.sol";
 
 /**
  * @title CollectiveGovernance creator
@@ -65,13 +62,7 @@ import { OwnableInitializable } from "../../contracts/access/OwnableInitializabl
  * CollectiveGovernance in the Builder.  The GovernanceBuilder should be preferred for creating a new
  * instance of the contract.
  */
-contract GovernanceFactory is VersionedContract, OwnableInitializable, UUPSUpgradeable, Initializable, ERC165 {
-    event UpgradeAuthorized(address sender, address owner);
-
-    function initialize() public initializer {
-        ownerInitialize(msg.sender);
-    }
-
+contract GovernanceFactory is VersionedContract, ERC165 {
     /// @notice create a new collective governance contract
     /// @dev this should be invoked through the GovernanceBuilder
     /// @param _class the VoterClass for this project
@@ -84,10 +75,5 @@ contract GovernanceFactory is VersionedContract, OwnableInitializable, UUPSUpgra
     /// @notice see ERC-165
     function supportsInterface(bytes4 interfaceId) public view virtual override(ERC165) returns (bool) {
         return interfaceId == type(Versioned).interfaceId || super.supportsInterface(interfaceId);
-    }
-
-    /// see UUPSUpgradeable
-    function _authorizeUpgrade(address _caller) internal virtual override(UUPSUpgradeable) onlyOwner {
-        emit UpgradeAuthorized(_caller, owner());
     }
 }

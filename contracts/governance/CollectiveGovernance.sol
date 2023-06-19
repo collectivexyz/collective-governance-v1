@@ -539,9 +539,6 @@ contract CollectiveGovernance is VoteStrategy, Governance, VersionedContract, ER
     /// @param _recipient The address to withdraw the rebate to
     function withdrawRebate(address _recipient) public nonReentrant requireRebate(_recipient) {
         uint256 balance = _rebate[_recipient];
-        if (balance < _rebatePending) {
-            revert GasRebateBankrupt(_recipient, balance, _rebatePending);
-        }
         _rebate[_recipient] = 0;
         _rebatePending = _rebatePending - balance;
         // see here for details: https://consensys.github.io/smart-contract-best-practices/development-recommendations/general/external-calls/#favor-pull-over-push-for-external-calls
@@ -554,6 +551,22 @@ contract CollectiveGovernance is VoteStrategy, Governance, VersionedContract, ER
     /// @notice return the rebate funds available
     function rebateBalance() external view returns (uint256) {
         return _rebate[msg.sender];
+    }
+
+    /// @notice cancel rebate for recipient
+    /// @param _recipient The address to cancel the rebate for
+    function cancelRebate(address _recipient) external {
+        if(msg.sender != _recipient) {
+            revert NotPermitted(msg.sender);
+        }
+        uint256 balance = _rebate[_recipient];
+        if(balance > _rebatePending) {
+            _rebatePending = 0;
+        } else {
+            _rebatePending = _rebatePending - balance;
+        }
+        _rebate[_recipient] = 0;
+        emit GasRebateCancelled(_recipient, balance);
     }
 
     function executeTransaction(uint256 _proposalId) private {

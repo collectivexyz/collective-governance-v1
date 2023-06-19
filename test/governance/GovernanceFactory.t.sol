@@ -2,7 +2,6 @@
 pragma solidity ^0.8.15;
 
 import { IERC165 } from "@openzeppelin/contracts/interfaces/IERC165.sol";
-import { UUPSUpgradeable } from "@openzeppelin/contracts/proxy/utils/UUPSUpgradeable.sol";
 
 import { Test } from "forge-std/Test.sol";
 

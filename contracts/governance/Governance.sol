@@ -71,7 +71,6 @@ interface Governance is Versioned, IERC165 {
     error InvalidChoice(uint256 proposalId, uint256 choiceId);
     error TransactionSignatureNotMatching(uint256 proposalId, uint256 transactionId);
     error RebateTransferFailed(address recipient, uint256 rebate);
-    error GasRebateBankrupt(address recipient, uint256 rebate, uint256 availableRebate);
     error NoRebate(address recipient);
 
     /// @notice A new proposal was created
@@ -122,10 +121,12 @@ interface Governance is Versioned, IERC165 {
     /// @notice Winning choice in choice vote
     event WinningChoice(uint256 proposalId, bytes32 name, string description, uint256 transactionId, uint256 voteCount);
 
-    /// Rebate cycle
+    /// Rebate
     event GasRebateApproved(address recipient, uint256 rebate, uint256 gasUsed);
     /// @notice Gas rebate payment    
     event GasRebatePaid(address recipient, uint256 rebate);
+    // @notice cancelled
+    event GasRebateCancelled(address recipient, uint256 rebate);
 
     /// @notice propose a vote for the community
     /// @return uint256 The id of the new proposal
@@ -190,6 +191,10 @@ interface Governance is Versioned, IERC165 {
 
     /// @notice return the rebate funds available
     function rebateBalance() external returns (uint256);
+
+    /// @notice cancel rebate for recipient
+    /// @param _recipient The address to cancel the rebate for
+    function cancelRebate(address _recipient) external;
 
     /// @notice return the name of this implementation
     /// @return string memory representation of name

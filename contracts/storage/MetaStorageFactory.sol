@@ -43,8 +43,6 @@
  */
 pragma solidity ^0.8.15;
 
-import { Initializable } from "@openzeppelin/contracts/proxy/utils/Initializable.sol";
-import { UUPSUpgradeable } from "@openzeppelin/contracts/proxy/utils/UUPSUpgradeable.sol";
 import { IERC165 } from "@openzeppelin/contracts/interfaces/IERC165.sol";
 import { ERC165 } from "@openzeppelin/contracts/utils/introspection/ERC165.sol";
 
@@ -52,18 +50,11 @@ import { MetaStorage } from "../../contracts/storage/MetaStorage.sol";
 import { MappedMetaStorage } from "../../contracts/storage/MappedMetaStorage.sol";
 import { Versioned } from "../../contracts/access/Versioned.sol";
 import { VersionedContract } from "../../contracts/access/VersionedContract.sol";
-import { OwnableInitializable } from "../../contracts/access/OwnableInitializable.sol";
 
 /**
  * @title MetaStorage creational contract
  */
-contract MetaStorageFactory is VersionedContract, OwnableInitializable, UUPSUpgradeable, Initializable, ERC165 {
-    event UpgradeAuthorized(address sender, address owner);
-
-    function initialize() public initializer {
-        ownerInitialize(msg.sender);
-    }
-
+contract MetaStorageFactory is VersionedContract, ERC165 {
     /// @notice create meta storage
     /// @param _community The community name
     /// @param _url The Url for this community
@@ -80,8 +71,4 @@ contract MetaStorageFactory is VersionedContract, OwnableInitializable, UUPSUpgr
         return interfaceId == type(Versioned).interfaceId || super.supportsInterface(interfaceId);
     }
 
-    /// see UUPSUpgradeable
-    function _authorizeUpgrade(address _caller) internal virtual override(UUPSUpgradeable) onlyOwner {
-        emit UpgradeAuthorized(_caller, owner());
-    }
 }

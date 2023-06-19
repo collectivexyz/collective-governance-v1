@@ -275,9 +275,6 @@ contract Treasury is Vault, ReentrancyGuard {
     }
 
     function transferToLock(uint256 _quantity, address _to, uint256 _scheduleTime) private nonReentrant {
-        if(_pendingPayment < _quantity) {
-            revert TreasuryBankrupt(_quantity, _pendingPayment);
-        }
         _pendingPayment -= _quantity;
         address payable lockBalance = payable(address(_timeLock));
         // see here for details: https://consensys.github.io/smart-contract-best-practices/development-recommendations/general/external-calls/#favor-pull-over-push-for-external-calls
