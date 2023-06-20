@@ -202,7 +202,7 @@ contract Treasury is Vault, ReentrancyGuard {
                 // transfer to timelock for execution
                 _timeLock.queueTransaction(_to, _pay.quantity, "", "", _pay.scheduleTime);
                 _pendingPayment += _pay.quantity;
-                emit TransactionApproved(_pay.quantity, _to, _pay.scheduleTime);                
+                emit TransactionApproved(_pay.quantity, _to, _pay.scheduleTime);
             }
         }
     }
@@ -245,7 +245,7 @@ contract Treasury is Vault, ReentrancyGuard {
         }
         return 0;
     }
-    
+
     /// @notice total balance on treasury
     function balance() public view override(Vault) returns (uint256) {
         return address(this).balance - _pendingPayment;

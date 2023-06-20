@@ -68,7 +68,7 @@ contract TreasuryBuilder is VersionedContract, ERC165, OwnableInitializable, UUP
 
     event Initialized();
     event Upgraded(uint8 version);
-    
+
     /// settings initialized
     event TreasuryInitialized(address sender);
     /// approver added

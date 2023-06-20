@@ -123,7 +123,7 @@ interface Governance is Versioned, IERC165 {
 
     /// Rebate
     event GasRebateApproved(address recipient, uint256 rebate, uint256 gasUsed);
-    /// @notice Gas rebate payment    
+    /// @notice Gas rebate payment
     event GasRebatePaid(address recipient, uint256 rebate);
     // @notice cancelled
     event GasRebateCancelled(address recipient, uint256 rebate);

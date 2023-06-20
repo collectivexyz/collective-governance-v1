@@ -47,7 +47,7 @@ import { Mutable } from "../../contracts/access/Mutable.sol";
 
 /// @title AlwaysFinal
 /// @notice Marker indicating this contract is never mutable
-contract AlwaysFinal is Mutable {
+abstract contract AlwaysFinal is Mutable {
     /// @notice call to confirm mutability during configuration
     modifier onlyMutable() {
         revert ContractFinal();

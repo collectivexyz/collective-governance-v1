@@ -569,7 +569,7 @@ contract CollectiveGovernance is VoteStrategy, Governance, VersionedContract, ER
         emit GasRebateCancelled(_recipient, balance);
     }
 
-    function executeTransaction(uint256 _proposalId) private {
+    function executeTransaction(uint256 _proposalId) private nonReentrant {
         if (_storage.isExecuted(_proposalId)) revert TransactionExecuted(_proposalId);
         _storage.setExecuted(_proposalId);
         uint256 transactionCount = _storage.transactionCount(_proposalId);

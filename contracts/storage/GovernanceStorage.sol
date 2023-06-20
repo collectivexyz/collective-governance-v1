@@ -43,6 +43,7 @@
  */
 pragma solidity ^0.8.15;
 
+import { ReentrancyGuard } from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import { ERC165 } from "@openzeppelin/contracts/utils/introspection/ERC165.sol";
 import { IERC165 } from "@openzeppelin/contracts/interfaces/IERC165.sol";
 import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
@@ -61,7 +62,7 @@ import { Constant } from "../../contracts/Constant.sol";
 /// @dev The creator of the contract, typically the Governance contract itself,
 /// privledged with respect to write opperations in this contract.   The creator
 /// is required for nearly all change operations
-contract GovernanceStorage is Storage, VersionedContract, ERC165, Ownable {
+contract GovernanceStorage is Storage, VersionedContract, ERC165, ReentrancyGuard, Ownable {
     /// @notice contract name
     string public constant NAME = "collective storage";
 
@@ -595,6 +596,7 @@ contract GovernanceStorage is Storage, VersionedContract, ERC165, Ownable {
         requireShareAvailable(_proposalId, _wallet, _shareId)
         requireValid(_proposalId)
         requireVotingActive(_proposalId)
+        nonReentrant
         returns (uint256)
     {
         uint256 _shareCount = _voterClass.confirm(_wallet, _shareId);
@@ -635,6 +637,7 @@ contract GovernanceStorage is Storage, VersionedContract, ERC165, Ownable {
         requireShareAvailable(_proposalId, _wallet, _shareId)
         requireVotingActive(_proposalId)
         requireUpDownVote(_proposalId)
+        nonReentrant        
         returns (uint256)
     {
         uint256 _shareCount = _voterClass.confirm(_wallet, _shareId);
@@ -666,6 +669,7 @@ contract GovernanceStorage is Storage, VersionedContract, ERC165, Ownable {
         requireValid(_proposalId)
         requireShareAvailable(_proposalId, _wallet, _shareId)
         requireVotingActive(_proposalId)
+        nonReentrant        
         returns (uint256)
     {
         uint256 _shareCount = _voterClass.confirm(_wallet, _shareId);

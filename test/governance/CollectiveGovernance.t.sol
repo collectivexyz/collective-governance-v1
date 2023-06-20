@@ -1726,7 +1726,7 @@ contract CollectiveGovernanceTest is Test {
         vm.expectRevert(abi.encodeWithSelector(Governance.NoRebate.selector, _VOTER1));
         governance.withdrawRebate(_VOTER1);
     }
-    
+
     function mintTokens() private returns (IERC721) {
         MockERC721 merc721 = new MockERC721();
         merc721.mintTo(_VOTER1, TOKEN_ID1);

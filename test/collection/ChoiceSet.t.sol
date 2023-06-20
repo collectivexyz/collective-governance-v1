@@ -41,7 +41,7 @@ contract ChoiceSetTest is Test {
 
     function testHashDeterministicOverTime() public {
         Choice memory choice = Choice("a1", "a choice", 53, "2123", 22);
-        bytes32 computed = getHash(choice);                
+        bytes32 computed = getHash(choice);
         // hash is stable and deterministic over time
         assertEq(bytes32(0x898df939bc158c697e687dcb98a36e85dbb8426282f1f496f59c5e2f2b2e1ffd), computed);
     }

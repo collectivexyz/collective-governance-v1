@@ -48,7 +48,7 @@ import { Mutable } from "../../contracts/access/Mutable.sol";
 /// @title ConfigurableMutable
 /// @notice Allow configuration during a period of mutability that ends
 /// when finalized
-contract ConfigurableMutable is Mutable {
+abstract contract ConfigurableMutable is Mutable {
     bool internal contractFinal = false;
 
     /// @notice call to confirm mutability during configuration
