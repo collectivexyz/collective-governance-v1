@@ -1414,9 +1414,11 @@ contract CollectiveGovernanceTest is Test {
         governance.voteFor(proposalId, TOKEN_ID1);
         vm.prank(_VOTER1);
         uint expectBalance = governance.rebateBalance();
+        assertTrue(expectBalance > 0);
         governance.withdrawRebate(_VOTER1);
         assertTrue(_VOTER1.balance > 0);
         assertEq(_VOTER1.balance, expectBalance);
+        assertEq(_VOTER1.balance, 10063924 gwei);
     }
 
     function testCastVoteAndCancelRefund() public {
@@ -1472,6 +1474,7 @@ contract CollectiveGovernanceTest is Test {
         governance.voteAgainst(proposalId, TOKEN_ID1);
         vm.prank(_VOTER1);
         uint expectBalance = governance.rebateBalance();
+        assertTrue(expectBalance > 0);
         governance.withdrawRebate(_VOTER1);
         assertTrue(_VOTER1.balance > 0);
         assertEq(_VOTER1.balance, expectBalance);
@@ -1492,6 +1495,7 @@ contract CollectiveGovernanceTest is Test {
         governance.abstainFrom(proposalId, TOKEN_ID1);
         vm.prank(_VOTER1);
         uint expectBalance = governance.rebateBalance();
+        assertTrue(expectBalance > 0);
         governance.withdrawRebate(_VOTER1);
         assertTrue(_VOTER1.balance > 0);
         assertEq(_VOTER1.balance, expectBalance);
