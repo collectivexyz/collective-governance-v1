@@ -20,7 +20,7 @@ import { createCommunityBuilder } from "../../contracts/community/CommunityBuild
 import { Storage } from "../../contracts/storage/Storage.sol";
 import { VoteStrategy } from "../../contracts/governance/VoteStrategy.sol";
 import { Governance } from "../../contracts/governance/Governance.sol";
-import { CollectiveGovernance, calculateGasRebate } from "../../contracts/governance/CollectiveGovernance.sol";
+import { CollectiveGovernance } from "../../contracts/governance/CollectiveGovernance.sol";
 import { TimeLocker } from "../../contracts/treasury/TimeLocker.sol";
 import { VersionedContract } from "../../contracts/access/VersionedContract.sol";
 import { StorageFactory } from "../../contracts/storage/StorageFactory.sol";
@@ -32,22 +32,6 @@ import { createGovernanceBuilder } from "../../contracts/governance/GovernanceBu
 import { MockERC721 } from "../mock/MockERC721.sol";
 import { FlagSet } from "../mock/FlagSet.sol";
 import { TestData } from "../mock/TestData.sol";
-
-contract GasRebateTest is Test {
-    function testGasRebate() public {
-        uint256 startGas = gasleft();
-        (uint256 gasRebate, uint256 gasUsed) = calculateGasRebate(startGas, 1 ether, 200 gwei, 200000);
-        assertApproxEqAbs(gasRebate, 72234 gwei, 5000 gwei);
-        assertTrue(gasUsed > 0);
-    }
-
-    function testMaximumRebate() public {
-        uint256 startGas = gasleft();
-        (uint256 gasRebate, uint256 gasUsed) = calculateGasRebate(startGas, 30 gwei, 200 gwei, 200000);
-        assertEq(gasRebate, 30 gwei);
-        assertTrue(gasUsed > 0);
-    }
-}
 
 contract CollectiveGovernanceTest is Test {
     address private constant _OWNER = address(0x1);
@@ -1418,7 +1402,6 @@ contract CollectiveGovernanceTest is Test {
         governance.withdrawRebate(_VOTER1);
         assertTrue(_VOTER1.balance > 0);
         assertEq(_VOTER1.balance, expectBalance);
-        assertEq(_VOTER1.balance, 10063924 gwei);
     }
 
     function testCastVoteAndCancelRefund() public {

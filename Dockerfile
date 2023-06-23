@@ -12,7 +12,7 @@ ENV PATH=${PATH}:~/.cargo/bin
 RUN yarn install
 RUN yarn prettier:check
 RUN yarn hint
-RUN forge test -vvv
+RUN FOUNDRY_PROFILE=fastbuild forge test -vvv --fail-fast
 RUN forge geiger --check contracts/*
 
 RUN bin/update_abi.sh

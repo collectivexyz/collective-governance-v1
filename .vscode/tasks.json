@@ -54,9 +54,12 @@
     {
       "label": "test",
       "type": "shell",
-      "command": "forge test -vvv",
+      "command": "forge test -vvv --fail-fast",
       "options": {
-        "cwd": "${workspaceFolder}"
+        "cwd": "${workspaceFolder}",
+        "env": {
+          "FOUNDRY_PROFILE": "fastbuild"
+        }
       },
       "dependsOn": "hint",
       "group": {

@@ -36,6 +36,8 @@ jobs:
       - name: Run Forge tests
         run: |
           forge test -vvv
+        env:
+          FOUNDRY_PROFILE: fastbuild
         id: test
 
       - name: Run Forge geiger
