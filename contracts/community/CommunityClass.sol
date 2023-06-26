@@ -58,6 +58,8 @@ interface CommunityClass is VoterClass {
     error MinimumDelayExceedsMaximum(uint256 delay, uint256 minimumDelay);
     error MaximumDelayNotPermitted(uint256 delay, uint256 maximumDelay);
     error MinimumDurationExceedsMaximum(uint256 duration, uint256 minimumDuration);
+    error MinimumDurationNotPermitted(uint256 duration, uint256 minimumDuration);
+    error MaximumDurationExceedsMaximum(uint256 duration, uint256 maximumDuration);
     error MaximumDurationNotPermitted(uint256 duration, uint256 maximumDuration);
     error MinimumQuorumNotPermitted(uint256 quorum, uint256 minimumProjectQuorum);
 

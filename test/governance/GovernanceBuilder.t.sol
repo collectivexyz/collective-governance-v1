@@ -21,6 +21,7 @@ import { CommunityBuilder } from "../../contracts/community/CommunityBuilder.sol
 import { createCommunityBuilder } from "../../contracts/community/CommunityBuilderProxy.sol";
 import { GovernanceBuilder } from "../../contracts/governance/GovernanceBuilder.sol";
 import { createGovernanceBuilder } from "../../contracts/governance/GovernanceBuilderProxy.sol";
+import { TimeLocker } from "../../contracts/treasury/TimeLocker.sol";
 
 import { MockERC721 } from "../mock/MockERC721.sol";
 
@@ -61,12 +62,13 @@ contract GovernanceBuilderTest is Test {
         assertTrue(Storage(_storage).isSupervisor(1, _SUPERVISOR));
     }
 
-    function testWithMinimumVoteDelay() public {
+    function testWithMinimumVoteDelay(uint testVoteDelay) public {
+        vm.assume(testVoteDelay > Constant.MINIMUM_VOTE_DELAY && testVoteDelay <= Constant.MAXIMUM_VOTE_DELAY);
         address _communityLocation = _communityBuilder
             .aCommunity()
             .asPoolCommunity()
             .withVoter(_VOTER1)
-            .withMinimumVoteDelay(1 hours)
+            .withMinimumVoteDelay(testVoteDelay)
             .withQuorum(1)
             .withCommunitySupervisor(_SUPERVISOR)
             .build();
@@ -75,25 +77,26 @@ contract GovernanceBuilderTest is Test {
         Governance _gov = Governance(_governance);
         vm.prank(_VOTER1, _VOTER1);
         uint256 proposalId = _gov.propose();
-        assertEq(_class.minimumVoteDelay(), 1 hours);
+        assertEq(_class.minimumVoteDelay(), testVoteDelay);
         vm.expectRevert(
             abi.encodeWithSelector(
                 Storage.DelayNotPermitted.selector,
                 proposalId,
-                Constant.MINIMUM_VOTE_DURATION - 1,
-                Constant.MINIMUM_VOTE_DURATION
+                testVoteDelay - 1,
+                testVoteDelay
             )
         );
         vm.prank(_VOTER1, _VOTER1);
-        _gov.configure(proposalId, 100, 1 hours - 1, Constant.MINIMUM_VOTE_DURATION);
+        _gov.configure(proposalId, 100, testVoteDelay - 1, Constant.MINIMUM_VOTE_DURATION);
     }
 
-    function testWithMaximumVoteDelay() public {
+    function testWithMaximumVoteDelay(uint testVoteDelay) public {
+        vm.assume(testVoteDelay > Constant.MINIMUM_VOTE_DELAY && testVoteDelay < Constant.MAXIMUM_VOTE_DELAY);
         address _communityLocation = _communityBuilder
             .aCommunity()
             .asPoolCommunity()
             .withVoter(_VOTER1)
-            .withMaximumVoteDelay(1 hours)
+            .withMaximumVoteDelay(testVoteDelay)
             .withQuorum(1)
             .withCommunitySupervisor(_SUPERVISOR)
             .build();
@@ -102,25 +105,26 @@ contract GovernanceBuilderTest is Test {
         Governance _gov = Governance(_governance);
         vm.prank(_VOTER1, _VOTER1);
         uint256 proposalId = _gov.propose();
-        assertEq(_class.maximumVoteDelay(), Constant.MINIMUM_VOTE_DURATION);
+        assertEq(_class.maximumVoteDelay(), testVoteDelay);
         vm.expectRevert(
             abi.encodeWithSelector(
                 Storage.DelayNotPermitted.selector,
                 proposalId,
-                Constant.MINIMUM_VOTE_DURATION + 1,
-                Constant.MINIMUM_VOTE_DURATION
+                testVoteDelay + 1,
+                testVoteDelay
             )
         );
         vm.prank(_VOTER1, _VOTER1);
-        _gov.configure(proposalId, 100, Constant.MINIMUM_VOTE_DURATION + 1, Constant.MINIMUM_VOTE_DURATION);
+        _gov.configure(proposalId, 100, testVoteDelay + 1, Constant.MINIMUM_VOTE_DURATION);
     }
 
-    function testWithMinimumVoteDuration() public {
+    function testWithMinimumVoteDuration(uint testVoteDuration) public {
+        vm.assume(testVoteDuration >= Constant.MINIMUM_VOTE_DURATION && testVoteDuration < Constant.MAXIMUM_VOTE_DURATION);
         address _communityLocation = _communityBuilder
             .aCommunity()
             .asPoolCommunity()
             .withVoter(_VOTER1)
-            .withMinimumVoteDuration(2 * Constant.MINIMUM_VOTE_DURATION)
+            .withMinimumVoteDuration(testVoteDuration + 1)
             .withQuorum(1)
             .withCommunitySupervisor(_SUPERVISOR)
             .build();
@@ -129,25 +133,26 @@ contract GovernanceBuilderTest is Test {
         Governance _gov = Governance(_governance);
         vm.prank(_VOTER1, _VOTER1);
         uint256 proposalId = _gov.propose();
-        assertEq(_class.minimumVoteDuration(), 2 * Constant.MINIMUM_VOTE_DURATION);
+        assertEq(_class.minimumVoteDuration(), testVoteDuration + 1);
         vm.expectRevert(
             abi.encodeWithSelector(
                 Storage.DurationNotPermitted.selector,
                 proposalId,
-                Constant.MINIMUM_VOTE_DURATION + 1,
-                Constant.MINIMUM_VOTE_DURATION * 2
+                testVoteDuration,
+                testVoteDuration + 1
             )
         );
         vm.prank(_VOTER1, _VOTER1);
-        _gov.configure(proposalId, 100, Constant.MINIMUM_VOTE_DELAY, Constant.MINIMUM_VOTE_DURATION + 1);
+        _gov.configure(proposalId, 100, Constant.MINIMUM_VOTE_DELAY, testVoteDuration);
     }
 
-    function testWithMaximumVoteDuration() public {
+    function testWithMaximumVoteDuration(uint testVoteDuration) public {
+        vm.assume(testVoteDuration > Constant.MINIMUM_VOTE_DURATION && testVoteDuration < Constant.MAXIMUM_VOTE_DURATION);
         address _communityLocation = _communityBuilder
             .aCommunity()
             .asPoolCommunity()
             .withVoter(_VOTER1)
-            .withMaximumVoteDuration(2 * Constant.MINIMUM_VOTE_DURATION)
+            .withMaximumVoteDuration(testVoteDuration)
             .withQuorum(1)
             .withCommunitySupervisor(_SUPERVISOR)
             .build();
@@ -156,17 +161,17 @@ contract GovernanceBuilderTest is Test {
         Governance _gov = Governance(_governance);
         vm.prank(_VOTER1, _VOTER1);
         uint256 proposalId = _gov.propose();
-        assertEq(_class.maximumVoteDuration(), 2 * Constant.MINIMUM_VOTE_DURATION);
+        assertEq(_class.maximumVoteDuration(), testVoteDuration);
         vm.expectRevert(
             abi.encodeWithSelector(
                 Storage.DurationNotPermitted.selector,
                 proposalId,
-                Constant.MINIMUM_VOTE_DURATION * 2 + 1,
-                Constant.MINIMUM_VOTE_DURATION * 2
+                testVoteDuration + 1,
+                testVoteDuration
             )
         );
         vm.prank(_VOTER1, _VOTER1);
-        _gov.configure(proposalId, 100, Constant.MINIMUM_VOTE_DELAY, Constant.MINIMUM_VOTE_DURATION * 2 + 1);
+        _gov.configure(proposalId, 100, Constant.MINIMUM_VOTE_DELAY, testVoteDuration + 1);
     }
 
     function testWithOpenVote() public {

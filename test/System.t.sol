@@ -81,7 +81,8 @@ contract SystemTest is Test {
         // 🎉 👯‍♀️ 🎊
     }
 
-    function testBuildWithDuration() public {
+    function testBuildWithDuration(uint buildDuration) public {
+        vm.assume(buildDuration >= Constant.MINIMUM_VOTE_DURATION && buildDuration <= Constant.MAXIMUM_VOTE_DURATION);
         address _builderAddress = address(_builder);
         emit log_address(_builderAddress);
         address _classCreatorAddress = address(_classCreator);
@@ -107,7 +108,7 @@ contract SystemTest is Test {
         vm.prank(_CREATOR, _CREATOR);
         uint256 pid = _governance.propose();
         vm.prank(_CREATOR, _CREATOR);
-        _governance.configure(pid, 1, 300, 3600);
+        _governance.configure(pid, 1, 300, buildDuration);
         assertTrue(_storage.isFinal(pid));
     }
 

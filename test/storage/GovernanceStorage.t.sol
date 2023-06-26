@@ -162,12 +162,14 @@ contract GovernanceStorageTest is Test {
         _storage.setQuorumRequired(_proposalId, 100, _SUPERVISOR);
     }
 
-    function testSetVoteDelay() public {
+    function testSetVoteDelay(uint voteDelay) public {
+        uint blockTimestamp = block.timestamp;
+        vm.assume(voteDelay > Constant.MINIMUM_VOTE_DELAY && voteDelay <= Constant.MAXIMUM_VOTE_DELAY - blockTimestamp);
         _storage.registerSupervisor(_proposalId, _SUPERVISOR, _OWNER);
-        _storage.setVoteDelay(_proposalId, 3600, _SUPERVISOR);
-        assertEq(_storage.voteDelay(_proposalId), 3600);
+        _storage.setVoteDelay(_proposalId, voteDelay, _SUPERVISOR);
+        assertEq(_storage.voteDelay(_proposalId), voteDelay);
         _storage.makeFinal(_proposalId, _SUPERVISOR);
-        assertEq(_storage.startTime(_proposalId), block.timestamp + 3600);
+        assertEq(_storage.startTime(_proposalId), blockTimestamp + voteDelay);
     }
 
     function testSetVoteDelayDirect() public {
@@ -470,13 +472,15 @@ contract GovernanceStorageTest is Test {
         assertEq(_storage.quorum(_proposalId), 1);
     }
 
-    function testPermittedAfterObservingVoteDelay() public {
+    function testPermittedAfterObservingVoteDelay(uint voteDelay) public {
+        uint blockTime = block.timestamp;
+        vm.assume(voteDelay > Constant.MINIMUM_VOTE_DELAY && voteDelay < Constant.MAXIMUM_VOTE_DELAY - blockTime);
         _storage.registerSupervisor(_proposalId, _SUPERVISOR, _OWNER);
         _storage.setQuorumRequired(_proposalId, 1, _SUPERVISOR);
-        _storage.setVoteDelay(_proposalId, 3600, _SUPERVISOR);
+        _storage.setVoteDelay(_proposalId, voteDelay, _SUPERVISOR);
         _storage.makeFinal(_proposalId, _SUPERVISOR);
         uint256 startTime = block.timestamp;
-        vm.warp(startTime + 3600);
+        vm.warp(startTime + voteDelay);
         _storage.voteForByShare(_proposalId, _VOTER1, uint160(_VOTER1));
         assertEq(1, _storage.forVotes(_proposalId));
     }

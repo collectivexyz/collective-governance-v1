@@ -110,27 +110,97 @@ contract CommunityBuilderTest is Test {
         assertEq(_class.weight(), 75);
     }
 
-    function testMinimumVoteDelay() public {
-        _builder.asOpenCommunity().withQuorum(1).withMinimumVoteDelay(Constant.MINIMUM_VOTE_DELAY + 1);
+    function testMinimumVoteDelay(uint voteDelay) public {
+        vm.assume(voteDelay >= Constant.MINIMUM_VOTE_DELAY && voteDelay < Constant.MAXIMUM_VOTE_DELAY);
+        _builder.asOpenCommunity().withQuorum(1).withMinimumVoteDelay(voteDelay);
         address _classAddress = _builder.build();
         CommunityClass _class = CommunityClass(_classAddress);
-        assertEq(_class.minimumVoteDelay(), Constant.MINIMUM_VOTE_DELAY + 1);
+        assertEq(_class.minimumVoteDelay(), voteDelay);
     }
 
-    function testMaximumVoteDelay() public {
-        _builder.asOpenCommunity().withQuorum(1).withMaximumVoteDelay(Constant.MAXIMUM_VOTE_DELAY - 1);
+    function testMaximumVoteDelay(uint voteDelay) public {
+        vm.assume(voteDelay < Constant.MAXIMUM_VOTE_DELAY);
+        _builder.asOpenCommunity().withQuorum(1).withMaximumVoteDelay(voteDelay);
         address _classAddress = _builder.build();
         CommunityClass _class = CommunityClass(_classAddress);
-        assertEq(_class.maximumVoteDelay(), Constant.MAXIMUM_VOTE_DELAY - 1);
+        assertEq(_class.maximumVoteDelay(), voteDelay);
     }
 
-    function testRequiresMinimumDuration() public {
-        _builder.asOpenCommunity().withQuorum(1).withMinimumVoteDuration(Constant.MINIMUM_VOTE_DURATION - 1);
+    function testMaximumVoteDelayExceedsPermitted(uint voteDelay) public {
+        vm.assume(voteDelay > Constant.MAXIMUM_VOTE_DELAY);
+        _builder.asOpenCommunity().withQuorum(1).withMaximumVoteDelay(voteDelay);
+        vm.expectRevert(abi.encodeWithSelector(CommunityClass.MaximumDelayNotPermitted.selector, voteDelay, Constant.MAXIMUM_VOTE_DELAY));
+        _builder.build();
+    }
+
+    function testMinimumVoteDelayExceedsMaximum(uint voteDelay) public {
+        vm.assume(voteDelay >= Constant.MAXIMUM_VOTE_DELAY);
+        _builder.asOpenCommunity().withQuorum(1).withMinimumVoteDelay(voteDelay);
+        vm.expectRevert(abi.encodeWithSelector(CommunityClass.MinimumDelayExceedsMaximum.selector, voteDelay, Constant.MAXIMUM_VOTE_DELAY));
+        _builder.build();
+    }
+
+    function testRequiresMinimumDuration(uint voteDuration) public {
+        vm.assume(voteDuration < Constant.MINIMUM_VOTE_DURATION);
+        _builder.asOpenCommunity().withQuorum(1).withMinimumVoteDuration(voteDuration);
+        vm.expectRevert(
+            abi.encodeWithSelector(
+                CommunityClass.MinimumDurationNotPermitted.selector,
+                voteDuration,
+                Constant.MINIMUM_VOTE_DURATION
+            )
+        );
+        _builder.build();
+    }
+
+    function testRequiresMinimumDurationNotPermitted(uint voteDuration) public {
+        vm.assume(voteDuration < Constant.MINIMUM_VOTE_DURATION);
+        _builder.asOpenCommunity().withQuorum(1).withMinimumVoteDuration(voteDuration);
+        vm.expectRevert(
+            abi.encodeWithSelector(
+                CommunityClass.MinimumDurationNotPermitted.selector,
+                voteDuration,
+                Constant.MINIMUM_VOTE_DURATION
+            )
+        );
+        _builder.build();
+    }
+
+    function testRequiresMinimumDurationBelowMaximum(uint voteDuration) public {
+        vm.assume(voteDuration > Constant.MINIMUM_VOTE_DURATION && voteDuration <= Constant.MAXIMUM_VOTE_DURATION);
+        _builder.asOpenCommunity().withQuorum(1).withMinimumVoteDuration(voteDuration).withMaximumVoteDuration(Constant.MINIMUM_VOTE_DURATION);
         vm.expectRevert(
             abi.encodeWithSelector(
                 CommunityClass.MinimumDurationExceedsMaximum.selector,
-                Constant.MINIMUM_VOTE_DURATION - 1,
+                voteDuration,
                 Constant.MINIMUM_VOTE_DURATION
+            )
+        );
+        _builder.build();
+    }
+
+
+    function testRequiresMinimumDurationMaxed(uint voteDuration) public {
+        vm.assume(voteDuration > Constant.MAXIMUM_VOTE_DURATION);
+        _builder.asOpenCommunity().withQuorum(1).withMinimumVoteDuration(voteDuration);
+        vm.expectRevert(
+            abi.encodeWithSelector(
+                CommunityClass.MinimumDurationExceedsMaximum.selector,
+                voteDuration,
+                Constant.MAXIMUM_VOTE_DURATION
+            )
+        );
+        _builder.build();
+    }
+
+    function testRequiresMaximumDuration(uint voteDuration) public {
+        vm.assume(voteDuration > Constant.MAXIMUM_VOTE_DURATION);
+        _builder.asOpenCommunity().withQuorum(1).withMaximumVoteDuration(voteDuration);
+        vm.expectRevert(
+            abi.encodeWithSelector(
+                CommunityClass.MaximumDurationNotPermitted.selector,
+                voteDuration,
+                Constant.MAXIMUM_VOTE_DURATION
             )
         );
         _builder.build();
@@ -237,12 +307,18 @@ contract CommunityBuilderTest is Test {
         assertEq(_class.maximumBaseFeeRebate(), Constant.MAXIMUM_REBATE_BASE_FEE + 0x13);
     }
 
-    function testFailWithGasRebateGasUsedBelowMinimumRequired() public {
-        _builder.asOpenCommunity().withQuorum(1).withMaximumGasUsedRebate(Constant.MAXIMUM_REBATE_GAS_USED - 0x1).build();
+    function testWithGasRebateBelowRequired(uint gasRebate) public {
+        vm.assume(gasRebate < Constant.MAXIMUM_REBATE_GAS_USED);
+        _builder.asOpenCommunity().withQuorum(1).withMaximumGasUsedRebate(gasRebate);
+        vm.expectRevert(abi.encodeWithSelector(CommunityClass.GasUsedRebateMustBeLarger.selector, gasRebate, Constant.MAXIMUM_REBATE_GAS_USED));
+        _builder.build();
     }
 
-    function testFailWithBaseFeeBelowMinimumRequired() public {
-        _builder.asOpenCommunity().withQuorum(1).withMaximumBaseFeeRebate(Constant.MAXIMUM_REBATE_BASE_FEE - 0x1).build();
+    function testWithBaseFeeBelowMinimumRequired(uint baseFee) public {
+        vm.assume(baseFee < Constant.MAXIMUM_REBATE_BASE_FEE);
+        _builder.asOpenCommunity().withQuorum(1).withMaximumBaseFeeRebate(baseFee);
+        vm.expectRevert(abi.encodeWithSelector(CommunityClass.BaseFeeRebateMustBeLarger.selector, baseFee, Constant.MAXIMUM_REBATE_BASE_FEE));
+        _builder.build();                
     }
 
     function testWithSupervisor() public {
@@ -259,8 +335,10 @@ contract CommunityBuilderTest is Test {
         assertTrue(_supervisorSet.contains(address(0x1236)));
     }
 
-    function testFailWithNoSupervisor() public {
-        _builder.aCommunity().asOpenCommunity().withQuorum(1).build();
+    function testWithNoSupervisor() public {
+        _builder.aCommunity().asOpenCommunity().withQuorum(1);
+        vm.expectRevert(abi.encodeWithSelector(CommunityClass.SupervisorListEmpty.selector));
+        _builder.build();
     }
 
     function testOpenCommunityOwner() public {

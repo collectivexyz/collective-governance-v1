@@ -54,7 +54,7 @@
     {
       "label": "test",
       "type": "shell",
-      "command": "forge test -vvv --fail-fast",
+      "command": "forge test -vvv",
       "options": {
         "cwd": "${workspaceFolder}",
         "env": {

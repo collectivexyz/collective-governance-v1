@@ -150,6 +150,7 @@ abstract contract ScheduledCommunityClass is
         requireMinimumDelay(_minimumDelay)
         requireMaximumDelay(_maximumDelay)
         requireMinimumDuration(_minimumDuration)
+        requireMaximumDuration(_maximumDuration)
         requireMaximumGasUsedRebate(_gasUsedRebate)
         requireMaximumBaseFeeRebate(_baseFeeRebate)
         requireNonEmptySupervisorList(_supervisorList)
@@ -270,7 +271,9 @@ abstract contract ScheduledCommunityClass is
 
     modifier requireMinimumDuration(uint256 _minimumDuration) {
         if (_minimumDuration < Constant.MINIMUM_VOTE_DURATION)
-            revert MinimumDurationExceedsMaximum(_minimumDuration, Constant.MINIMUM_VOTE_DURATION);
+            revert MinimumDurationNotPermitted(_minimumDuration, Constant.MINIMUM_VOTE_DURATION);
+        if(_minimumDuration > Constant.MAXIMUM_VOTE_DURATION)
+            revert MinimumDurationExceedsMaximum(_minimumDuration, Constant.MAXIMUM_VOTE_DURATION);
         _;
     }
 

@@ -64,22 +64,24 @@ library Constant {
 
     /// @notice maximum vote delay
     /// @dev default of unlimited is recommended
-    uint256 public constant MAXIMUM_VOTE_DELAY = UINT_MAX;
+    uint256 public constant MAXIMUM_VOTE_DELAY = TIMELOCK_MAXIMUM_DELAY;
+
+    /// duration can not exceed timelock specifications
 
     /// @notice minimum vote duration
     /// @dev For security reasons this must be a relatively long time compared to seconds
-    uint256 public constant MINIMUM_VOTE_DURATION = 1 hours;
+    uint256 public constant MINIMUM_VOTE_DURATION = TIMELOCK_MINIMUM_DELAY;
 
     /// @notice maximum vote duration
     /// @dev default of unlimited is recommended
-    uint256 public constant MAXIMUM_VOTE_DURATION = UINT_MAX;
+    uint256 public constant MAXIMUM_VOTE_DURATION = TIMELOCK_MAXIMUM_DELAY;
 
     // timelock setup
 
     /// @notice maximum time allowed after the nonce to successfully execute the time lock
     uint256 public constant TIMELOCK_GRACE_PERIOD = 14 days;
     /// @notice the minimum lock period
-    uint256 public constant TIMELOCK_MINIMUM_DELAY = MINIMUM_VOTE_DURATION;
+    uint256 public constant TIMELOCK_MINIMUM_DELAY = 1 days;
     /// @notice the maximum lock period
     uint256 public constant TIMELOCK_MAXIMUM_DELAY = 30 days;
 

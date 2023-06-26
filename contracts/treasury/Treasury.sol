@@ -145,7 +145,7 @@ contract Treasury is Vault, ReentrancyGuard {
         if (_pay.approvalCount == _minimumApprovalCount) {
             uint256 scheduleTime = getBlockTimestamp() + _timeLock._lockTime();
             _pay.scheduleTime = scheduleTime;
-            // transfer to timelock for execution
+            // delegate to timelock for execution
             _timeLock.queueTransaction(_to, _pay.quantity, "", "", _pay.scheduleTime);
             _pendingPayment += _pay.quantity;
             emit TransactionApproved(_pay.quantity, _to, _pay.scheduleTime);
@@ -199,7 +199,7 @@ contract Treasury is Vault, ReentrancyGuard {
 
             if (_pay.approvalCount == _minimumApprovalCount) {
                 _pay.scheduleTime = _scheduleTime;
-                // transfer to timelock for execution
+                // delegate to timelock for execution
                 _timeLock.queueTransaction(_to, _pay.quantity, "", "", _pay.scheduleTime);
                 _pendingPayment += _pay.quantity;
                 emit TransactionApproved(_pay.quantity, _to, _pay.scheduleTime);
@@ -224,6 +224,13 @@ contract Treasury is Vault, ReentrancyGuard {
     }
 
     /// @notice cancel the approved payment
+    /// @dev It is only safe to cancel a transaction within TIMELOCK_MINIMUM_DELAY (currently 1 day)
+    /// seconds of the eventual schedule time.   An approval may be possible to 'replay' and
+    /// succeed prior to that time.    Later, any replay approval would fail the timelock constraints.
+    ///
+    /// It is advisable to schedule all transactions at or near TIMELOCK_MINIMUM_DELAY.  
+    /// A grace of a few minutes might be useful to ensure transactions complete safely, but the 
+    /// operator should be aware of these timings and careful that cancellations are timely.
     /// @param _to the approved recipient
     function cancel(address _to) public requireApprover {
         Payment memory _pay = _payment[_to];
@@ -274,6 +281,7 @@ contract Treasury is Vault, ReentrancyGuard {
         return block.timestamp;
     }
 
+    /// make sure timelock has funds for payment
     function transferToLock(uint256 _quantity, address _to, uint256 _scheduleTime) private nonReentrant {
         _pendingPayment -= _quantity;
         address payable lockBalance = payable(address(_timeLock));
