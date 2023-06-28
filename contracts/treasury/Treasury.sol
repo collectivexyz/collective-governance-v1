@@ -44,7 +44,6 @@
 
 pragma solidity ^0.8.15;
 
-
 import { ReentrancyGuard } from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 
 import { ECDSA } from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
@@ -128,28 +127,10 @@ contract Treasury is Vault, ReentrancyGuard {
         address _to,
         uint256 _quantity
     ) public requireApprover requireNotPending(_to) requireSufficientBalance(_quantity) {
-        Payment storage _pay = _payment[_to];
-        if (_pay.approvalCount == 0) {
-            _pay.approvalSet = Constant.createAddressSet();
-        }
-        if (!_pay.approvalSet.set(msg.sender)) {
-            revert DuplicateApproval(msg.sender);
-        }
-        _pay.approvalCount += 1;
-        if (_pay.approvalCount == 1 && _pay.quantity == 0) {
-            _pay.quantity = _quantity;
-        } else if (_pay.quantity != _quantity) {
-            revert ApprovalNotMatched(msg.sender, _quantity, _pay.quantity);
-        }
-
-        if (_pay.approvalCount == _minimumApprovalCount) {
-            uint256 scheduleTime = getBlockTimestamp() + _timeLock._lockTime();
-            _pay.scheduleTime = scheduleTime;
-            // delegate to timelock for execution
-            _timeLock.queueTransaction(_to, _pay.quantity, "", "", _pay.scheduleTime);
-            _pendingPayment += _pay.quantity;
-            emit TransactionApproved(_pay.quantity, _to, _pay.scheduleTime);
-        }
+        initializeSlot(_to);
+        addApproval(_to, msg.sender, _quantity);
+        uint256 scheduleTime = getBlockTimestamp() + _timeLock._lockTime();
+        enqueueLockTransaction(_to, scheduleTime);
     }
 
     /**
@@ -179,31 +160,13 @@ contract Treasury is Vault, ReentrancyGuard {
         Transaction memory transaction = Transaction(_to, _quantity, "", "", _scheduleTime);
         bytes32 transactionHash = getHash(transaction);
         bytes32 signedMessageHash = ECDSA.toEthSignedMessageHash(transactionHash);
-        Payment storage _pay = _payment[_to];
-        if (_pay.approvalCount == 0) {
-            _pay.approvalSet = Constant.createAddressSet();
-        }
+        initializeSlot(_to);
         for (uint i = 0; i < _signature.length; ++i) {
             bytes memory signature = _signature[i];
             address signer = verifySignature(signedMessageHash, _approverSet, signature);
-            if (!_pay.approvalSet.set(signer)) {
-                revert DuplicateApproval(signer);
-            }
+            addApproval(_to, signer, _quantity);
+            enqueueLockTransaction(_to, _scheduleTime);
             emit SignatureVerified(signer, signedMessageHash);
-            _pay.approvalCount += 1;
-            if (_pay.approvalCount == 1 && _pay.quantity == 0) {
-                _pay.quantity = _quantity;
-            } else if (_pay.quantity != _quantity) {
-                revert ApprovalNotMatched(msg.sender, _quantity, _pay.quantity);
-            }
-
-            if (_pay.approvalCount == _minimumApprovalCount) {
-                _pay.scheduleTime = _scheduleTime;
-                // delegate to timelock for execution
-                _timeLock.queueTransaction(_to, _pay.quantity, "", "", _pay.scheduleTime);
-                _pendingPayment += _pay.quantity;
-                emit TransactionApproved(_pay.quantity, _to, _pay.scheduleTime);
-            }
         }
     }
 
@@ -290,5 +253,39 @@ contract Treasury is Vault, ReentrancyGuard {
         (bool success, ) = lockBalance.call{value: _quantity}("");
         if (!success) revert TimeLockTransferFailed(_quantity, _to, _scheduleTime);
         emit TreasuryWithdraw(_quantity, _to, _scheduleTime);
+    }
+
+    function initializeSlot(address _to) private {
+        Payment storage _pay = _payment[_to];
+        if (_pay.approvalCount == 0) {
+            _pay.approvalSet = Constant.createAddressSet();
+            _pay.quantity = 0;
+            _pay.scheduleTime = 0;
+            _pay.approvalCount = 0;
+        }
+    }
+
+    function addApproval(address _to, address _from, uint256 _quantity) private {
+        Payment storage _pay = _payment[_to];
+        if (!_pay.approvalSet.set(_from)) {
+            revert DuplicateApproval(_from);
+        }
+        _pay.approvalCount += 1;
+        if (_pay.approvalCount == 1 && _pay.quantity == 0) {
+            _pay.quantity = _quantity;
+        } else if (_pay.quantity != _quantity) {
+            revert ApprovalNotMatched(msg.sender, _quantity, _pay.quantity);
+        }
+    }
+
+    function enqueueLockTransaction(address _to, uint256 _scheduleTime) private {
+        Payment storage _pay = _payment[_to];
+        if (_pay.approvalCount == _minimumApprovalCount) {
+            _pay.scheduleTime = _scheduleTime;
+            // delegate to timelock for execution
+            _timeLock.queueTransaction(_to, _pay.quantity, "", "", _pay.scheduleTime);
+            _pendingPayment += _pay.quantity;
+            emit TransactionApproved(_pay.quantity, _to, _pay.scheduleTime);
+        }
     }
 }

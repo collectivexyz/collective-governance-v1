@@ -44,6 +44,7 @@
 
 pragma solidity ^0.8.15;
 
+import { ReentrancyGuard } from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
 
 import { Constant } from "../../contracts/Constant.sol";
@@ -60,7 +61,7 @@ import { TimeLocker } from "../../contracts/treasury/TimeLocker.sol";
  *
  * Implements Ownable and requires owner for all operations.
  */
-contract TimeLock is TimeLocker, Ownable {
+contract TimeLock is TimeLocker, ReentrancyGuard, Ownable {
     uint256 public immutable _lockTime;
 
     /// @notice table of transaction hashes, map to true if seen by the queueTransaction operation
@@ -156,7 +157,7 @@ contract TimeLock is TimeLocker, Ownable {
         string calldata _signature,
         bytes calldata _calldata,
         uint256 _scheduleTime
-    ) external payable returns (bytes memory) {
+    ) external payable nonReentrant returns (bytes memory) {
         Transaction memory transaction = Transaction(_target, _value, _signature, _calldata, _scheduleTime);
         bytes32 txHash = getHash(transaction);
         if (!_queuedTransaction[txHash]) {
