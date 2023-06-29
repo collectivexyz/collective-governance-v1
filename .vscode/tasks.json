@@ -152,8 +152,26 @@
       "options": {
         "cwd": "${workspaceFolder}",
         "env": {
-          "CONSTANT_LIB_ADDRESS": "0x91cF8AA1B85508d144bE99C19c34561f7c00FE99",
+          "CONSTANT_LIB_ADDRESS": "0xdF39280F8CAF0B8F4864954195F2E97770D32E66",
           "ECDSA_LIB_ADDRESS": "0xe9e21aaEaEad9c57C1F4c622915fFB54f9Ebe338"
+        }
+      },
+      "dependsOn": "test",
+      "group": {
+        "kind": "test",
+        "isDefault": false
+      }
+    },
+    {
+      "label": "upgradetreasurybuilder",
+      "type": "shell",
+      "command": "forge script ./script/DeployTreasuryBuilder.sol --sig 'upgrade()' --libraries ./lib/openzeppelin-contracts/contracts/utils/cryptography/ECDSA.sol:ECDSA:${ECDSA_LIB_ADDRESS} --libraries contracts/Constant.sol:Constant:${CONSTANT_LIB_ADDRESS} --slow --broadcast --rpc-url ${RPC_URL} --private-key ${PRIVATE_KEY} --etherscan-api-key ${ETHERSCAN_API_KEY} --verify",
+      "options": {
+        "cwd": "${workspaceFolder}",
+        "env": {
+          "CONSTANT_LIB_ADDRESS": "0xdF39280F8CAF0B8F4864954195F2E97770D32E66",
+          "ECDSA_LIB_ADDRESS": "0xe9e21aaEaEad9c57C1F4c622915fFB54f9Ebe338",
+          "BUILDER_ADDRESS": "0xA143ba3361973B785A103fAb2AADFf073fae627a"
         }
       },
       "dependsOn": "test",
@@ -169,7 +187,7 @@
       "options": {
         "cwd": "${workspaceFolder}",
         "env": {
-          "CONSTANT_LIB_ADDRESS": "0x91cF8AA1B85508d144bE99C19c34561f7c00FE99"
+          "CONSTANT_LIB_ADDRESS": "0xdF39280F8CAF0B8F4864954195F2E97770D32E66"
         }
       },
       "dependsOn": "test",
@@ -185,8 +203,8 @@
       "options": {
         "cwd": "${workspaceFolder}",
         "env": {
-          "CONSTANT_LIB_ADDRESS": "0x91cF8AA1B85508d144bE99C19c34561f7c00FE99",
-          "BUILDER_ADDRESS": "0xa36e161361A16D75534d565480e62cE474BaC9f3"
+          "CONSTANT_LIB_ADDRESS": "0xdF39280F8CAF0B8F4864954195F2E97770D32E66",
+          "BUILDER_ADDRESS": "0x8e7e39f6E46a27106F6C18933F4Cb296e320B40f"
         }
       },
       "dependsOn": "test",
@@ -202,7 +220,7 @@
       "options": {
         "cwd": "${workspaceFolder}",
         "env": {
-          "CONSTANT_LIB_ADDRESS": "0x91cF8AA1B85508d144bE99C19c34561f7c00FE99",
+          "CONSTANT_LIB_ADDRESS": "0xdF39280F8CAF0B8F4864954195F2E97770D32E66",
           "CLASS_PROXY": "0x0Ee183DEA88Be769fD1CAb473fDaCdd16791163A",
           "TARGET_PROTOTYPE": "0xe7879fdb66b6107709502D2ad362fa43BC278DbE"
         }
@@ -220,7 +238,7 @@
       "options": {
         "cwd": "${workspaceFolder}",
         "env": {
-          "CONSTANT_LIB_ADDRESS": "0x91cF8AA1B85508d144bE99C19c34561f7c00FE99"
+          "CONSTANT_LIB_ADDRESS": "0xdF39280F8CAF0B8F4864954195F2E97770D32E66"
         }
       },
       "dependsOn": "test",
@@ -236,8 +254,8 @@
       "options": {
         "cwd": "${workspaceFolder}",
         "env": {
-          "CONSTANT_LIB_ADDRESS": "0x91cF8AA1B85508d144bE99C19c34561f7c00FE99",
-          "BUILDER_ADDRESS": "0x9fB5a925E61c31617129B5D030808939DADA99f7"
+          "CONSTANT_LIB_ADDRESS": "0xdF39280F8CAF0B8F4864954195F2E97770D32E66",
+          "BUILDER_ADDRESS": "0x25f2Ef43D4b8A764Ae1C85b715AC80E32BBEb0Db"
         }
       },
       "dependsOn": "test",
@@ -253,7 +271,7 @@
       "options": {
         "cwd": "${workspaceFolder}",
         "env": {
-          "CONSTANT_LIB_ADDRESS": "0x91cF8AA1B85508d144bE99C19c34561f7c00FE99",
+          "CONSTANT_LIB_ADDRESS": "0xdF39280F8CAF0B8F4864954195F2E97770D32E66",
           "GOVERNANCE_ADDRESS": "0xd5b0183f6d56c5ED73f69eD927E8D36cC2cA0604",
           "STORAGE_ADDRESS": "0x6548b950363c9dc612DE72BBffeb979fb3Dbc829",
           "META_ADDRESS": "0x942Dc3d685b73Bd77532804b053FeFeDd814AC83"
@@ -272,7 +290,7 @@
       "options": {
         "cwd": "${workspaceFolder}",
         "env": {
-          "CONSTANT_LIB_ADDRESS": "0x91cF8AA1B85508d144bE99C19c34561f7c00FE99",
+          "CONSTANT_LIB_ADDRESS": "0xdF39280F8CAF0B8F4864954195F2E97770D32E66",
           "BUILDER_ADDRESS": "",
           "GOVERNANCE_ADDRESS": "0xa2f50e55ac910ba030b3e4cab92da8de5b38ef2d",
           "STORAGE_ADDRESS": "0xe0c76c1621738b870eac5a37447fdadc8c077c21",
