@@ -3,8 +3,8 @@ FROM ghcr.io/collectivexyz/foundry:latest
 ARG PROJECT=collective-governance-v1
 WORKDIR /workspaces/${PROJECT}
 
-RUN chown -R mr.mr .
-COPY --chown=mr:mr . .
+RUN chown -R mr:mr .
+COPY --chown=mr.mr . .
 ENV USER=mr
 USER mr
 
