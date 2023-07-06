@@ -218,8 +218,10 @@ abstract contract ScheduledCommunityClass is
         requireMaximumBaseFeeRebate(_baseFeeRebate)
         requireNonEmptySupervisorList(_supervisorList)
     {
-        if (_minimumDelay > _maximumDelay) revert MinimumDelayExceedsMaximum(_minimumDelay, _maximumDelay);
-        if (_minimumDuration >= _maximumDuration) revert MinimumDurationExceedsMaximum(_minimumDuration, _maximumDuration);
+        {
+            if (_minimumDelay > _maximumDelay) revert MinimumDelayExceedsMaximum(_minimumDelay, _maximumDelay);
+            if (_minimumDuration >= _maximumDuration) revert MinimumDurationExceedsMaximum(_minimumDuration, _maximumDuration);
+        }
 
         _weight = _voteWeight;
         _minimumVoteDelay = _minimumDelay;

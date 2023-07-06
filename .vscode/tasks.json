@@ -56,10 +56,7 @@
       "type": "shell",
       "command": "forge test -vvv",
       "options": {
-        "cwd": "${workspaceFolder}",
-        "env": {
-          "FOUNDRY_PROFILE": "fastbuild"
-        }
+        "cwd": "${workspaceFolder}"
       },
       "dependsOn": "hint",
       "group": {
@@ -70,7 +67,7 @@
     {
       "label": "gastest",
       "type": "shell",
-      "command": "forge test -vvv --gas-report",
+      "command": "forge test --gas-report",
       "options": {
         "cwd": "${workspaceFolder}"
       },
@@ -152,7 +149,7 @@
       "options": {
         "cwd": "${workspaceFolder}",
         "env": {
-          "CONSTANT_LIB_ADDRESS": "0xdF39280F8CAF0B8F4864954195F2E97770D32E66",
+          "CONSTANT_LIB_ADDRESS": "0xfF71192dcCBC5f4C3Cb2bBcB4f8885d6ba8b1466",
           "ECDSA_LIB_ADDRESS": "0xe9e21aaEaEad9c57C1F4c622915fFB54f9Ebe338"
         }
       },
@@ -169,7 +166,7 @@
       "options": {
         "cwd": "${workspaceFolder}",
         "env": {
-          "CONSTANT_LIB_ADDRESS": "0xdF39280F8CAF0B8F4864954195F2E97770D32E66",
+          "CONSTANT_LIB_ADDRESS": "0xfF71192dcCBC5f4C3Cb2bBcB4f8885d6ba8b1466",
           "ECDSA_LIB_ADDRESS": "0xe9e21aaEaEad9c57C1F4c622915fFB54f9Ebe338",
           "BUILDER_ADDRESS": "0xA143ba3361973B785A103fAb2AADFf073fae627a"
         }
@@ -187,7 +184,7 @@
       "options": {
         "cwd": "${workspaceFolder}",
         "env": {
-          "CONSTANT_LIB_ADDRESS": "0xdF39280F8CAF0B8F4864954195F2E97770D32E66"
+          "CONSTANT_LIB_ADDRESS": "0xfF71192dcCBC5f4C3Cb2bBcB4f8885d6ba8b1466"
         }
       },
       "dependsOn": "test",
@@ -203,7 +200,7 @@
       "options": {
         "cwd": "${workspaceFolder}",
         "env": {
-          "CONSTANT_LIB_ADDRESS": "0xdF39280F8CAF0B8F4864954195F2E97770D32E66",
+          "CONSTANT_LIB_ADDRESS": "0xfF71192dcCBC5f4C3Cb2bBcB4f8885d6ba8b1466",
           "BUILDER_ADDRESS": "0x8e7e39f6E46a27106F6C18933F4Cb296e320B40f"
         }
       },
@@ -220,7 +217,7 @@
       "options": {
         "cwd": "${workspaceFolder}",
         "env": {
-          "CONSTANT_LIB_ADDRESS": "0xdF39280F8CAF0B8F4864954195F2E97770D32E66",
+          "CONSTANT_LIB_ADDRESS": "0xfF71192dcCBC5f4C3Cb2bBcB4f8885d6ba8b1466",
           "CLASS_PROXY": "0x0Ee183DEA88Be769fD1CAb473fDaCdd16791163A",
           "TARGET_PROTOTYPE": "0xe7879fdb66b6107709502D2ad362fa43BC278DbE"
         }
@@ -238,7 +235,7 @@
       "options": {
         "cwd": "${workspaceFolder}",
         "env": {
-          "CONSTANT_LIB_ADDRESS": "0xdF39280F8CAF0B8F4864954195F2E97770D32E66"
+          "CONSTANT_LIB_ADDRESS": "0xfF71192dcCBC5f4C3Cb2bBcB4f8885d6ba8b1466"
         }
       },
       "dependsOn": "test",
@@ -254,7 +251,7 @@
       "options": {
         "cwd": "${workspaceFolder}",
         "env": {
-          "CONSTANT_LIB_ADDRESS": "0xdF39280F8CAF0B8F4864954195F2E97770D32E66",
+          "CONSTANT_LIB_ADDRESS": "0xfF71192dcCBC5f4C3Cb2bBcB4f8885d6ba8b1466",
           "BUILDER_ADDRESS": "0x25f2Ef43D4b8A764Ae1C85b715AC80E32BBEb0Db"
         }
       },
@@ -271,7 +268,7 @@
       "options": {
         "cwd": "${workspaceFolder}",
         "env": {
-          "CONSTANT_LIB_ADDRESS": "0xdF39280F8CAF0B8F4864954195F2E97770D32E66",
+          "CONSTANT_LIB_ADDRESS": "0xfF71192dcCBC5f4C3Cb2bBcB4f8885d6ba8b1466",
           "GOVERNANCE_ADDRESS": "0xd5b0183f6d56c5ED73f69eD927E8D36cC2cA0604",
           "STORAGE_ADDRESS": "0x6548b950363c9dc612DE72BBffeb979fb3Dbc829",
           "META_ADDRESS": "0x942Dc3d685b73Bd77532804b053FeFeDd814AC83"
@@ -290,7 +287,7 @@
       "options": {
         "cwd": "${workspaceFolder}",
         "env": {
-          "CONSTANT_LIB_ADDRESS": "0xdF39280F8CAF0B8F4864954195F2E97770D32E66",
+          "CONSTANT_LIB_ADDRESS": "0xfF71192dcCBC5f4C3Cb2bBcB4f8885d6ba8b1466",
           "BUILDER_ADDRESS": "",
           "GOVERNANCE_ADDRESS": "0xa2f50e55ac910ba030b3e4cab92da8de5b38ef2d",
           "STORAGE_ADDRESS": "0xe0c76c1621738b870eac5a37447fdadc8c077c21",

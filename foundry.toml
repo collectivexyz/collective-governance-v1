@@ -3,20 +3,16 @@ src = 'contracts'
 out = 'out'
 libs = ['lib']
 optimizer = true
-optimizer_runs = 500
+optimizer_runs = 200
 via-ir = true
 block_number = 1
 # 101 gwei 
 gas_price = 101000000000
 block_timestamp = 100
 
-[profile.fastbuild]
-optimizer_runs = 50
-fuzz.runs = 10
-
 [profile.default.optimizer_details]
 inliner = true
-jumpdest_remover = true
+jumpdest_remover = true 
 order_literals = true
 deduplicate = true
 cse = true

@@ -1,3 +1,11 @@
+# 0.9.12 (2023-07-06)
+
+- fix deployment for treasury builder
+
+# 0.9.11 (2023-07-06)
+
+- add treasury and treasury builder
+
 # 0.9.10 (2023-05-11)
 
 - issue #69: Upgrade not working
