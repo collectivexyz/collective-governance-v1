@@ -1,3 +1,7 @@
+# 0.9.13 (2023-07-06)
+
+- v6 contract version
+
 # 0.9.12 (2023-07-06)
 
 - fix deployment for treasury builder

@@ -98,7 +98,7 @@ library Constant {
     uint256 public constant MAXIMUM_REBATE_BASE_FEE = 200 gwei;
 
     /// software versions
-    uint32 public constant CURRENT_VERSION = 5;
+    uint32 public constant CURRENT_VERSION = 6;
 
     /// @notice Compute the length of any string in solidity
     /// @dev This method is expensive and is used only for validating
