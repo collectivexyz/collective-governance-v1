@@ -22,8 +22,8 @@
     "url": "git+https://github.com/collectivexyz/collective-governance-v1.git"
   },
   "devDependencies": {
-    "solhint": "3.3.8",
-    "prettier": "2.8.3",
+    "solhint": "3.4.1",
+    "prettier": "2.8.8",
     "prettier-plugin-solidity": "1.1.3"
   },
   "dependencies": {

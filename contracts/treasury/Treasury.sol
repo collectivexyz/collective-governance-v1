@@ -191,8 +191,8 @@ contract Treasury is Vault, ReentrancyGuard {
     /// seconds of the eventual schedule time.   An approval may be possible to 'replay' and
     /// succeed prior to that time.    Later, any replay approval would fail the timelock constraints.
     ///
-    /// It is advisable to schedule all transactions at or near TIMELOCK_MINIMUM_DELAY.  
-    /// A grace of a few minutes might be useful to ensure transactions complete safely, but the 
+    /// It is advisable to schedule all transactions at or near TIMELOCK_MINIMUM_DELAY.
+    /// A grace of a few minutes might be useful to ensure transactions complete safely, but the
     /// operator should be aware of these timings and careful that cancellations are timely.
     /// @param _to the approved recipient
     function cancel(address _to) public requireApprover {

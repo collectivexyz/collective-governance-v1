@@ -15,4 +15,4 @@ RUN yarn hint
 RUN FOUNDRY_PROFILE=fastbuild forge test -vvv --fail-fast
 RUN forge geiger --check contracts/*
 
-RUN bin/update_abi.sh
+

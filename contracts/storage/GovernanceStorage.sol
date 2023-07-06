@@ -637,7 +637,7 @@ contract GovernanceStorage is Storage, VersionedContract, ERC165, ReentrancyGuar
         requireShareAvailable(_proposalId, _wallet, _shareId)
         requireVotingActive(_proposalId)
         requireUpDownVote(_proposalId)
-        nonReentrant        
+        nonReentrant
         returns (uint256)
     {
         uint256 _shareCount = _voterClass.confirm(_wallet, _shareId);
@@ -669,7 +669,7 @@ contract GovernanceStorage is Storage, VersionedContract, ERC165, ReentrancyGuar
         requireValid(_proposalId)
         requireShareAvailable(_proposalId, _wallet, _shareId)
         requireVotingActive(_proposalId)
-        nonReentrant        
+        nonReentrant
         returns (uint256)
     {
         uint256 _shareCount = _voterClass.confirm(_wallet, _shareId);

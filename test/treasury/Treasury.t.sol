@@ -274,6 +274,11 @@ contract TreasuryTest is Test {
         assertEq(_treasury.balance(), 13 ether);
     }
 
+    function testBalanceForNobodyIsZero() public {
+        assertEq(20 ether, _treasury.balance());
+        assertEq(_treasury.balance(_DENIZEN1), 0 ether);
+    }
+
     function testBalanceRestoredOnCancellation() public {
         assertEq(20 ether, _treasury.balance());
         vm.prank(_APP1);
