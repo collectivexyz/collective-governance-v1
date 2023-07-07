@@ -58,15 +58,8 @@ jobs:
         run: |
           forge create --json --contracts contracts/Constant.sol --rpc-url ${RPC_URL} --private-key ${PRIVATE_KEY} Constant | tee Constant.sol.json
 
-      - name: Deploy to Sepolia Testnet
-        run: |
-          export DEPLOYED_LIBRARY=$(bin/library.py Constant.sol.json)
-          echo "Using library ${DEPLOYED_LIBRARY}"
-          BUILDER_ADDRESS=0xa36e161361A16D75534d565480e62cE474BaC9f3 forge script ./script/DeployCommunityBuilder.sol --sig 'upgrade()' --libraries ${DEPLOYED_LIBRARY} --slow --broadcast --rpc-url ${RPC_URL} --private-key ${PRIVATE_KEY}
-          BUILDER_ADDRESS=0x9fB5a925E61c31617129B5D030808939DADA99f7 forge script ./script/DeployCollective.sol --sig 'upgrade()' --libraries ${DEPLOYED_LIBRARY} --slow --broadcast --rpc-url ${RPC_URL} --private-key ${PRIVATE_KEY}
-
       - name: Deploy to Treasury Builder
         run: |
           export DEPLOYED_LIBRARY=$(bin/library.py Constant.sol.json)
           echo "Using library ${DEPLOYED_LIBRARY}"
-          ECDSA_LIB_ADDRESS=0xe9e21aaEaEad9c57C1F4c622915fFB54f9Ebe338 forge script ./script/DeployTreasuryBuilder.sol --sig 'deploy()' --libraries ./lib/openzeppelin-contracts/contracts/utils/cryptography/ECDSA.sol:ECDSA:${ECDSA_LIB_ADDRESS} --libraries contracts/Constant.sol:Constant:${DEPLOYED_LIBRARY} --slow --broadcast --rpc-url ${RPC_URL} --private-key ${PRIVATE_KEY}
+          ECDSA_LIB_ADDRESS=0xe9e21aaEaEad9c57C1F4c622915fFB54f9Ebe338 forge script ./script/DeployTreasuryBuilder.sol --sig 'deploy()' --libraries ./lib/openzeppelin-contracts/contracts/utils/cryptography/ECDSA.sol:ECDSA:${ECDSA_LIB_ADDRESS} --libraries ${DEPLOYED_LIBRARY} --slow --broadcast --rpc-url ${RPC_URL} --private-key ${PRIVATE_KEY}

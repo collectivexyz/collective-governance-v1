@@ -1,3 +1,7 @@
+# 0.9.14 (2023-07-07)
+
+- treasury only deployment
+
 # 0.9.13 (2023-07-06)
 
 - v6 contract version
