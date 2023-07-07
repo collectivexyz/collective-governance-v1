@@ -62,4 +62,4 @@ jobs:
         run: |
           export DEPLOYED_LIBRARY=$(bin/library.py Constant.sol.json)
           echo "Using library ${DEPLOYED_LIBRARY}"
-          ECDSA_LIB_ADDRESS=0xe9e21aaEaEad9c57C1F4c622915fFB54f9Ebe338 forge script ./script/DeployTreasuryBuilder.sol --sig 'deploy()' --libraries ./lib/openzeppelin-contracts/contracts/utils/cryptography/ECDSA.sol:ECDSA:${ECDSA_LIB_ADDRESS} --libraries contracts/Constant.sol:Constant:${DEPLOYED_LIBRARY} --slow --broadcast --rpc-url ${RPC_URL} --private-key ${PRIVATE_KEY}
+          ECDSA_LIB_ADDRESS=0xe9e21aaEaEad9c57C1F4c622915fFB54f9Ebe338 forge script ./script/DeployTreasuryBuilder.sol --sig 'deploy()' --libraries ./lib/openzeppelin-contracts/contracts/utils/cryptography/ECDSA.sol:ECDSA:${ECDSA_LIB_ADDRESS} --libraries ${DEPLOYED_LIBRARY} --slow --broadcast --rpc-url ${RPC_URL} --private-key ${PRIVATE_KEY}

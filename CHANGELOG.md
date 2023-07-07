@@ -1,3 +1,7 @@
+# 0.9.17 (2023-07-07)
+
+- fixing libraries declaration
+
 # 0.9.16 (2023-07-07)
 
 - treasury builder only deployment
