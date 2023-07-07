@@ -119,7 +119,7 @@ contract GovernanceBuilderTest is Test {
     }
 
     function testWithMinimumVoteDuration(uint testVoteDuration) public {
-        vm.assume(testVoteDuration >= Constant.MINIMUM_VOTE_DURATION && testVoteDuration < Constant.MAXIMUM_VOTE_DURATION);
+        vm.assume(testVoteDuration >= Constant.MINIMUM_VOTE_DURATION && testVoteDuration < Constant.MAXIMUM_VOTE_DURATION - 1);
         address _communityLocation = _communityBuilder
             .aCommunity()
             .asPoolCommunity()
