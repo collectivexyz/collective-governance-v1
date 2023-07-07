@@ -1,3 +1,7 @@
+# 0.9.15 (2023-07-07)
+
+- fix for flickering test
+
 # 0.9.14 (2023-07-07)
 
 - treasury only deployment
