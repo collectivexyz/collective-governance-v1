@@ -134,9 +134,9 @@ contract CommunityBuilderTest is Test {
     }
 
     function testMinimumVoteDelayExceedsMaximum(uint voteDelay) public {
-        vm.assume(voteDelay >= Constant.MAXIMUM_VOTE_DELAY);
-        _builder.asOpenCommunity().withQuorum(1).withMinimumVoteDelay(voteDelay);
-        vm.expectRevert(abi.encodeWithSelector(CommunityClass.MinimumDelayExceedsMaximum.selector, voteDelay, Constant.MAXIMUM_VOTE_DELAY));
+        vm.assume(voteDelay >= Constant.MINIMUM_VOTE_DELAY && voteDelay < Constant.MAXIMUM_VOTE_DELAY);
+        _builder.asOpenCommunity().withQuorum(1).withMinimumVoteDelay(voteDelay + 1).withMaximumVoteDelay(voteDelay);
+        vm.expectRevert(abi.encodeWithSelector(CommunityClass.MinimumDelayExceedsMaximum.selector, voteDelay + 1, voteDelay));
         _builder.build();
     }
 
