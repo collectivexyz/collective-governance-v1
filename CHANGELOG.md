@@ -1,4 +1,4 @@
-# 0.9.17 (2023-07-09)
+# 0.9.18 (2023-07-09)
 
 - make ECDSA lib a global environment variable
 
