@@ -13,6 +13,9 @@ env:
   RPC_URL: ${{ secrets.RPC_URL }}
   PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
   ETHERSCAN_API_KEY: ${{ secrets.ETHERSCAN_API_KEY }}
+  COMMUNIITY_BUILDER_ADDRESS: "0xa36e161361A16D75534d565480e62cE474BaC9f3"
+  GOVERNANCE_BUILDER_ADDRESS: "0x9fB5a925E61c31617129B5D030808939DADA99f7"
+  TREASURY_BUILDER_ADDRESS: "0x49753b58270ae454d4ec555ff88294a4fab01660"
   ECDSA_LIB_ADDRESS: "0xe9e21aaEaEad9c57C1F4c622915fFB54f9Ebe338"
 
 jobs:
@@ -59,8 +62,26 @@ jobs:
         run: |
           forge create --json --contracts contracts/Constant.sol --rpc-url ${RPC_URL} --private-key ${PRIVATE_KEY} Constant | tee Constant.sol.json
 
-      - name: Deploy to Treasury Builder to Testnet
+      - name: Deploy Community Builder to Testnet
         run: |
           export DEPLOYED_LIBRARY=$(bin/library.py Constant.sol.json)
           echo "Using library ${DEPLOYED_LIBRARY}"
-          forge script ./script/DeployTreasuryBuilder.sol --sig 'deploy()' --libraries ./lib/openzeppelin-contracts/contracts/utils/cryptography/ECDSA.sol:ECDSA:${ECDSA_LIB_ADDRESS} --libraries ${DEPLOYED_LIBRARY} --slow --broadcast --rpc-url ${RPC_URL} --private-key ${PRIVATE_KEY}
+          forge script ./script/DeployCommunityBuilder.sol --sig 'upgrade()' --libraries ${DEPLOYED_LIBRARY} --slow --broadcast --rpc-url ${RPC_URL} --private-key ${PRIVATE_KEY}
+        env:
+          BUILDER_ADDRESS: ${COMMUNITY_BUILDER_ADDRESS}
+
+      - name: Deploy Collective Governance to Testnet
+        run: |
+          export DEPLOYED_LIBRARY=$(bin/library.py Constant.sol.json)
+          echo "Using library ${DEPLOYED_LIBRARY}"
+          forge script ./script/DeployCollective.sol --sig 'upgrade()' --libraries ${DEPLOYED_LIBRARY} --slow --broadcast --rpc-url ${RPC_URL} --private-key ${PRIVATE_KEY}
+        env:
+          BUILDER_ADDRESS: ${GOVERNANCE_BUILDER_ADDRESS}
+
+      - name: Deploy Treasury Builder to Testnet
+        run: |
+          export DEPLOYED_LIBRARY=$(bin/library.py Constant.sol.json)
+          echo "Using library ${DEPLOYED_LIBRARY}"
+          forge script ./script/DeployTreasuryBuilder.sol --sig 'upgrade()' --libraries ./lib/openzeppelin-contracts/contracts/utils/cryptography/ECDSA.sol:ECDSA:${ECDSA_LIB_ADDRESS} --libraries ${DEPLOYED_LIBRARY} --slow --broadcast --rpc-url ${RPC_URL} --private-key ${PRIVATE_KEY}
+        env:
+          BUILDER_ADDRESS: ${TREASURY_BUILDER_ADDRESS}

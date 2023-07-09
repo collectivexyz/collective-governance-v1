@@ -32,9 +32,10 @@ Collective Governance has been designed from the ground up to be very easy to us
 | Contract          | Ethereum Address                           | Version |
 | ----------------- | ------------------------------------------ | ------- |
 | ECDSA             | 0xe9e21aaEaEad9c57C1F4c622915fFB54f9Ebe338 | 4.9.0   |
-| Constant          | 0xfF71192dcCBC5f4C3Cb2bBcB4f8885d6ba8b1466 | 0.9.11  |
+| Constant          | 0x532bdBAa513194B446F49c70b104a0Ab61b9bB7c | 0.9.19  |
 | CommunityBuilder  | 0xa36e161361A16D75534d565480e62cE474BaC9f3 | LATEST  |
 | GovernanceBuilder | 0x9fB5a925E61c31617129B5D030808939DADA99f7 | LATEST  |
+| TreasuryBuilder   | 0x49753b58270ae454d4ec555ff88294a4fab01660 | LATEST  |
 
 #### Görli TestNet
 

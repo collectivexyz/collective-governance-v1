@@ -14,5 +14,3 @@ RUN yarn prettier:check
 RUN yarn hint
 RUN forge test -v --fail-fast
 RUN forge geiger --check contracts/*
-
-
