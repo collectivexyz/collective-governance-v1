@@ -1,3 +1,7 @@
+# 0.9.19 (2023-07-09)
+
+- fixing env declaration
+
 # 0.9.18 (2023-07-09)
 
 - make ECDSA lib a global environment variable
