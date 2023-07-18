@@ -121,7 +121,7 @@ contract UpgradeCommunityClass is Script {
             _prototype.maximumVoteDuration(),
             _prototype.maximumGasUsedRebate(),
             _prototype.maximumBaseFeeRebate(),
-            uint8(_implVersion.version())            
+            uint8(_implVersion.version())
         );
         vm.stopBroadcast();
     }

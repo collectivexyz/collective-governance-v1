@@ -17,6 +17,7 @@ env:
   GOVERNANCE_BUILDER_ADDRESS: "0x9fB5a925E61c31617129B5D030808939DADA99f7"
   TREASURY_BUILDER_ADDRESS: "0x49753b58270ae454d4ec555ff88294a4fab01660"
   ECDSA_LIB_ADDRESS: "0xe9e21aaEaEad9c57C1F4c622915fFB54f9Ebe338"
+  RELEASE_TAG: ${{ github.ref_name }}
 
 jobs:
   check:
@@ -54,8 +55,8 @@ jobs:
         with:
           draft: false
           prerelease: false
-          tag_name: ${{ github.ref }}
-          release_name: ${{ github.ref }}
+          tag_name: ${{ github.ref_name }}
+          release_name: ${{ github.ref_name }}
           body_path: CHANGELOG.md
 
       - name: Deploy Constant Library

@@ -78,14 +78,7 @@ contract GovernanceBuilderTest is Test {
         vm.prank(_VOTER1, _VOTER1);
         uint256 proposalId = _gov.propose();
         assertEq(_class.minimumVoteDelay(), testVoteDelay);
-        vm.expectRevert(
-            abi.encodeWithSelector(
-                Storage.DelayNotPermitted.selector,
-                proposalId,
-                testVoteDelay - 1,
-                testVoteDelay
-            )
-        );
+        vm.expectRevert(abi.encodeWithSelector(Storage.DelayNotPermitted.selector, proposalId, testVoteDelay - 1, testVoteDelay));
         vm.prank(_VOTER1, _VOTER1);
         _gov.configure(proposalId, 100, testVoteDelay - 1, Constant.MINIMUM_VOTE_DURATION);
     }
@@ -106,14 +99,7 @@ contract GovernanceBuilderTest is Test {
         vm.prank(_VOTER1, _VOTER1);
         uint256 proposalId = _gov.propose();
         assertEq(_class.maximumVoteDelay(), testVoteDelay);
-        vm.expectRevert(
-            abi.encodeWithSelector(
-                Storage.DelayNotPermitted.selector,
-                proposalId,
-                testVoteDelay + 1,
-                testVoteDelay
-            )
-        );
+        vm.expectRevert(abi.encodeWithSelector(Storage.DelayNotPermitted.selector, proposalId, testVoteDelay + 1, testVoteDelay));
         vm.prank(_VOTER1, _VOTER1);
         _gov.configure(proposalId, 100, testVoteDelay + 1, Constant.MINIMUM_VOTE_DURATION);
     }
@@ -135,12 +121,7 @@ contract GovernanceBuilderTest is Test {
         uint256 proposalId = _gov.propose();
         assertEq(_class.minimumVoteDuration(), testVoteDuration + 1);
         vm.expectRevert(
-            abi.encodeWithSelector(
-                Storage.DurationNotPermitted.selector,
-                proposalId,
-                testVoteDuration,
-                testVoteDuration + 1
-            )
+            abi.encodeWithSelector(Storage.DurationNotPermitted.selector, proposalId, testVoteDuration, testVoteDuration + 1)
         );
         vm.prank(_VOTER1, _VOTER1);
         _gov.configure(proposalId, 100, Constant.MINIMUM_VOTE_DELAY, testVoteDuration);
@@ -163,12 +144,7 @@ contract GovernanceBuilderTest is Test {
         uint256 proposalId = _gov.propose();
         assertEq(_class.maximumVoteDuration(), testVoteDuration);
         vm.expectRevert(
-            abi.encodeWithSelector(
-                Storage.DurationNotPermitted.selector,
-                proposalId,
-                testVoteDuration + 1,
-                testVoteDuration
-            )
+            abi.encodeWithSelector(Storage.DurationNotPermitted.selector, proposalId, testVoteDuration + 1, testVoteDuration)
         );
         vm.prank(_VOTER1, _VOTER1);
         _gov.configure(proposalId, 100, Constant.MINIMUM_VOTE_DELAY, testVoteDuration + 1);

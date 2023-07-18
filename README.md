@@ -47,13 +47,29 @@ Collective Governance has been designed from the ground up to be very easy to us
 | CommunityBuilder  | 0x011b543b69236aca83406edc051e8a6dd3bcda1c | 0.9.7   |
 | GovernanceBuilder | 0x2c57560BF19b7c088488104D02506D87f63e414C | 0.9.7   |
 
+### Submodules
+
+This repo is using submodules. Check out the repository with the `--recursive` argument:
+
+```
+$ git clone --recursive https://github.com/collectivexyz/Revolution2
+```
+
+Or simply init submodules from within the codebase
+
+```
+$ git submodule update --recursive --init -f
+```
+
 ### Command line build using docker
 
-    1. docker build . -t collective-governance-v1:1
+    ```
+    $ docker build . -t collective-governance-v1:1
+    ```
 
 ### VS Code
 
-Using the Remote module in VSCode simply reopen the project in it's container.
+Using the Remote Containers extension in VSCode simply reopen the project in it's container.
 
     `Reopen in Container`
 
